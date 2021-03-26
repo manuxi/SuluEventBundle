@@ -51,7 +51,6 @@ use smart_content property type to show a list of events, e.g.:
                         <title lang="en">Events</title>
                         <title lang="de">Veranstaltungen</title>
                     </meta>
-
                     <params>
                         <param name="provider" value="events"/>
                         <param name="max_per_page" value="5"/>
