@@ -3,6 +3,8 @@ This bundle was made based on pr of https://github.com/sulu/sulu-workshop.
 I made it to quickly install those entities in my projects.
 This bundle is still in development. Use at own risk :)
 
+[![Build Status](https://www.travis-ci.com/manuxi/SuluEventBundle.svg?branch=main)](https://www.travis-ci.com/manuxi/SuluEventBundle)
+
 ## Installation
 Install the package with:
 ```console
