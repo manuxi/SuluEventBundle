@@ -1,6 +1,7 @@
 # SuluEventBundle!
 This bundle was made based on pr of https://github.com/sulu/sulu-workshop. 
-I made it to quickly install it in my projects.
+I made it to quickly install those entities in my projects.
+This bundle is still in development. Use at own risk :)
 
 ## Installation
 Install the package with:
@@ -14,7 +15,7 @@ Manuxi\SuluEventBundle\SuluEventBundle::class => ['all' => true],
 ```
 Please add the following to your `routes_admin.yaml`:
 ```yaml
-sulu_event.admin:
+SuluEventBundle:
     resource: '@SuluEventBundle/Resources/config/routes_admin.yml'
 ```
 ...and the following to your `routes_website.yaml`:
