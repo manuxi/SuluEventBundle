@@ -1,0 +1,19 @@
+app:
+    id: Id
+    name: Name
+    description: Beschreibung
+    start_date: Start
+    end_date: Ende
+    event: Veranstaltung
+    events: Veranstaltungen
+    event_selection_label: "{count} {count, plural, =1 {Event} other {Events}} ausgewählt"
+    select_events: "Events auswählen"
+    no_event_selected: "Kein Event ausgewählt"
+    select_event: "Event auswählen"
+    teaser: Teaser
+    image: Bild
+    enabled: freigegeben
+    enable_event: Veranstaltung freigeben
+    location: "Standort"
+    locations: "Standorte"
+    location.no_selections: "Kein Standort ausgewählt"

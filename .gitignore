@@ -1,0 +1,6 @@
+/vendor/
+composer.lock
+/phpunit.xml
+/tests/cache
+/var/cache
+.phpunit.result.cache
