@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services https://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <service id="sulu_event.admin.event" class="Manuxi\SuluEventBundle\Admin\EventAdmin">
+            <argument type="service" id="sulu_admin.view_builder_factory"/>
+            <argument type="service" id="sulu_security.security_checker"/>
+            <argument type="service" id="sulu_core.webspace.webspace_manager"/>
+
+            <tag name="sulu.admin"/>
+            <tag name="sulu.context" context="admin"/>
+        </service>
+
+        <service id="sulu_event.admin.location" class="Manuxi\SuluEventBundle\Admin\LocationAdmin">
+            <argument type="service" id="sulu_admin.view_builder_factory"/>
+
+            <tag name="sulu.admin"/>
+            <tag name="sulu.context" context="admin"/>
+        </service>
+
+        <service id="sulu_event.doctrine_list_representation_factory" class="Manuxi\SuluEventBundle\Common\DoctrineListRepresentationFactory">
+            <argument type="service" id="sulu_core.rest_helper"/>
+            <argument type="service" id="sulu_core.doctrine_list_builder_factory"/>
+            <argument type="service" id="sulu_core.list_builder.field_descriptor_factory"/>
+
+            <tag name="sulu.context" context="admin"/>
+        </service>
+
+        <!-- Repositories -->
+        <service id="sulu_event.repository.location" class="Manuxi\SuluEventBundle\Repository\LocationRepository"
+                 public="true" lazy="true">
+            <argument type="service" id="doctrine"/>
+        </service>
+
+        <service id="sulu_event.repository.event" class="Manuxi\SuluEventBundle\Repository\EventRepository"
+                 public="true" lazy="true">
+            <argument type="service" id="doctrine"/>
+        </service>
+
+        <service id="sulu_event.repository.event_seo" class="Manuxi\SuluEventBundle\Repository\EventSeoRepository"
+                 public="true" lazy="true">
+            <argument type="service" id="doctrine"/>
+        </service>
+
+        <service id="sulu_event.single_event_selection" class="Manuxi\SuluEventBundle\Content\Type\SingleEventSelection">
+            <argument type="service" id="doctrine.orm.default_entity_manager"/>
+
+            <tag name="sulu.content.type" alias="single_event_selection" />
+        </service>
+
+        <service id="sulu_event.event_selection" class="Manuxi\SuluEventBundle\Content\Type\EventSelection">
+            <argument type="service" id="doctrine.orm.default_entity_manager"/>
+
+            <tag name="sulu.content.type" alias="event_selection"/>
+        </service>
+
+        <service id="sulu_event.event_data_provider" class="Manuxi\SuluEventBundle\Content\EventDataProvider">
+            <argument type="service" id="sulu_event.repository.event"/>
+            <argument type="service" id="sulu_core.array_serializer"/>
+
+            <tag name="sulu.smart_content.data_provider" alias="events"/>
+        </service>
+
+        <service id="sulu_event.country_code_select" class="Manuxi\SuluEventBundle\Service\CountryCodeSelect" public="true"/>
+
+    </services>
+</container>
