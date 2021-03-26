@@ -25,9 +25,9 @@ matrix:
         - php: 7.4
           env: STABILITY="dev"
 
-      allow_failures:
-          # Dev-master is allowed to fail.
-          - env: STABILITY="dev"
+    allow_failures:
+        # Dev-master is allowed to fail.
+        - env: STABILITY="dev"
 before_install:
     - phpenv config-rm xdebug.ini || true
     - composer global require --no-progress --no-scripts --no-plugins symfony/flex dev-main
