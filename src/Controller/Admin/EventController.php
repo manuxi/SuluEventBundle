@@ -55,16 +55,15 @@ class EventController extends AbstractRestController implements ClassResourceInt
         ViewHandlerInterface $viewHandler,
         ?TokenStorageInterface $tokenStorage = null
     ) {
+        parent::__construct($viewHandler, $tokenStorage);
         $this->eventRepository                   = $eventRepository;
         $this->eventSeoRepository                = $eventSeoRepository;
         $this->mediaRepository                   = $mediaRepository;
         $this->doctrineListRepresentationFactory = $doctrineListRepresentationFactory;
         $this->entityManager                     = $entityManager;
         $this->locationRepository                = $locationRepository;
-
-        parent::__construct($viewHandler, $tokenStorage);
-        $this->routeManager = $routeManager;
-        $this->routeRepository = $routeRepository;
+        $this->routeManager                      = $routeManager;
+        $this->routeRepository                   = $routeRepository;
     }
 
     public function cgetAction(Request $request): Response
@@ -94,13 +93,11 @@ class EventController extends AbstractRestController implements ClassResourceInt
      */
     public function postAction(Request $request): Response
     {
-        //event
+        //in the first step we'll _only_ create a Event object (no Seo, Taxonomy, etc.)
         $eventEntity = $this->createEvent($request);
         $this->mapDataToEntity($request->request->all(), $eventEntity);
         $this->updateRoutesForEntity($eventEntity);
         $this->saveEvent($eventEntity);
-
-        //in the first step we'll _only_ create a Event object (no Seo, Taxonomy, etc.)
 
         return $this->handleView($this->view($eventEntity, 201));
     }
@@ -266,7 +263,7 @@ class EventController extends AbstractRestController implements ClassResourceInt
     protected function removeEvent(int $id): void
     {
         /** @var Event $event */
-        $event =  $this->eventRepository->findById($id);
+        $event =  $this->eventRepository->find($id);
         $this->removeRoutesForEntity($event);
 
         $this->eventRepository->remove($id);
