@@ -36,11 +36,6 @@ Please add the following to your `routes_admin.yaml`:
 SuluEventBundle:
     resource: '@SuluEventBundle/Resources/config/routes_admin.yml'
 ```
-...and the following to your `routes_website.yaml`:
-```yaml
-SuluEventBundle:
-    resource: "@SuluEventBundle/Resources/config/routes.yml"
-```
 Last but not least the entity tables must be created in the database.
 The tables which will be created are 
 ```
@@ -96,17 +91,12 @@ Example of the corresponding twig template for the event list:
             {{ event.teaser|raw }}
         </p>
         <p>
-            <a class="btn btn-primary" href="{{ path('event', {id: event.id, slug: event.title|slugify}) }}" role="button">
+            <a class="btn btn-primary" href="{{ event.routePath }}" role="button">
                 {{ "Read more..."|trans }} <i class="fa fa-angle-double-right"></i>
             </a>
         </p>
     </div>
 {% endfor %}
-```
-The route to the single event follows the scheme:
-```
-    "en": "/events/{id}/{slug}",
-    "de": "/veranstaltungen/{id}/{slug}"
 ```
 At the moment the template for the single event is located here
 `templates/pages/event.html.twig`

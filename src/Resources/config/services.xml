@@ -66,5 +66,10 @@
 
         <service id="sulu_event.country_code_select" class="Manuxi\SuluEventBundle\Service\CountryCodeSelect" public="true"/>
 
+        <service id="Manuxi\SuluEventBundle\Routing\EventRouteDefaultsProvider">
+            <argument type="service" id="sulu_event.repository.event"/>
+
+            <tag name="sulu_route.defaults_provider"/>
+        </service>
     </services>
 </container>

@@ -10,7 +10,6 @@
         }
     ],
     "require": {
-        "cocur/slugify": "^4.0",
         "dantleech/phpcr-migrations-bundle": "^1.2",
         "php": "^7.2 | ^8.0",
         "sulu/sulu": "^2.2",

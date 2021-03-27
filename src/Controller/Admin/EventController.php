@@ -20,6 +20,8 @@ use FOS\RestBundle\View\ViewHandlerInterface;
 //use HandcraftedInTheAlps\RestRoutingBundle\Controller\Annotations\RouteResource;
 //use HandcraftedInTheAlps\RestRoutingBundle\Routing\ClassResourceInterface;
 use Sulu\Bundle\MediaBundle\Entity\MediaRepositoryInterface;
+use Sulu\Bundle\RouteBundle\Entity\RouteRepositoryInterface;
+use Sulu\Bundle\RouteBundle\Manager\RouteManagerInterface;
 use Sulu\Component\Rest\AbstractRestController;
 use Sulu\Component\Security\SecuredControllerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -33,21 +35,20 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 class EventController extends AbstractRestController implements ClassResourceInterface, SecuredControllerInterface
 {
     private $locationRepository;
-
     private $eventRepository;
-
     private $eventSeoRepository;
-
     private $mediaRepository;
-
     private $doctrineListRepresentationFactory;
-
     private $entityManager;
+    private $routeManager;
+    private $routeRepository;
 
     public function __construct(
         EventRepository $eventRepository,
         EventSeoRepository $eventSeoRepository,
         MediaRepositoryInterface $mediaRepository,
+        RouteManagerInterface $routeManager,
+        RouteRepositoryInterface $routeRepository,
         LocationRepository $locationRepository,
         DoctrineListRepresentationFactory $doctrineListRepresentationFactory,
         EntityManagerInterface $entityManager,
@@ -62,6 +63,8 @@ class EventController extends AbstractRestController implements ClassResourceInt
         $this->locationRepository                = $locationRepository;
 
         parent::__construct($viewHandler, $tokenStorage);
+        $this->routeManager = $routeManager;
+        $this->routeRepository = $routeRepository;
     }
 
     public function cgetAction(Request $request): Response
@@ -94,6 +97,7 @@ class EventController extends AbstractRestController implements ClassResourceInt
         //event
         $eventEntity = $this->createEvent($request);
         $this->mapDataToEntity($request->request->all(), $eventEntity);
+        $this->updateRoutesForEntity($eventEntity);
         $this->saveEvent($eventEntity);
 
         //in the first step we'll _only_ create a Event object (no Seo, Taxonomy, etc.)
@@ -139,6 +143,7 @@ class EventController extends AbstractRestController implements ClassResourceInt
         }
 
         $this->mapDataToEntity($request->request->all(), $eventEntity);
+        $this->updateRoutesForEntity($eventEntity);
         $this->saveEvent($eventEntity);
 
         //do we have an EventSeo?
@@ -171,6 +176,7 @@ class EventController extends AbstractRestController implements ClassResourceInt
     protected function mapDataToEntity(array $data, Event $entity): void
     {
         $entity->setTitle($data['title']);
+        $entity->setRoutePath($data['routePath']);
 
         $teaser = $data['teaser'] ?? null;
         if ($teaser) {
@@ -259,6 +265,10 @@ class EventController extends AbstractRestController implements ClassResourceInt
      */
     protected function removeEvent(int $id): void
     {
+        /** @var Event $event */
+        $event =  $this->eventRepository->findById($id);
+        $this->removeRoutesForEntity($event);
+
         $this->eventRepository->remove($id);
     }
 
@@ -289,5 +299,28 @@ class EventController extends AbstractRestController implements ClassResourceInt
     protected function removeEventSeo(int $id): void
     {
         $this->eventSeoRepository->remove($id);
+    }
+
+    protected function updateRoutesForEntity(Event $entity): void
+    {
+        $this->routeManager->createOrUpdateByAttributes(
+            Event::class,
+            (string) $entity->getId(),
+            $entity->getLocale(),
+            $entity->getRoutePath()
+        );
+    }
+
+    protected function removeRoutesForEntity(Event $entity): void
+    {
+        $routes = $this->routeRepository->findAllByEntity(
+            Event::class,
+            (string) $entity->getId(),
+            $entity->getLocale()
+        );
+
+        foreach ($routes as $route) {
+            $this->routeRepository->remove($route);
+        }
     }
 }

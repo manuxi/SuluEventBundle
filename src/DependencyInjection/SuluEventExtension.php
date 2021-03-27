@@ -51,20 +51,23 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
 //            );
 //        }
 
-//        if ($container->hasExtension('sulu_route')) {
-//            $container->prependExtensionConfig(
-//                'sulu_route',
-//                [
-//                    'mappings' => [
-//                        Event::class => [
-//                            'generator' => 'schema',
-//                            'options' => ['route_schema' => '/event/{object.getId()}'],
-//                            'resource_key' => Event::RESOURCE_KEY,
-//                        ],
-//                    ],
-//                ]
-//            );
-//        }
+        if ($container->hasExtension('sulu_route')) {
+            $container->prependExtensionConfig(
+                'sulu_route',
+                [
+                    'mappings' => [
+                        Event::class => [
+                            'generator' => 'schema',
+                            'options' => [
+                                'route_schema' => '/event/{object.getId()}'
+                            ],
+//                            'options' => ['route_schema' => '/event/{implode("-", object)}'],
+                            'resource_key' => Event::RESOURCE_KEY,
+                        ],
+                    ],
+                ]
+            );
+        }
 
         if ($container->hasExtension('sulu_admin')) {
             $container->prependExtensionConfig(

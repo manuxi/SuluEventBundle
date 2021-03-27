@@ -20,6 +20,8 @@
             <argument type="service" id="sulu_event.repository.event"/>
             <argument type="service" id="sulu_event.repository.event_seo"/>
             <argument type="service" id="sulu.repository.media"/>
+            <argument type="service" id="sulu_route.manager.route_manager"/>
+            <argument type="service" id="sulu.repository.route"/>
             <argument type="service" id="sulu_event.repository.location"/>
             <argument type="service" id="sulu_event.doctrine_list_representation_factory"/>
             <argument type="service" id="doctrine.orm.default_entity_manager"/>
@@ -35,9 +37,9 @@
             <argument type="service" id="sulu_media.media_manager"/>
             <argument type="service" id="sulu_event.repository.event"/>
             <argument type="service" id="sulu_core.webspace.webspace_manager"/>
-            <argument type="service" id="cocur_slugify"/>
             <argument type="service" id="translator"/>
             <argument type="service" id="sulu_website.resolver.template_attribute"/>
+            <argument type="service" id="sulu.repository.route"/>
 
             <tag name="controller.service_arguments"/>
             <tag name="sulu.context" context="website"/>

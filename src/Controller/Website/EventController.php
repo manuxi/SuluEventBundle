@@ -6,63 +6,50 @@ namespace Manuxi\SuluEventBundle\Controller\Website;
 
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
-use Cocur\Slugify\SlugifyInterface;
 use JMS\Serializer\SerializerBuilder;
 use Sulu\Bundle\MediaBundle\Media\Manager\MediaManagerInterface;
+use Sulu\Bundle\RouteBundle\Entity\RouteRepositoryInterface;
 use Sulu\Bundle\WebsiteBundle\Resolver\TemplateAttributeResolverInterface;
 use Sulu\Component\Webspace\Manager\WebspaceManagerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class EventController extends AbstractController
 {
     private $translator;
-
-    private $slugify;
-
     private $eventRepository;
-
     private $webspaceManager;
-
     private $templateAttributeResolver;
+    private $routeRepository;
 
     public function __construct(
         RequestStack $requestStack,
         MediaManagerInterface $mediaManager,
         EventRepository $eventRepository,
         WebspaceManagerInterface $webspaceManager,
-        SlugifyInterface $slugify,
         TranslatorInterface $translator,
-        TemplateAttributeResolverInterface $templateAttributeResolver
+        TemplateAttributeResolverInterface $templateAttributeResolver,
+        RouteRepositoryInterface $routeRepository
     ) {
         parent::__construct($requestStack, $mediaManager);
 
         $this->eventRepository           = $eventRepository;
         $this->webspaceManager           = $webspaceManager;
-        $this->slugify                   = $slugify;
         $this->translator                = $translator;
         $this->templateAttributeResolver = $templateAttributeResolver;
+        $this->routeRepository           = $routeRepository;
     }
 
-    /**
-     * @Route({
-     *     "en": "/events/{id}/{slug}",
-     *     "de": "/veranstaltungen/{id}/{slug}"
-     * }, name="event")
-     */
-    public function indexAction(int $id, string $slug): Response
+    public function indexAction(Event $event): Response
     {
-        $event      = $this->eventRepository->findById($id, $this->request->getLocale());
         $parameters = $this->templateAttributeResolver->resolve([
             'event'   => $event,
             'content' => [
                 'title'    => $this->translator->trans('pages.events'),
                 'subtitle' => $event->getTitle(),
-                //                'banners' => $this->getBannerMedia(self::BANNER_IDS) //lets unittests fail
             ],
-            'path'          => $this->generateUrl('event', ['id' => $id, 'slug' => $slug]),
+            'path'          => $event->getRoutePath(),
             'extension'     => $this->extractExtension($event),
             'localizations' => $this->getLocalizationsArrayForEntity($event),
             'created'       => $event->getCreated(),
@@ -72,42 +59,24 @@ class EventController extends AbstractController
     }
 
     /**
+     * With the help of this method the corresponding localisations for the
+     * current event are found e.g. to be linked in the language switcher.
      * @return array<string, array>
      */
     protected function getLocalizationsArrayForEntity(Event $event): array
     {
-        $locales = $this->webspaceManager->getAllLocales();
+        $routes = $this->routeRepository->findAllByEntity(Event::class, (string)$event->getId());
 
         $localizations = [];
-        foreach ($locales as $locale) {
-            $event->setLocale($locale);
+        foreach ($routes as $route) {
+            $url = $this->webspaceManager->findUrlByResourceLocator(
+                $route->getPath(),
+                null,
+                $route->getLocale()
+            );
 
-            //we don't have a translation
-            if (null === $event->getTitle()) {
-                $url = null;
-            } else {
-                $urlParams = [
-                    'id'      => $event->getId(),
-                    'slug'    => $this->slugify->slugify($event->getTitle()),
-                    '_locale' => $locale,
-                ];
-                $routePath = $this->generateUrl('event', $urlParams);
-                $url       = $this->webspaceManager->findUrlByResourceLocator(
-                    $routePath,
-                    null,
-                    $locale
-                );
-            }
-
-            $localizations[$locale] = [
-                'locale' => $locale,
-                'url'    => $url,
-            ];
+            $localizations[$route->getLocale()] = ['locale' => $route->getLocale(), 'url' => $url];
         }
-
-        //we have to set back the locale of the event, because $event is passed by reference.
-        //We don't want to clone here so just reset the $event's locale...
-        $event->setLocale($this->request->getLocale());
 
         return $localizations;
     }
@@ -122,16 +91,16 @@ class EventController extends AbstractController
     /**
      * @return string[]
      */
-//    public static function getSubscribedServices()
-//    {
-//        $subscribedServices = parent::getSubscribedServices();
-//
-    ////        $subscribedServices['sulu_core.webspace.webspace_manager'] = WebspaceManagerInterface::class;
-    ////        $subscribedServices['sulu.repository.route'] = RouteRepositoryInterface::class;
-//        $subscribedServices['sulu_website.resolver.template_attribute'] = TemplateAttributeResolverInterface::class;
-//
-//        return $subscribedServices;
-//    }
+    public static function getSubscribedServices()
+    {
+        $subscribedServices = parent::getSubscribedServices();
+
+        $subscribedServices['sulu_core.webspace.webspace_manager'] = WebspaceManagerInterface::class;
+        $subscribedServices['sulu.repository.route'] = RouteRepositoryInterface::class;
+        $subscribedServices['sulu_website.resolver.template_attribute'] = TemplateAttributeResolverInterface::class;
+
+        return $subscribedServices;
+    }
 
     /**
      * "seo" => array:7 [▼

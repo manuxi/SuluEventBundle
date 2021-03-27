@@ -13,8 +13,15 @@
             <params>
                 <param name="headline" value="true"/>
             </params>
+            <tag name="sulu.rlp.part"/>
         </property>
-        
+
+        <property name="routePath" type="route" mandatory="true">
+            <meta>
+                <title>sulu_admin.url</title>
+            </meta>
+        </property>
+
         <property name="image" type="single_media_selection" colspan="6">
             <meta>
                 <title>app.image</title>
@@ -23,13 +30,13 @@
                 <param name="types" value="image"/>
             </params>
         </property>
-        
+
         <property name="locationId" type="single_location_selection" mandatory="true" colspan="6">
             <meta>
                 <title>app.location</title>
             </meta>
         </property>
-        
+
         <property name="teaser" type="text_area">
             <meta>
                 <title>app.teaser</title>
@@ -47,7 +54,7 @@
                 <title>app.end_date</title>
             </meta>
         </property>
-        
+
         <property name="description" type="text_editor">
             <meta>
                 <title>sulu_admin.description</title>

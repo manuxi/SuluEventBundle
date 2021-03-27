@@ -50,6 +50,11 @@ class EventTranslation implements AuditableInterface
      */
     private $description = null;
 
+    /**
+     * @ORM\Column(type="string", length=255)
+     */
+    private $routePath;
+
     public function __construct(Event $event, string $locale)
     {
         $this->event  = $event;
@@ -103,6 +108,18 @@ class EventTranslation implements AuditableInterface
     public function setDescription(?string $description): self
     {
         $this->description = $description;
+
+        return $this;
+    }
+
+    public function getRoutePath(): string
+    {
+        return $this->routePath ?? '';
+    }
+
+    public function setRoutePath(string $routePath): self
+    {
+        $this->routePath = $routePath;
 
         return $this;
     }

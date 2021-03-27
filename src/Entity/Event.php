@@ -243,6 +243,31 @@ class Event
     }
 
     /**
+     * @Serializer\VirtualProperty(name="route_path")
+     */
+    public function getRoutePath(): ?string
+    {
+        $translation = $this->getTranslation($this->locale);
+        if (!$translation) {
+            return null;
+        }
+
+        return $translation->getRoutePath();
+    }
+
+    public function setRoutePath(string $routePath): self
+    {
+        $translation = $this->getTranslation($this->locale);
+        if (!$translation) {
+            $translation = $this->createTranslation($this->locale);
+        }
+
+        $translation->setRoutePath($routePath);
+
+        return $this;
+    }
+
+    /**
      * @Serializer\VirtualProperty(name="description")
      */
     public function getDescription(): ?string
