@@ -15,7 +15,7 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
 
     public function load(array $configs, ContainerBuilder $container)
     {
-//        var_dump('We\'re alive!');die;
+
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
@@ -59,9 +59,8 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
                         Event::class => [
                             'generator' => 'schema',
                             'options' => [
-                                'route_schema' => '/event/{object.getId()}'
+                                'route_schema' => '/event/{implode("-", object)}'
                             ],
-//                            'options' => ['route_schema' => '/event/{implode("-", object)}'],
                             'resource_key' => Event::RESOURCE_KEY,
                         ],
                     ],
