@@ -19,8 +19,7 @@ class EventDataProvider extends BaseDataProvider
                 ->enablePagination()
                 ->enableSorting(
                     [
-                        ['column' => 'entity.title', 'title' => 'sulu_admin.title'],
-                        ['column' => 'entity.startDate', 'title' => 'app.start_date'],
+                        ['column' => 'startDate', 'title' => 'app.start_date'],
                     ]
                 )
                 ->getConfiguration();
