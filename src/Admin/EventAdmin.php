@@ -28,9 +28,9 @@ class EventAdmin extends Admin
 
     public const EDIT_FORM_DETAILS_VIEW = 'app.event.edit_form.details';
 
-    //seo,excerpt, etc
     public const SECURITY_CONTEXT = 'sulu.modules.events';
 
+    //seo,excerpt, etc
     public const EDIT_FORM_VIEW_SEO = 'app.event.edit_form.seo';
 
     public const EDIT_FORM_VIEW_EXCERPT = 'app.event.edit_form.excerpt';

@@ -4,6 +4,7 @@ namespace Manuxi\SuluEventBundle\DependencyInjection;
 
 use Manuxi\SuluEventBundle\Admin\EventAdmin;
 use Manuxi\SuluEventBundle\Entity\Event;
+use Manuxi\SuluEventBundle\Entity\Location;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
@@ -100,7 +101,7 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
                         'selection' => [
                             'event_selection' => [
                                 'default_type' => 'list_overlay',
-                                'resource_key' => 'events',
+                                'resource_key' => Event::RESOURCE_KEY,
                                 'view' => [
                                     'name' => 'app.event_edit_form',
                                     'result_to_view' => [
@@ -110,13 +111,13 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
                                 'types' => [
                                     'list_overlay' => [
                                         'adapter' => 'table',
-                                        'list_key' => 'events',
+                                        'list_key' => Event::LIST_KEY,
                                         'display_properties' => [
                                             'title'
                                         ],
                                         'icon' => 'su-calendar',
-                                        'label' => 'app.events',
-                                        'overlay_title' => 'app.events'
+                                        'label' => 'app.event_selection_label',
+                                        'overlay_title' => 'app.select_events'
                                     ]
                                 ]
                             ]
@@ -124,7 +125,7 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
                         'single_selection' => [
                             'single_event_selection' => [
                                 'default_type' => 'list_overlay',
-                                'resource_key' => 'events',
+                                'resource_key' => Event::RESOURCE_KEY,
                                 'view' => [
                                     'name' => 'app.event_edit_form',
                                     'result_to_view' => [
@@ -134,13 +135,13 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
                                 'types' => [
                                     'list_overlay' => [
                                         'adapter' => 'table',
-                                        'list_key' => 'events',
+                                        'list_key' => Event::LIST_KEY,
                                         'display_properties' => [
                                             'title'
                                         ],
                                         'icon' => 'su-calendar',
                                         'empty_text' => 'app.events.no_selections',
-                                        'overlay_title' => 'app.events'
+                                        'overlay_title' => 'app.select_event'
                                     ],
                                     'auto_complete' => [
                                         'display_property' => 'title',
@@ -152,17 +153,17 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
                             ],
                             'single_location_selection' => [
                                 'default_type' => 'list_overlay',
-                                'resource_key' => 'locations',
+                                'resource_key' => Location::RESOURCE_KEY,
                                 'types' => [
                                     'list_overlay' => [
                                         'adapter' => 'table',
-                                        'list_key' => 'locations',
+                                        'list_key' => Location::LIST_KEY,
                                         'display_properties' => [
                                             'name'
                                         ],
                                         'icon' => 'fa-home',
                                         'empty_text' => 'app.location.no_selections',
-                                        'overlay_title' => 'app.locations'
+                                        'overlay_title' => 'app.select_location'
                                     ],
                                     'auto_complete' => [
                                         'display_property' => 'name',

@@ -14,6 +14,10 @@ class Location
 {
     public const RESOURCE_KEY = 'locations';
 
+    public const FORM_KEY = 'location_details';
+
+    public const LIST_KEY = 'locations';
+
     /**
      * @ORM\Id
      * @ORM\GeneratedValue

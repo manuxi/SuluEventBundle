@@ -6,14 +6,15 @@ app:
     end_date: Ende
     event: Veranstaltung
     events: Veranstaltungen
-    event_selection_label: "{count} {count, plural, =1 {Event} other {Events}} ausgewählt"
-    select_events: "Events auswählen"
-    no_event_selected: "Kein Event ausgewählt"
-    select_event: "Event auswählen"
+    event_selection_label: "{count} {count, plural, =1 {Veranstaltung} other {Veranstaltungen}} ausgewählt"
+    select_event: "Veranstaltung auswählen"
+    select_events: "Veranstaltungen auswählen"
+    no_event_selected: "Keine Veranstaltung ausgewählt"
     teaser: Teaser
     image: Bild
     enabled: freigegeben
     enable_event: Veranstaltung freigeben
     location: "Standort"
     locations: "Standorte"
+    select_location: "Standort auswählen"
     location.no_selections: "Kein Standort ausgewählt"
