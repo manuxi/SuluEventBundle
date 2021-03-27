@@ -1,11 +1,22 @@
 # SuluEventBundle!
-This bundle was made based on pr of https://github.com/sulu/sulu-workshop. 
-I made it to quickly install those entities in my projects.
-This bundle is still in development. Use at own risk :)
+This bundle was made based on [Sulu workshop](https://github.com/sulu/sulu-workshop). 
+I made it to quickly install the possibility to manage events in my projects.
+This bundle is still in development. Use at own risk 🤞🏻
 
-[![Build Status](https://www.travis-ci.com/manuxi/SuluEventBundle.svg?branch=main)](https://www.travis-ci.com/manuxi/SuluEventBundle)
+<div align="center">
+    <a href="https://www.travis-ci.com/manuxi/SuluEventBundle" target="_blank">
+        <img src="https://www.travis-ci.com/manuxi/SuluEventBundle.svg?branch=main" alt="Travis status">
+    </a>
+    <a href="https://github.com/manuxi/SuluEventBundle/blob/main/LICENSE" target="_blank">
+        <img src="https://img.shields.io/github/license/manuxi/SuluEventBundle" alt="GitHub license">
+    </a>
+    <a href="https://github.com/manuxi/SuluEventBundle/tags" target="_blank">
+        <img src="https://img.shields.io/github/v/tag/manuxi/SuluEventBundle" alt="GitHub license">
+    </a>
+    
+</div>
 
-## Installation
+## 👩🏻‍🏭 Installation
 Install the package with:
 ```console
 composer require manuxi/sulu-event-bundle
@@ -13,7 +24,10 @@ composer require manuxi/sulu-event-bundle
 If you're *not* using Symfony Flex, you'll also
 need to add the bundle in your `config/bundles.php` file:
 ```php
-Manuxi\SuluEventBundle\SuluEventBundle::class => ['all' => true],
+return [
+    //...
+    Manuxi\SuluEventBundle\SuluEventBundle::class => ['all' => true],
+];
 ```
 Please add the following to your `routes_admin.yaml`:
 ```yaml
@@ -39,11 +53,10 @@ Execute the queries above with:
 php bin/console doctrine:schema:update --force
 ```
 
-## Usage
+## 🎣 Usage
 After granting the rights in the sulu admin area you should be able to create locations and events.
 use smart_content property type to show a list of events, e.g.:
 ```xml
-...
 <block name="smart-content-events" default-type="smart-content-events">
     <types>
         <type name="smart-content-events">
@@ -63,7 +76,6 @@ use smart_content property type to show a list of events, e.g.:
         </type>
     </types>
 </block>
-...
 ```
 Example of the corresponding twig template for the event list:
 ```html
@@ -97,9 +109,9 @@ The route to the single event follows the scheme:
 At the moment the template for the single event is located here
 `templates/pages/event.html.twig`
 
-## Configuration
+## 🧶 Configuration
 There exists no configuration yet. I'm on it :)
 
-## Contributing
+## 👩‍🍳 Contributing
 For the sake of simplicity this extension was kept small.
 Please feel comfortable submitting issues or pull requests. As always I'd be glad to get your feedback to improve the extension :).
