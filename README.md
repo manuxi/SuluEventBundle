@@ -1,9 +1,5 @@
 # SuluEventBundle!
-This bundle was made based on [Sulu workshop](https://github.com/sulu/sulu-workshop). 
-I made it to quickly install the possibility to manage events in my projects.
-This bundle is still in development. Use at own risk 🤞🏻
-
-<div align="center">
+<div>
     <a href="https://www.travis-ci.com/manuxi/SuluEventBundle" target="_blank">
         <img src="https://www.travis-ci.com/manuxi/SuluEventBundle.svg?branch=main" alt="Travis status">
     </a>
@@ -13,8 +9,14 @@ This bundle is still in development. Use at own risk 🤞🏻
     <a href="https://github.com/manuxi/SuluEventBundle/tags" target="_blank">
         <img src="https://img.shields.io/github/v/tag/manuxi/SuluEventBundle" alt="GitHub license">
     </a>
-    
+
 </div>
+
+This bundle was made based on [Sulu workshop](https://github.com/sulu/sulu-workshop). 
+I made it to quickly install the possibility to manage events in my projects.
+This bundle is still in development. Use at own risk 🤞🏻
+
+
 
 ## 👩🏻‍🏭 Installation
 Install the package with:
