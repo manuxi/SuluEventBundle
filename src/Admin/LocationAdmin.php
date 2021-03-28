@@ -19,17 +19,12 @@ use Sulu\Component\Security\Authorization\SecurityCheckerInterface;
 class LocationAdmin extends Admin
 {
     public const LIST_VIEW = 'app.location.list';
-
     public const ADD_FORM_VIEW = 'app.location.add_form';
-
     public const ADD_FORM_DETAILS_VIEW = 'app.location.add_form.details';
-
     public const EDIT_FORM_VIEW = 'app.location.edit_form';
-
     public const EDIT_FORM_DETAILS_VIEW = 'app.location.edit_form.details';
 
     private $viewBuilderFactory;
-
     private $securityChecker;
 
     public function __construct(

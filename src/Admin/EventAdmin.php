@@ -19,26 +19,18 @@ use Sulu\Component\Webspace\Manager\WebspaceManagerInterface;
 class EventAdmin extends Admin
 {
     public const LIST_VIEW = 'app.event.list';
-
     public const ADD_FORM_VIEW = 'app.event.add_form';
-
     public const ADD_FORM_DETAILS_VIEW = 'app.event.add_form.details';
-
     public const EDIT_FORM_VIEW = 'app.event.edit_form';
-
     public const EDIT_FORM_DETAILS_VIEW = 'app.event.edit_form.details';
-
     public const SECURITY_CONTEXT = 'sulu.modules.events';
 
     //seo,excerpt, etc
     public const EDIT_FORM_VIEW_SEO = 'app.event.edit_form.seo';
-
     public const EDIT_FORM_VIEW_EXCERPT = 'app.event.edit_form.excerpt';
 
     private $viewBuilderFactory;
-
     private $securityChecker;
-
     private $webspaceManager;
 
     public function __construct(

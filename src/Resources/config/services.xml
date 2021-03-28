@@ -57,13 +57,6 @@
             <tag name="sulu.content.type" alias="event_selection"/>
         </service>
 
-        <service id="sulu_event.event_data_provider" class="Manuxi\SuluEventBundle\Content\EventDataProvider">
-            <argument type="service" id="sulu_event.repository.event"/>
-            <argument type="service" id="sulu_core.array_serializer"/>
-
-            <tag name="sulu.smart_content.data_provider" alias="events"/>
-        </service>
-
         <service id="sulu_event.country_code_select" class="Manuxi\SuluEventBundle\Service\CountryCodeSelect" public="true"/>
 
         <service id="Manuxi\SuluEventBundle\Routing\EventRouteDefaultsProvider">
@@ -71,5 +64,19 @@
 
             <tag name="sulu_route.defaults_provider"/>
         </service>
+
+        <service id="Manuxi\SuluEventBundle\Content\EventSelectionContentType">
+            <argument type="service" id="sulu_event.repository.event"/>
+
+            <tag name="sulu.content.type" alias="event_selection"/>
+        </service>
+
+        <service id="sulu_event.event_data_provider" class="Manuxi\SuluEventBundle\Content\EventDataProvider">
+            <argument type="service" id="sulu_event.repository.event"/>
+            <argument type="service" id="sulu_core.array_serializer"/>
+
+            <tag name="sulu.smart_content.data_provider" alias="events"/>
+        </service>
+
     </services>
 </container>

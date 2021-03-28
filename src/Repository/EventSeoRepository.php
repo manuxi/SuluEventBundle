@@ -20,9 +20,6 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class EventSeoRepository extends ServiceEntityRepository
 {
-//    use DataProviderRepositoryTrait {
-//        findByFilters as parentFindByFilters;
-//    }
 
     public function __construct(ManagerRegistry $registry)
     {
@@ -75,24 +72,4 @@ class EventSeoRepository extends ServiceEntityRepository
         return $eventSeo;
     }
 
-//    /**
-//     * @param mixed[] $filters
-//     */
-//    public function findByFilters($filters, $page, $pageSize, $limit, $locale, $options = [])
-//    {
-//        $entities = $this->parentFindByFilters($filters, $page, $pageSize, $limit, $locale, $options);
-//
-//        return array_map(
-//            function (EventSeo $entity) use ($locale) {
-//                return $entity->setLocale($locale);
-//            },
-//            $entities
-//        );
-//    }
-//
-//    protected function appendJoins(QueryBuilder $queryBuilder, string $alias, string $locale): void
-//    {
-//        $queryBuilder->innerJoin($alias . '.translations', 'translation', Join::WITH, 'translation.locale = :locale');
-//        $queryBuilder->setParameter('locale', $locale);
-//    }
 }
