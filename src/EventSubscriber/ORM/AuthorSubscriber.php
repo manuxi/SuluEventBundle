@@ -7,6 +7,7 @@ use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\Events;
 use Doctrine\Persistence\Event\LoadClassMetadataEventArgs;
 use Manuxi\SuluEventBundle\Entity\Interfaces\AuthorInterface;
+use Manuxi\SuluEventBundle\Entity\Interfaces\AuthorTranslationInterface;
 use Sulu\Component\Security\Authentication\UserInterface;
 use Symfony\Component\Security\Core\Authentication\Token\AnonymousToken;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
@@ -34,6 +35,14 @@ class AuthorSubscriber implements EventSubscriber
     {
         $this->tokenStorage = $tokenStorage;
         $this->userClass = $userClass;
+    }
+
+    public function getSubscribedEvents()
+    {
+        return [
+            Events::loadClassMetadata,
+            Events::onFlush,
+        ];
     }
 
     /**
@@ -133,11 +142,4 @@ class AuthorSubscriber implements EventSubscriber
         return $user;
     }
 
-    public function getSubscribedEvents()
-    {
-        return [
-            Events::loadClassMetadata,
-            Events::onFlush,
-        ];
-    }
 }
