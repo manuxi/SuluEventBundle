@@ -24,7 +24,7 @@
 
         <property name="image" type="single_media_selection" colspan="6">
             <meta>
-                <title>app.image</title>
+                <title>sulu_event.image</title>
             </meta>
             <params>
                 <param name="types" value="image"/>
@@ -33,25 +33,25 @@
 
         <property name="locationId" type="single_location_selection" mandatory="true" colspan="6">
             <meta>
-                <title>app.location</title>
+                <title>sulu_event.location</title>
             </meta>
         </property>
 
         <property name="teaser" type="text_area">
             <meta>
-                <title>app.teaser</title>
+                <title>sulu_event.teaser</title>
             </meta>
         </property>
 
         <property name="startDate" type="datetime" colspan="6">
             <meta>
-                <title>app.start_date</title>
+                <title>sulu_event.start_date</title>
             </meta>
         </property>
 
         <property name="endDate" type="datetime" colspan="6">
             <meta>
-                <title>app.end_date</title>
+                <title>sulu_event.end_date</title>
             </meta>
         </property>
 

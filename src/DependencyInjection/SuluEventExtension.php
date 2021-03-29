@@ -103,7 +103,7 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
                                 'default_type' => 'list_overlay',
                                 'resource_key' => Event::RESOURCE_KEY,
                                 'view' => [
-                                    'name' => 'app.event_edit_form',
+                                    'name' => EventAdmin::EDIT_FORM_VIEW,
                                     'result_to_view' => [
                                         'id' => 'id'
                                     ]
@@ -116,8 +116,8 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
                                             'title'
                                         ],
                                         'icon' => 'su-calendar',
-                                        'label' => 'app.event_selection_label',
-                                        'overlay_title' => 'app.select_events'
+                                        'label' => 'sulu_event.event_selection_label',
+                                        'overlay_title' => 'sulu_event.select_events'
                                     ]
                                 ]
                             ]
@@ -127,7 +127,7 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
                                 'default_type' => 'list_overlay',
                                 'resource_key' => Event::RESOURCE_KEY,
                                 'view' => [
-                                    'name' => 'app.event_edit_form',
+                                    'name' => EventAdmin::EDIT_FORM_VIEW,
                                     'result_to_view' => [
                                         'id' => 'id'
                                     ]
@@ -140,8 +140,8 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
                                             'title'
                                         ],
                                         'icon' => 'su-calendar',
-                                        'empty_text' => 'app.events.no_selections',
-                                        'overlay_title' => 'app.select_event'
+                                        'empty_text' => 'sulu_event.no_event_selected',
+                                        'overlay_title' => 'sulu_event.select_event'
                                     ],
                                     'auto_complete' => [
                                         'display_property' => 'title',
@@ -162,8 +162,8 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
                                             'name'
                                         ],
                                         'icon' => 'fa-home',
-                                        'empty_text' => 'app.location.no_selections',
-                                        'overlay_title' => 'app.select_location'
+                                        'empty_text' => 'sulu_event.no_location_selected',
+                                        'overlay_title' => 'sulu_event.select_location'
                                     ],
                                     'auto_complete' => [
                                         'display_property' => 'name',

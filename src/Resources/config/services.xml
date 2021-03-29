@@ -78,5 +78,11 @@
             <tag name="sulu.smart_content.data_provider" alias="events"/>
         </service>
 
+        <service id="sulu_event.webspace_selector"
+                 class="Manuxi\SuluEventBundle\Admin\Helper\WebspaceSelector"
+                 public="true">
+            <argument type="service" id="sulu_core.webspace.webspace_manager"/>
+        </service>
+
     </services>
 </container>

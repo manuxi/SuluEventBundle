@@ -18,16 +18,19 @@ use Sulu\Component\Webspace\Manager\WebspaceManagerInterface;
 
 class EventAdmin extends Admin
 {
-    public const LIST_VIEW = 'app.event.list';
-    public const ADD_FORM_VIEW = 'app.event.add_form';
-    public const ADD_FORM_DETAILS_VIEW = 'app.event.add_form.details';
-    public const EDIT_FORM_VIEW = 'app.event.edit_form';
-    public const EDIT_FORM_DETAILS_VIEW = 'app.event.edit_form.details';
+    public const NAV_ITEM = 'sulu_event.events';
+
+    public const LIST_VIEW = 'sulu_event.event.list';
+    public const ADD_FORM_VIEW = 'sulu_event.event.add_form';
+    public const ADD_FORM_DETAILS_VIEW = 'sulu_event.event.add_form.details';
+    public const EDIT_FORM_VIEW = 'sulu_event.event.edit_form';
+    public const EDIT_FORM_DETAILS_VIEW = 'sulu_event.event.edit_form.details';
     public const SECURITY_CONTEXT = 'sulu.modules.events';
 
     //seo,excerpt, etc
-    public const EDIT_FORM_VIEW_SEO = 'app.event.edit_form.seo';
-    public const EDIT_FORM_VIEW_EXCERPT = 'app.event.edit_form.excerpt';
+    public const EDIT_FORM_VIEW_SEO = 'sulu_event.event.edit_form.seo';
+    public const EDIT_FORM_VIEW_EXCERPT = 'sulu_event.event.edit_form.excerpt';
+    public const EDIT_FORM_VIEW_SETTINGS = 'sulu_event.edit_form.settings';
 
     private $viewBuilderFactory;
     private $securityChecker;
@@ -46,13 +49,13 @@ class EventAdmin extends Admin
     public function configureNavigationItems(NavigationItemCollection $navigationItemCollection): void
     {
         if ($this->securityChecker->hasPermission(Event::SECURITY_CONTEXT, PermissionTypes::EDIT)) {
-            $rootNavigationItem = new NavigationItem('app.events');
+            $rootNavigationItem = new NavigationItem(static::NAV_ITEM);
             $rootNavigationItem->setIcon('su-calendar');
             $rootNavigationItem->setPosition(30);
             $rootNavigationItem->setView(static::LIST_VIEW);
 
             // Configure a NavigationItem with a View
-            $eventNavigationItem = new NavigationItem('app.events');
+            $eventNavigationItem = new NavigationItem(static::NAV_ITEM);
             $eventNavigationItem->setPosition(10);
             $eventNavigationItem->setView(static::LIST_VIEW);
 
@@ -91,7 +94,7 @@ class EventAdmin extends Admin
             $listView = $this->viewBuilderFactory->createListViewBuilder(static::LIST_VIEW, '/events/:locale')
                 ->setResourceKey(Event::RESOURCE_KEY)
                 ->setListKey(Event::LIST_KEY)
-                ->setTitle('app.events')
+                ->setTitle('sulu_event.events')
                 ->addListAdapters(['table'])
                 ->addLocales($locales)
                 ->setDefaultLocale($locales[0])
@@ -129,7 +132,7 @@ class EventAdmin extends Admin
                 new ToolbarAction('sulu_admin.save'),
                 new ToolbarAction('sulu_admin.delete'),
                 new TogglerToolbarAction(
-                    'app.enable_event',
+                    'sulu_event.enable_event',
                     'enabled',
                     'enable',
                     'disable'
@@ -197,6 +200,19 @@ class EventAdmin extends Admin
                     ->setPreviewCondition($previewCondition)
                     ->setTitleVisible(true)
                     ->setTabOrder(3072)
+                    ->setParent(static::EDIT_FORM_VIEW)
+            );
+            $viewCollection->add(
+                $this->viewBuilderFactory
+                    ->createPreviewFormViewBuilder(static::EDIT_FORM_VIEW_SETTINGS, '/settings')
+                    ->disablePreviewWebspaceChooser()
+                    ->setResourceKey(Event::RESOURCE_KEY)
+                    ->setFormKey('event_settings')
+                    ->setTabTitle('sulu_page.settings')
+                    ->addToolbarActions($formToolbarActionsWithoutType)
+                    ->setPreviewCondition($previewCondition)
+                    ->setTitleVisible(true)
+                    ->setTabOrder(4096)
                     ->setParent(static::EDIT_FORM_VIEW)
             );
         }

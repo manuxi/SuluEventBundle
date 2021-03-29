@@ -19,7 +19,7 @@ class EventDataProvider extends BaseDataProvider
                 ->enablePagination()
                 ->enableSorting(
                     [
-                        ['column' => 'startDate', 'title' => 'app.start_date'],
+                        ['column' => 'startDate', 'title' => 'sulu_event.start_date'],
                     ]
                 )
                 ->getConfiguration();

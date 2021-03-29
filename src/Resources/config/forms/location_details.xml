@@ -42,10 +42,9 @@
             </meta>
 
             <params>
-                <param
-                        name="values"
-                        type="expression"
-                        value="service('sulu_event.country_code_select').getValues()"
+                <param name="values"
+                       type="expression"
+                       value="service('sulu_event.country_code_select').getValues()"
                 />
             </params>
         </property>

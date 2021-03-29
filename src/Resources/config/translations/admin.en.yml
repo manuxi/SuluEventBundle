@@ -1,19 +1,25 @@
-app:
-    id: Id
-    name: Name
-    description: Description
-    start_date: Start
-    end_date: End
-    event: Event
-    events: Events
+sulu_event:
+    id: "Id"
+    name: "Name"
+    description: "Description"
+    teaser: "Teaser"
+    image: "Image"
+    enabled: "enabled"
+    start_date: "Start"
+    end_date: "End"
+    event: "Event"
+    events: "Events"
     event_selection_label: "{count} {count, plural, =1 {event} other {events}} selected"
     select_event: "Select event"
     select_events: "Select events"
     no_event_selected: "No event selected"
-    teaser: Teaser
-    image: Image
-    enabled: enabled
-    enable_event: Enable event
+    enable_event: "Enable event"
     location: "Location"
     locations: "Locations"
-    location.no_selections: "No location selected"
+    no_location_selected: "No location selected"
+    webspace_settings: "Webspace settings"
+    customize_webspace_settings: "Customize webspace settings"
+    main_webspace: "Main webspace"
+    additional_webspace: "Additional webspaces"
+    shadow_event: "Shadow event"
+    enable_shadow_event: "Enable shadow event"

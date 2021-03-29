@@ -18,11 +18,13 @@ use Sulu\Component\Security\Authorization\SecurityCheckerInterface;
 
 class LocationAdmin extends Admin
 {
-    public const LIST_VIEW = 'app.location.list';
-    public const ADD_FORM_VIEW = 'app.location.add_form';
-    public const ADD_FORM_DETAILS_VIEW = 'app.location.add_form.details';
-    public const EDIT_FORM_VIEW = 'app.location.edit_form';
-    public const EDIT_FORM_DETAILS_VIEW = 'app.location.edit_form.details';
+    public const NAV_ITEM = 'sulu_event.locations';
+
+    public const LIST_VIEW = 'sulu_event.location.list';
+    public const ADD_FORM_VIEW = 'sulu_event.location.add_form';
+    public const ADD_FORM_DETAILS_VIEW = 'sulu_event.location.add_form.details';
+    public const EDIT_FORM_VIEW = 'sulu_event.location.edit_form';
+    public const EDIT_FORM_DETAILS_VIEW = 'sulu_event.location.edit_form.details';
 
     private $viewBuilderFactory;
     private $securityChecker;
@@ -41,8 +43,8 @@ class LocationAdmin extends Admin
     public function configureNavigationItems(NavigationItemCollection $navigationItemCollection): void
     {
         if ($this->securityChecker->hasPermission(Event::SECURITY_CONTEXT, PermissionTypes::EDIT)) {
-            $module = $navigationItemCollection->get('app.events');
-            $locations = new NavigationItem('app.locations');
+            $module = $navigationItemCollection->get(EventAdmin::NAV_ITEM);
+            $locations = new NavigationItem(static::NAV_ITEM);
             $locations->setPosition(10);
             $locations->setView(static::LIST_VIEW);
 
@@ -73,7 +75,7 @@ class LocationAdmin extends Admin
             $listView = $this->viewBuilderFactory->createListViewBuilder(self::LIST_VIEW, '/locations')
                 ->setResourceKey(Location::RESOURCE_KEY)
                 ->setListKey(Location::LIST_KEY)
-                ->setTitle('app.locations')
+                ->setTitle('sulu_event.locations')
                 ->addListAdapters(['table'])
                 ->setAddView(static::ADD_FORM_VIEW)
                 ->setEditView(static::EDIT_FORM_VIEW)
