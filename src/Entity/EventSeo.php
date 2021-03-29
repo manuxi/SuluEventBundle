@@ -7,20 +7,20 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\Mapping\JoinColumn;
 use JMS\Serializer\Annotation as Serializer;
+use Manuxi\SuluEventBundle\Entity\Interfaces\SeoInterface;
+use Manuxi\SuluEventBundle\Entity\Interfaces\SeoTranslatableInterface;
+use Manuxi\SuluEventBundle\Entity\Traits\SeoTrait;
+use Manuxi\SuluEventBundle\Entity\Traits\SeoTranslatableTrait;
 
 /**
  * @ORM\Entity
  * @ORM\Table(name="app_event_seo")
  * @ORM\Entity(repositoryClass="Manuxi\SuluEventBundle\Repository\EventSeoRepository")
  */
-class EventSeo
+class EventSeo implements SeoInterface, SeoTranslatableInterface
 {
-    /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     */
-    private $id = null;
+    use SeoTrait;
+    use SeoTranslatableTrait;
 
     /**
      * @ORM\OneToOne(targetEntity="Manuxi\SuluEventBundle\Entity\Event", inversedBy="eventSeo", cascade={"persist", "remove"})
@@ -31,21 +31,6 @@ class EventSeo
     private $event = null;
 
     /**
-     * @ORM\Column(type="boolean")
-     */
-    private $hideInSitemap = false;
-
-    /**
-     * @ORM\Column(type="boolean")
-     */
-    private $noFollow = false;
-
-    /**
-     * @ORM\Column(type="boolean")
-     */
-    private $noIndex = false;
-
-    /**
      * @var Collection<string, EventTranslation>
      *
      * @ORM\OneToMany(targetEntity="EventSeoTranslation", mappedBy="eventSeo", cascade={"ALL"}, indexBy="locale")
@@ -54,22 +39,9 @@ class EventSeo
      */
     private $translations;
 
-    private $locale = 'en';
-
     public function __construct()
     {
         $this->translations = new ArrayCollection();
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    public function setId(?int $id): self
-    {
-        $this->id = $id;
-        return $this;
     }
 
     public function getEvent(): ?Event
@@ -80,151 +52,6 @@ class EventSeo
     public function setEvent(Event $event): self
     {
         $this->event = $event;
-        return $this;
-    }
-
-    public function getHideInSitemap(): bool
-    {
-        return $this->hideInSitemap;
-    }
-
-    public function setHideInSitemap(bool $hideInSitemap): self
-    {
-        $this->hideInSitemap = $hideInSitemap;
-        return $this;
-    }
-
-    public function getNoFollow(): bool
-    {
-        return $this->noFollow;
-    }
-
-    public function setNoFollow(bool $noFollow): self
-    {
-        $this->noFollow = $noFollow;
-        return $this;
-    }
-
-    public function getNoIndex(): bool
-    {
-        return $this->noIndex;
-    }
-
-    public function setNoIndex(bool $noIndex): self
-    {
-        $this->noIndex = $noIndex;
-        return $this;
-    }
-
-    /**
-     * @Serializer\VirtualProperty(name="title")
-     */
-    public function getTitle(): ?string
-    {
-        $translation = $this->getTranslation($this->locale);
-        if (!$translation) {
-            return null;
-        }
-
-        return $translation->getTitle();
-    }
-
-    public function setTitle(?string $title): self
-    {
-        $translation = $this->getTranslation($this->locale);
-        if (!$translation) {
-            $translation = $this->createTranslation($this->locale);
-        }
-
-        $translation->setTitle($title);
-
-        return $this;
-    }
-
-    /**
-     * @Serializer\VirtualProperty(name="keywords")
-     */
-    public function getKeywords(): ?string
-    {
-        $translation = $this->getTranslation($this->locale);
-        if (!$translation) {
-            return null;
-        }
-
-        return $translation->getKeywords();
-    }
-
-    public function setKeywords(?string $keywords): self
-    {
-        $translation = $this->getTranslation($this->locale);
-        if (!$translation) {
-            $translation = $this->createTranslation($this->locale);
-        }
-
-        $translation->setKeywords($keywords);
-
-        return $this;
-    }
-
-    /**
-     * @Serializer\VirtualProperty(name="canonicalUrl")
-     */
-    public function getCanonicalUrl(): ?string
-    {
-        $translation = $this->getTranslation($this->locale);
-        if (!$translation) {
-            return null;
-        }
-
-        return $translation->getCanonicalUrl();
-    }
-
-    public function setCanonicalUrl(?string $canonicalUrl): self
-    {
-        $translation = $this->getTranslation($this->locale);
-        if (!$translation) {
-            $translation = $this->createTranslation($this->locale);
-        }
-
-        $translation->setCanonicalUrl($canonicalUrl);
-
-        return $this;
-    }
-
-    /**
-     * @Serializer\VirtualProperty(name="description")
-     */
-    public function getDescription(): ?string
-    {
-        $translation = $this->getTranslation($this->locale);
-        if (!$translation) {
-            return null;
-        }
-
-        return $translation->getDescription();
-    }
-
-    public function setDescription(?string $description): self
-    {
-        $translation = $this->getTranslation($this->locale);
-        if (!$translation) {
-            $translation = $this->createTranslation($this->locale);
-        }
-
-        $translation->setDescription($description);
-
-        return $this;
-    }
-
-    public function getLocale(): string
-    {
-        return $this->locale;
-    }
-
-    public function setLocale(string $locale): self
-    {
-        $this->locale = $locale;
-
         return $this;
     }
 

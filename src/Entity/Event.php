@@ -101,7 +101,6 @@ class Event implements AuditableTranslationInterface
     public function setEnabled(bool $enabled): self
     {
         $this->enabled = $enabled;
-
         return $this;
     }
 
@@ -113,7 +112,6 @@ class Event implements AuditableTranslationInterface
     public function setStartDate(?\DateTimeImmutable $startDate): self
     {
         $this->startDate = $startDate;
-
         return $this;
     }
 
@@ -125,7 +123,6 @@ class Event implements AuditableTranslationInterface
     public function setEndDate(?\DateTimeImmutable $endDate): self
     {
         $this->endDate = $endDate;
-
         return $this;
     }
 
@@ -137,7 +134,6 @@ class Event implements AuditableTranslationInterface
     public function setLocation(?Location $location): self
     {
         $this->location = $location;
-
         return $this;
     }
 
@@ -178,7 +174,6 @@ class Event implements AuditableTranslationInterface
     public function setImage(?MediaInterface $image): self
     {
         $this->image = $image;
-
         return $this;
     }
 
@@ -203,7 +198,6 @@ class Event implements AuditableTranslationInterface
         }
 
         $translation->setTitle($title);
-
         return $this;
     }
 
@@ -228,7 +222,6 @@ class Event implements AuditableTranslationInterface
         }
 
         $translation->setTeaser($teaser);
-
         return $this;
     }
 
@@ -253,7 +246,6 @@ class Event implements AuditableTranslationInterface
         }
 
         $translation->setRoutePath($routePath);
-
         return $this;
     }
 
@@ -278,7 +270,6 @@ class Event implements AuditableTranslationInterface
         }
 
         $translation->setDescription($description);
-
         return $this;
     }
 
@@ -295,7 +286,6 @@ class Event implements AuditableTranslationInterface
     public function setEventSeo(?EventSeo $eventSeo): self
     {
         $this->eventSeo = $eventSeo;
-
         return $this;
     }
 
@@ -310,14 +300,12 @@ class Event implements AuditableTranslationInterface
     public function setExt(array $ext): self
     {
         $this->ext = $ext;
-
         return $this;
     }
 
     public function addExt(string $key, $value): self
     {
         $this->ext[$key] = $value;
-
         return $this;
     }
 
@@ -335,7 +323,6 @@ class Event implements AuditableTranslationInterface
     {
         $this->locale = $locale;
         $this->propagateLocale($locale);
-
         return $this;
     }
 
@@ -360,7 +347,6 @@ class Event implements AuditableTranslationInterface
     {
         $translation = new EventTranslation($this, $locale);
         $this->translations->set($locale, $translation);
-
         return $translation;
     }
 
@@ -369,7 +355,6 @@ class Event implements AuditableTranslationInterface
         $eventSeo = $this->getEventSeo();
         $eventSeo->setLocale($locale);
         $this->initExt();
-
         return $this;
     }
 
