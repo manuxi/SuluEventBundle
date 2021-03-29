@@ -12,11 +12,6 @@ interface UserBlameTranslationInterface
     public function getCreator(): ?int;
 
     /**
-     * Alias for getCreator().
-     */
-    public function getAuthor(): ?int;
-
-    /**
      * Returns the user id from the translation object that changed it the last time.
      */
     public function getChanger(): ?int;

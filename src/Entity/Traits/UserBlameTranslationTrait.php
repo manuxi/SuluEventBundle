@@ -23,14 +23,6 @@ trait UserBlameTranslationTrait
     }
 
     /**
-     * @Serializer\VirtualProperty(name="author")
-     */
-    public function getAuthor(): ?int
-    {
-        return $this->getCreator();
-    }
-
-    /**
      * @Serializer\VirtualProperty(name="changer")
      */
     public function getChanger(): ?int

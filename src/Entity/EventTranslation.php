@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Manuxi\SuluEventBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Sulu\Component\Persistence\Model\AuditableInterface;
-use Sulu\Component\Persistence\Model\AuditableTrait;
+use Manuxi\SuluEventBundle\Entity\Interfaces\AuditableInterface;
+use Manuxi\SuluEventBundle\Entity\Traits\AuditableTrait;
 
 /**
  * @ORM\Entity

@@ -23,14 +23,6 @@ trait TimestampableTranslationTrait
     }
 
     /**
-     * @Serializer\VirtualProperty(name="authored")
-     */
-    public function getAuthored(): ?\DateTime
-    {
-        return $this->getCreated();
-    }
-
-    /**
      * @Serializer\VirtualProperty(name="changed")
      */
     public function getChanged(): ?\DateTime
