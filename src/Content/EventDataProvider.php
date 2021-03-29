@@ -20,6 +20,7 @@ class EventDataProvider extends BaseDataProvider
                 ->enableSorting(
                     [
                         ['column' => 'startDate', 'title' => 'sulu_event.start_date'],
+                        ['column' => 'translation.title', 'title' => 'sulu_admin.title'],
                     ]
                 )
                 ->getConfiguration();

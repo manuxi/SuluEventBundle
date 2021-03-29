@@ -26,7 +26,10 @@ use Sulu\Component\SmartContent\Orm\DataProviderRepositoryTrait;
  */
 class EventRepository extends ServiceEntityRepository implements DataProviderRepositoryInterface
 {
-    use DataProviderRepositoryTrait;
+    use DataProviderRepositoryTrait {
+        findByFilters as protected parentFindByFilters;
+        findByFiltersIds as protected parentFindByFiltersIds;
+    }
 
     public function __construct(ManagerRegistry $registry)
     {
@@ -95,8 +98,18 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
      * @noinspection PhpMissingReturnTypeInspection
      * @noinspection PhpMissingParamTypeInspection
      */
-    public function findByFilters($filters, $page, $pageSize, $limit, $locale, $options = [])
-    {
+    public function findByFilters(
+        $filters,
+        $page,
+        $pageSize,
+        $limit,
+        $locale,
+        $options = [],
+        ?UserInterface $user = null,
+        $entityClass = null,
+        $entityAlias = null,
+        $permission = null
+    ) {
         $entities = $this->parentFindByFilters($filters, $page, $pageSize, $limit, $locale, $options);
 
         return \array_map(
@@ -116,25 +129,21 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
     }
 
     /**
-     * Copied temporarily from DataProviderRepositoryTrait since the following code threw
-     * ReflectionException 'The parameter specified by its name could not be found':
-     * use DataProviderRepositoryTrait {
-     *   findByFilters as parentFindByFilters;
-     * }
-     *
-     * @param array $filters array of filters: tags, tagOperator
-     * @param int $page
-     * @param int $pageSize
-     * @param int $limit
-     * @param string $locale
-     * @param mixed[] $options
+     * @param $filters
+     * @param $page
+     * @param $pageSize
+     * @param $limit
+     * @param $locale
+     * @param array $options
      * @param UserInterface|null $user
      * @param null $entityClass
      * @param null $entityAlias
      * @param null $permission
-     * @return object[]
+     * @return array
+     *
+     * @see https://github.com/sulu/sulu-workshop/issues/33
      */
-    public function parentFindByFilters(
+    private function findByFiltersIds(
         $filters,
         $page,
         $pageSize,
@@ -146,22 +155,12 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
         $entityAlias = null,
         $permission = null
     ) {
-        $alias = 'entity';
-        $queryBuilder = $this->createQueryBuilder($alias)
-            ->addSelect($alias)
-            ->where($alias . '.id IN (:ids)')
-            ->orderBy($alias . '.id', 'ASC');
-        $this->appendJoins($queryBuilder, $alias, $locale);
-
-        if (isset($filters['sortBy'])) {
-            $sortMethod = $filters['sortMethod'] ?? 'asc';
-            $sortBy = false !== \strpos($filters['sortBy'], '.') ? $filters['sortBy'] : $alias . '.' . $filters['sortBy'];
-
-            $this->appendSortBy($sortBy, $sortMethod, $queryBuilder, $alias, $locale);
+        // a little bit hacky, but it's a workaround until the issue is fixed...
+        if (isset($filters['sortBy']) && false !== \strpos($filters['sortBy'], 'translation')) {
+            unset($filters['sortBy']);
         }
 
-        $query = $queryBuilder->getQuery();
-        $ids = $this->findByFiltersIds(
+        return $this->parentFindByFiltersIds(
             $filters,
             $page,
             $pageSize,
@@ -173,8 +172,5 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
             $entityAlias,
             $permission
         );
-        $query->setParameter('ids', $ids);
-
-        return $query->getResult();
     }
 }
