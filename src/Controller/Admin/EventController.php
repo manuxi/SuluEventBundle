@@ -144,6 +144,7 @@ class EventController extends AbstractRestController implements ClassResourceInt
         }
 
         $this->mapDataToEntity($request->request->all(), $eventEntity);
+        $this->mapSettingsToEntity($request->request->all(), $eventEntity);
         $this->updateRoutesForEntity($eventEntity);
         $this->saveEvent($eventEntity);
 
@@ -213,17 +214,6 @@ class EventController extends AbstractRestController implements ClassResourceInt
             );
         }
 
-        //settings (author, authored) changeable
-        $authorId = $data['author'] ?? null;
-        $author = $this->userRepository->findUserById($authorId);
-        if ($author) {
-            $entity->setAuthor($author);
-        }
-
-        $authored = $data['authored'] ?? null;
-        if ($authored) {
-            $entity->setAuthored(new \DateTime($authored));
-        }
     }
 
     /**
@@ -251,6 +241,21 @@ class EventController extends AbstractRestController implements ClassResourceInt
 
         $hideInSitemap = $data['ext']['seo']['hideInSitemap'] ?? false;
         $entity->setHideInSitemap($hideInSitemap);
+    }
+
+    protected function mapSettingsToEntity(array $data, Event $entity): void
+    {
+        //settings (author, authored) changeable
+        $authorId = $data['author'] ?? null;
+        $author = $this->userRepository->findUserById($authorId);
+        if ($author) {
+            $entity->setAuthor($author);
+        }
+
+        $authored = $data['authored'] ?? null;
+        if ($authored) {
+            $entity->setAuthored(new \DateTime($authored));
+        }
     }
 
     protected function loadEvent(int $id, Request $request): ?Event
