@@ -86,14 +86,14 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
                     'resources' => [
                         'events' => [
                             'routes' => [
-                                'list' => 'app.get_events',
-                                'detail' => 'app.get_event',
+                                'list' => 'sulu_event.get_events',
+                                'detail' => 'sulu_event.get_event',
                             ],
                         ],
                         'locations' => [
                             'routes' => [
-                                'list' => 'app.get_locations',
-                                'detail' => 'app.get_location',
+                                'list' => 'sulu_event.get_locations',
+                                'detail' => 'sulu_event.get_location',
                             ],
                         ],
                     ],

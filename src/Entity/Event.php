@@ -8,6 +8,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation as Serializer;
+use Manuxi\SuluEventBundle\Entity\Interfaces\AuditableTranslationInterface;
+use Manuxi\SuluEventBundle\Entity\Traits\AuditableTranslationTrait;
 use Sulu\Bundle\MediaBundle\Entity\MediaInterface;
 
 /**
@@ -15,14 +17,13 @@ use Sulu\Bundle\MediaBundle\Entity\MediaInterface;
  * @ORM\Table(name="app_event")
  * @ORM\Entity(repositoryClass="Manuxi\SuluEventBundle\Repository\EventRepository")
  */
-class Event
+class Event implements AuditableTranslationInterface
 {
+    use AuditableTranslationTrait;
+
     public const RESOURCE_KEY = 'events';
-
     public const FORM_KEY = 'event_details';
-
     public const LIST_KEY = 'events';
-
     public const SECURITY_CONTEXT = 'sulu.events.events';
 
     /**
@@ -64,10 +65,12 @@ class Event
      * @var Collection<string, EventTranslation>
      *
      * @ORM\OneToMany(targetEntity="Manuxi\SuluEventBundle\Entity\EventTranslation", mappedBy="event", cascade={"ALL"}, indexBy="locale")
+     *
+     * @Serializer\Exclude
      */
     private $translations;
 
-    private $locale = 'en';
+    protected $locale = 'en';
 
     private $ext = [];
 
@@ -177,19 +180,6 @@ class Event
         $this->image = $image;
 
         return $this;
-    }
-
-    /**
-     * @Serializer\VirtualProperty(name="created")
-     */
-    public function getCreated(): ?\DateTime
-    {
-        $translation = $this->getTranslation($this->locale);
-        if (!$translation) {
-            return null;
-        }
-
-        return $translation->getCreated();
     }
 
     /**
@@ -309,6 +299,9 @@ class Event
         return $this;
     }
 
+    /**
+     * @Serializer\VirtualProperty(name="ext")
+     */
     public function getExt(): array
     {
         return $this->ext;
