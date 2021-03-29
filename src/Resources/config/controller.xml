@@ -26,6 +26,7 @@
             <argument type="service" id="sulu_event.doctrine_list_representation_factory"/>
             <argument type="service" id="doctrine.orm.default_entity_manager"/>
             <argument type="service" id="fos_rest.view_handler.default"/>
+            <argument type="service" id="sulu_security.user_repository"/>
             <argument type="service" id="security.token_storage"/>
 
             <tag name="sulu.context" context="admin"/>

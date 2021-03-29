@@ -22,6 +22,7 @@ use FOS\RestBundle\View\ViewHandlerInterface;
 use Sulu\Bundle\MediaBundle\Entity\MediaRepositoryInterface;
 use Sulu\Bundle\RouteBundle\Entity\RouteRepositoryInterface;
 use Sulu\Bundle\RouteBundle\Manager\RouteManagerInterface;
+use Sulu\Bundle\SecurityBundle\Entity\UserRepository;
 use Sulu\Component\Rest\AbstractRestController;
 use Sulu\Component\Security\SecuredControllerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -42,6 +43,7 @@ class EventController extends AbstractRestController implements ClassResourceInt
     private $entityManager;
     private $routeManager;
     private $routeRepository;
+    private $userRepository;
 
     public function __construct(
         EventRepository $eventRepository,
@@ -53,6 +55,7 @@ class EventController extends AbstractRestController implements ClassResourceInt
         DoctrineListRepresentationFactory $doctrineListRepresentationFactory,
         EntityManagerInterface $entityManager,
         ViewHandlerInterface $viewHandler,
+        UserRepository $userRepository,
         ?TokenStorageInterface $tokenStorage = null
     ) {
         parent::__construct($viewHandler, $tokenStorage);
@@ -64,6 +67,7 @@ class EventController extends AbstractRestController implements ClassResourceInt
         $this->locationRepository                = $locationRepository;
         $this->routeManager                      = $routeManager;
         $this->routeRepository                   = $routeRepository;
+        $this->userRepository                    = $userRepository;
     }
 
     public function cgetAction(Request $request): Response
@@ -207,6 +211,18 @@ class EventController extends AbstractRestController implements ClassResourceInt
             $entity->setLocation(
                 $this->locationRepository->findById((int) $locationId)
             );
+        }
+
+        //settings (author, authored) changeable
+        $authorId = $data['author'] ?? null;
+        $author = $this->userRepository->findUserById($authorId);
+        if ($author) {
+            $entity->setAuthor($author);
+        }
+
+        $authored = $data['authored'] ?? null;
+        if ($authored) {
+            $entity->setAuthored(new \DateTime($authored));
         }
     }
 
