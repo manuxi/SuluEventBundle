@@ -93,5 +93,12 @@
             <tag name="doctrine.event_subscriber"/>
         </service>
 
+        <service id="sulu_event.model.event" class="Manuxi\SuluEventBundle\Entity\Models\EventModel">
+            <argument type="service" id="sulu_event.repository.event"/>
+            <argument type="service" id="sulu_event.repository.location"/>
+            <argument type="service" id="sulu.repository.media"/>
+            <argument type="service" id="sulu_security.user_repository"/>
+        </service>
+
     </services>
 </container>

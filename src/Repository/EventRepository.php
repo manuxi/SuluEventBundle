@@ -64,10 +64,11 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    public function save(Event $event): void
+    public function save(Event $event): Event
     {
         $this->getEntityManager()->persist($event);
         $this->getEntityManager()->flush();
+        return $event;
     }
 
     public function findById(int $id, string $locale): ?Event

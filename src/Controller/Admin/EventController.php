@@ -7,10 +7,8 @@ namespace Manuxi\SuluEventBundle\Controller\Admin;
 use Manuxi\SuluEventBundle\Common\DoctrineListRepresentationFactory;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\EventSeo;
-use Manuxi\SuluEventBundle\Repository\EventRepository;
+use Manuxi\SuluEventBundle\Entity\Models\EventModel;
 use Manuxi\SuluEventBundle\Repository\EventSeoRepository;
-use Manuxi\SuluEventBundle\Repository\LocationRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use FOS\RestBundle\Controller\Annotations as Rest;
@@ -19,15 +17,13 @@ use FOS\RestBundle\Routing\ClassResourceInterface;
 use FOS\RestBundle\View\ViewHandlerInterface;
 //use HandcraftedInTheAlps\RestRoutingBundle\Controller\Annotations\RouteResource;
 //use HandcraftedInTheAlps\RestRoutingBundle\Routing\ClassResourceInterface;
-use Sulu\Bundle\MediaBundle\Entity\MediaRepositoryInterface;
 use Sulu\Bundle\RouteBundle\Entity\RouteRepositoryInterface;
 use Sulu\Bundle\RouteBundle\Manager\RouteManagerInterface;
-use Sulu\Bundle\SecurityBundle\Entity\UserRepository;
 use Sulu\Component\Rest\AbstractRestController;
+use Sulu\Component\Rest\Exception\EntityNotFoundException;
 use Sulu\Component\Security\SecuredControllerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 /**
@@ -35,39 +31,27 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
  */
 class EventController extends AbstractRestController implements ClassResourceInterface, SecuredControllerInterface
 {
-    private $locationRepository;
-    private $eventRepository;
     private $eventSeoRepository;
-    private $mediaRepository;
     private $doctrineListRepresentationFactory;
-    private $entityManager;
     private $routeManager;
     private $routeRepository;
-    private $userRepository;
+    private $eventModel;
 
     public function __construct(
-        EventRepository $eventRepository,
+        EventModel $eventModel,
         EventSeoRepository $eventSeoRepository,
-        MediaRepositoryInterface $mediaRepository,
         RouteManagerInterface $routeManager,
         RouteRepositoryInterface $routeRepository,
-        LocationRepository $locationRepository,
         DoctrineListRepresentationFactory $doctrineListRepresentationFactory,
-        EntityManagerInterface $entityManager,
         ViewHandlerInterface $viewHandler,
-        UserRepository $userRepository,
         ?TokenStorageInterface $tokenStorage = null
     ) {
         parent::__construct($viewHandler, $tokenStorage);
-        $this->eventRepository                   = $eventRepository;
+        $this->eventModel                        = $eventModel;
         $this->eventSeoRepository                = $eventSeoRepository;
-        $this->mediaRepository                   = $mediaRepository;
         $this->doctrineListRepresentationFactory = $doctrineListRepresentationFactory;
-        $this->entityManager                     = $entityManager;
-        $this->locationRepository                = $locationRepository;
         $this->routeManager                      = $routeManager;
         $this->routeRepository                   = $routeRepository;
-        $this->userRepository                    = $userRepository;
     }
 
     public function cgetAction(Request $request): Response
@@ -82,28 +66,26 @@ class EventController extends AbstractRestController implements ClassResourceInt
         return $this->handleView($this->view($listRepresentation));
     }
 
+    /**
+     * @throws EntityNotFoundException
+     */
     public function getAction(int $id, Request $request): Response
     {
-        $entity = $this->loadEvent($id, $request);
-        if (!$entity) {
-            throw new NotFoundHttpException();
-        }
-
+        $entity = $this->eventModel->getEvent($id, $request);
         return $this->handleView($this->view($entity));
     }
 
     /**
-     * @throws \Exception
+     * @throws EntityNotFoundException
+     * @throws ORMException
+     * @throws OptimisticLockException
      */
     public function postAction(Request $request): Response
     {
-        //in the first step we'll _only_ create a Event object (no Seo, Taxonomy, etc.)
-        $eventEntity = $this->createEvent($request);
-        $this->mapDataToEntity($request->request->all(), $eventEntity);
-        $this->updateRoutesForEntity($eventEntity);
-        $this->saveEvent($eventEntity);
+        $event = $this->eventModel->createEvent($request);
+        $this->updateRoutesForEntity($event);
 
-        return $this->handleView($this->view($eventEntity, 201));
+        return $this->handleView($this->view($event, 201));
     }
 
     /**
@@ -111,109 +93,49 @@ class EventController extends AbstractRestController implements ClassResourceInt
      *
      * @throws ORMException
      * @throws OptimisticLockException
+     * @throws EntityNotFoundException
      */
     public function postTriggerAction(int $id, Request $request): Response
     {
-        $event = $this->eventRepository->findById($id, (string) $this->getLocale($request));
-        if (!$event) {
-            throw new NotFoundHttpException();
-        }
+        $event = $this->eventModel->enableEvent($id, $request);
+        return $this->handleView($this->view($event));
+    }
 
-        switch ($request->query->get('action')) {
-            case 'enable':
-                $event->setEnabled(true);
-                break;
-            case 'disable':
-                $event->setEnabled(false);
-                break;
-        }
+    /**
+     * @throws EntityNotFoundException
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function putAction(int $id, Request $request): Response
+    {
+        $event = $this->eventModel->updateEvent($id, $request);
+        $this->updateRoutesForEntity($event);
 
-        $this->eventRepository->save($event);
+        //do we have an EventSeo?
+        $eventSeoEntity = $event->getEventSeo();
+        $this->mapDataToEventSeoEntity($request->request->all(), $eventSeoEntity);
+        $this->saveEventSeo($eventSeoEntity);
 
         return $this->handleView($this->view($event));
     }
 
     /**
-     * @throws \Exception
-     */
-    public function putAction(int $id, Request $request): Response
-    {
-        $eventEntity = $this->loadEvent($id, $request);
-        if (!$eventEntity) {
-            throw new NotFoundHttpException();
-        }
-
-        $this->mapDataToEntity($request->request->all(), $eventEntity);
-        $this->mapSettingsToEntity($request->request->all(), $eventEntity);
-        $this->updateRoutesForEntity($eventEntity);
-        $this->saveEvent($eventEntity);
-
-        //do we have an EventSeo?
-        $eventSeoEntity = $eventEntity->getEventSeo();
-        $this->mapDataToEventSeoEntity($request->request->all(), $eventSeoEntity);
-        $this->saveEventSeo($eventSeoEntity);
-
-        return $this->handleView($this->view($eventEntity));
-    }
-
-    /**
+     * @throws EntityNotFoundException
      * @throws ORMException
      * @throws OptimisticLockException
      */
     public function deleteAction(int $id): Response
     {
-        $this->removeEvent($id);
+        $event = $this->eventModel->getEvent($id);
+        $this->removeRoutesForEntity($event);
 
+        $this->eventModel->deleteEvent($id);
         return $this->handleView($this->view(null, 204));
     }
 
     public function getSecurityContext(): string
     {
         return Event::SECURITY_CONTEXT;
-    }
-
-    /**
-     * @throws \Exception
-     */
-    protected function mapDataToEntity(array $data, Event $entity): void
-    {
-        $entity->setTitle($data['title']);
-        $entity->setRoutePath($data['routePath']);
-
-        $teaser = $data['teaser'] ?? null;
-        if ($teaser) {
-            $entity->setTeaser($teaser);
-        }
-
-        $description = $data['description'] ?? null;
-        if ($description) {
-            $entity->setDescription($description);
-        }
-
-        $image   = null;
-        $imageId = ($data['image']['id'] ?? null);
-        if ($imageId) {
-            $image = $this->mediaRepository->findMediaById($imageId);
-            $entity->setImage($image);
-        }
-
-        $startDate = $data['startDate'] ?? null;
-        if ($startDate) {
-            $entity->setStartDate(new \DateTimeImmutable($startDate));
-        }
-
-        $endDate = $data['endDate'] ?? null;
-        if ($endDate) {
-            $entity->setEndDate(new \DateTimeImmutable($endDate));
-        }
-
-        $locationId = $data['locationId'] ?? null;
-        if ($locationId) {
-            $entity->setLocation(
-                $this->locationRepository->findById((int) $locationId)
-            );
-        }
-
     }
 
     /**
@@ -243,52 +165,6 @@ class EventController extends AbstractRestController implements ClassResourceInt
         $entity->setHideInSitemap($hideInSitemap);
     }
 
-    protected function mapSettingsToEntity(array $data, Event $entity): void
-    {
-        //settings (author, authored) changeable
-        $authorId = $data['author'] ?? null;
-        $author = $this->userRepository->findUserById($authorId);
-        if ($author) {
-            $entity->setAuthor($author);
-        }
-
-        $authored = $data['authored'] ?? null;
-        if ($authored) {
-            $entity->setAuthored(new \DateTime($authored));
-        }
-    }
-
-    protected function loadEvent(int $id, Request $request): ?Event
-    {
-        return $this->eventRepository->findById($id, (string) $this->getLocale($request));
-    }
-
-    protected function createEvent(Request $request): Event
-    {
-        return $this->eventRepository->create((string) $this->getLocale($request));
-    }
-
-    /**
-     * @throws ORMException
-     * @throws OptimisticLockException
-     */
-    protected function saveEvent(Event $entity): void
-    {
-        $this->eventRepository->save($entity);
-    }
-
-    /**
-     * @throws ORMException
-     * @throws OptimisticLockException
-     */
-    protected function removeEvent(int $id): void
-    {
-        /** @var Event $event */
-        $event =  $this->eventRepository->find($id);
-        $this->removeRoutesForEntity($event);
-
-        $this->eventRepository->remove($id);
-    }
 
     /** @noinspection PhpUnused */
     protected function loadEventSeo(int $id, Request $request): ?EventSeo
