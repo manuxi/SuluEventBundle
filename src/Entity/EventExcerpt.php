@@ -7,23 +7,23 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\Mapping\JoinColumn;
 use JMS\Serializer\Annotation as Serializer;
-use Manuxi\SuluEventBundle\Entity\Interfaces\SeoInterface;
-use Manuxi\SuluEventBundle\Entity\Interfaces\SeoTranslatableInterface;
-use Manuxi\SuluEventBundle\Entity\Traits\SeoTrait;
-use Manuxi\SuluEventBundle\Entity\Traits\SeoTranslatableTrait;
+use Manuxi\SuluEventBundle\Entity\Interfaces\ExcerptInterface;
+use Manuxi\SuluEventBundle\Entity\Interfaces\ExcerptTranslatableInterface;
+use Manuxi\SuluEventBundle\Entity\Traits\ExcerptTrait;
+use Manuxi\SuluEventBundle\Entity\Traits\ExcerptTranslatableTrait;
 
 /**
  * @ORM\Entity
- * @ORM\Table(name="app_event_seo")
- * @ORM\Entity(repositoryClass="Manuxi\SuluEventBundle\Repository\EventSeoRepository")
+ * @ORM\Table(name="app_event_excerpt")
+ * @ORM\Entity(repositoryClass="Manuxi\SuluEventBundle\Repository\EventExcerptRepository")
  */
-class EventSeo implements SeoInterface, SeoTranslatableInterface
+class EventExcerpt implements ExcerptInterface, ExcerptTranslatableInterface
 {
-    use SeoTrait;
-    use SeoTranslatableTrait;
+    use ExcerptTrait;
+    use ExcerptTranslatableTrait;
 
     /**
-     * @ORM\OneToOne(targetEntity="Manuxi\SuluEventBundle\Entity\Event", inversedBy="eventSeo", cascade={"persist", "remove"})
+     * @ORM\OneToOne(targetEntity="Manuxi\SuluEventBundle\Entity\Event", inversedBy="eventExcerpt", cascade={"persist", "remove"})
      * @JoinColumn(name="event_id", referencedColumnName="id", nullable=false)
      *
      * @Serializer\Exclude
@@ -33,7 +33,7 @@ class EventSeo implements SeoInterface, SeoTranslatableInterface
     /**
      * @var Collection<string, EventTranslation>
      *
-     * @ORM\OneToMany(targetEntity="EventSeoTranslation", mappedBy="eventSeo", cascade={"ALL"}, indexBy="locale")
+     * @ORM\OneToMany(targetEntity="EventExcerptTranslation", mappedBy="eventExcerpt", cascade={"ALL"}, indexBy="locale")
      *
      * @Serializer\Exclude
      */
@@ -56,14 +56,14 @@ class EventSeo implements SeoInterface, SeoTranslatableInterface
     }
 
     /**
-     * @return EventSeoTranslation[]
+     * @return EventExcerptTranslation[]
      */
     public function getTranslations(): array
     {
         return $this->translations->toArray();
     }
 
-    protected function getTranslation(string $locale): ?EventSeoTranslation
+    protected function getTranslation(string $locale): ?EventExcerptTranslation
     {
         if (!$this->translations->containsKey($locale)) {
             return null;
@@ -72,9 +72,9 @@ class EventSeo implements SeoInterface, SeoTranslatableInterface
         return $this->translations->get($locale);
     }
 
-    protected function createTranslation(string $locale): EventSeoTranslation
+    protected function createTranslation(string $locale): EventExcerptTranslation
     {
-        $translation = new EventSeoTranslation($this, $locale);
+        $translation = new EventExcerptTranslation($this, $locale);
         $this->translations->set($locale, $translation);
 
         return $translation;

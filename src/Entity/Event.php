@@ -41,6 +41,13 @@ class Event implements AuditableTranslationInterface
     private $eventSeo = null;
 
     /**
+     * @ORM\OneToOne(targetEntity="Manuxi\SuluEventBundle\Entity\EventExcerpt", mappedBy="event", cascade={"persist", "remove"})
+     *
+     * @Serializer\Exclude
+     */
+    private $eventExcerpt = null;
+
+    /**
      * @ORM\Column(type="boolean", nullable=false)
      */
     private $enabled;
@@ -289,6 +296,22 @@ class Event implements AuditableTranslationInterface
         return $this;
     }
 
+    public function getEventExcerpt(): EventExcerpt
+    {
+        if (!$this->eventExcerpt instanceof EventExcerpt) {
+            $this->eventExcerpt = new EventExcerpt();
+            $this->eventExcerpt->setEvent($this);
+        }
+
+        return $this->eventExcerpt;
+    }
+
+    public function setEventExcerpt(?EventExcerpt $eventExcerpt): self
+    {
+        $this->eventExcerpt = $eventExcerpt;
+        return $this;
+    }
+
     /**
      * @Serializer\VirtualProperty(name="ext")
      */
@@ -354,6 +377,8 @@ class Event implements AuditableTranslationInterface
     {
         $eventSeo = $this->getEventSeo();
         $eventSeo->setLocale($locale);
+        $eventExcerpt = $this->getEventExcerpt();
+        $eventExcerpt->setLocale($locale);
         $this->initExt();
         return $this;
     }
@@ -362,6 +387,9 @@ class Event implements AuditableTranslationInterface
     {
         if (!$this->hasExt('seo')) {
             $this->addExt('seo', $this->getEventSeo());
+        }
+        if (!$this->hasExt('excerpt')) {
+            $this->addExt('excerpt', $this->getEventExcerpt());
         }
 
         return $this;

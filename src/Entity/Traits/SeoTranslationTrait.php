@@ -21,22 +21,22 @@ trait SeoTranslationTrait
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private $title = null;
+    private $title;
 
     /**
      * @ORM\Column(type="text", nullable=true)
      */
-    private $canonicalUrl = null;
+    private $canonicalUrl;
 
     /**
      * @ORM\Column(type="text", nullable=true)
      */
-    private $keywords = null;
+    private $keywords;
 
     /**
      * @ORM\Column(type="text", nullable=true)
      */
-    private $description = null;
+    private $description;
 
     public function getId(): ?int
     {
