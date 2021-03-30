@@ -6,9 +6,8 @@ namespace Manuxi\SuluEventBundle\Controller\Admin;
 
 use Manuxi\SuluEventBundle\Common\DoctrineListRepresentationFactory;
 use Manuxi\SuluEventBundle\Entity\Event;
-use Manuxi\SuluEventBundle\Entity\EventSeo;
 use Manuxi\SuluEventBundle\Entity\Models\EventModel;
-use Manuxi\SuluEventBundle\Repository\EventSeoRepository;
+use Manuxi\SuluEventBundle\Entity\Models\EventSeoModel;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use FOS\RestBundle\Controller\Annotations as Rest;
@@ -31,7 +30,7 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
  */
 class EventController extends AbstractRestController implements ClassResourceInterface, SecuredControllerInterface
 {
-    private $eventSeoRepository;
+    private $eventSeoModel;
     private $doctrineListRepresentationFactory;
     private $routeManager;
     private $routeRepository;
@@ -39,7 +38,7 @@ class EventController extends AbstractRestController implements ClassResourceInt
 
     public function __construct(
         EventModel $eventModel,
-        EventSeoRepository $eventSeoRepository,
+        EventSeoModel $eventSeoModel,
         RouteManagerInterface $routeManager,
         RouteRepositoryInterface $routeRepository,
         DoctrineListRepresentationFactory $doctrineListRepresentationFactory,
@@ -48,7 +47,7 @@ class EventController extends AbstractRestController implements ClassResourceInt
     ) {
         parent::__construct($viewHandler, $tokenStorage);
         $this->eventModel                        = $eventModel;
-        $this->eventSeoRepository                = $eventSeoRepository;
+        $this->eventSeoModel                     = $eventSeoModel;
         $this->doctrineListRepresentationFactory = $doctrineListRepresentationFactory;
         $this->routeManager                      = $routeManager;
         $this->routeRepository                   = $routeRepository;
@@ -111,10 +110,7 @@ class EventController extends AbstractRestController implements ClassResourceInt
         $event = $this->eventModel->updateEvent($id, $request);
         $this->updateRoutesForEntity($event);
 
-        //do we have an EventSeo?
-        $eventSeoEntity = $event->getEventSeo();
-        $this->mapDataToEventSeoEntity($request->request->all(), $eventSeoEntity);
-        $this->saveEventSeo($eventSeoEntity);
+        $this->eventSeoModel->updateEventSeo($event->getEventSeo(), $request);
 
         return $this->handleView($this->view($event));
     }
@@ -136,63 +132,6 @@ class EventController extends AbstractRestController implements ClassResourceInt
     public function getSecurityContext(): string
     {
         return Event::SECURITY_CONTEXT;
-    }
-
-    /**
-     * @param array<string, mixed> $data
-     */
-    protected function mapDataToEventSeoEntity(array $data, EventSeo $entity): void
-    {
-        $title = $data['ext']['seo']['title'] ?? null;
-        $entity->setTitle($title);
-
-        $description = $data['ext']['seo']['description'] ?? null;
-        $entity->setDescription($description);
-
-        $keywords = $data['ext']['seo']['keywords'] ?? null;
-        $entity->setKeywords($keywords);
-
-        $canonicalUrl = $data['ext']['seo']['canonicalUrl'] ?? null;
-        $entity->setCanonicalUrl($canonicalUrl);
-
-        $noIndex = $data['ext']['seo']['noIndex'] ?? false;
-        $entity->setNoIndex($noIndex);
-
-        $noFollow = $data['ext']['seo']['noFollow'] ?? false;
-        $entity->setNoFollow($noFollow);
-
-        $hideInSitemap = $data['ext']['seo']['hideInSitemap'] ?? false;
-        $entity->setHideInSitemap($hideInSitemap);
-    }
-
-
-    /** @noinspection PhpUnused */
-    protected function loadEventSeo(int $id, Request $request): ?EventSeo
-    {
-        return $this->eventSeoRepository->findById($id, (string) $this->getLocale($request));
-    }
-
-    protected function createEventSeo(Request $request): EventSeo
-    {
-        return $this->eventSeoRepository->create((string) $this->getLocale($request));
-    }
-
-    /**
-     * @throws ORMException
-     * @throws OptimisticLockException
-     */
-    protected function saveEventSeo(EventSeo $entity): void
-    {
-        $this->eventSeoRepository->save($entity);
-    }
-
-    /**
-     * @throws ORMException
-     * @throws OptimisticLockException
-     */
-    protected function removeEventSeo(int $id): void
-    {
-        $this->eventSeoRepository->remove($id);
     }
 
     protected function updateRoutesForEntity(Event $entity): void

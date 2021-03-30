@@ -24,13 +24,12 @@ trait ArrayPropertyTrait
             }
             return $default;
         } else {
-            if(!\array_key_exists($currentKey, $data)) {
+            if(!\array_key_exists($currentKey, $data) || !\is_array($data[$currentKey])) {
                 return null;
-            }else{
+            } else {
                 return $this->getPropertyMulti($data[$currentKey], $keys, $default);
             }
         }
     }
-
 
 }

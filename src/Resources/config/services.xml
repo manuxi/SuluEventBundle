@@ -100,5 +100,9 @@
             <argument type="service" id="sulu_security.user_repository"/>
         </service>
 
+        <service id="sulu_event.model.event_seo" class="Manuxi\SuluEventBundle\Entity\Models\EventSeoModel">
+            <argument type="service" id="sulu_event.repository.event_seo"/>
+        </service>
+
     </services>
 </container>

@@ -54,10 +54,11 @@ class EventSeoRepository extends ServiceEntityRepository
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    public function save(EventSeo $eventSeo): void
+    public function save(EventSeo $eventSeo): EventSeo
     {
         $this->getEntityManager()->persist($eventSeo);
         $this->getEntityManager()->flush();
+        return $eventSeo;
     }
 
     public function findById(int $id, string $locale): ?EventSeo
