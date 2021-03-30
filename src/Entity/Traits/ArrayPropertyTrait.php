@@ -6,21 +6,27 @@ namespace Manuxi\SuluEventBundle\Entity\Traits;
 
 trait ArrayPropertyTrait
 {
-    protected function getProperty(array $data, string $key, string $default = null): ?string
+    /**
+     * @return mixed|string|null
+     */
+    protected function getProperty(array $data, string $key, string $default = null)
     {
         if (\array_key_exists($key, $data)) {
-            return (string)$data[$key];
+            return $data[$key];
         }
 
         return $default;
     }
 
-    protected function getPropertyMulti(array $data, array $keys, string $default = null): ?string
+    /**
+     * @return mixed|string|null
+     */
+    protected function getPropertyMulti(array $data, array $keys, string $default = null)
     {
         $currentKey = array_shift($keys);
         if(0 === count($keys)){
             if (\array_key_exists($currentKey, $data)) {
-                return (string)$data[$currentKey];
+                return $data[$currentKey];
             }
             return $default;
         } else {

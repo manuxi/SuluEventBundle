@@ -45,6 +45,11 @@
             <argument type="service" id="doctrine"/>
         </service>
 
+        <service id="sulu_event.repository.event_excerpt" class="Manuxi\SuluEventBundle\Repository\EventExcerptRepository"
+                 public="true" lazy="true">
+            <argument type="service" id="doctrine"/>
+        </service>
+
         <service id="sulu_event.single_event_selection" class="Manuxi\SuluEventBundle\Content\Type\SingleEventSelection">
             <argument type="service" id="doctrine.orm.default_entity_manager"/>
 
@@ -102,6 +107,11 @@
 
         <service id="sulu_event.model.event_seo" class="Manuxi\SuluEventBundle\Entity\Models\EventSeoModel">
             <argument type="service" id="sulu_event.repository.event_seo"/>
+        </service>
+
+        <service id="sulu_event.model.event_excerpt" class="Manuxi\SuluEventBundle\Entity\Models\EventExcerptModel">
+            <argument type="service" id="sulu_event.repository.event_excerpt"/>
+            <argument type="service" id="sulu_category.category_manager"/>
         </service>
 
     </services>

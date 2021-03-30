@@ -6,6 +6,7 @@ namespace Manuxi\SuluEventBundle\Controller\Admin;
 
 use Manuxi\SuluEventBundle\Common\DoctrineListRepresentationFactory;
 use Manuxi\SuluEventBundle\Entity\Event;
+use Manuxi\SuluEventBundle\Entity\Models\EventExcerptModel;
 use Manuxi\SuluEventBundle\Entity\Models\EventModel;
 use Manuxi\SuluEventBundle\Entity\Models\EventSeoModel;
 use Doctrine\ORM\OptimisticLockException;
@@ -30,15 +31,17 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
  */
 class EventController extends AbstractRestController implements ClassResourceInterface, SecuredControllerInterface
 {
+    private $eventModel;
     private $eventSeoModel;
+    private $eventExcerptModel;
     private $doctrineListRepresentationFactory;
     private $routeManager;
     private $routeRepository;
-    private $eventModel;
 
     public function __construct(
         EventModel $eventModel,
         EventSeoModel $eventSeoModel,
+        EventExcerptModel $eventExcerptModel,
         RouteManagerInterface $routeManager,
         RouteRepositoryInterface $routeRepository,
         DoctrineListRepresentationFactory $doctrineListRepresentationFactory,
@@ -48,6 +51,7 @@ class EventController extends AbstractRestController implements ClassResourceInt
         parent::__construct($viewHandler, $tokenStorage);
         $this->eventModel                        = $eventModel;
         $this->eventSeoModel                     = $eventSeoModel;
+        $this->eventExcerptModel                 = $eventExcerptModel;
         $this->doctrineListRepresentationFactory = $doctrineListRepresentationFactory;
         $this->routeManager                      = $routeManager;
         $this->routeRepository                   = $routeRepository;
@@ -110,7 +114,11 @@ class EventController extends AbstractRestController implements ClassResourceInt
         $event = $this->eventModel->updateEvent($id, $request);
         $this->updateRoutesForEntity($event);
 
+
         $this->eventSeoModel->updateEventSeo($event->getEventSeo(), $request);
+        $this->eventExcerptModel->updateEventExcerpt($event->getEventExcerpt(), $request);
+
+        dd($request->request->all());
 
         return $this->handleView($this->view($event));
     }

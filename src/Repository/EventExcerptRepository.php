@@ -54,10 +54,11 @@ class EventExcerptRepository extends ServiceEntityRepository
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    public function save(EventExcerpt $eventExcerpt): void
+    public function save(EventExcerpt $eventExcerpt): EventExcerpt
     {
         $this->getEntityManager()->persist($eventExcerpt);
         $this->getEntityManager()->flush();
+        return $eventExcerpt;
     }
 
     public function findById(int $id, string $locale): ?EventExcerpt

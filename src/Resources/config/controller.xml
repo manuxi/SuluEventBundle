@@ -19,6 +19,7 @@
                  public="true">
             <argument type="service" id="sulu_event.model.event"/>
             <argument type="service" id="sulu_event.model.event_seo"/>
+            <argument type="service" id="sulu_event.model.event_excerpt"/>
             <argument type="service" id="sulu_route.manager.route_manager"/>
             <argument type="service" id="sulu.repository.route"/>
             <argument type="service" id="sulu_event.doctrine_list_representation_factory"/>

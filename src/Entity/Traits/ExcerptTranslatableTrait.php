@@ -3,6 +3,8 @@
 namespace Manuxi\SuluEventBundle\Entity\Traits;
 
 use JMS\Serializer\Annotation as Serializer;
+use Sulu\Bundle\CategoryBundle\Entity\CategoryInterface;
+use Sulu\Bundle\TagBundle\Tag\TagInterface;
 
 trait ExcerptTranslatableTrait
 {
@@ -20,7 +22,6 @@ trait ExcerptTranslatableTrait
         if (!$translation) {
             return null;
         }
-
         return $translation->getTitle();
     }
 
@@ -30,9 +31,7 @@ trait ExcerptTranslatableTrait
         if (!$translation) {
             $translation = $this->createTranslation($this->locale);
         }
-
         $translation->setTitle($title);
-
         return $this;
     }
 
@@ -45,7 +44,6 @@ trait ExcerptTranslatableTrait
         if (!$translation) {
             return null;
         }
-
         return $translation->getMore();
     }
 
@@ -55,9 +53,7 @@ trait ExcerptTranslatableTrait
         if (!$translation) {
             $translation = $this->createTranslation($this->locale);
         }
-
         $translation->setMore($more);
-
         return $this;
     }
 
@@ -70,7 +66,6 @@ trait ExcerptTranslatableTrait
         if (!$translation) {
             return null;
         }
-
         return $translation->getDescription();
     }
 
@@ -80,9 +75,7 @@ trait ExcerptTranslatableTrait
         if (!$translation) {
             $translation = $this->createTranslation($this->locale);
         }
-
         $translation->setDescription($description);
-
         return $this;
     }
 
@@ -94,7 +87,52 @@ trait ExcerptTranslatableTrait
     public function setLocale(string $locale): self
     {
         $this->locale = $locale;
+        return $this;
+    }
 
+    /**
+     * @return CategoryInterface[]
+     * @Serializer\VirtualProperty(name="categories")
+     */
+    public function getCategories(): ?array
+    {
+        $translation = $this->getTranslation($this->locale);
+        if (!$translation) {
+            return null;
+        }
+        return $translation->getCategories();
+    }
+
+    public function addCategory(CategoryInterface $category): self
+    {
+        $translation = $this->getTranslation($this->locale);
+        if (!$translation) {
+            $translation = $this->createTranslation($this->locale);
+        }
+        $translation->addCategory($category);
+        return $this;
+    }
+
+    /**
+     * @return TagInterface[]
+     * @Serializer\VirtualProperty(name="tags")
+     */
+    public function getTags(): ?array
+    {
+        $translation = $this->getTranslation($this->locale);
+        if (!$translation) {
+            return null;
+        }
+        return $translation->getTags();
+    }
+
+    public function addTag(TagInterface $tag)
+    {
+        $translation = $this->getTranslation($this->locale);
+        if (!$translation) {
+            $translation = $this->createTranslation($this->locale);
+        }
+        $translation->addTag($tag);
         return $this;
     }
 }

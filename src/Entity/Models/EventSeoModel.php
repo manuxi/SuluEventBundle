@@ -64,6 +64,10 @@ class EventSeoModel implements EventSeoInterface
 
     private function mapDataToEventSeo(EventSeo $eventSeo, array $data): EventSeo
     {
+        $locale = $this->getProperty($data, 'locale');
+        if ($locale) {
+            $eventSeo->setLocale($locale);
+        }
         $title = $this->getProperty($data, 'title');
         if ($title) {
             $eventSeo->setTitle($title);
