@@ -36,19 +36,16 @@ Please add the following to your `routes_admin.yaml`:
 SuluEventBundle:
     resource: '@SuluEventBundle/Resources/config/routes_admin.yml'
 ```
-Last but not least the entity tables must be created in the database.
-They will be created with prefix app_:
-location, event, event_seo, event_excerpt 
-(plus the ManyToMany relation tables).
+Last but not least the schema of the database needs to be updated.  
 
-See the needed queries with:
-```console
-php bin/console doctrine:schema:update --dump-sql
-```
-Then execute the queries with:
-```console
-php bin/console doctrine:schema:update --force
-```
+Some tables will be created (prefixed):  
+location, event, event_seo, event_excerpt
+(plus some ManyToMany relation tables).  
+
+See the needed queries with `php bin/console doctrine:schema:update --dump-sql`.  
+Update the schema by executing `php bin/console doctrine:schema:update --force`.  
+
+Make sure you only process the bundles schema updates!
 
 ## 🎣 Usage
 First: Grant permissions for events. 
