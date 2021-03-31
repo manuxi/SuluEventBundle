@@ -71,6 +71,10 @@ class LocationAdmin extends Admin
         }
 
         if ($this->securityChecker->hasPermission(Event::SECURITY_CONTEXT, PermissionTypes::EDIT)) {
+            $listToolbarActions[] = new ToolbarAction('sulu_admin.export');
+        }
+
+        if ($this->securityChecker->hasPermission(Event::SECURITY_CONTEXT, PermissionTypes::EDIT)) {
 
             $listView = $this->viewBuilderFactory->createListViewBuilder(self::LIST_VIEW, '/locations')
                 ->setResourceKey(Location::RESOURCE_KEY)
