@@ -28,7 +28,6 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
 {
     use DataProviderRepositoryTrait {
         findByFilters as protected parentFindByFilters;
-        findByFiltersIds as protected parentFindByFiltersIds;
     }
 
     public function __construct(ManagerRegistry $registry)
@@ -123,55 +122,25 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
 
     protected function appendJoins(QueryBuilder $queryBuilder, string $alias, string $locale): void
     {
-        $queryBuilder->innerJoin($alias . '.translations', 'translation', Join::WITH, 'translation.locale = :locale');
-        $queryBuilder->setParameter('locale', $locale);
 
-        $queryBuilder->andWhere($alias . '.enabled = true');
     }
 
     /**
-     * @param $filters
-     * @param $page
-     * @param $pageSize
-     * @param $limit
-     * @param $locale
-     * @param array $options
-     * @param UserInterface|null $user
-     * @param null $entityClass
-     * @param null $entityAlias
-     * @param null $permission
-     * @return array
+     * @param mixed[] $options
      *
-     * @see https://github.com/sulu/sulu-workshop/issues/33
+     * @return string[]
      */
-    private function findByFiltersIds(
-        $filters,
-        $page,
-        $pageSize,
-        $limit,
-        $locale,
-        $options = [],
-        ?UserInterface $user = null,
-        $entityClass = null,
-        $entityAlias = null,
-        $permission = null
-    ) {
-        // a little bit hacky, but it's a workaround until the issue is fixed...
-        if (isset($filters['sortBy']) && false !== \strpos($filters['sortBy'], 'translation')) {
-            unset($filters['sortBy']);
-        }
+    protected function append(QueryBuilder $queryBuilder, string $alias, string $locale, $options = []): array
+    {
+        $queryBuilder->andWhere($alias . '.enabled = true');
 
-        return $this->parentFindByFiltersIds(
-            $filters,
-            $page,
-            $pageSize,
-            $limit,
-            $locale,
-            $options,
-            $user,
-            $entityClass,
-            $entityAlias,
-            $permission
-        );
+        return [];
     }
+
+    protected function appendSortByJoins(QueryBuilder $queryBuilder, string $alias, string $locale): void
+    {
+        $queryBuilder->innerJoin($alias . '.translations', 'translation', Join::WITH, 'translation.locale = :locale');
+        $queryBuilder->setParameter('locale', $locale);
+    }
+
 }
