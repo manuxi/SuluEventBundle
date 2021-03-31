@@ -10,6 +10,13 @@
         </join>
     </joins>
 
+    <joins name="location">
+        <join>
+            <entity-name>Manuxi\SuluEventBundle\Entity\Location</entity-name>
+            <field-name>Manuxi\SuluEventBundle\Entity\Event.location</field-name>
+        </join>
+    </joins>
+
     <joins name="changer" ref="translation">
         <join>
             <entity-name>%sulu.model.user.class%_changer</entity-name>
@@ -40,6 +47,27 @@
 
         <property name="title" visibility="always" searchability="yes" translation="sulu_admin.title">
             <field-name>title</field-name>
+            <entity-name>Manuxi\SuluEventBundle\Entity\EventTranslation</entity-name>
+
+            <joins ref="translation"/>
+        </property>
+
+        <property name="locationName" visibility="always" searchability="yes" translation="sulu_event.location">
+            <field-name>name</field-name>
+            <entity-name>Manuxi\SuluEventBundle\Entity\Location</entity-name>
+
+            <joins ref="location"/>
+        </property>
+
+        <property name="teaser" visibility="no" searchability="yes" translation="sulu_event.teaser">
+            <field-name>teaser</field-name>
+            <entity-name>Manuxi\SuluEventBundle\Entity\EventTranslation</entity-name>
+
+            <joins ref="translation"/>
+        </property>
+
+        <property name="description" visibility="no" searchability="yes" translation="sulu_event.description">
+            <field-name>description</field-name>
             <entity-name>Manuxi\SuluEventBundle\Entity\EventTranslation</entity-name>
 
             <joins ref="translation"/>
@@ -82,14 +110,14 @@
             </field>
         </concatenation-property>
 
-        <property name="changed" translation="sulu_admin.changed" type="datetime" visibility="yes">
+        <property name="changed" translation="sulu_admin.changed" type="datetime" visibility="no">
             <field-name>changed</field-name>
             <entity-name>Manuxi\SuluEventBundle\Entity\EventTranslation</entity-name>
 
             <joins ref="translation"/>
         </property>
 
-        <concatenation-property name="changer" translation="sulu_admin.changer" visibility="yes" searchability="yes">
+        <concatenation-property name="changer" translation="sulu_admin.changer" visibility="no" searchability="yes">
             <field>
                 <field-name>firstName</field-name>
                 <entity-name>%sulu.model.contact.class%_changer</entity-name>

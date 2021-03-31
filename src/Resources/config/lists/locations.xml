@@ -37,5 +37,10 @@
             <field-name>countryCode</field-name>
             <entity-name>Manuxi\SuluEventBundle\Entity\Location</entity-name>
         </property>
+
+        <property name="notes" visibility="no" searchability="yes" translation="sulu_event.notes">
+            <field-name>notes</field-name>
+            <entity-name>Manuxi\SuluEventBundle\Entity\Location</entity-name>
+        </property>
     </properties>
 </list>
