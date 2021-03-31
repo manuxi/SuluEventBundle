@@ -114,11 +114,8 @@ class EventController extends AbstractRestController implements ClassResourceInt
         $event = $this->eventModel->updateEvent($id, $request);
         $this->updateRoutesForEntity($event);
 
-
         $this->eventSeoModel->updateEventSeo($event->getEventSeo(), $request);
         $this->eventExcerptModel->updateEventExcerpt($event->getEventExcerpt(), $request);
-
-//        dd($request->request->all());
 
         return $this->handleView($this->view($event));
     }

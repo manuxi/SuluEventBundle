@@ -116,5 +116,9 @@
             <argument type="service" id="sulu.repository.media"/>
         </service>
 
+        <service id="sulu_event.model.location" class="Manuxi\SuluEventBundle\Entity\Models\LocationModel">
+            <argument type="service" id="sulu_event.repository.location"/>
+        </service>
+
     </services>
 </container>

@@ -48,5 +48,12 @@
                 />
             </params>
         </property>
+
+        <property name="notes" type="text_editor">
+            <meta>
+                <title>sulu_event.notes</title>
+            </meta>
+        </property>
+
     </properties>
 </form>

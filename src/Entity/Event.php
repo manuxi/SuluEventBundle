@@ -38,14 +38,14 @@ class Event implements AuditableTranslationInterface
      *
      * @Serializer\Exclude
      */
-    private $eventSeo = null;
+    private $eventSeo;
 
     /**
      * @ORM\OneToOne(targetEntity="Manuxi\SuluEventBundle\Entity\EventExcerpt", mappedBy="event", cascade={"persist", "remove"})
      *
      * @Serializer\Exclude
      */
-    private $eventExcerpt = null;
+    private $eventExcerpt;
 
     /**
      * @ORM\Column(type="boolean", nullable=false)
@@ -55,18 +55,18 @@ class Event implements AuditableTranslationInterface
     /**
      * @ORM\Column(type="datetime_immutable", nullable=true)
      */
-    private $startDate = null;
+    private $startDate;
 
     /**
      * @ORM\Column(type="datetime_immutable", nullable=true)
      */
-    private $endDate = null;
+    private $endDate;
 
     /**
      * @ORM\ManyToOne(targetEntity="Manuxi\SuluEventBundle\Entity\Location")
      * @ORM\JoinColumn(onDelete="SET NULL")
      */
-    private $location = null;
+    private $location;
 
     /**
      * @var Collection<string, EventTranslation>

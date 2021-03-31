@@ -28,7 +28,7 @@ class EventExcerpt implements ExcerptInterface, ExcerptTranslatableInterface
      *
      * @Serializer\Exclude
      */
-    private $event = null;
+    private $event;
 
     /**
      * @var Collection<string, EventTranslation>

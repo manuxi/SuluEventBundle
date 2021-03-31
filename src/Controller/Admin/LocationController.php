@@ -6,6 +6,7 @@ namespace Manuxi\SuluEventBundle\Controller\Admin;
 
 use Manuxi\SuluEventBundle\Common\DoctrineListRepresentationFactory;
 use Manuxi\SuluEventBundle\Entity\Location;
+use Manuxi\SuluEventBundle\Entity\Models\LocationModel;
 use Manuxi\SuluEventBundle\Repository\LocationRepository;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
@@ -13,6 +14,7 @@ use FOS\RestBundle\Controller\Annotations\RouteResource;
 use FOS\RestBundle\Routing\ClassResourceInterface;
 use FOS\RestBundle\View\ViewHandlerInterface;
 use Sulu\Component\Rest\AbstractRestController;
+use Sulu\Component\Rest\Exception\EntityNotFoundException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -24,19 +26,17 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 class LocationController extends AbstractRestController implements ClassResourceInterface
 {
     private $doctrineListRepresentationFactory;
-
-    private $repository;
+    private $locationModel;
 
     public function __construct(
+        LocationModel $locationModel,
         DoctrineListRepresentationFactory $doctrineListRepresentationFactory,
-        LocationRepository $repository,
         ViewHandlerInterface $viewHandler,
         ?TokenStorageInterface $tokenStorage = null
     ) {
-        $this->doctrineListRepresentationFactory = $doctrineListRepresentationFactory;
-        $this->repository                        = $repository;
-
         parent::__construct($viewHandler, $tokenStorage);
+        $this->locationModel = $locationModel;
+        $this->doctrineListRepresentationFactory = $doctrineListRepresentationFactory;
     }
 
     public function cgetAction(): Response
@@ -48,14 +48,13 @@ class LocationController extends AbstractRestController implements ClassResource
         return $this->handleView($this->view($listRepresentation));
     }
 
-    /** @noinspection PhpUnusedParameterInspection */
+    /**
+     * @throws EntityNotFoundException
+     * @noinspection PhpUnusedParameterInspection
+     */
     public function getAction(int $id, Request $request): Response
     {
-        $entity = $this->load($id);
-        if (!$entity) {
-            throw new NotFoundHttpException();
-        }
-
+        $entity = $this->locationModel->getLocation($id);
         return $this->handleView($this->view($entity));
     }
 
@@ -65,30 +64,18 @@ class LocationController extends AbstractRestController implements ClassResource
      */
     public function postAction(Request $request): Response
     {
-        $entity = $this->create();
-
-        $this->mapDataToEntity($request->request->all(), $entity);
-
-        $this->save($entity);
-
+        $entity = $this->locationModel->createLocation($request);
         return $this->handleView($this->view($entity));
     }
 
     /**
      * @throws ORMException
      * @throws OptimisticLockException
+     * @throws EntityNotFoundException
      */
     public function putAction(int $id, Request $request): Response
     {
-        $entity = $this->load($id);
-        if (!$entity) {
-            throw new NotFoundHttpException();
-        }
-
-        $this->mapDataToEntity($request->request->all(), $entity);
-
-        $this->save($entity);
-
+        $entity = $this->locationModel->updateLocation($id, $request);
         return $this->handleView($this->view($entity));
     }
 
@@ -98,50 +85,8 @@ class LocationController extends AbstractRestController implements ClassResource
      */
     public function deleteAction(int $id): Response
     {
-        $this->remove($id);
-
-        return $this->handleView($this->view());
+        $this->locationModel->deleteLocation($id);
+        return $this->handleView($this->view(null, 204));
     }
 
-    /**
-     * @param string[] $data
-     */
-    protected function mapDataToEntity(array $data, Location $entity): void
-    {
-        $entity->setName($data['name']);
-
-        $entity->setStreet($data['street'] ?? null);
-        $entity->setNumber($data['number'] ?? null);
-        $entity->setCity($data['city'] ?? null);
-        $entity->setPostalCode($data['postalCode'] ?? null);
-        $entity->setCountryCode($data['countryCode'] ?? null);
-    }
-
-    protected function load(int $id): ?Location
-    {
-        return $this->repository->findById($id);
-    }
-
-    protected function create(): Location
-    {
-        return $this->repository->create();
-    }
-
-    /**
-     * @throws ORMException
-     * @throws OptimisticLockException
-     */
-    protected function save(Location $entity): void
-    {
-        $this->repository->save($entity);
-    }
-
-    /**
-     * @throws ORMException
-     * @throws OptimisticLockException
-     */
-    protected function remove(int $id): void
-    {
-        $this->repository->remove($id);
-    }
 }

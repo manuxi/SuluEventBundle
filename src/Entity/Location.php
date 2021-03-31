@@ -13,9 +13,7 @@ use Doctrine\ORM\Mapping as ORM;
 class Location
 {
     public const RESOURCE_KEY = 'locations';
-
     public const FORM_KEY = 'location_details';
-
     public const LIST_KEY = 'locations';
 
     /**
@@ -28,32 +26,37 @@ class Location
     /**
      * @ORM\Column(type="string", length=255)
      */
-    private $name = null;
+    private $name;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private $street = null;
+    private $street;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private $number = null;
+    private $number;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private $postalCode = null;
+    private $postalCode;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private $city = null;
+    private $city;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private $countryCode = null;
+    private $countryCode;
+
+    /**
+     * @ORM\Column(type="text", nullable=true)
+     */
+    private $notes;
 
     public function getId(): ?int
     {
@@ -68,7 +71,6 @@ class Location
     public function setName(string $name): self
     {
         $this->name = $name;
-
         return $this;
     }
 
@@ -80,7 +82,6 @@ class Location
     public function setStreet(?string $street): self
     {
         $this->street = $street;
-
         return $this;
     }
 
@@ -92,7 +93,6 @@ class Location
     public function setNumber(?string $number): self
     {
         $this->number = $number;
-
         return $this;
     }
 
@@ -104,7 +104,6 @@ class Location
     public function setPostalCode(?string $postalCode): self
     {
         $this->postalCode = $postalCode;
-
         return $this;
     }
 
@@ -116,7 +115,6 @@ class Location
     public function setCity(?string $city): self
     {
         $this->city = $city;
-
         return $this;
     }
 
@@ -128,7 +126,18 @@ class Location
     public function setCountryCode(?string $countryCode): self
     {
         $this->countryCode = $countryCode;
-
         return $this;
     }
+
+    public function getNotes(): ?string
+    {
+        return $this->notes;
+    }
+
+    public function setNotes($notes): self
+    {
+        $this->notes = $notes;
+        return $this;
+    }
+
 }

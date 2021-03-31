@@ -28,7 +28,7 @@ class EventSeo implements SeoInterface, SeoTranslatableInterface
      *
      * @Serializer\Exclude
      */
-    private $event = null;
+    private $event;
 
     /**
      * @var Collection<string, EventTranslation>

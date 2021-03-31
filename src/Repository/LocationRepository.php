@@ -46,10 +46,11 @@ class LocationRepository extends ServiceEntityRepository
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    public function save(Location $location): void
+    public function save(Location $location): Location
     {
         $this->getEntityManager()->persist($location);
         $this->getEntityManager()->flush();
+        return $location;
     }
 
     public function findById(int $id): ?Location

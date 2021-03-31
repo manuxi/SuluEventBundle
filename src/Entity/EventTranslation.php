@@ -38,17 +38,17 @@ class EventTranslation implements AuditableInterface
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private $title = null;
+    private $title;
 
     /**
      * @ORM\Column(type="text", nullable=true)
      */
-    private $teaser = null;
+    private $teaser;
 
     /**
      * @ORM\Column(type="text", nullable=true)
      */
-    private $description = null;
+    private $description;
 
     /**
      * @ORM\Column(type="string", length=255)
@@ -84,7 +84,6 @@ class EventTranslation implements AuditableInterface
     public function setTitle(?string $title): self
     {
         $this->title = $title;
-
         return $this;
     }
 
@@ -96,7 +95,6 @@ class EventTranslation implements AuditableInterface
     public function setTeaser(?string $teaser): self
     {
         $this->teaser = $teaser;
-
         return $this;
     }
 
@@ -108,7 +106,6 @@ class EventTranslation implements AuditableInterface
     public function setDescription(?string $description): self
     {
         $this->description = $description;
-
         return $this;
     }
 
@@ -120,7 +117,6 @@ class EventTranslation implements AuditableInterface
     public function setRoutePath(string $routePath): self
     {
         $this->routePath = $routePath;
-
         return $this;
     }
 }

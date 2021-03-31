@@ -2,6 +2,7 @@ sulu_event:
     id: "Id"
     name: "Name"
     description: "Description"
+    notes: "Notes"
     teaser: "Teaser"
     image: "Image"
     enabled: "enabled"

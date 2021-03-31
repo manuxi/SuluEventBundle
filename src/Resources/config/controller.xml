@@ -7,8 +7,8 @@
         <!-- Controllers -->
         <service id="Manuxi\SuluEventBundle\Controller\Admin\LocationController"
                  public="true">
+            <argument type="service" id="sulu_event.model.location"/>
             <argument type="service" id="sulu_event.doctrine_list_representation_factory"/>
-            <argument type="service" id="sulu_event.repository.location"/>
             <argument type="service" id="fos_rest.view_handler.default"/>
             <argument type="service" id="security.token_storage"/>
 
