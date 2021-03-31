@@ -13,9 +13,9 @@
 </div>
 
 This bundle was made based on [Sulu workshop](https://github.com/sulu/sulu-workshop). 
-I made it to quickly install the possibility to manage events in my projects.
+I made it to have the possibility to manage events in my projects and to get a better knowledge of sulu. 
+The events and their meta information is translatable. Please feel comfortable submitting feature requests. 
 This bundle is still in development. Use at own risk 🤞🏻
-
 
 
 ## 👩🏻‍🏭 Installation
@@ -37,15 +37,15 @@ SuluEventBundle:
     resource: '@SuluEventBundle/Resources/config/routes_admin.yml'
 ```
 Last but not least the entity tables must be created in the database.
-The tables which will be created are 
-```
-app_location, app_event_translation, app_event_seo_translation, app_event_seo and app_event
-```
+They will be created with prefix app_:
+location, event, event_seo, event_excerpt 
+(plus the ManyToMany relation tables).
+
 See the needed queries with:
 ```console
 php bin/console doctrine:schema:update --dump-sql
 ```
-Execute the queries above with:
+Then execute the queries with:
 ```console
 php bin/console doctrine:schema:update --force
 ```
