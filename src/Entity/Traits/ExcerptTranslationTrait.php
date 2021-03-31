@@ -65,7 +65,6 @@ trait ExcerptTranslationTrait
      *      joinColumns={@ORM\JoinColumn(name="excerpt_id", referencedColumnName="id")},
      *      inverseJoinColumns={@ORM\JoinColumn(name="icon_id", referencedColumnName="id")}
      *      )
-     * @Serializer\SerializedName("icon")
      */
     private $icons;
 
@@ -160,6 +159,19 @@ trait ExcerptTranslationTrait
         return $this->categories;
     }
 
+    public function getCategoryIds(): array
+    {
+        $categories = [];
+
+        if (null !== $this->getCategories()) {
+            foreach ($this->getCategories() as $category) {
+                $categories[] = $category->getId();
+            }
+        }
+
+        return $categories;
+    }
+
     public function addTag(TagInterface $tag): self
     {
         $this->tags[] = $tag;
@@ -181,7 +193,7 @@ trait ExcerptTranslationTrait
         return $this->tags;
     }
 
-    public function getTagNameArray(): array
+    public function getTagNames(): array
     {
         $tags = [];
 
@@ -217,7 +229,7 @@ trait ExcerptTranslationTrait
     /**
      * @Serializer\VirtualProperty(name="icon")
      */
-    public function getIconIdsArray(): array
+    public function getIconIds(): array
     {
         $icons = [];
         $icons['ids'] = [];
@@ -258,7 +270,7 @@ trait ExcerptTranslationTrait
     /**
      * @Serializer\VirtualProperty(name="icon")
      */
-    public function getImageIdsArray(): array
+    public function getImageIds(): array
     {
         $images = [];
         $images['ids'] = [];

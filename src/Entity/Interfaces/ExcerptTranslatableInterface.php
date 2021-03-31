@@ -17,13 +17,13 @@ interface ExcerptTranslatableInterface
     public function setMore(?string $more);
     public function getDescription(): ?string;
     public function setDescription(?string $description);
-    public function getCategories(): ?Collection;
+    public function getCategories(): ?array;
     public function addCategory(CategoryInterface $category);
     public function removeCategories();
     public function getTags(): ?array;
     public function addTag(TagInterface $tag);
     public function removeTags();
-    public function getIcons(): ?array;
+    public function getIcon(): ?array;
     public function addIcon(MediaInterface $icon);
     public function removeIcons();
     public function getImages(): ?array;

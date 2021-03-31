@@ -96,13 +96,13 @@ trait ExcerptTranslatableTrait
      * @return CategoryInterface[]
      * @Serializer\VirtualProperty(name="categories")
      */
-    public function getCategories(): ?Collection
+    public function getCategories(): ?array
     {
         $translation = $this->getTranslation($this->locale);
         if (!$translation) {
             return null;
         }
-        return $translation->getCategories();
+        return $translation->getCategoryIds();
     }
 
     public function addCategory(CategoryInterface $category): self
@@ -134,7 +134,7 @@ trait ExcerptTranslatableTrait
         if (!$translation) {
             $translation = $this->createTranslation($this->locale);
         }
-        return $translation->getTagNameArray();
+        return $translation->getTagNames();
     }
 
     public function addTag(TagInterface $tag): self
@@ -158,15 +158,17 @@ trait ExcerptTranslatableTrait
     }
 
     /**
+     * Usually this method should be named getIcons() but since the VirtualProperty annotation seems not to work
+     * properly in traits this method is renamed to match the property (icon) for now.
      * @Serializer\VirtualProperty(name="icon")
      */
-    public function getIcons(): ?array
+    public function getIcon(): ?array
     {
         $translation = $this->getTranslation($this->locale);
         if (!$translation) {
             return null;
         }
-        return $translation->getIconIdsArray();
+        return $translation->getIconIds();
     }
 
     public function addIcon(MediaInterface $icon): self
@@ -198,7 +200,7 @@ trait ExcerptTranslatableTrait
         if (!$translation) {
             return null;
         }
-        return $translation->getImageIdsArray();
+        return $translation->getImageIds();
     }
 
     public function addImage(MediaInterface $image): self

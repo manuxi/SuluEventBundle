@@ -79,4 +79,5 @@ class EventExcerpt implements ExcerptInterface, ExcerptTranslatableInterface
 
         return $translation;
     }
+
 }
