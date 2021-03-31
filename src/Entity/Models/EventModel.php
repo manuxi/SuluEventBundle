@@ -127,7 +127,7 @@ class EventModel implements EventModelInterface
 
     private function getLocaleFromRequest(Request $request)
     {
-        return $request->query->get('locale', null);
+        return $request->query->get('locale');
     }
 
     /**
@@ -186,6 +186,9 @@ class EventModel implements EventModelInterface
         return $event;
     }
 
+    /**
+     * @throws EntityNotFoundException
+     */
     private function mapSettingsToEvent(Event $event, array $data): Event
     {
         //settings (author, authored) changeable

@@ -7,26 +7,32 @@ use Sulu\Bundle\CategoryBundle\Entity\CategoryInterface;
 use Sulu\Bundle\MediaBundle\Entity\MediaInterface;
 use Sulu\Bundle\TagBundle\Tag\TagInterface;
 
-interface ExcerptTranslatableInterface
+interface ExcerptTranslationInterface
 {
+    public function getId(): ?int;
     public function getLocale(): string;
-    public function setLocale(string $locale);
+    public function setLocale(?string $locale);
     public function getTitle(): ?string;
     public function setTitle(?string $title);
     public function getMore(): ?string;
     public function setMore(?string $more);
     public function getDescription(): ?string;
     public function setDescription(?string $description);
-    public function getCategories(): ?Collection;
     public function addCategory(CategoryInterface $category);
+    public function removeCategory(CategoryInterface $category): void;
     public function removeCategories();
-    public function getTags(): ?array;
+    public function getCategories(): Collection;
     public function addTag(TagInterface $tag);
+    public function removeTag(TagInterface $tag): void;
     public function removeTags();
-    public function getIcons(): ?array;
-    public function addIcon(MediaInterface $icon);
+    public function getTags(): Collection;
+    public function getTagNameArray(): array;
+    public function addIcon(MediaInterface $media);
+    public function removeIcon(MediaInterface $media);
+    public function getIcons(): Collection;
     public function removeIcons();
-    public function getImages(): ?array;
-    public function addImage(MediaInterface $image);
+    public function addImage(MediaInterface $media);
+    public function removeImage(MediaInterface $media);
+    public function getImages(): Collection;
     public function removeImages();
 }

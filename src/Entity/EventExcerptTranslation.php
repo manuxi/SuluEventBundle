@@ -4,6 +4,7 @@ namespace Manuxi\SuluEventBundle\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use Manuxi\SuluEventBundle\Entity\Interfaces\ExcerptTranslationInterface;
 use Manuxi\SuluEventBundle\Entity\Traits\ExcerptTranslationTrait;
 
 /**
@@ -11,7 +12,7 @@ use Manuxi\SuluEventBundle\Entity\Traits\ExcerptTranslationTrait;
  * @ORM\Table(name="app_event_excerpt_translation")
  * @ORM\Entity(repositoryClass="Manuxi\SuluEventBundle\Repository\EventExcerptTranslationRepository")
  */
-class EventExcerptTranslation
+class EventExcerptTranslation implements ExcerptTranslationInterface
 {
     use ExcerptTranslationTrait;
 
@@ -25,13 +26,7 @@ class EventExcerptTranslation
     {
         $this->eventExcerpt = $eventExcerpt;
         $this->setLocale($locale);
-
-        $this->tags = new ArrayCollection();
-        $this->categories = new ArrayCollection();
-        $this->segments = new ArrayCollection();
-        $this->icons = new ArrayCollection();
-        $this->images = new ArrayCollection();
-
+        $this->initExcerptTranslationTrait();
     }
 
     public function getEventExcerpt(): EventExcerpt

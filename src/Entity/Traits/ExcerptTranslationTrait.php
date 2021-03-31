@@ -2,10 +2,11 @@
 
 namespace Manuxi\SuluEventBundle\Entity\Traits;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\Mapping\JoinTable;
-use JMS\Serializer\Annotation\Accessor;
+use JMS\Serializer\Annotation as Serializer;
 use Sulu\Bundle\CategoryBundle\Entity\CategoryInterface;
 use Sulu\Bundle\MediaBundle\Entity\MediaInterface;
 use Sulu\Bundle\TagBundle\Tag\TagInterface;
@@ -54,7 +55,6 @@ trait ExcerptTranslationTrait
      *      joinColumns={@ORM\JoinColumn(name="excerpt_id", referencedColumnName="id")},
      *      inverseJoinColumns={@ORM\JoinColumn(name="tag_id", referencedColumnName="id")}
      *      )
-     * @Accessor(getter="getTagNameArray")
      */
     private $tags;
     private $segments;
@@ -65,6 +65,7 @@ trait ExcerptTranslationTrait
      *      joinColumns={@ORM\JoinColumn(name="excerpt_id", referencedColumnName="id")},
      *      inverseJoinColumns={@ORM\JoinColumn(name="icon_id", referencedColumnName="id")}
      *      )
+     * @Serializer\SerializedName("icon")
      */
     private $icons;
 
@@ -76,6 +77,15 @@ trait ExcerptTranslationTrait
      *      )
      */
     private $images;
+
+    private function initExcerptTranslationTrait(): void
+    {
+        $this->tags = new ArrayCollection();
+        $this->categories = new ArrayCollection();
+        $this->segments = new ArrayCollection();
+        $this->icons = new ArrayCollection();
+        $this->images = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -129,7 +139,6 @@ trait ExcerptTranslationTrait
     public function addCategory(CategoryInterface $category): self
     {
         $this->categories[] = $category;
-
         return $this;
     }
 
@@ -146,29 +155,14 @@ trait ExcerptTranslationTrait
     /**
      * @return CategoryInterface[]
      */
-    public function getCategories(): array
+    public function getCategories(): Collection
     {
         return $this->categories;
     }
 
-//    public function getCategoryNameArray(): array
-//    {
-//        $categories = [];
-//
-//        if (null !== $this->getCategories()) {
-//            foreach ($this->getCategories() as $category) {
-//                $categories[] = $category->findTranslationByLocale($this->locale);
-//            }
-//        }
-//
-//        return $categories;
-//    }
-
-
     public function addTag(TagInterface $tag): self
     {
         $this->tags[] = $tag;
-
         return $this;
     }
 
@@ -215,9 +209,30 @@ trait ExcerptTranslationTrait
     /**
      * @return MediaInterface[]
      */
-    public function getIcons(): array
+    public function getIcons(): Collection
     {
         return $this->icons;
+    }
+
+    /**
+     * @Serializer\VirtualProperty(name="icon")
+     */
+    public function getIconIdsArray(): array
+    {
+        $icons = [];
+        $icons['ids'] = [];
+
+        if (null !== $this->getIcons()) {
+            foreach ($this->getIcons() as $icon) {
+                $icons['ids'][] = $icon->getId();
+            }
+        }
+        return $icons;
+    }
+
+    public function removeIcons()
+    {
+        $this->icons->clear();
     }
 
     public function addImage(MediaInterface $media): self
@@ -235,8 +250,29 @@ trait ExcerptTranslationTrait
     /**
      * @return MediaInterface[]
      */
-    public function getImages(): array
+    public function getImages(): Collection
     {
         return $this->images;
+    }
+
+    /**
+     * @Serializer\VirtualProperty(name="icon")
+     */
+    public function getImageIdsArray(): array
+    {
+        $images = [];
+        $images['ids'] = [];
+
+        if (null !== $this->getImages()) {
+            foreach ($this->getImages() as $image) {
+                $images['ids'][] = $image->getId();
+            }
+        }
+        return $images;
+    }
+
+    public function removeImages()
+    {
+        $this->images->clear();
     }
 }

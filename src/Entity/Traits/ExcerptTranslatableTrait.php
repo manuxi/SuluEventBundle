@@ -2,8 +2,10 @@
 
 namespace Manuxi\SuluEventBundle\Entity\Traits;
 
+use Doctrine\Common\Collections\Collection;
 use JMS\Serializer\Annotation as Serializer;
 use Sulu\Bundle\CategoryBundle\Entity\CategoryInterface;
+use Sulu\Bundle\MediaBundle\Entity\MediaInterface;
 use Sulu\Bundle\TagBundle\Tag\TagInterface;
 
 trait ExcerptTranslatableTrait
@@ -94,7 +96,7 @@ trait ExcerptTranslatableTrait
      * @return CategoryInterface[]
      * @Serializer\VirtualProperty(name="categories")
      */
-    public function getCategories(): ?array
+    public function getCategories(): ?Collection
     {
         $translation = $this->getTranslation($this->locale);
         if (!$translation) {
@@ -113,20 +115,29 @@ trait ExcerptTranslatableTrait
         return $this;
     }
 
-    /**
-     * @return TagInterface[]
-     * @Serializer\VirtualProperty(name="tags")
-     */
-    public function getTags(): ?array
+    public function removeCategories(): self
     {
         $translation = $this->getTranslation($this->locale);
         if (!$translation) {
-            return null;
+            $translation = $this->createTranslation($this->locale);
         }
-        return $translation->getTags();
+        $translation->removeCategories();
+        return $this;
     }
 
-    public function addTag(TagInterface $tag)
+    /**
+     * @Serializer\VirtualProperty(name="tags")
+     */
+    public function getTags(): array
+    {
+        $translation = $this->getTranslation($this->locale);
+        if (!$translation) {
+            $translation = $this->createTranslation($this->locale);
+        }
+        return $translation->getTagNameArray();
+    }
+
+    public function addTag(TagInterface $tag): self
     {
         $translation = $this->getTranslation($this->locale);
         if (!$translation) {
@@ -135,4 +146,79 @@ trait ExcerptTranslatableTrait
         $translation->addTag($tag);
         return $this;
     }
+
+    public function removeTags(): self
+    {
+        $translation = $this->getTranslation($this->locale);
+        if (!$translation) {
+            $translation = $this->createTranslation($this->locale);
+        }
+        $translation->removeTags();
+        return $this;
+    }
+
+    /**
+     * @Serializer\VirtualProperty(name="icon")
+     */
+    public function getIcons(): ?array
+    {
+        $translation = $this->getTranslation($this->locale);
+        if (!$translation) {
+            return null;
+        }
+        return $translation->getIconIdsArray();
+    }
+
+    public function addIcon(MediaInterface $icon): self
+    {
+        $translation = $this->getTranslation($this->locale);
+        if (!$translation) {
+            $translation = $this->createTranslation($this->locale);
+        }
+        $translation->addIcon($icon);
+        return $this;
+    }
+
+    public function removeIcons(): self
+    {
+        $translation = $this->getTranslation($this->locale);
+        if (!$translation) {
+            $translation = $this->createTranslation($this->locale);
+        }
+        $translation->removeIcons();
+        return $this;
+    }
+
+    /**
+     * @Serializer\VirtualProperty(name="images")
+     */
+    public function getImages(): ?array
+    {
+        $translation = $this->getTranslation($this->locale);
+        if (!$translation) {
+            return null;
+        }
+        return $translation->getImageIdsArray();
+    }
+
+    public function addImage(MediaInterface $image): self
+    {
+        $translation = $this->getTranslation($this->locale);
+        if (!$translation) {
+            $translation = $this->createTranslation($this->locale);
+        }
+        $translation->addImage($image);
+        return $this;
+    }
+
+    public function removeImages(): self
+    {
+        $translation = $this->getTranslation($this->locale);
+        if (!$translation) {
+            $translation = $this->createTranslation($this->locale);
+        }
+        $translation->removeImages();
+        return $this;
+    }
+
 }

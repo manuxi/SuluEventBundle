@@ -74,8 +74,8 @@ class EventController extends AbstractRestController implements ClassResourceInt
      */
     public function getAction(int $id, Request $request): Response
     {
-        $entity = $this->eventModel->getEvent($id, $request);
-        return $this->handleView($this->view($entity));
+        $event = $this->eventModel->getEvent($id, $request);
+        return $this->handleView($this->view($event));
     }
 
     /**
@@ -118,7 +118,7 @@ class EventController extends AbstractRestController implements ClassResourceInt
         $this->eventSeoModel->updateEventSeo($event->getEventSeo(), $request);
         $this->eventExcerptModel->updateEventExcerpt($event->getEventExcerpt(), $request);
 
-        dd($request->request->all());
+//        dd($request->request->all());
 
         return $this->handleView($this->view($event));
     }
