@@ -51,28 +51,22 @@ php bin/console doctrine:schema:update --force
 ```
 
 ## 🎣 Usage
-After granting the rights in the sulu admin area you should be able to create locations and events.
-use smart_content property type to show a list of events, e.g.:
+First: Grant permissions for events. 
+After page reload you should see the event item in the navigation. 
+Start to create locations, then events.
+Use smart_content property type to show a list of events, e.g.:
 ```xml
-<block name="smart-content-events" default-type="smart-content-events">
-    <types>
-        <type name="smart-content-events">
-            <properties>
-                <property name="events" type="smart_content">
-                    <meta>
-                        <title lang="en">Events</title>
-                        <title lang="de">Veranstaltungen</title>
-                    </meta>
-                    <params>
-                        <param name="provider" value="events"/>
-                        <param name="max_per_page" value="5"/>
-                        <param name="page_parameter" value="page"/>
-                    </params>
-                </property>
-            </properties>
-        </type>
-    </types>
-</block>
+<property name="events" type="smart_content">
+    <meta>
+        <title lang="en">Events</title>
+        <title lang="de">Veranstaltungen</title>
+    </meta>
+    <params>
+        <param name="provider" value="events"/>
+        <param name="max_per_page" value="5"/>
+        <param name="page_parameter" value="page"/>
+    </params>
+</property>
 ```
 Example of the corresponding twig template for the event list:
 ```html
@@ -98,8 +92,10 @@ Example of the corresponding twig template for the event list:
     </div>
 {% endfor %}
 ```
-At the moment the template for the single event is located here
-`templates/pages/event.html.twig`
+The template for the single event is located here
+`templates/pages/event.html.twig`.
+Since the seo and excerpt tabs are available in the event editor, 
+meta information can be provided like it's done as usual when rendering your pages. 
 
 ## 🧶 Configuration
 There exists no configuration yet. I'm on it :)
