@@ -71,7 +71,7 @@ class Event implements AuditableTranslationInterface
     /**
      * @var Collection<string, EventTranslation>
      *
-     * @ORM\OneToMany(targetEntity="Manuxi\SuluEventBundle\Entity\EventTranslation", mappedBy="event", cascade={"ALL"}, indexBy="locale")
+     * @ORM\OneToMany(targetEntity="Manuxi\SuluEventBundle\Entity\EventTranslation", mappedBy="event", cascade={"ALL"}, indexBy="locale", fetch="EXTRA_LAZY")
      *
      * @Serializer\Exclude
      */

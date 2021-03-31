@@ -152,7 +152,7 @@ class EventModel implements EventModelInterface
 
         $description = $this->getProperty($data, 'description');
         if ($description) {
-            $event->setTeaser($description);
+            $event->setDescription($description);
         }
 
         $startDate = $this->getProperty($data, 'startDate');

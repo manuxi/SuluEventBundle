@@ -7,13 +7,18 @@ namespace Manuxi\SuluEventBundle\Controller\Website;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
 use JMS\Serializer\SerializerBuilder;
+use Sulu\Bundle\HttpCacheBundle\Cache\SuluHttpCache;
 use Sulu\Bundle\MediaBundle\Media\Manager\MediaManagerInterface;
+use Sulu\Bundle\PreviewBundle\Preview\Preview;
 use Sulu\Bundle\RouteBundle\Entity\RouteRepositoryInterface;
 use Sulu\Bundle\WebsiteBundle\Resolver\TemplateAttributeResolverInterface;
 use Sulu\Component\Webspace\Manager\WebspaceManagerInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use Twig\Environment;
 
 class EventController extends AbstractController
 {
@@ -41,8 +46,11 @@ class EventController extends AbstractController
         $this->routeRepository           = $routeRepository;
     }
 
-    public function indexAction(Event $event): Response
+    public function indexAction(Event $event, string $view = 'pages/event', bool $preview = false, bool $partial = false): Response
     {
+        $requestFormat = $this->request->getRequestFormat();
+        $viewTemplate = $view . '.' . $requestFormat . '.twig';
+
         $parameters = $this->templateAttributeResolver->resolve([
             'event'   => $event,
             'content' => [
@@ -55,7 +63,37 @@ class EventController extends AbstractController
             'created'       => $event->getCreated(),
         ]);
 
-        return $this->render('pages/event.html.twig', $parameters);
+        $response = $this->createResponse($this->request);
+
+        try {
+            if ($partial) {
+                $response->setContent(
+                    $this->renderBlock(
+                        $viewTemplate,
+                        'content',
+                        $parameters
+                    )
+                );
+
+                return $response;
+            } elseif ($preview) {
+                $response->setContent(
+                    $this->renderPreview($viewTemplate, $parameters)
+                );
+            } else {
+                $response->setContent(
+                    $this->renderView(
+                        $viewTemplate,
+                        $parameters
+                    )
+                );
+            }
+            return $response;
+
+        } catch (\InvalidArgumentException $exception) {
+            // template not found
+            throw new HttpException(406, 'Error encountered when rendering content', $exception);
+        }
     }
 
     /**
@@ -102,40 +140,31 @@ class EventController extends AbstractController
         return $subscribedServices;
     }
 
-    /**
-     * "seo" => array:7 [▼
-     *   "title" => ""
-     *   "description" => ""
-     *   "keywords" => ""
-     *   "canonicalUrl" => ""
-     *   "noIndex" => false
-     *   "noFollow" => false
-     *   "hideInSitemap" => false
-     * ].
-     *
-     * @noinspection PhpUnusedPrivateMethodInspection
-     */
-    private function getSeo(Event $event): array
+    private function createResponse(Request $request): Response
     {
-        return [$event];
+        $response = new Response();
+        $cacheLifetime = $request->attributes->get('_cacheLifetime');
+
+        if ($cacheLifetime) {
+            $response->setPublic();
+            $response->headers->set(
+                SuluHttpCache::HEADER_REVERSE_PROXY_TTL,
+                $cacheLifetime
+            );
+            $response->setMaxAge($this->getParameter('sulu_http_cache.cache.max_age'));
+            $response->setSharedMaxAge($this->getParameter('sulu_http_cache.cache.shared_max_age'));
+        }
+
+        // we need to set the content type ourselves here
+        // else symfony will use the accept header of the client and the page could be cached with false content-type
+        // see following symfony issue: https://github.com/symfony/symfony/issues/35694
+        $mimeType = $request->getMimeType($request->getRequestFormat());
+
+        if ($mimeType) {
+            $response->headers->set('Content-Type', $mimeType);
+        }
+
+        return $response;
     }
 
-    /**
-     * "excerpt" => array:8 [▼
-     *   "title" => ""
-     *   "more" => ""
-     *   "description" => ""
-     *   "categories" => []
-     *   "tags" => []
-     *   "segments" => []
-     *   "icon" => []
-     *   "images" => []
-     * ].
-     *
-     * @noinspection PhpUnusedPrivateMethodInspection
-     */
-    private function getExcerpt(Event $event): array
-    {
-        return [$event];
-    }
 }

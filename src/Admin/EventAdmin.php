@@ -104,13 +104,15 @@ class EventAdmin extends Admin
             $viewCollection->add($listView);
 
             // Configure Event Add View
-            $addFormView = $this->viewBuilderFactory->createResourceTabViewBuilder(static::ADD_FORM_VIEW, '/events/:locale/add')
+            $addFormView = $this->viewBuilderFactory
+                ->createResourceTabViewBuilder(static::ADD_FORM_VIEW, '/events/:locale/add')
                 ->setResourceKey(Event::RESOURCE_KEY)
                 ->setBackView(static::LIST_VIEW)
                 ->addLocales($locales);
             $viewCollection->add($addFormView);
 
-            $addDetailsFormView = $this->viewBuilderFactory->createFormViewBuilder(static::ADD_FORM_DETAILS_VIEW, '/details')
+            $addDetailsFormView = $this->viewBuilderFactory
+                ->createFormViewBuilder(static::ADD_FORM_DETAILS_VIEW, '/details')
                 ->setResourceKey(Event::RESOURCE_KEY)
                 ->setFormKey(Event::FORM_KEY)
                 ->setTabTitle('sulu_admin.details')
@@ -120,7 +122,8 @@ class EventAdmin extends Admin
             $viewCollection->add($addDetailsFormView);
 
             // Configure Event Edit View
-            $editFormView = $this->viewBuilderFactory->createResourceTabViewBuilder(static::EDIT_FORM_VIEW, '/events/:locale/:id')
+            $editFormView = $this->viewBuilderFactory
+                ->createResourceTabViewBuilder(static::EDIT_FORM_VIEW, '/events/:locale/:id')
                 ->setResourceKey(Event::RESOURCE_KEY)
                 ->setBackView(static::LIST_VIEW)
                 ->setTitleProperty('title')
@@ -139,7 +142,9 @@ class EventAdmin extends Admin
                 ),
             ];
 
-            $editDetailsFormView = $this->viewBuilderFactory->createFormViewBuilder(static::EDIT_FORM_DETAILS_VIEW, '/details')
+            $editDetailsFormView = $this->viewBuilderFactory
+                ->createPreviewFormViewBuilder(static::EDIT_FORM_DETAILS_VIEW, '/details')
+                ->setPreviewCondition('id != null')
                 ->setResourceKey(Event::RESOURCE_KEY)
                 ->setFormKey(Event::FORM_KEY)
                 ->setTabTitle('sulu_admin.details')
@@ -162,19 +167,10 @@ class EventAdmin extends Admin
                 $formToolbarActionsWithoutType[] = new ToolbarAction('sulu_admin.save');
             }
 
-//            $viewCollection->add(
-//                $this->viewBuilderFactory->createPreviewFormViewBuilder(static::EDIT_FORM_VIEW_EXCERPT, '/excerpt')
-//                    ->setResourceKey(Event::RESOURCE_KEY)
-//                    ->setFormKey('page_excerpt')
-//                    ->setTabTitle('sulu_page.excerpt')
-//                    ->addToolbarActions($formToolbarActionsWithoutType)
-//                    ->setParent(static::EDIT_FORM_VIEW)
-//            );
-
             $viewCollection->add(
                 $this->viewBuilderFactory
                     ->createPreviewFormViewBuilder(static::EDIT_FORM_VIEW_SEO, '/seo')
-                    ->disablePreviewWebspaceChooser()
+//                    ->disablePreviewWebspaceChooser()
                     ->setResourceKey(Event::RESOURCE_KEY)
                     ->setFormKey('page_seo')
                     ->setTabTitle('sulu_page.seo')
@@ -189,7 +185,7 @@ class EventAdmin extends Admin
             $viewCollection->add(
                 $this->viewBuilderFactory
                     ->createPreviewFormViewBuilder(static::EDIT_FORM_VIEW_EXCERPT, '/excerpt')
-                    ->disablePreviewWebspaceChooser()
+//                    ->disablePreviewWebspaceChooser()
                     ->setResourceKey(Event::RESOURCE_KEY)
                     ->setFormKey('page_excerpt')
                     ->setTabTitle('sulu_page.excerpt')
@@ -235,5 +231,10 @@ class EventAdmin extends Admin
                 ],
             ],
         ];
+    }
+
+    public function getConfigKey(): ?string
+    {
+        return 'sulu_event';
     }
 }

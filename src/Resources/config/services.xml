@@ -120,5 +120,14 @@
             <argument type="service" id="sulu_event.repository.location"/>
         </service>
 
+        <service id="sulu_event.object_provider" public="true" class="Manuxi\SuluEventBundle\Preview\EventObjectProvider">
+            <argument type="service" id="sulu_event.repository.event"/>
+            <tag name="sulu_preview.object_provider" provider-key="events"/>
+        </service>
+
+        <service id="sulu_event.routing_provider" public="true" class="Manuxi\SuluEventBundle\Routing\EventRouteDefaultsProvider">
+            <argument type="service" id="sulu_event.repository.event"/>
+            <tag name="sulu_route.defaults_provider"/>
+        </service>
     </services>
 </container>

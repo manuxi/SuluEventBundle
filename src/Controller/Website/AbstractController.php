@@ -4,11 +4,11 @@ namespace Manuxi\SuluEventBundle\Controller\Website;
 
 use Sulu\Bundle\MediaBundle\Api\Media;
 use Sulu\Bundle\MediaBundle\Media\Manager\MediaManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController as AbstractSymfonyController;
+use Sulu\Bundle\WebsiteBundle\Controller\WebsiteController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 
-abstract class AbstractController extends AbstractSymfonyController
+abstract class AbstractController extends WebsiteController
 {
     protected $mediaManager;
 
