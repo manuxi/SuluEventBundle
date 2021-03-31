@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Repository;
 
+use Doctrine\Common\Collections\Criteria;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\OptimisticLockException;
@@ -14,7 +15,6 @@ use Doctrine\Persistence\ManagerRegistry;
 use Sulu\Component\Security\Authentication\UserInterface;
 use Sulu\Component\SmartContent\Orm\DataProviderRepositoryInterface;
 use Sulu\Component\SmartContent\Orm\DataProviderRepositoryTrait;
-
 
 /**
  * @method Event|null find($id, $lockMode = null, $lockVersion = null)
@@ -81,6 +81,13 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
         $event->setLocale($locale);
 
         return $event;
+    }
+
+    public static function createEnabledCriteria(): Criteria
+    {
+        return Criteria::create()
+            ->andWhere(Criteria::expr()->eq('enabled', true))
+            ;
     }
 
     /**

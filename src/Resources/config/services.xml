@@ -129,5 +129,11 @@
             <argument type="service" id="sulu_event.repository.event"/>
             <tag name="sulu_route.defaults_provider"/>
         </service>
+
+        <service id="sulu_event.sitemap_provider" public="true" class="Manuxi\SuluEventBundle\Sitemap\EventSitemapProvider">
+            <argument type="service" id="sulu_event.repository.event"/>
+            <argument type="service" id="sulu_core.webspace.webspace_manager"/>
+            <tag name="sulu.sitemap.provider"/>
+        </service>
     </services>
 </container>
