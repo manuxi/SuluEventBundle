@@ -2,20 +2,21 @@
 
 namespace Manuxi\SuluEventBundle\Controller\Website;
 
-use Sulu\Bundle\MediaBundle\Api\Media;
+use Sulu\Bundle\HttpCacheBundle\Cache\SuluHttpCache;
 use Sulu\Bundle\MediaBundle\Media\Manager\MediaManagerInterface;
 use Sulu\Bundle\WebsiteBundle\Controller\WebsiteController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 abstract class AbstractController extends WebsiteController
 {
-    protected $mediaManager;
-
     /**
      * @var Request|null
      */
     protected $request;
+    protected $mediaManager;
 
     public function __construct(
         RequestStack $requestStack,
@@ -25,14 +26,69 @@ abstract class AbstractController extends WebsiteController
         $this->mediaManager = $mediaManager;
     }
 
-    protected function getBannerMedia(array $bannerIds): array
+    /**
+     * @throws \Exception
+     */
+    protected function prepareResponse(string $viewTemplate, array $parameters, bool $preview, bool $partial): Response
     {
-        $media = [];
-        foreach ($bannerIds as $id) {
-            $mediaEntity = $this->mediaManager->getEntityById($id);
-            $media[]     = $this->mediaManager->addFormatsAndUrl(new Media($mediaEntity, $this->request->getLocale(), null));
+        $response = $this->createResponse($this->request);
+
+        try {
+            if ($partial) {
+                $response->setContent(
+                    $this->renderBlock(
+                        $viewTemplate,
+                        'content',
+                        $parameters
+                    )
+                );
+
+                return $response;
+            } elseif ($preview) {
+                $response->setContent(
+                    $this->renderPreview($viewTemplate, $parameters)
+                );
+            } else {
+                $response->setContent(
+                    $this->renderView(
+                        $viewTemplate,
+                        $parameters
+                    )
+                );
+            }
+            return $response;
+
+        } catch (\InvalidArgumentException $exception) {
+            // template not found
+            throw new HttpException(406, 'Error encountered while rendering content.', $exception);
+        }
+    }
+
+    private function createResponse(Request $request): Response
+    {
+        $response = new Response();
+        $cacheLifetime = $request->attributes->get('_cacheLifetime');
+
+        if ($cacheLifetime) {
+            $response->setPublic();
+            $response->headers->set(
+                SuluHttpCache::HEADER_REVERSE_PROXY_TTL,
+                $cacheLifetime
+            );
+            $response->setMaxAge($this->getParameter('sulu_http_cache.cache.max_age'));
+            $response->setSharedMaxAge($this->getParameter('sulu_http_cache.cache.shared_max_age'));
         }
 
-        return $media;
+        // we need to set the content type ourselves here
+        // else symfony will use the accept header of the client and the page could be cached with false content-type
+        // see following symfony issue: https://github.com/symfony/symfony/issues/35694
+        $mimeType = $request->getMimeType($request->getRequestFormat());
+
+        if ($mimeType) {
+            $response->headers->set('Content-Type', $mimeType);
+        }
+
+        return $response;
     }
+
 }

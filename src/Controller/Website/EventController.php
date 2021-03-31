@@ -7,18 +7,13 @@ namespace Manuxi\SuluEventBundle\Controller\Website;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
 use JMS\Serializer\SerializerBuilder;
-use Sulu\Bundle\HttpCacheBundle\Cache\SuluHttpCache;
 use Sulu\Bundle\MediaBundle\Media\Manager\MediaManagerInterface;
-use Sulu\Bundle\PreviewBundle\Preview\Preview;
 use Sulu\Bundle\RouteBundle\Entity\RouteRepositoryInterface;
 use Sulu\Bundle\WebsiteBundle\Resolver\TemplateAttributeResolverInterface;
 use Sulu\Component\Webspace\Manager\WebspaceManagerInterface;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Contracts\Translation\TranslatorInterface;
-use Twig\Environment;
 
 class EventController extends AbstractController
 {
@@ -63,37 +58,7 @@ class EventController extends AbstractController
             'created'       => $event->getCreated(),
         ]);
 
-        $response = $this->createResponse($this->request);
-
-        try {
-            if ($partial) {
-                $response->setContent(
-                    $this->renderBlock(
-                        $viewTemplate,
-                        'content',
-                        $parameters
-                    )
-                );
-
-                return $response;
-            } elseif ($preview) {
-                $response->setContent(
-                    $this->renderPreview($viewTemplate, $parameters)
-                );
-            } else {
-                $response->setContent(
-                    $this->renderView(
-                        $viewTemplate,
-                        $parameters
-                    )
-                );
-            }
-            return $response;
-
-        } catch (\InvalidArgumentException $exception) {
-            // template not found
-            throw new HttpException(406, 'Error encountered when rendering content', $exception);
-        }
+        return $this->prepareResponse($viewTemplate, $parameters, $preview, $partial);
     }
 
     /**
@@ -122,7 +87,6 @@ class EventController extends AbstractController
     private function extractExtension(Event $event): array
     {
         $serializer = SerializerBuilder::create()->build();
-
         return $serializer->toArray($event->getExt());
     }
 
@@ -138,33 +102,6 @@ class EventController extends AbstractController
         $subscribedServices['sulu_website.resolver.template_attribute'] = TemplateAttributeResolverInterface::class;
 
         return $subscribedServices;
-    }
-
-    private function createResponse(Request $request): Response
-    {
-        $response = new Response();
-        $cacheLifetime = $request->attributes->get('_cacheLifetime');
-
-        if ($cacheLifetime) {
-            $response->setPublic();
-            $response->headers->set(
-                SuluHttpCache::HEADER_REVERSE_PROXY_TTL,
-                $cacheLifetime
-            );
-            $response->setMaxAge($this->getParameter('sulu_http_cache.cache.max_age'));
-            $response->setSharedMaxAge($this->getParameter('sulu_http_cache.cache.shared_max_age'));
-        }
-
-        // we need to set the content type ourselves here
-        // else symfony will use the accept header of the client and the page could be cached with false content-type
-        // see following symfony issue: https://github.com/symfony/symfony/issues/35694
-        $mimeType = $request->getMimeType($request->getRequestFormat());
-
-        if ($mimeType) {
-            $response->headers->set('Content-Type', $mimeType);
-        }
-
-        return $response;
     }
 
 }
