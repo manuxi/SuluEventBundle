@@ -93,6 +93,10 @@ class LocationModel implements LocationModelInterface
         if ($countryCode) {
             $location->setCountryCode($countryCode);
         }
+        $notes = $this->getProperty($data, 'notes');
+        if ($notes) {
+            $location->setNotes($notes);
+        }
         return $location;
     }
 }

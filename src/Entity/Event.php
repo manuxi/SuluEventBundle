@@ -280,10 +280,6 @@ class Event implements AuditableTranslationInterface
         return $this;
     }
 
-    /**
-     * @TODO create EventSeo from EventSeoModel
-     * @TODO inject Event in EventSeo constructor
-     */
     public function getEventSeo(): EventSeo
     {
         if (!$this->eventSeo instanceof EventSeo) {
