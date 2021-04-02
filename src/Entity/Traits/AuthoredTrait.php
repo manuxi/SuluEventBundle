@@ -11,7 +11,7 @@ trait AuthoredTrait
      */
     protected $authored;
 
-    public function getAuthored(): \DateTime
+    public function getAuthored(): ?\DateTime
     {
         return $this->authored;
     }
