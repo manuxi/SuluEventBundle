@@ -36,14 +36,13 @@ class EventSelectionContentType extends SimpleContentType
                 $events[] = $event;
             }
         }
-
         return $events;
     }
 
     /**
      * @return mixed[]
      */
-    public function getViewData(PropertyInterface $property): array
+    public function getViewData(PropertyInterface $property)
     {
         return $property->getValue();
     }

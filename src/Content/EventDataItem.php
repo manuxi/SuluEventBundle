@@ -4,15 +4,16 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Content;
 
-use Manuxi\SuluEventBundle\Entity\Event;
 use JMS\Serializer\Annotation as Serializer;
+use Manuxi\SuluEventBundle\Entity\Event;
 use Sulu\Component\SmartContent\ItemInterface;
 
+/**
+ * @Serializer\ExclusionPolicy("all")
+ */
 class EventDataItem implements ItemInterface
 {
-    /**
-     * @Serializer\Exclude
-     */
+
     private $entity;
 
     public function __construct(Event $entity)

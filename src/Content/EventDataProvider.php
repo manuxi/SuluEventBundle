@@ -9,7 +9,7 @@ use Sulu\Component\SmartContent\Orm\BaseDataProvider;
 
 class EventDataProvider extends BaseDataProvider
 {
-    private $defaultLimit = 10;
+    private $defaultLimit = 12;
 
     public function getConfiguration(): ProviderConfigurationInterface
     {
@@ -69,4 +69,5 @@ class EventDataProvider extends BaseDataProvider
 
         return $count > ($page * $pageSize);
     }
+
 }
