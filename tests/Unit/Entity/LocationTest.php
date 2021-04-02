@@ -28,9 +28,9 @@ class LocationTest extends TestCase
     public function testStreet(): void
     {
         $this->assertNull($this->location->getStreet());
-        $this->assertSame($this->location, $this->location->setStreet('Luetzowplatz'));
+        $this->assertSame($this->location, $this->location->setStreet('Langenhorner Chaussee'));
         $this->assertNotNull($this->location->getStreet());
-        $this->assertSame('Luetzowplatz', $this->location->getStreet());
+        $this->assertSame('Langenhorner Chaussee', $this->location->getStreet());
     }
 
     public function testNumber(): void

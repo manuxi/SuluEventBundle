@@ -10,7 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation as Serializer;
 use Manuxi\SuluEventBundle\Entity\Interfaces\AuditableTranslatableInterface;
 use Manuxi\SuluEventBundle\Entity\Traits\AuditableTranslatableTrait;
-use Sulu\Bundle\MediaBundle\Entity\MediaInterface;
+use Manuxi\SuluEventBundle\Entity\Traits\ImageTrait;
 
 /**
  * @ORM\Entity
@@ -19,6 +19,7 @@ use Sulu\Bundle\MediaBundle\Entity\MediaInterface;
  */
 class Event implements AuditableTranslatableInterface
 {
+    use ImageTrait;
     use AuditableTranslatableTrait;
 
     public const RESOURCE_KEY = 'events';
@@ -80,13 +81,6 @@ class Event implements AuditableTranslatableInterface
     private $locale = 'en';
 
     private $ext = [];
-
-    /**
-     * @ORM\ManyToOne(targetEntity="Sulu\Bundle\MediaBundle\Entity\MediaInterface")
-     *
-     * @Serializer\Exclude
-     */
-    private $image = null;
 
     public function __construct()
     {
@@ -154,34 +148,6 @@ class Event implements AuditableTranslatableInterface
         }
 
         return $this->location->getId();
-    }
-
-    public function getImage(): ?MediaInterface
-    {
-        return $this->image;
-    }
-
-    /**
-     * @return array<string, mixed>|null
-     *
-     * @Serializer\VirtualProperty
-     * @Serializer\SerializedName("image")
-     */
-    public function getImageData(): ?array
-    {
-        if (!$this->image) {
-            return null;
-        }
-
-        return [
-            'id' => $this->image->getId(),
-        ];
-    }
-
-    public function setImage(?MediaInterface $image): self
-    {
-        $this->image = $image;
-        return $this;
     }
 
     /**

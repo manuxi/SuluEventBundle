@@ -20,8 +20,8 @@ class EventTranslationTest extends SuluTestCase
      * @var Event|ObjectProphecy
      */
     private $event;
-
     private $translation;
+    private $testString = "Lorem ipsum dolor sit amet, ...";
 
     protected function setUp(): void
     {
@@ -42,21 +42,31 @@ class EventTranslationTest extends SuluTestCase
     public function testTitle(): void
     {
         $this->assertNull($this->translation->getTitle());
-        $this->assertSame($this->translation, $this->translation->setTitle('Sulu is awesome'));
-        $this->assertSame('Sulu is awesome', $this->translation->getTitle());
+        $this->assertSame($this->translation, $this->translation->setTitle($this->testString));
+        $this->assertSame($this->testString, $this->translation->getTitle());
     }
 
     public function testTeaser(): void
     {
         $this->assertNull($this->translation->getTeaser());
-        $this->assertSame($this->translation, $this->translation->setTeaser('Sulu is awesome'));
-        $this->assertSame('Sulu is awesome', $this->translation->getTeaser());
+        $this->assertSame($this->translation, $this->translation->setTeaser($this->testString));
+        $this->assertSame($this->testString, $this->translation->getTeaser());
     }
 
     public function testDescription(): void
     {
         $this->assertNull($this->translation->getDescription());
-        $this->assertSame($this->translation, $this->translation->setDescription('Sulu is awesome'));
-        $this->assertSame('Sulu is awesome', $this->translation->getDescription());
+        $this->assertSame($this->translation, $this->translation->setDescription($this->testString));
+        $this->assertSame($this->testString, $this->translation->getDescription());
     }
+
+    public function testRoutePath(): void
+    {
+        $testRoutePath = 'events/event-100';
+        $this->assertEmpty($this->translation->getRoutePath());
+        $this->assertSame($this->translation, $this->translation->setRoutePath($testRoutePath));
+        $this->assertSame($testRoutePath, $this->translation->getRoutePath());
+    }
+
+
 }

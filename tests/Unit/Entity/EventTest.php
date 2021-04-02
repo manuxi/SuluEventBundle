@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Manuxi\SuluEventBundle\Tests\Unit\Entity;
 
 use Manuxi\SuluEventBundle\Entity\Event;
+use Manuxi\SuluEventBundle\Entity\EventExcerpt;
 use Manuxi\SuluEventBundle\Entity\EventSeo;
 use Manuxi\SuluEventBundle\Entity\EventTranslation;
 use Manuxi\SuluEventBundle\Entity\Location;
@@ -15,17 +16,12 @@ use Sulu\Bundle\TestBundle\Testing\SuluTestCase;
 
 class EventTest extends SuluTestCase
 {
-    public static function tearDownAfterClass(): void
-    {
-        parent::tearDownAfterClass();
-    }
-
     /**
      * @var Location|ObjectProphecy
      */
     private $location;
-
     private $event;
+    private $testString = "Lorem ipsum dolor sit amet, ...";
 
     protected function setUp(): void
     {
@@ -39,6 +35,8 @@ class EventTest extends SuluTestCase
         $this->assertFalse($this->event->isEnabled());
         $this->assertSame($this->event, $this->event->setEnabled(true));
         $this->assertTrue($this->event->isEnabled());
+        $this->assertSame($this->event, $this->event->setEnabled(false));
+        $this->assertFalse($this->event->isEnabled());
     }
 
     public function testStartDate(): void
@@ -88,34 +86,47 @@ class EventTest extends SuluTestCase
     public function testTitle(): void
     {
         $this->assertNull($this->event->getTitle());
-        $this->assertSame($this->event, $this->event->setTitle('Sulu is awesome'));
-        $this->assertSame('Sulu is awesome', $this->event->getTitle());
+        $this->assertSame($this->event, $this->event->setTitle($this->testString));
+        $this->assertSame($this->testString, $this->event->getTitle());
 
         $this->assertInstanceOf(EventTranslation::class, $this->event->getTranslations()['de']);
         $this->assertSame('de', $this->event->getTranslations()['de']->getLocale());
-        $this->assertSame('Sulu is awesome', $this->event->getTranslations()['de']->getTitle());
+        $this->assertSame($this->testString, $this->event->getTranslations()['de']->getTitle());
     }
 
     public function testTeaser(): void
     {
         $this->assertNull($this->event->getTeaser());
-        $this->assertSame($this->event, $this->event->setTeaser('Sulu is awesome'));
-        $this->assertSame('Sulu is awesome', $this->event->getTeaser());
+        $this->assertSame($this->event, $this->event->setTeaser($this->testString));
+        $this->assertSame($this->testString, $this->event->getTeaser());
 
         $this->assertInstanceOf(EventTranslation::class, $this->event->getTranslations()['de']);
         $this->assertSame('de', $this->event->getTranslations()['de']->getLocale());
-        $this->assertSame('Sulu is awesome', $this->event->getTranslations()['de']->getTeaser());
+        $this->assertSame($this->testString, $this->event->getTranslations()['de']->getTeaser());
     }
 
     public function testDescription(): void
     {
         $this->assertNull($this->event->getDescription());
-        $this->assertSame($this->event, $this->event->setDescription('Sulu is awesome'));
-        $this->assertSame('Sulu is awesome', $this->event->getDescription());
+        $this->assertSame($this->event, $this->event->setDescription($this->testString));
+        $this->assertSame($this->testString, $this->event->getDescription());
 
         $this->assertInstanceOf(EventTranslation::class, $this->event->getTranslations()['de']);
         $this->assertSame('de', $this->event->getTranslations()['de']->getLocale());
-        $this->assertSame('Sulu is awesome', $this->event->getTranslations()['de']->getDescription());
+        $this->assertSame($this->testString, $this->event->getTranslations()['de']->getDescription());
+    }
+
+    public function testRoutePath(): void
+    {
+        $testRoutePath = 'events/event-100';
+
+        $this->assertNull($this->event->getRoutePath());
+        $this->assertSame($this->event, $this->event->setRoutePath($testRoutePath));
+        $this->assertSame($testRoutePath, $this->event->getRoutePath());
+
+        $this->assertInstanceOf(EventTranslation::class, $this->event->getTranslations()['de']);
+        $this->assertSame('de', $this->event->getTranslations()['de']->getLocale());
+        $this->assertSame($testRoutePath, $this->event->getTranslations()['de']->getRoutePath());
     }
 
     public function testLocale(): void
@@ -136,6 +147,17 @@ class EventTest extends SuluTestCase
         $this->assertSame($eventSeo->reveal(), $this->event->getEventSeo());
     }
 
+    public function testEventExcerpt(): void
+    {
+        $eventExcerpt = $this->prophesize(EventExcerpt::class);
+        $eventExcerpt->getId()->willReturn(42);
+
+        $this->assertInstanceOf(EventExcerpt::class, $this->event->getEventExcerpt());
+        $this->assertNull($this->event->getEventExcerpt()->getId());
+        $this->assertSame($this->event, $this->event->setEventExcerpt($eventExcerpt->reveal()));
+        $this->assertSame($eventExcerpt->reveal(), $this->event->getEventExcerpt());
+    }
+
     public function testExt(): void
     {
         $ext = $this->event->getExt();
@@ -143,24 +165,41 @@ class EventTest extends SuluTestCase
         $this->assertInstanceOf(EventSeo::class, $ext['seo']);
         $this->assertNull($ext['seo']->getId());
 
-        $this->event->addExt('key', new EventSeo());
+        $this->assertArrayHasKey('excerpt', $ext);
+        $this->assertInstanceOf(EventExcerpt::class, $ext['excerpt']);
+        $this->assertNull($ext['excerpt']->getId());
+
+        $this->event->addExt('foo', new EventSeo());
+        $this->event->addExt('bar', new EventExcerpt());
         $ext = $this->event->getExt();
 
         $this->assertArrayHasKey('seo', $ext);
         $this->assertInstanceOf(EventSeo::class, $ext['seo']);
         $this->assertNull($ext['seo']->getId());
 
-        $this->assertArrayHasKey('key', $ext);
-        $this->assertInstanceOf(EventSeo::class, $ext['key']);
-        $this->assertNull($ext['key']->getId());
+        $this->assertArrayHasKey('excerpt', $ext);
+        $this->assertInstanceOf(EventExcerpt::class, $ext['excerpt']);
+        $this->assertNull($ext['excerpt']->getId());
+
+        $this->assertArrayHasKey('foo', $ext);
+        $this->assertInstanceOf(EventSeo::class, $ext['foo']);
+        $this->assertNull($ext['foo']->getId());
+
+        $this->assertArrayHasKey('bar', $ext);
+        $this->assertInstanceOf(EventExcerpt::class, $ext['bar']);
+        $this->assertNull($ext['bar']->getId());
 
         $this->assertTrue($this->event->hasExt('seo'));
-        $this->assertTrue($this->event->hasExt('key'));
+        $this->assertTrue($this->event->hasExt('excerpt'));
+        $this->assertTrue($this->event->hasExt('foo'));
+        $this->assertTrue($this->event->hasExt('bar'));
 
         $this->event->setExt(['and' => 'now', 'something' => 'special']);
         $ext = $this->event->getExt();
         $this->assertArrayNotHasKey('seo', $ext);
-        $this->assertArrayNotHasKey('key', $ext);
+        $this->assertArrayNotHasKey('excerpt', $ext);
+        $this->assertArrayNotHasKey('foo', $ext);
+        $this->assertArrayNotHasKey('bar', $ext);
         $this->assertArrayHasKey('and', $ext);
         $this->assertArrayHasKey('something', $ext);
         $this->assertTrue($this->event->hasExt('and'));
@@ -172,21 +211,26 @@ class EventTest extends SuluTestCase
     public function testPropagateLocale(): void
     {
         $this->assertSame($this->event->getExt()['seo']->getLocale(), 'de');
+        $this->assertSame($this->event->getExt()['excerpt']->getLocale(), 'de');
         $this->event->setLocale('en');
         $this->assertSame($this->event->getExt()['seo']->getLocale(), 'en');
+        $this->assertSame($this->event->getExt()['excerpt']->getLocale(), 'en');
     }
 
     public function testTranslations(): void
     {
         $this->assertSame($this->event->getTranslations(), []);
-        $this->event->setDescription('Sulu is awesome');
+        $this->event->setDescription($this->testString);
         $this->assertNotSame($this->event->getTranslations(), []);
         $this->assertArrayHasKey('de', $this->event->getTranslations());
         $this->assertArrayNotHasKey('en', $this->event->getTranslations());
+        $this->assertSame($this->event->getDescription(), $this->testString);
+
         $this->event->setLocale('en');
-        $this->event->setDescription('Sulu is awesome');
+        $this->event->setDescription($this->testString);
         $this->assertArrayHasKey('de', $this->event->getTranslations());
         $this->assertArrayHasKey('en', $this->event->getTranslations());
+        $this->assertSame($this->event->getDescription(), $this->testString);
         //No need to test more, it's s already done...
     }
 }

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Entity;
 
+use Manuxi\SuluEventBundle\Entity\Traits\ImageTrait;
 use Manuxi\SuluEventBundle\Repository\LocationRepository;
 use Doctrine\ORM\Mapping as ORM;
-use Sulu\Bundle\MediaBundle\Entity\MediaInterface;
 
 /**
  * @ORM\Entity
@@ -15,6 +15,8 @@ use Sulu\Bundle\MediaBundle\Entity\MediaInterface;
  */
 class Location
 {
+    use ImageTrait;
+
     public const RESOURCE_KEY = 'locations';
     public const FORM_KEY = 'location_details';
     public const LIST_KEY = 'locations';
@@ -65,11 +67,6 @@ class Location
      * @ORM\Column(type="text", nullable=true)
      */
     private $notes;
-
-    /**
-     * @ORM\ManyToOne(targetEntity="Sulu\Bundle\MediaBundle\Entity\MediaInterface")
-     */
-    private $image;
 
     public function getId(): ?int
     {
@@ -164,28 +161,4 @@ class Location
         return $this;
     }
 
-    public function getImage(): ?MediaInterface
-    {
-        return $this->image;
-    }
-
-    /**
-     * @return array<string, mixed>|null
-     */
-    public function getImageData(): ?array
-    {
-        if (!$this->image) {
-            return null;
-        }
-
-        return [
-            'id' => $this->image->getId(),
-        ];
-    }
-
-    public function setImage(?MediaInterface $image): self
-    {
-        $this->image = $image;
-        return $this;
-    }
 }
