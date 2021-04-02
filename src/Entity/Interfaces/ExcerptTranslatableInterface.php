@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Manuxi\SuluEventBundle\Entity\Interfaces;
 
-use Doctrine\Common\Collections\Collection;
 use Sulu\Bundle\CategoryBundle\Entity\CategoryInterface;
 use Sulu\Bundle\MediaBundle\Entity\MediaInterface;
 use Sulu\Bundle\TagBundle\Tag\TagInterface;

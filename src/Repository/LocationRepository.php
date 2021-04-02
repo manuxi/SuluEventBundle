@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Manuxi\SuluEventBundle\Repository;
 
 use Manuxi\SuluEventBundle\Entity\Location;

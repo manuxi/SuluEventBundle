@@ -13,9 +13,7 @@ use Sulu\Component\Rest\RestHelperInterface;
 class DoctrineListRepresentationFactory
 {
     private $restHelper;
-
     private $listBuilderFactory;
-
     private $fieldDescriptorFactory;
 
     public function __construct(

@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Manuxi\SuluEventBundle\Entity\Traits;
 
-use JMS\Serializer\Annotation as Serializer;
 use Sulu\Component\Security\Authentication\UserInterface;
 
 trait AuthorTrait

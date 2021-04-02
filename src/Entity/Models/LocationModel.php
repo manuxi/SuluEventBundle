@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Manuxi\SuluEventBundle\Entity\Models;
 
 use Doctrine\ORM\OptimisticLockException;

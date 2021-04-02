@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Manuxi\SuluEventBundle\EventSubscriber\ORM;
 
 use Doctrine\Common\EventSubscriber;

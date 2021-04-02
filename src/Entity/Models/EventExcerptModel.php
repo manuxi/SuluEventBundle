@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Manuxi\SuluEventBundle\Entity\Models;
 
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Manuxi\SuluEventBundle\Entity\EventExcerpt;
-use Manuxi\SuluEventBundle\Entity\Interfaces\EventExcerptInterface;
+use Manuxi\SuluEventBundle\Entity\Interfaces\EventExcerptModelInterface;
 use Manuxi\SuluEventBundle\Entity\Traits\ArrayPropertyTrait;
 use Manuxi\SuluEventBundle\Repository\EventExcerptRepository;
 use Sulu\Bundle\CategoryBundle\Category\CategoryManagerInterface;
@@ -14,7 +16,7 @@ use Sulu\Bundle\TagBundle\Tag\TagManagerInterface;
 use Sulu\Component\Rest\Exception\EntityNotFoundException;
 use Symfony\Component\HttpFoundation\Request;
 
-class EventExcerptModel implements EventExcerptInterface
+class EventExcerptModel implements EventExcerptModelInterface
 {
     use ArrayPropertyTrait;
 

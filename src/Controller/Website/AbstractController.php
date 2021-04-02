@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Manuxi\SuluEventBundle\Controller\Website;
 
 use Sulu\Bundle\HttpCacheBundle\Cache\SuluHttpCache;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Controller\Website;
 
+use JMS\Serializer\SerializerBuilder;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
-use JMS\Serializer\SerializerBuilder;
 use Sulu\Bundle\MediaBundle\Media\Manager\MediaManagerInterface;
 use Sulu\Bundle\RouteBundle\Entity\RouteRepositoryInterface;
 use Sulu\Bundle\WebsiteBundle\Resolver\TemplateAttributeResolverInterface;
@@ -41,6 +41,9 @@ class EventController extends AbstractController
         $this->routeRepository           = $routeRepository;
     }
 
+    /**
+     * @throws \Exception
+     */
     public function indexAction(Event $event, string $view = 'pages/event', bool $preview = false, bool $partial = false): Response
     {
         $requestFormat = $this->request->getRequestFormat();
@@ -95,13 +98,14 @@ class EventController extends AbstractController
      */
     public static function getSubscribedServices()
     {
-        $subscribedServices = parent::getSubscribedServices();
-
-        $subscribedServices['sulu_core.webspace.webspace_manager'] = WebspaceManagerInterface::class;
-        $subscribedServices['sulu.repository.route'] = RouteRepositoryInterface::class;
-        $subscribedServices['sulu_website.resolver.template_attribute'] = TemplateAttributeResolverInterface::class;
-
-        return $subscribedServices;
+        return array_merge(
+            parent::getSubscribedServices(),
+            [
+                WebspaceManagerInterface::class,
+                RouteRepositoryInterface::class,
+                TemplateAttributeResolverInterface::class,
+            ]
+        );
     }
 
 }

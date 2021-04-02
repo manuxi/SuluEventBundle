@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Manuxi\SuluEventBundle\Admin\Helper;
 
 use Sulu\Component\Webspace\Manager\WebspaceManagerInterface;

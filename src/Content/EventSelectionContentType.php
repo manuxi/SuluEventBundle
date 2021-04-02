@@ -11,7 +11,6 @@ use Sulu\Component\Content\SimpleContentType;
 
 class EventSelectionContentType extends SimpleContentType
 {
-
     private $eventRepository;
 
     public function __construct(EventRepository $eventRepository)

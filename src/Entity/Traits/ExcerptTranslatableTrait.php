@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Manuxi\SuluEventBundle\Entity\Traits;
 
-use Doctrine\Common\Collections\Collection;
 use JMS\Serializer\Annotation as Serializer;
 use Sulu\Bundle\CategoryBundle\Entity\CategoryInterface;
 use Sulu\Bundle\MediaBundle\Entity\MediaInterface;
