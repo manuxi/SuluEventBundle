@@ -7,7 +7,7 @@ namespace Manuxi\SuluEventBundle\Entity\Traits;
 use JMS\Serializer\Annotation as Serializer;
 use Sulu\Component\Security\Authentication\UserInterface;
 
-trait AuthorTranslationTrait
+trait AuthorTranslatableTrait
 {
     abstract public function getLocale();
     abstract protected function getTranslation(string $locale);

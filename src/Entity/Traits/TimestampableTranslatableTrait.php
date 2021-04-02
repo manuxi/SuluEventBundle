@@ -6,7 +6,7 @@ namespace Manuxi\SuluEventBundle\Entity\Traits;
 
 use JMS\Serializer\Annotation as Serializer;
 
-trait TimestampableTranslationTrait
+trait TimestampableTranslatableTrait
 {
     abstract public function getLocale();
     abstract protected function getTranslation(string $locale);

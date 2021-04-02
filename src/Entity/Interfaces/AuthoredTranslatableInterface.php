@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Entity\Interfaces;
 
-interface AuthoredTranslationInterface
+interface AuthoredTranslatableInterface
 {
     public function getAuthored(): ?\DateTime;
     public function setAuthored(\DateTime $authored);

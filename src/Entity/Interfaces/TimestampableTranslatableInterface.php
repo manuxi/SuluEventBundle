@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Entity\Interfaces;
 
-interface TimestampableTranslationInterface
+interface TimestampableTranslatableInterface
 {
     /**
      * Returns the created timestamp of the translated object.

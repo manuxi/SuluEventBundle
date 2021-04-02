@@ -8,8 +8,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation as Serializer;
-use Manuxi\SuluEventBundle\Entity\Interfaces\AuditableTranslationInterface;
-use Manuxi\SuluEventBundle\Entity\Traits\AuditableTranslationTrait;
+use Manuxi\SuluEventBundle\Entity\Interfaces\AuditableTranslatableInterface;
+use Manuxi\SuluEventBundle\Entity\Traits\AuditableTranslatableTrait;
 use Sulu\Bundle\MediaBundle\Entity\MediaInterface;
 
 /**
@@ -17,9 +17,9 @@ use Sulu\Bundle\MediaBundle\Entity\MediaInterface;
  * @ORM\Table(name="app_event")
  * @ORM\Entity(repositoryClass="Manuxi\SuluEventBundle\Repository\EventRepository")
  */
-class Event implements AuditableTranslationInterface
+class Event implements AuditableTranslatableInterface
 {
-    use AuditableTranslationTrait;
+    use AuditableTranslatableTrait;
 
     public const RESOURCE_KEY = 'events';
     public const FORM_KEY = 'event_details';
