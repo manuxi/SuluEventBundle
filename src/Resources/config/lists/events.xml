@@ -4,23 +4,23 @@
 
     <joins name="translation">
         <join>
-            <entity-name>Manuxi\SuluEventBundle\Entity\EventTranslation</entity-name>
-            <field-name>Manuxi\SuluEventBundle\Entity\Event.translations</field-name>
-            <condition>Manuxi\SuluEventBundle\Entity\EventTranslation.locale = :locale</condition>
+            <entity-name>%sulu.model.event_translation.class%</entity-name>
+            <field-name>%sulu.model.event.class%.translations</field-name>
+            <condition>%sulu.model.event_translation.class%.locale = :locale</condition>
         </join>
     </joins>
 
     <joins name="location">
         <join>
-            <entity-name>Manuxi\SuluEventBundle\Entity\Location</entity-name>
-            <field-name>Manuxi\SuluEventBundle\Entity\Event.location</field-name>
+            <entity-name>%sulu.model.location.class%</entity-name>
+            <field-name>%sulu.model.event.class%.location</field-name>
         </join>
     </joins>
 
     <joins name="changer" ref="translation">
         <join>
             <entity-name>%sulu.model.user.class%_changer</entity-name>
-            <field-name>Manuxi\SuluEventBundle\Entity\EventTranslation.changer</field-name>
+            <field-name>%sulu.model.event_translation.class%.changer</field-name>
         </join>
         <join>
             <entity-name>%sulu.model.contact.class%_changer</entity-name>
@@ -31,7 +31,7 @@
     <joins name="creator" ref="translation">
         <join>
             <entity-name>%sulu.model.user.class%_creator</entity-name>
-            <field-name>Manuxi\SuluEventBundle\Entity\EventTranslation.creator</field-name>
+            <field-name>%sulu.model.event_translation.class%.creator</field-name>
         </join>
         <join>
             <entity-name>%sulu.model.contact.class%_creator</entity-name>
@@ -42,55 +42,68 @@
     <properties>
         <property name="id" visibility="no" translation="sulu_admin.id">
             <field-name>id</field-name>
-            <entity-name>Manuxi\SuluEventBundle\Entity\Event</entity-name>
+            <entity-name>%sulu.model.event.class%</entity-name>
         </property>
 
         <property name="title" visibility="always" searchability="yes" translation="sulu_admin.title">
             <field-name>title</field-name>
-            <entity-name>Manuxi\SuluEventBundle\Entity\EventTranslation</entity-name>
+            <entity-name>%sulu.model.event_translation.class%</entity-name>
 
             <joins ref="translation"/>
         </property>
 
+        <property name="image" visibility="always" translation="sulu_event.image" sortable="false">
+            <field-name>id</field-name>
+            <entity-name>SuluMediaBundle:Media</entity-name>
+            <joins>
+                <join>
+                    <entity-name>SuluMediaBundle:Media</entity-name>
+                    <field-name>%sulu.model.event.class%.image</field-name>
+                </join>
+            </joins>
+
+            <transformer type="thumbnails"/>
+        </property>
+
         <property name="locationName" visibility="always" searchability="yes" translation="sulu_event.location">
             <field-name>name</field-name>
-            <entity-name>Manuxi\SuluEventBundle\Entity\Location</entity-name>
+            <entity-name>%sulu.model.location.class%</entity-name>
 
             <joins ref="location"/>
         </property>
 
         <property name="teaser" visibility="no" searchability="yes" translation="sulu_event.teaser">
             <field-name>teaser</field-name>
-            <entity-name>Manuxi\SuluEventBundle\Entity\EventTranslation</entity-name>
+            <entity-name>%sulu.model.event_translation.class%</entity-name>
 
             <joins ref="translation"/>
         </property>
 
         <property name="description" visibility="no" searchability="yes" translation="sulu_event.description">
             <field-name>description</field-name>
-            <entity-name>Manuxi\SuluEventBundle\Entity\EventTranslation</entity-name>
+            <entity-name>%sulu.model.event_translation.class%</entity-name>
 
             <joins ref="translation"/>
         </property>
 
         <property name="enabled" visibility="yes" translation="sulu_event.enabled" type="bool">
             <field-name>enabled</field-name>
-            <entity-name>Manuxi\SuluEventBundle\Entity\Event</entity-name>
+            <entity-name>%sulu.model.event.class%</entity-name>
         </property>
 
         <property name="startDate" visibility="always" translation="sulu_event.start_date" type="date">
             <field-name>startDate</field-name>
-            <entity-name>Manuxi\SuluEventBundle\Entity\Event</entity-name>
+            <entity-name>%sulu.model.event.class%</entity-name>
         </property>
 
         <property name="endDate" visibility="always" translation="sulu_event.end_date" type="date">
             <field-name>endDate</field-name>
-            <entity-name>Manuxi\SuluEventBundle\Entity\Event</entity-name>
+            <entity-name>%sulu.model.event.class%</entity-name>
         </property>
 
         <property name="created" translation="sulu_admin.created" type="datetime" visibility="yes">
             <field-name>created</field-name>
-            <entity-name>Manuxi\SuluEventBundle\Entity\EventTranslation</entity-name>
+            <entity-name>%sulu.model.event_translation.class%</entity-name>
 
             <joins ref="translation"/>
         </property>
@@ -112,7 +125,7 @@
 
         <property name="changed" translation="sulu_admin.changed" type="datetime" visibility="no">
             <field-name>changed</field-name>
-            <entity-name>Manuxi\SuluEventBundle\Entity\EventTranslation</entity-name>
+            <entity-name>%sulu.model.event_translation.class%</entity-name>
 
             <joins ref="translation"/>
         </property>

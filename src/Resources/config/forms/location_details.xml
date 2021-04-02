@@ -6,10 +6,19 @@
     <key>location_details</key>
 
     <properties>
-        <property name="name" type="text_line" mandatory="true">
+        <property name="name" type="text_line" colspan="8" mandatory="true">
             <meta>
                 <title>sulu_admin.name</title>
             </meta>
+        </property>
+
+        <property name="image" type="single_media_selection" colspan="4">
+            <meta>
+                <title>sulu_event.image</title>
+            </meta>
+            <params>
+                <param name="types" value="image"/>
+            </params>
         </property>
 
         <property name="street" type="text_line" colspan="9">
@@ -30,13 +39,19 @@
             </meta>
         </property>
 
-        <property name="city" type="text_line" colspan="6">
+        <property name="city" type="text_line" colspan="9">
             <meta>
                 <title>sulu_contact.city</title>
             </meta>
         </property>
 
-        <property name="countryCode" type="single_select" colspan="3">
+        <property name="state" type="text_line" colspan="6">
+            <meta>
+                <title>sulu_contact.state</title>
+            </meta>
+        </property>
+
+        <property name="countryCode" type="single_select" colspan="6">
             <meta>
                 <title>sulu_contact.country</title>
             </meta>

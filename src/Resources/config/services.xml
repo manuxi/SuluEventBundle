@@ -25,6 +25,7 @@
             <argument type="service" id="sulu_core.rest_helper"/>
             <argument type="service" id="sulu_core.doctrine_list_builder_factory"/>
             <argument type="service" id="sulu_core.list_builder.field_descriptor_factory"/>
+            <argument type="service" id="sulu_media.media_manager"/>
 
             <tag name="sulu.context" context="admin"/>
         </service>
@@ -118,6 +119,7 @@
 
         <service id="sulu_event.model.location" class="Manuxi\SuluEventBundle\Entity\Models\LocationModel">
             <argument type="service" id="sulu_event.repository.location"/>
+            <argument type="service" id="sulu.repository.media"/>
         </service>
 
         <service id="sulu_event.object_provider" public="true" class="Manuxi\SuluEventBundle\Preview\EventObjectProvider">

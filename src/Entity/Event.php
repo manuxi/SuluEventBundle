@@ -77,7 +77,7 @@ class Event implements AuditableTranslationInterface
      */
     private $translations;
 
-    protected $locale = 'en';
+    private $locale = 'en';
 
     private $ext = [];
 

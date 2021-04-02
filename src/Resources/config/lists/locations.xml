@@ -5,42 +5,60 @@
     <properties>
         <property name="id" visibility="no" translation="sulu_admin.id">
             <field-name>id</field-name>
-            <entity-name>Manuxi\SuluEventBundle\Entity\Location</entity-name>
+            <entity-name>%sulu.model.location.class%</entity-name>
         </property>
 
         <property name="name" visibility="always" searchability="yes" translation="sulu_admin.name">
             <field-name>name</field-name>
-            <entity-name>Manuxi\SuluEventBundle\Entity\Location</entity-name>
+            <entity-name>%sulu.model.location.class%</entity-name>
+        </property>
+
+        <property name="image" visibility="always" translation="sulu_event.image" sortable="false">
+            <field-name>id</field-name>
+            <entity-name>SuluMediaBundle:Media</entity-name>
+            <joins>
+                <join>
+                    <entity-name>SuluMediaBundle:Media</entity-name>
+                    <field-name>%sulu.model.location.class%.image</field-name>
+                </join>
+            </joins>
+
+            <transformer type="thumbnails"/>
         </property>
 
         <property name="street" visibility="yes" searchability="yes" translation="sulu_contact.street">
             <field-name>street</field-name>
-            <entity-name>Manuxi\SuluEventBundle\Entity\Location</entity-name>
+            <entity-name>%sulu.model.location.class%</entity-name>
         </property>
 
         <property name="number" visibility="yes" searchability="yes" translation="sulu_contact.number">
             <field-name>number</field-name>
-            <entity-name>Manuxi\SuluEventBundle\Entity\Location</entity-name>
+            <entity-name>%sulu.model.location.class%</entity-name>
         </property>
 
         <property name="postalCode" visibility="yes" searchability="yes" translation="sulu_contact.zip">
             <field-name>postalCode</field-name>
-            <entity-name>Manuxi\SuluEventBundle\Entity\Location</entity-name>
+            <entity-name>%sulu.model.location.class%</entity-name>
         </property>
 
         <property name="city" visibility="yes" searchability="yes" translation="sulu_contact.city">
             <field-name>city</field-name>
-            <entity-name>Manuxi\SuluEventBundle\Entity\Location</entity-name>
+            <entity-name>%sulu.model.location.class%</entity-name>
+        </property>
+
+        <property name="state" visibility="yes" searchability="yes" translation="sulu_contact.state">
+            <field-name>state</field-name>
+            <entity-name>%sulu.model.location.class%</entity-name>
         </property>
 
         <property name="countryCode" visibility="yes" searchability="yes" translation="sulu_contact.country">
             <field-name>countryCode</field-name>
-            <entity-name>Manuxi\SuluEventBundle\Entity\Location</entity-name>
+            <entity-name>%sulu.model.location.class%</entity-name>
         </property>
 
         <property name="notes" visibility="no" searchability="yes" translation="sulu_event.notes">
             <field-name>notes</field-name>
-            <entity-name>Manuxi\SuluEventBundle\Entity\Location</entity-name>
+            <entity-name>%sulu.model.location.class%</entity-name>
         </property>
     </properties>
 </list>

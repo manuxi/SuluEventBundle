@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Common;
 
+use Sulu\Bundle\MediaBundle\Media\Manager\MediaManagerInterface;
 use Sulu\Component\Rest\ListBuilder\Doctrine\DoctrineListBuilderFactory;
 use Sulu\Component\Rest\ListBuilder\Doctrine\FieldDescriptor\DoctrineFieldDescriptor;
 use Sulu\Component\Rest\ListBuilder\Metadata\FieldDescriptorFactoryInterface;
@@ -15,15 +16,18 @@ class DoctrineListRepresentationFactory
     private $restHelper;
     private $listBuilderFactory;
     private $fieldDescriptorFactory;
+    private $mediaManager;
 
     public function __construct(
         RestHelperInterface $restHelper,
         DoctrineListBuilderFactory $listBuilderFactory,
-        FieldDescriptorFactoryInterface $fieldDescriptorFactory
+        FieldDescriptorFactoryInterface $fieldDescriptorFactory,
+        MediaManagerInterface $mediaManager
     ) {
         $this->restHelper             = $restHelper;
         $this->listBuilderFactory     = $listBuilderFactory;
         $this->fieldDescriptorFactory = $fieldDescriptorFactory;
+        $this->mediaManager           = $mediaManager;
     }
 
     /**
@@ -34,7 +38,8 @@ class DoctrineListRepresentationFactory
         string $resourceKey,
         array $filters = [],
         array $parameters = []
-    ): PaginatedRepresentation {
+    ): PaginatedRepresentation
+    {
         /** @var DoctrineFieldDescriptor[] $fieldDescriptors */
         $fieldDescriptors = $this->fieldDescriptorFactory->getFieldDescriptors($resourceKey);
 
@@ -50,6 +55,7 @@ class DoctrineListRepresentationFactory
         }
 
         $list = $listBuilder->execute();
+        $list = $this->addImagesToListElements($list, $parameters['locale'] ?? null);
 
         return new PaginatedRepresentation(
             $list,
@@ -58,5 +64,24 @@ class DoctrineListRepresentationFactory
             (int) $listBuilder->getLimit(),
             (int) $listBuilder->count()
         );
+    }
+
+    /**
+     * @param mixed[]
+     */
+    private function addImagesToListElements(array $listeElements, ?string $locale): array
+    {
+        $ids = array_filter(array_column($listeElements, 'image'));
+        $images = $this->mediaManager->getFormatUrls($ids, $locale);
+        foreach ($listeElements as $key => $element) {
+            if (\array_key_exists('image', $element)
+                && $element['image']
+                && \array_key_exists($element['image'], $images)
+            ) {
+                $listeElements[$key]['image'] = $images[$element['image']];
+            }
+        }
+
+        return $listeElements;
     }
 }

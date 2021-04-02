@@ -10,6 +10,7 @@ use Manuxi\SuluEventBundle\Entity\Interfaces\LocationModelInterface;
 use Manuxi\SuluEventBundle\Entity\Location;
 use Manuxi\SuluEventBundle\Entity\Traits\ArrayPropertyTrait;
 use Manuxi\SuluEventBundle\Repository\LocationRepository;
+use Sulu\Bundle\MediaBundle\Entity\MediaRepositoryInterface;
 use Sulu\Component\Rest\Exception\EntityNotFoundException;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -18,14 +19,18 @@ class LocationModel implements LocationModelInterface
     use ArrayPropertyTrait;
 
     private $locationRepository;
+    private $mediaRepository;
 
     public function __construct(
-        LocationRepository $locationRepository
+        LocationRepository $locationRepository,
+        MediaRepositoryInterface $mediaRepository
     ) {
         $this->locationRepository = $locationRepository;
+        $this->mediaRepository = $mediaRepository;
     }
 
     /**
+     * @throws EntityNotFoundException
      * @throws ORMException
      * @throws OptimisticLockException
      */
@@ -43,7 +48,7 @@ class LocationModel implements LocationModelInterface
      */
     public function updateLocation(int $id, Request $request): Location
     {
-        $location = $this->getLocation($id, $request);
+        $location = $this->getLocation($id);
         $location = $this->mapDataToEntity($location, $request->request->all());
         return $this->locationRepository->save($location);
     }
@@ -69,6 +74,9 @@ class LocationModel implements LocationModelInterface
         $this->locationRepository->remove($id);
     }
 
+    /**
+     * @throws EntityNotFoundException
+     */
     private function mapDataToEntity(Location $location, array $data): Location
     {
         $name = $this->getProperty($data, 'name');
@@ -91,6 +99,10 @@ class LocationModel implements LocationModelInterface
         if ($postalCode) {
             $location->setPostalCode($postalCode);
         }
+        $state = $this->getProperty($data, 'state');
+        if ($state) {
+            $location->setState($state);
+        }
         $countryCode = $this->getProperty($data, 'countryCode');
         if ($countryCode) {
             $location->setCountryCode($countryCode);
@@ -98,6 +110,14 @@ class LocationModel implements LocationModelInterface
         $notes = $this->getProperty($data, 'notes');
         if ($notes) {
             $location->setNotes($notes);
+        }
+        $imageId = $this->getPropertyMulti($data, ['image', 'id']);
+        if ($imageId) {
+            $image = $this->mediaRepository->findMediaById((int) $imageId);
+            if (!$image) {
+                throw new EntityNotFoundException($this->mediaRepository->getClassName(), $imageId);
+            }
+            $location->setImage($image);
         }
         return $location;
     }

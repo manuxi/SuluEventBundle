@@ -7,6 +7,7 @@ namespace Manuxi\SuluEventBundle\DependencyInjection;
 use Manuxi\SuluEventBundle\Admin\EventAdmin;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\Location;
+use Sulu\Bundle\PersistenceBundle\DependencyInjection\PersistenceExtensionTrait;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
@@ -15,7 +16,11 @@ use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 
 class SuluEventExtension extends Extension implements PrependExtensionInterface
 {
+    use PersistenceExtensionTrait;
 
+    /**
+     * @throws \Exception
+     */
     public function load(array $configs, ContainerBuilder $container)
     {
 
@@ -26,8 +31,7 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
         $loader->load('services.xml');
         $loader->load('controller.xml');
 
-
-//        $this->configurePersistence($config['objects'], $container);
+        $this->configurePersistence($config['objects'], $container);
     }
 
     public function prepend(ContainerBuilder $container)

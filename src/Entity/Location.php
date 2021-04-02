@@ -6,6 +6,7 @@ namespace Manuxi\SuluEventBundle\Entity;
 
 use Manuxi\SuluEventBundle\Repository\LocationRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Sulu\Bundle\MediaBundle\Entity\MediaInterface;
 
 /**
  * @ORM\Entity
@@ -53,12 +54,22 @@ class Location
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
+    private $state;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
     private $countryCode;
 
     /**
      * @ORM\Column(type="text", nullable=true)
      */
     private $notes;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="Sulu\Bundle\MediaBundle\Entity\MediaInterface")
+     */
+    private $image;
 
     public function getId(): ?int
     {
@@ -120,6 +131,17 @@ class Location
         return $this;
     }
 
+    public function getState(): ?string
+    {
+        return $this->state;
+    }
+
+    public function setState(?string $state): self
+    {
+        $this->state = $state;
+        return $this;
+    }
+
     public function getCountryCode(): ?string
     {
         return $this->countryCode;
@@ -142,4 +164,28 @@ class Location
         return $this;
     }
 
+    public function getImage(): ?MediaInterface
+    {
+        return $this->image;
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    public function getImageData(): ?array
+    {
+        if (!$this->image) {
+            return null;
+        }
+
+        return [
+            'id' => $this->image->getId(),
+        ];
+    }
+
+    public function setImage(?MediaInterface $image): self
+    {
+        $this->image = $image;
+        return $this;
+    }
 }
