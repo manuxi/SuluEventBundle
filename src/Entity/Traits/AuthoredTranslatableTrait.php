@@ -26,9 +26,9 @@ trait AuthoredTranslatableTrait
 
     public function setAuthored(\DateTime $authored): self
     {
-        $translation = $this->getTranslation($this->locale);
+        $translation = $this->getTranslation($this->getLocale());
         if (!$translation) {
-            $translation = $this->createTranslation($this->locale);
+            $translation = $this->createTranslation($this->getLocale());
         }
 
         $translation->setAuthored($authored);
