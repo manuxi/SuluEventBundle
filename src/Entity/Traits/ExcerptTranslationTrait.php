@@ -25,7 +25,7 @@ trait ExcerptTranslationTrait
     /**
      * @ORM\Column(type="string", length=5)
      */
-    private $locale;
+    private $locale = 'en';
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
@@ -59,6 +59,10 @@ trait ExcerptTranslationTrait
      *      )
      */
     private $tags;
+
+    /**
+     * @TODO
+     */
     private $segments;
 
     /**
@@ -81,11 +85,10 @@ trait ExcerptTranslationTrait
 
     private function initExcerptTranslationTrait(): void
     {
-        $this->tags = new ArrayCollection();
-        $this->categories = new ArrayCollection();
-        $this->segments = new ArrayCollection();
-        $this->icons = new ArrayCollection();
-        $this->images = new ArrayCollection();
+        $this->prepareCategories();
+        $this->prepareTags();
+        $this->prepareIcons();
+        $this->prepareImages();
     }
 
     public function getId(): ?int
@@ -98,7 +101,7 @@ trait ExcerptTranslationTrait
         return $this->locale;
     }
 
-    public function setLocale(?string $locale): self
+    public function setLocale(string $locale): self
     {
         $this->locale = $locale;
         return $this;
@@ -137,26 +140,35 @@ trait ExcerptTranslationTrait
         return $this;
     }
 
+    // categories
+
+    private function prepareCategories(): void
+    {
+        if (null === $this->categories) {
+            $this->categories = new ArrayCollection();;
+        }
+    }
+
     public function addCategory(CategoryInterface $category): self
     {
+        $this->prepareCategories();
         $this->categories[] = $category;
         return $this;
     }
 
-    public function removeCategory(CategoryInterface $category): void
+    public function removeCategory(CategoryInterface $category): self
     {
         $this->categories->removeElement($category);
+        return $this;
     }
 
-    public function removeCategories()
+    public function removeCategories(): self
     {
         $this->categories->clear();
+        return $this;
     }
 
-    /**
-     * @return CategoryInterface[]
-     */
-    public function getCategories(): Collection
+    public function getCategories(): ?Collection
     {
         return $this->categories;
     }
@@ -174,23 +186,35 @@ trait ExcerptTranslationTrait
         return $categories;
     }
 
+    // tags
+
+    private function prepareTags(): void
+    {
+        if (null === $this->tags) {
+            $this->tags = new ArrayCollection();;
+        }
+    }
+
     public function addTag(TagInterface $tag): self
     {
+        $this->prepareTags();
         $this->tags[] = $tag;
         return $this;
     }
 
-    public function removeTag(TagInterface $tag): void
+    public function removeTag(TagInterface $tag): self
     {
         $this->tags->removeElement($tag);
+        return $this;
     }
 
-    public function removeTags()
+    public function removeTags(): self
     {
         $this->tags->clear();
+        return $this;
     }
 
-    public function getTags(): Collection
+    public function getTags(): ?Collection
     {
         return $this->tags;
     }
@@ -208,8 +232,18 @@ trait ExcerptTranslationTrait
         return $tags;
     }
 
+    // icons
+
+    private function prepareIcons(): void
+    {
+        if (null === $this->icons) {
+            $this->icons = new ArrayCollection();;
+        }
+    }
+
     public function addIcon(MediaInterface $media): self
     {
+        $this->prepareIcons();
         $this->icons[] = $media;
         return $this;
     }
@@ -220,10 +254,7 @@ trait ExcerptTranslationTrait
         return $this;
     }
 
-    /**
-     * @return MediaInterface[]
-     */
-    public function getIcons(): Collection
+    public function getIcons(): ?Collection
     {
         return $this->icons;
     }
@@ -244,13 +275,24 @@ trait ExcerptTranslationTrait
         return $icons;
     }
 
-    public function removeIcons()
+    public function removeIcons(): self
     {
         $this->icons->clear();
+        return $this;
+    }
+
+    // images
+
+    private function prepareImages(): void
+    {
+        if (null === $this->images) {
+            $this->images = new ArrayCollection();;
+        }
     }
 
     public function addImage(MediaInterface $media): self
     {
+        $this->prepareImages();
         $this->images[] = $media;
         return $this;
     }
@@ -261,17 +303,11 @@ trait ExcerptTranslationTrait
         return $this;
     }
 
-    /**
-     * @return MediaInterface[]
-     */
-    public function getImages(): Collection
+    public function getImages(): ?Collection
     {
         return $this->images;
     }
 
-    /**
-     * @Serializer\VirtualProperty(name="icon")
-     */
     public function getImageIds(): array
     {
         $images = [];
@@ -285,8 +321,9 @@ trait ExcerptTranslationTrait
         return $images;
     }
 
-    public function removeImages()
+    public function removeImages(): self
     {
         $this->images->clear();
+        return $this;
     }
 }

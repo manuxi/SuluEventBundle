@@ -17,7 +17,7 @@ class ExcerptTraitTest extends SuluTestCase
 
     public function testSetId(): void
     {
-        $this->assertSame($this->mock, $this->mock->setid(null));
+        $this->assertSame($this->mock, $this->mock->setId(null));
     }
 
     public function testGetId(): void
