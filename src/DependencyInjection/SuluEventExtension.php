@@ -66,7 +66,8 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
                         Event::class => [
                             'generator' => 'schema',
                             'options' => [
-                                'route_schema' => '/events/{implode("-", object)}'
+                                //@TODO: works not yet as expected, does not translate correctly
+                                'route_schema' => '/{translator.trans("sulu_event.events", [], "admin")}/{implode("-", object)}'
                             ],
                             'resource_key' => Event::RESOURCE_KEY,
                         ],

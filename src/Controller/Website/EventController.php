@@ -52,7 +52,7 @@ class EventController extends AbstractController
         $parameters = $this->templateAttributeResolver->resolve([
             'event'   => $event,
             'content' => [
-                'title'    => $this->translator->trans('pages.events'),
+                'title'    => $this->translator->trans('sulu_event.events', [], 'admin'),
                 'subtitle' => $event->getTitle(),
             ],
             'path'          => $event->getRoutePath(),
@@ -60,6 +60,13 @@ class EventController extends AbstractController
             'localizations' => $this->getLocalizationsArrayForEntity($event),
             'created'       => $event->getCreated(),
         ]);
+
+//        $parameters = $this->get('sulu_website.resolver.parameter')->resolve(
+//            $parameters,
+//            $this->get('sulu_core.webspace.request_analyzer'),
+//            null,
+//            $preview
+//        );
 
         return $this->prepareResponse($viewTemplate, $parameters, $preview, $partial);
     }

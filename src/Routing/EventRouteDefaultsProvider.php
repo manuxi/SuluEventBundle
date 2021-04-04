@@ -25,7 +25,6 @@ class EventRouteDefaultsProvider implements RouteDefaultsProviderInterface
     {
         return [
             '_controller' => EventController::class . '::indexAction',
-//            'event' => $object ?: $this->eventRepository->findById($id, $locale),
             'event' => $this->eventRepository->findById((int)$id, $locale),
         ];
     }
