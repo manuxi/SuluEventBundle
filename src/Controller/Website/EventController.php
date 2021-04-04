@@ -52,7 +52,7 @@ class EventController extends AbstractController
         $parameters = $this->templateAttributeResolver->resolve([
             'event'   => $event,
             'content' => [
-                'title'    => $this->translator->trans('sulu_event.events', [], 'admin'),
+                'title'    => $this->translator->trans('sulu_event.events', [], 'sulu_event'),
                 'subtitle' => $event->getTitle(),
             ],
             'path'          => $event->getRoutePath(),
