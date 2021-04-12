@@ -1,1 +1,2 @@
-events: Events
+sulu_event:
+    events: Events
