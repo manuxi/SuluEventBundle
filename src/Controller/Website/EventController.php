@@ -46,13 +46,12 @@ class EventController extends AbstractController
      */
     public function indexAction(Event $event, string $view = 'pages/event', bool $preview = false, bool $partial = false): Response
     {
-        $requestFormat = $this->request->getRequestFormat();
-        $viewTemplate = $view . '.' . $requestFormat . '.twig';
+        $viewTemplate = $this->getViewTemplate($view, $this->request, $preview);
 
         $parameters = $this->templateAttributeResolver->resolve([
             'event'   => $event,
             'content' => [
-                'title'    => $this->translator->trans('sulu_event.events', [], 'sulu_event'),
+                'title'    => $this->translator->trans('events'),
                 'subtitle' => $event->getTitle(),
             ],
             'path'          => $event->getRoutePath(),
@@ -60,13 +59,6 @@ class EventController extends AbstractController
             'localizations' => $this->getLocalizationsArrayForEntity($event),
             'created'       => $event->getCreated(),
         ]);
-
-//        $parameters = $this->get('sulu_website.resolver.parameter')->resolve(
-//            $parameters,
-//            $this->get('sulu_core.webspace.request_analyzer'),
-//            null,
-//            $preview
-//        );
 
         return $this->prepareResponse($viewTemplate, $parameters, $preview, $partial);
     }

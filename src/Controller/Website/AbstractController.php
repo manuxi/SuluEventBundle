@@ -93,4 +93,14 @@ abstract class AbstractController extends WebsiteController
         return $response;
     }
 
+    protected function getViewTemplate(string $view, Request $request, bool $preview = false): string
+    {
+        if (!$preview) {
+            $requestFormat = $request->getRequestFormat();
+        } else {
+            $requestFormat = 'html';
+        }
+        return $view . '.' . $requestFormat . '.twig';
+    }
+
 }
