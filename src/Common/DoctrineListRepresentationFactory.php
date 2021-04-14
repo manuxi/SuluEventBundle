@@ -4,30 +4,39 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Common;
 
+use Manuxi\SuluEventBundle\Repository\EventRepository;
+use Manuxi\SuluEventBundle\Repository\EventTranslationRepository;
 use Sulu\Bundle\MediaBundle\Media\Manager\MediaManagerInterface;
 use Sulu\Component\Rest\ListBuilder\Doctrine\DoctrineListBuilderFactory;
 use Sulu\Component\Rest\ListBuilder\Doctrine\FieldDescriptor\DoctrineFieldDescriptor;
 use Sulu\Component\Rest\ListBuilder\Metadata\FieldDescriptorFactoryInterface;
 use Sulu\Component\Rest\ListBuilder\PaginatedRepresentation;
 use Sulu\Component\Rest\RestHelperInterface;
+use Sulu\Component\Webspace\Manager\WebspaceManagerInterface;
 
 class DoctrineListRepresentationFactory
 {
     private $restHelper;
     private $listBuilderFactory;
     private $fieldDescriptorFactory;
+    private $webspaceManager;
+    private $eventTranslationRepository;
     private $mediaManager;
 
     public function __construct(
         RestHelperInterface $restHelper,
         DoctrineListBuilderFactory $listBuilderFactory,
         FieldDescriptorFactoryInterface $fieldDescriptorFactory,
+        WebspaceManagerInterface $webspaceManager,
+        EventTranslationRepository $eventTranslationRepository,
         MediaManagerInterface $mediaManager
     ) {
-        $this->restHelper             = $restHelper;
-        $this->listBuilderFactory     = $listBuilderFactory;
-        $this->fieldDescriptorFactory = $fieldDescriptorFactory;
-        $this->mediaManager           = $mediaManager;
+        $this->restHelper                   = $restHelper;
+        $this->listBuilderFactory           = $listBuilderFactory;
+        $this->fieldDescriptorFactory       = $fieldDescriptorFactory;
+        $this->webspaceManager              = $webspaceManager;
+        $this->eventTranslationRepository   = $eventTranslationRepository;
+        $this->mediaManager                 = $mediaManager;
     }
 
     /**
@@ -55,6 +64,7 @@ class DoctrineListRepresentationFactory
         }
 
         $list = $listBuilder->execute();
+        $list = $this->addGhostLocaleToListElements($list, $parameters['locale'] ?? null);
         $list = $this->addImagesToListElements($list, $parameters['locale'] ?? null);
 
         return new PaginatedRepresentation(
@@ -79,6 +89,33 @@ class DoctrineListRepresentationFactory
                 && \array_key_exists($element['image'], $images)
             ) {
                 $listeElements[$key]['image'] = $images[$element['image']];
+            }
+        }
+
+        return $listeElements;
+    }
+
+    private function addGhostLocaleToListElements(array $listeElements, ?string $currentLocale) {
+        $availableLocales = $locales = $this->webspaceManager->getAllLocales();
+        $localesCount = count($availableLocales);
+        if (($key = array_search($currentLocale, $locales)) !== false) {
+            unset($locales[$key]);
+        }
+
+        $ids = array_filter(array_column($listeElements, 'id'));
+
+        foreach($locales as $locale) {
+            $missingLocales = $this->eventTranslationRepository->findMissingLocaleByIds($ids, $locale, $localesCount);
+            foreach($missingLocales as $missingLocale) {
+                foreach ($listeElements as $key => $element) {
+                    if ($element['id'] === (int)$missingLocale['event'] && !array_key_exists('ghostLocale', $element)) {
+                        $listeElements[$key]['ghostLocale'] = $locale;
+//                        $listeElements[$key]['localizationState'] = [
+//                            'state' => 'ghost',
+//                            'locale' => $locale
+//                        ];
+                    }
+                }
             }
         }
 

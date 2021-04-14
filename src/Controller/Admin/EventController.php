@@ -21,9 +21,15 @@ use Sulu\Bundle\RouteBundle\Entity\RouteRepositoryInterface;
 use Sulu\Bundle\RouteBundle\Manager\RouteManagerInterface;
 use Sulu\Component\Rest\AbstractRestController;
 use Sulu\Component\Rest\Exception\EntityNotFoundException;
+use Sulu\Component\Rest\Exception\RestException;
+use Sulu\Component\Rest\RequestParametersTrait;
+use Sulu\Component\Security\Authorization\PermissionTypes;
+use Sulu\Component\Security\Authorization\SecurityCheckerInterface;
+use Sulu\Component\Security\Authorization\SecurityCondition;
 use Sulu\Component\Security\SecuredControllerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 /**
@@ -31,12 +37,15 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
  */
 class EventController extends AbstractRestController implements ClassResourceInterface, SecuredControllerInterface
 {
+    use RequestParametersTrait;
+
     private $eventModel;
     private $eventSeoModel;
     private $eventExcerptModel;
     private $doctrineListRepresentationFactory;
     private $routeManager;
     private $routeRepository;
+    private $securityChecker;
 
     public function __construct(
         EventModel $eventModel,
@@ -45,6 +54,7 @@ class EventController extends AbstractRestController implements ClassResourceInt
         RouteManagerInterface $routeManager,
         RouteRepositoryInterface $routeRepository,
         DoctrineListRepresentationFactory $doctrineListRepresentationFactory,
+        SecurityCheckerInterface $securityChecker,
         ViewHandlerInterface $viewHandler,
         ?TokenStorageInterface $tokenStorage = null
     ) {
@@ -55,6 +65,7 @@ class EventController extends AbstractRestController implements ClassResourceInt
         $this->doctrineListRepresentationFactory = $doctrineListRepresentationFactory;
         $this->routeManager                      = $routeManager;
         $this->routeRepository                   = $routeRepository;
+        $this->securityChecker                   = $securityChecker;
     }
 
     public function cgetAction(Request $request): Response
@@ -67,6 +78,7 @@ class EventController extends AbstractRestController implements ClassResourceInt
         );
 
         return $this->handleView($this->view($listRepresentation));
+
     }
 
     /**
@@ -100,7 +112,39 @@ class EventController extends AbstractRestController implements ClassResourceInt
      */
     public function postTriggerAction(int $id, Request $request): Response
     {
-        $event = $this->eventModel->enableEvent($id, $request);
+        $action = $this->getRequestParameter($request, 'action', true);
+        $locale = $this->getRequestParameter($request, 'locale', true);
+
+        try {
+            switch ($action) {
+                case 'enable':
+                    $event = $this->eventModel->enableEvent($id, $request);
+                    break;
+                case 'disable':
+                    $event = $this->eventModel->disableEvent($id, $request);
+                    break;
+                case 'copy-locale':
+                    $srcLocale = $this->getRequestParameter($request, 'src', false, $locale);
+                    $destLocales = $this->getRequestParameter($request, 'dest', true);
+                    $destLocales = explode(',', $destLocales);
+
+                    foreach ($destLocales as $destLocale) {
+                        $this->securityChecker->checkPermission(
+                            new SecurityCondition($this->getSecurityContext(), $destLocale),
+                            PermissionTypes::EDIT
+                        );
+                    }
+
+                    $event = $this->eventModel->copyLanguage($id, $request, $srcLocale, $destLocales);
+                    break;
+                default:
+                    throw new BadRequestHttpException(sprintf('Unknown action "%s".', $action));
+            }
+        } catch (RestException $exc) {
+            $view = $this->view($exc->toArray(), 400);
+            return $this->handleView($view);
+        }
+
         return $this->handleView($this->view($event));
     }
 

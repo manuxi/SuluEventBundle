@@ -11,6 +11,7 @@ use JMS\Serializer\Annotation as Serializer;
 use Manuxi\SuluEventBundle\Entity\Interfaces\AuditableTranslatableInterface;
 use Manuxi\SuluEventBundle\Entity\Traits\AuditableTranslatableTrait;
 use Manuxi\SuluEventBundle\Entity\Traits\ImageTrait;
+use Sulu\Bundle\MediaBundle\Entity\MediaInterface;
 
 /**
  * @ORM\Entity
@@ -360,4 +361,30 @@ class Event implements AuditableTranslatableInterface
 
         return $this;
     }
+
+    /**
+     * @Serializer\VirtualProperty("availableLocales")
+     */
+    public function getAvailableLocales(): array
+    {
+        return \array_values($this->translations->getKeys());
+    }
+
+    public function copyToLocale(string $locale): self
+    {
+        if ($currentTranslation = $this->getTranslation($this->getLocale())) {
+           $newTranslation = clone $currentTranslation;
+           $newTranslation->setLocale($locale);
+           $this->translations->set($locale, $newTranslation);
+
+           //copy ext also...
+           foreach($this->ext as $translatable) {
+               $translatable->copyToLocale($locale);
+           }
+
+           $this->setLocale($locale);
+        }
+        return $this;
+    }
+
 }

@@ -25,6 +25,8 @@
             <argument type="service" id="sulu_core.rest_helper"/>
             <argument type="service" id="sulu_core.doctrine_list_builder_factory"/>
             <argument type="service" id="sulu_core.list_builder.field_descriptor_factory"/>
+            <argument type="service" id="sulu_core.webspace.webspace_manager"/>
+            <argument type="service" id="sulu_event.repository.event_translation"/>
             <argument type="service" id="sulu_media.media_manager"/>
 
             <tag name="sulu.context" context="admin"/>
@@ -38,6 +40,10 @@
 
         <service id="sulu_event.repository.event" class="Manuxi\SuluEventBundle\Repository\EventRepository"
                  public="true" lazy="true">
+            <argument type="service" id="doctrine"/>
+        </service>
+
+        <service id="sulu_event.repository.event_translation" class="Manuxi\SuluEventBundle\Repository\EventTranslationRepository" lazy="true">
             <argument type="service" id="doctrine"/>
         </service>
 

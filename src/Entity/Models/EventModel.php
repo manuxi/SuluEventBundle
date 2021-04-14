@@ -70,14 +70,34 @@ class EventModel implements EventModelInterface
     public function enableEvent(int $id, Request $request): Event
     {
         $event = $this->findEventByIdAndLocale($id, $request);
-        switch ($request->query->get('action')) {
-            case 'enable':
-                $event->setEnabled(true);
-                break;
-            case 'disable':
-                $event->setEnabled(false);
-                break;
+        $event->setEnabled(true);
+        return $this->eventRepository->save($event);
+    }
+
+    /**
+     * @throws EntityNotFoundException
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function disableEvent(int $id, Request $request): Event
+    {
+        $event = $this->findEventByIdAndLocale($id, $request);
+        $event->setEnabled(false);
+        return $this->eventRepository->save($event);
+    }
+
+    public function copyLanguage(int $id, Request $request, string $srcLocale, array $destLocales): Event
+    {
+        $event = $this->findEventById($id);
+        $event->setLocale($srcLocale);
+
+        foreach($destLocales as $destLocale) {
+            $event = $event->copyToLocale($destLocale);
         }
+
+        //@todo: test with more than one different locale
+        $event->setLocale($this->getLocaleFromRequest($request));
+
         return $this->eventRepository->save($event);
     }
 

@@ -16,6 +16,17 @@ trait ExcerptTranslatableTrait
     abstract protected function getTranslation(string $locale);
     abstract protected function createTranslation(string $locale);
 
+    public function copyToLocale(string $locale): self
+    {
+        if ($currentTranslation = $this->getTranslation($this->getLocale())) {
+            $newTranslation = clone $currentTranslation;
+            $newTranslation->setLocale($locale);
+            $this->translations->set($locale, $newTranslation);
+            $this->setLocale($locale);
+        }
+        return $this;
+    }
+
     /**
      * @Serializer\VirtualProperty(name="title")
      */

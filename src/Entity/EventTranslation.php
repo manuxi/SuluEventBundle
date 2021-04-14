@@ -76,6 +76,12 @@ class EventTranslation implements AuditableInterface
         return $this->locale;
     }
 
+    public function setLocale(string $locale): self
+    {
+        $this->locale = $locale;
+        return $this;
+    }
+
     public function getTitle(): ?string
     {
         return $this->title;
