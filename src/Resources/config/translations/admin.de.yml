@@ -25,3 +25,5 @@ sulu_event:
     additional_webspace: "Zusätzliche Webspaces"
     shadow_event: "Shadow Veranstaltung"
     enable_shadow_event: "Shadow Veranstaltung aktivieren"
+    enddate_eq_startdate: "Wenn das Enddatum mit dem Startdatum identisch ist, wird das Ereignis als eintägiges Ereignis behandelt."
+    add_location_first: "Bitte stellen Sie sicher, dass mindestens ein Standort hinzugefügt und somit auswählbar ist."

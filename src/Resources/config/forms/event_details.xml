@@ -20,6 +20,10 @@
             <meta>
                 <title>sulu_admin.url</title>
             </meta>
+            <!--https://github.com/sulu/sulu/pull/5933-->
+            <params>
+                <param name="mode" value="leaf"/>
+            </params>
         </property>
 
         <property name="image" type="single_media_selection" colspan="6">
@@ -52,6 +56,7 @@
         <property name="endDate" type="datetime" colspan="6">
             <meta>
                 <title>sulu_event.end_date</title>
+                <info_text>sulu_event.enddate_eq_startdate</info_text>
             </meta>
         </property>
 
