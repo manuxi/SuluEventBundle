@@ -127,7 +127,7 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
         );
     }
 
-    protected function appendJoins(QueryBuilder $queryBuilder, string $alias, string $locale): void
+    protected function appendJoins(QueryBuilder $queryBuilder, $alias, $locale): void
     {
 
     }
