@@ -49,4 +49,11 @@ class EventObjectProvider implements PreviewObjectProviderInterface
     {
         return unserialize($serializedObject);
     }
+    
+    public function getSecurityContext($id, $locale): ?string
+    {
+        $webspaceKey = $this->documentInspector->getWebspace($this->getObject($id, $locale));
+
+        return PageAdmin::getPageSecurityContext($webspaceKey);
+    }
 }
