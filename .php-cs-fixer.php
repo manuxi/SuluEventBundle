@@ -1,5 +1,6 @@
 <?php
-$finder = PhpCsFixer\Finder::create()
+$finder = new PhpCsFixer\Finder();
+$finder
     ->in([
         __DIR__ . '/src',
         __DIR__ . '/tests',
@@ -8,7 +9,7 @@ $finder = PhpCsFixer\Finder::create()
     ->ignoreDotFiles(true)
     ->ignoreVCS(true);
 ;
-return PhpCsFixer\Config::create()
+return (new PhpCsFixer\Config())
     //->setUsingCache(false)
     ->setRiskyAllowed(true)
     //->setIndent("    ")
@@ -51,4 +52,4 @@ return PhpCsFixer\Config::create()
         'strict_comparison'                     => true,
         'strict_param'                          => true,
     ])
-;
+    ;
