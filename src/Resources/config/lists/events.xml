@@ -91,12 +91,12 @@
             <entity-name>%sulu.model.event.class%</entity-name>
         </property>
 
-        <property name="startDate" visibility="always" translation="sulu_event.start_date" type="date">
+        <property name="startDate" visibility="always" translation="sulu_event.start_date" type="datetime">
             <field-name>startDate</field-name>
             <entity-name>%sulu.model.event.class%</entity-name>
         </property>
 
-        <property name="endDate" visibility="always" translation="sulu_event.end_date" type="date">
+        <property name="endDate" visibility="always" translation="sulu_event.end_date" type="datetime">
             <field-name>endDate</field-name>
             <entity-name>%sulu.model.event.class%</entity-name>
         </property>

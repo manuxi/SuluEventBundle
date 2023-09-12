@@ -182,7 +182,7 @@ class EventModel implements EventModelInterface
 
         $endDate = $this->getProperty($data, 'endDate');
         if ($endDate) {
-            $event->setStartDate(new \DateTimeImmutable($endDate));
+            $event->setEndDate(new \DateTimeImmutable($endDate));
         }
 
         $locationId = $this->getProperty($data, 'locationId');

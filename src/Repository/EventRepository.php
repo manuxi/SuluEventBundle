@@ -83,11 +83,37 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
         return $event;
     }
 
+    public function findAllForSitemap(int $page, int $limit): array
+    {
+        $offset = ($page * $limit) - $limit;
+        $criteria = [
+            'enabled' => true,
+        ];
+        return $this->findBy($criteria, [], $limit, $offset);
+    }
+
+    public function countForSitemap()
+    {
+        $query = $this->createQueryBuilder('e')
+            ->select('count(e)');
+        return $query->getQuery()->getSingleScalarResult();
+    }
+
     public static function createEnabledCriteria(): Criteria
     {
         return Criteria::create()
             ->andWhere(Criteria::expr()->eq('enabled', true))
             ;
+    }
+
+    public function findAllScheduledEvents(int $limit)
+    {
+        $query = $this->createQueryBuilder('e')
+            ->where('e.enabled = 1 AND (e.startDate >= :now OR (e.endDate IS NOT NULL AND e.endDate >= :now))')
+            ->orderBy("e.startDate", "ASC")
+            ->setMaxResults($limit)
+            ->setParameter("now", (new \DateTimeImmutable())->format("Y-m-d"));
+        return $query->getQuery()->getResult();
     }
 
     /**
@@ -142,6 +168,12 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
         $queryBuilder->andWhere($alias . '.enabled = true');
 
         return [];
+    }
+
+    public function appendCategoriesRelation(QueryBuilder $queryBuilder, $alias)
+    {
+        return $alias . '.category';
+        //$queryBuilder->addSelect($alias.'.category');
     }
 
     protected function appendSortByJoins(QueryBuilder $queryBuilder, string $alias, string $locale): void

@@ -12,7 +12,7 @@ use Sulu\Bundle\RouteBundle\Routing\Defaults\RouteDefaultsProviderInterface;
 class EventRouteDefaultsProvider implements RouteDefaultsProviderInterface
 {
 
-    private $eventRepository;
+    private EventRepository $eventRepository;
 
     public function __construct(EventRepository $eventRepository) {
         $this->eventRepository = $eventRepository;
