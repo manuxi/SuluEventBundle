@@ -1,7 +1,13 @@
 {
     "name": "manuxi/sulu-event-bundle",
     "description": "Say hello to sulu-events",
-    "type": "symfony-bundle",
+    "type": "sulu-bundle",
+    "keywords": [
+        "sulu",
+        "suluCms",
+        "event"
+    ],
+    "homepage": "https://github.com/manuxi/sulu-event-bundle",
     "license": "MIT",
     "authors": [
         {
@@ -12,7 +18,7 @@
     "require": {
         "dantleech/phpcr-migrations-bundle": "^1.2",
         "php": "^7.4 | ^8.0",
-        "sulu/sulu": "^2.2",
+        "sulu/sulu": "^2.4.1",
         "symfony/config": "^4.4 | ^5.0 | ^6.0",
         "symfony/dependency-injection": "^4.4 | ^5.0 | ^6.0",
         "symfony/framework-bundle": "^4.4 | ^5.0 | ^6.0",
@@ -39,5 +45,10 @@
     },
     "scripts": {
 
+    },
+    "config": {
+        "allow-plugins": {
+            "php-http/discovery": true
+        }
     }
 }

@@ -17,10 +17,14 @@ class EventDataProvider extends BaseDataProvider
             $this->configuration = self::createConfigurationBuilder()
                 ->enableLimit()
                 ->enablePagination()
-                ->enableSorting(
-                    [
+
+                ->enablePresentAs()
+                ->enableSorting([
+
                         ['column' => 'startDate', 'title' => 'sulu_event.start_date'],
+                        ['column' => 'endDate', 'title' => 'event.end_date'],
                         ['column' => 'translation.title', 'title' => 'sulu_admin.title'],
+
                     ]
                 )
                 ->getConfiguration();

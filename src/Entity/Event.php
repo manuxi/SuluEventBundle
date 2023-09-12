@@ -11,7 +11,7 @@ use JMS\Serializer\Annotation as Serializer;
 use Manuxi\SuluEventBundle\Entity\Interfaces\AuditableTranslatableInterface;
 use Manuxi\SuluEventBundle\Entity\Traits\AuditableTranslatableTrait;
 use Manuxi\SuluEventBundle\Entity\Traits\ImageTrait;
-use Sulu\Bundle\MediaBundle\Entity\MediaInterface;
+use Manuxi\SuluEventBundle\Entity\Traits\PdfTrait;
 
 /**
  * @ORM\Entity
@@ -21,6 +21,7 @@ use Sulu\Bundle\MediaBundle\Entity\MediaInterface;
 class Event implements AuditableTranslatableInterface
 {
     use ImageTrait;
+    use PdfTrait;
     use AuditableTranslatableTrait;
 
     public const RESOURCE_KEY = 'events';
@@ -33,55 +34,73 @@ class Event implements AuditableTranslatableInterface
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
      */
-    private $id;
+    private ?int $id = null;
 
     /**
      * @ORM\OneToOne(targetEntity="Manuxi\SuluEventBundle\Entity\EventSeo", mappedBy="event", cascade={"persist", "remove"})
      *
      * @Serializer\Exclude
      */
-    private $eventSeo;
+    private ?EventSeo $eventSeo = null;
 
     /**
      * @ORM\OneToOne(targetEntity="Manuxi\SuluEventBundle\Entity\EventExcerpt", mappedBy="event", cascade={"persist", "remove"})
      *
      * @Serializer\Exclude
      */
-    private $eventExcerpt;
+    private ?EventExcerpt $eventExcerpt = null;
 
     /**
      * @ORM\Column(type="boolean", nullable=false)
      */
-    private $enabled;
+    private bool $enabled;
 
     /**
      * @ORM\Column(type="datetime_immutable", nullable=true)
      */
-    private $startDate;
+    private ?\DateTimeImmutable $startDate = null;
 
     /**
      * @ORM\Column(type="datetime_immutable", nullable=true)
      */
-    private $endDate;
+    private ?\DateTimeImmutable $endDate = null;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private ?string $url = null;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private ?string $email = null;
+
+    /**
+     * @ORM\Column(type="string", nullable=true)
+     */
+    private ?string $phoneNumber;
+
+    /**
+     * @ORM\Column(type="json", nullable=true)
+     */
+    private ?array $images = null;
 
     /**
      * @ORM\ManyToOne(targetEntity="Manuxi\SuluEventBundle\Entity\Location")
      * @ORM\JoinColumn(onDelete="SET NULL")
      */
-    private $location;
+    private ?Location $location = null;
 
     /**
      * @var Collection<string, EventTranslation>
-     *
      * @ORM\OneToMany(targetEntity="Manuxi\SuluEventBundle\Entity\EventTranslation", mappedBy="event", cascade={"ALL"}, indexBy="locale", fetch="EXTRA_LAZY")
-     *
      * @Serializer\Exclude
      */
     private $translations;
 
-    private $locale = 'en';
+    private string $locale = 'en';
 
-    private $ext = [];
+    private array $ext = [];
 
     public function __construct()
     {
@@ -385,6 +404,70 @@ class Event implements AuditableTranslatableInterface
            $this->setLocale($locale);
         }
         return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getUrl(): ?string
+    {
+        return $this->url;
+    }
+
+    /**
+     * @param ?string $url
+     */
+    public function setUrl(?string $url): void
+    {
+        $this->url = $url;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getEmail(): ?string
+    {
+        return $this->email;
+    }
+
+    /**
+     * @param ?string $email
+     */
+    public function setEmail(?string $email): void
+    {
+        $this->email = $email;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getPhoneNumber(): ?string
+    {
+        return $this->phoneNumber;
+    }
+
+    /**
+     * @param ?string $phoneNumber
+     */
+    public function setPhoneNumber(?string $phoneNumber): void
+    {
+        $this->phoneNumber = $phoneNumber;
+    }
+
+    /**
+     * @return array|null
+     */
+    public function getImages(): ?array
+    {
+        return $this->images;
+    }
+
+    /**
+     * @param array|null $images
+     */
+    public function setImages(?array $images): void
+    {
+        $this->images = $images;
     }
 
 }

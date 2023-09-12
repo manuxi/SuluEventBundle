@@ -8,7 +8,7 @@
     <properties>
         <property name="title" type="text_line" mandatory="true">
             <meta>
-                <title>sulu_admin.title</title>
+                <title>sulu_event.title</title>
             </meta>
             <params>
                 <param name="headline" value="true"/>
@@ -26,45 +26,99 @@
             </params>
         </property>
 
-        <property name="image" type="single_media_selection" colspan="6">
+        <section name="mainInfo">
             <meta>
-                <title>sulu_event.image</title>
+                <title>sulu_event.header.main</title>
             </meta>
-            <params>
-                <param name="types" value="image"/>
-            </params>
-        </property>
+            <properties>
+                <property name="startDate" type="datetime" colspan="6">
+                    <meta>
+                        <title>sulu_event.start_date</title>
+                    </meta>
+                </property>
+                <property name="endDate" type="datetime" colspan="6">
+                    <meta>
+                        <title>sulu_event.end_date</title>
+                        <info_text>sulu_event.enddate_eq_startdate</info_text>
+                    </meta>
+                </property>
+                <property name="locationId" type="single_location_selection" mandatory="true" colspan="6">
+                    <meta>
+                        <title>sulu_event.location</title>
+                    </meta>
+                </property>
+                <property name="url" type="url" colspan="6">
+                    <meta>
+                        <title>sulu_event.website</title>
+                    </meta>
+                    <params>
+                        <param name="schemes" type="collection">
+                            <param name="https://"/>
+                            <param name="http://"/>
+                        </param>
+                    </params>
+                </property>
+            </properties>
+        </section>
 
-        <property name="locationId" type="single_location_selection" mandatory="true" colspan="6">
+        <section name="text">
             <meta>
-                <title>sulu_event.location</title>
+                <title>sulu_event.header.text</title>
             </meta>
-        </property>
+            <properties>
+                <property name="teaser" type="text_area">
+                    <meta>
+                        <title>sulu_event.teaser</title>
+                    </meta>
+                </property>
+                <property name="description" type="text_editor">
+                    <meta>
+                        <title>sulu_admin.description</title>
+                    </meta>
+                </property>
+            </properties>
+        </section>
 
-        <property name="teaser" type="text_area">
+        <section name="additional">
             <meta>
-                <title>sulu_event.teaser</title>
+                <title>sulu_event.header.additional</title>
             </meta>
-        </property>
-
-        <property name="startDate" type="datetime" colspan="6">
-            <meta>
-                <title>sulu_event.start_date</title>
-            </meta>
-        </property>
-
-        <property name="endDate" type="datetime" colspan="6">
-            <meta>
-                <title>sulu_event.end_date</title>
-                <info_text>sulu_event.enddate_eq_startdate</info_text>
-            </meta>
-        </property>
-
-        <property name="description" type="text_editor">
-            <meta>
-                <title>sulu_admin.description</title>
-            </meta>
-        </property>
-
+            <properties>
+                <property name="image" type="single_media_selection" colspan="6">
+                    <meta>
+                        <title>sulu_event.mainimage</title>
+                    </meta>
+                    <params>
+                        <param name="types" value="image"/>
+                    </params>
+                </property>
+                <property name="pdf" type="single_media_selection" colspan="6">
+                    <meta>
+                        <title>sulu_event.pdf</title>
+                    </meta>
+                    <params>
+                        <param name="types" value="document"/>
+                    </params>
+                </property>
+                <property name="email" type="text_line" colspan="6">
+                    <meta>
+                        <title>sulu_event.email</title>
+                    </meta>
+                </property>
+                <property name="phoneNumber" type="text_line" colspan="6">
+                    <meta>
+                        <title>sulu_event.phone</title>
+                    </meta>
+                </property>
+                <property name="images" type="media_selection">
+                    <meta>
+                        <title>sulu_event.gallery</title>
+                    </meta>
+                    <params>
+                        <param name="types" value="image"/>
+                    </params>
+                </property>
+            </properties>
+        </section>
     </properties>
 </form>

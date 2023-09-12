@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Manuxi\SuluEventBundle\Preview;
 
 use Manuxi\SuluEventBundle\Repository\EventRepository;
+use Sulu\Bundle\PageBundle\Admin\PageAdmin;
 use Sulu\Bundle\PreviewBundle\Preview\Object\PreviewObjectProviderInterface;
 
 class EventObjectProvider implements PreviewObjectProviderInterface

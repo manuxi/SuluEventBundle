@@ -203,6 +203,35 @@ class EventModel implements EventModelInterface
             $event->setImage($image);
         }
 
+        $pdfId = $this->getPropertyMulti($data, ['pdf', 'id']);
+        if ($pdfId) {
+            $pdf = $this->mediaRepository->findMediaById((int) $pdfId);
+            if (!$pdf) {
+                throw new EntityNotFoundException($this->mediaRepository->getClassName(), $pdfId);
+            }
+            $event->setPdf($pdf);
+        }
+
+        $url = $this->getProperty($data, 'url');
+        if ($url) {
+            $event->setUrl($url);
+        }
+
+        $phoneNumber = $this->getProperty($data, 'phoneNumber');
+        if ($phoneNumber) {
+            $event->setPhoneNumber($phoneNumber);
+        }
+
+        $email = $this->getProperty($data, 'email');
+        if ($email) {
+            $event->setEmail($email);
+        }
+
+        $images = $this->getProperty($data, 'images');
+        if ($images) {
+            $event->setImages($images);
+        }
+
         return $event;
     }
 

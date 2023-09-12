@@ -36,27 +36,34 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
 
     public function prepend(ContainerBuilder $container)
     {
-//        if ($container->hasExtension('sulu_search')) {
-//            $container->prependExtensionConfig(
-//                'sulu_search',
-//                [
-//                    'indexes' => [
-//                        'contact' => [
-//                            'name' => 'Event',
-//                            'icon' => 'su-calendar',
-//                            'view' => [
-//                                'name' => EventAdmin::EDIT_FORM_VIEW,
-//                                'result_to_view' => [
-//                                    'id' => 'id',
-//                                    'locale' => 'locale',
-//                                ],
-//                            ],
-//                            'security_context' => EventAdmin::SECURITY_CONTEXT,
-//                        ],
-//                    ],
-//                ]
-//            );
-//        }
+        if ($container->hasExtension('sulu_search')) {
+            $container->prependExtensionConfig(
+                'sulu_search',
+                [
+                    'indexes' => [
+                        'event' => [
+                            'name' => 'event.searchName',
+                            'icon' => 'su-calendar',
+                            'view' => [
+                                'name' => EventAdmin::EDIT_FORM_VIEW,
+                                'result_to_view' => [
+                                    'id' => 'id',
+                                    'locale' => 'locale',
+                                ],
+                            ],
+                            'security_context' => EventAdmin::SECURITY_CONTEXT,
+                        ],
+                        'website' => [
+                            "name" => "event.searchName",
+                            'icon' => 'su-calendar',
+                            "contexts" => [
+                                "event",
+                            ],
+                        ],
+                    ],
+                ]
+            );
+        }
 
         if ($container->hasExtension('sulu_route')) {
             $container->prependExtensionConfig(

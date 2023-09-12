@@ -6,30 +6,31 @@ use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation as Serializer;
 use Sulu\Bundle\MediaBundle\Entity\MediaInterface;
 
-trait ImageTrait
+trait PdfTrait
 {
+
     /**
      * @ORM\ManyToOne(targetEntity=MediaInterface::class)
      * @Serializer\Exclude()
      */
-    private ?MediaInterface $image = null;
+    private ?MediaInterface $pdf = null;
 
-    public function getImage(): ?MediaInterface
+    public function getPdf(): ?MediaInterface
     {
-        return $this->image;
+        return $this->pdf;
     }
 
     /**
      * @return array<string, mixed>|null
      *
      * @Serializer\VirtualProperty
-     * @Serializer\SerializedName("image")
+     * @Serializer\SerializedName("pdf")
      */
-    public function getImageData(): ?array
+    public function getPdfData(): ?array
     {
-        if ($image = $this->getImage()) {
+        if ($pdf = $this->getPdf()) {
             return [
-                'id' => $image->getId(),
+                'id' => $pdf->getId(),
             ];
         }
 
@@ -37,9 +38,9 @@ trait ImageTrait
 
     }
 
-    public function setImage(?MediaInterface $image): self
+    public function setPdf(?MediaInterface $pdf): self
     {
-        $this->image = $image;
+        $this->pdf = $pdf;
         return $this;
     }
 }

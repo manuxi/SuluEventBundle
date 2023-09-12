@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<massive-search-mapping xmlns="http://massiveart.io/schema/dic/massive-search-mapping">
+    <mapping class="manuxi\SuluEventBundle\Entity\Event">
+        <index value="event"/>
+        <id property="id"/>
+        <title expr="object.getTitle()"/>
+        <description expr="object.getDescription()"/>
+        <url expr="object.getRoutePath()" />
+        <locale property="locale"/>
+        <fields>
+            <field name="name" expr="object.getTitle()" type="string"/>
+            <field name="description" expr="object.getDescription()" type="string"/>
+        </fields>
+    </mapping>
+</massive-search-mapping>
