@@ -44,6 +44,10 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
                         'event' => [
                             'name' => 'event.searchName',
                             'icon' => 'su-calendar',
+                            'security_context' => EventAdmin::SECURITY_CONTEXT,
+                            "contexts" => [
+                                "event",
+                            ],
                             'view' => [
                                 'name' => EventAdmin::EDIT_FORM_VIEW,
                                 'result_to_view' => [
@@ -51,15 +55,15 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
                                     'locale' => 'locale',
                                 ],
                             ],
-                            'security_context' => EventAdmin::SECURITY_CONTEXT,
+
                         ],
-                        'website' => [
+/*                        'website' => [
                             "name" => "event.searchName",
                             'icon' => 'su-calendar',
                             "contexts" => [
                                 "event",
                             ],
-                        ],
+                        ],*/
                     ],
                 ]
             );
