@@ -44,7 +44,7 @@ class EventController extends AbstractController
     /**
      * @throws \Exception
      */
-    public function indexAction(Event $event, string $view = '@SuluEvent/pages/event', bool $preview = false, bool $partial = false): Response
+    public function indexAction(Event $event, string $view = 'pages/event', bool $preview = false, bool $partial = false): Response
     {
         $viewTemplate = $this->getViewTemplate($view, $this->request, $preview);
 
