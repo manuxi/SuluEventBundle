@@ -37,7 +37,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Manuxi\\SuluEventBundle\\": ""
+            "Manuxi\\SuluEventBundle\\": "src/"
         },
         "exclude-from-classmap": [
             "/Tests/"
