@@ -1,0 +1,30 @@
+{% if subtitle is defined and subtitle %}
+    {% if class_header is defined and class_header %}
+        {% if class_header ==  'h1' %}
+            {% set class = 'h2' %}
+        {% elseif class_header == 'h2' %}
+            {% set class = 'h3' %}
+        {% elseif class_header == 'h3' %}
+            {% set class = 'h4' %}
+        {% else %}
+            {% set class = 'h5' %}
+        {% endif %}
+    {% else %}
+        {% if position is defined and position is same as(1) %}
+            {% set class = 'h4' %}
+        {% else %}
+            {% set class = 'h5' %}
+        {% endif %}
+    {% endif %}
+    <div class="subtitle">
+        {% if position is defined and position is same as(1) %}
+            <h3 class="{{ class }}">
+                {{ subtitle }}
+            </h3>
+        {% else %}
+            <h4 class="{{ class }}">
+                {{ subtitle }}
+            </h4>
+        {% endif %}
+    </div>
+{% endif %}

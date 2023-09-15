@@ -1,0 +1,49 @@
+{% if startDate is defined and startDate %}
+    {% set startDateShort = startDate|date('Y-m-d') %}
+    {% set startTimeShort = startDate|date('H:i') %}
+
+    {% if endDate is defined and endDate %}
+        {% set endDateShort = endDate|date('Y-m-d') %}
+        {% set endTimeShort = endDate|date('H:i') %}
+
+        {# Event on the same day? #}
+        {% if startDateShort == endDateShort %}
+            {{ 'on'|trans({},'events')|title }}
+            {{ startDate|format_datetime('full', 'none', locale=app.request.getLocale()) }}
+
+            {% if startTimeShort != "00:00" or endTimeShort != "00:00" %}
+                {% if startTimeShort == endTimeShort %}
+                    {{ 'at'|trans({},'events') }}
+                    {{ startTimeShort }}
+                    {{ 'oclock'|trans({},'events') }}
+                {% else %}
+                    {{ 'from'|trans({},'events') }}
+                    {{ startTimeShort }}
+                    {{ 'oclock'|trans({},'events') }}
+                    {{ 'until'|trans({},'events') }}
+                    {{ endTimeShort }}
+                    {{ 'oclock'|trans({},'events') }}
+                {% endif %}
+            {% endif %}
+
+        {% else %}
+            {% if startTimeShort != "00:00" or endTimeShort != "00:00" %}
+                {{ 'on'|trans({},'events'|title) }}
+                {{ startDate|format_datetime('full', 'short', locale=app.request.getLocale()) }}
+                {{ 'oclock'|trans({},'events') }}
+                {{ 'until'|trans({},'events'|title) }}
+                {{ endDate|format_datetime('full', 'short', locale=app.request.getLocale()) }}
+                {{ 'oclock'|trans({},'events') }}
+            {% else %}
+                {{ 'from'|trans({},'events'|title) }}
+                {{ startDate|format_datetime('full', 'none', locale=app.request.getLocale()) }}
+                {{ 'until'|trans({},'events'|title) }}
+                {{ endDate|format_datetime('full', 'none', locale=app.request.getLocale()) }}
+            {% endif %}
+        {% endif %}
+
+    {% else %}
+        {# show only startDate #}
+        {{ startDate|format_datetime('full', 'short', locale=app.request.getLocale()) }}
+    {% endif %}
+{% endif %}

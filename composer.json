@@ -1,7 +1,7 @@
 {
     "name": "manuxi/sulu-event-bundle",
     "description": "Say hello to sulu-events",
-    "type": "sulu-bundle",
+    "type": "symfony-bundle",
     "keywords": [
         "sulu",
         "suluCms",
@@ -38,14 +38,11 @@
     "autoload": {
         "psr-4": {
             "Manuxi\\SuluEventBundle\\": "src/"
-        },
-        "exclude-from-classmap": [
-            "/Tests/"
-        ]
+        }
     },
     "autoload-dev": {
         "psr-4": {
-            "Manuxi\\SuluEventBundle\\Tests\\": "Tests"
+            "Manuxi\\SuluEventBundle\\Tests\\": "tests/"
         }
     },
     "scripts": {
