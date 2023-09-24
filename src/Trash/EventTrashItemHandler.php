@@ -9,6 +9,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Manuxi\SuluEventBundle\Admin\EventAdmin;
 use Manuxi\SuluEventBundle\Domain\Event\Event\RestoredEvent;
 use Manuxi\SuluEventBundle\Entity\Event;
+use Manuxi\SuluEventBundle\Entity\Location;
 use Sulu\Bundle\ActivityBundle\Application\Collector\DomainEventCollectorInterface;
 use Sulu\Bundle\MediaBundle\Entity\MediaInterface;
 use Sulu\Bundle\RouteBundle\Entity\Route;
@@ -52,6 +53,8 @@ class EventTrashItemHandler implements StoreTrashItemHandlerInterface, RestoreTr
         $image = $resource->getImage();
 
         $data = [
+            "startdate" => $resource->getStartDate(),
+            "enddate" => $resource->getEndDate(),
             "title" => $resource->getTitle(),
             "subtitle" => $resource->getSubtitle(),
             "summary" => $resource->getSummary(),
@@ -60,7 +63,9 @@ class EventTrashItemHandler implements StoreTrashItemHandlerInterface, RestoreTr
             "slug" => $resource->getRoutePath(),
             "ext" => $resource->getExt(),
             "imageId" => $image ? $image->getId() : null,
-            "enabled" => $resource->isEnabled()
+            "enabled" => $resource->isEnabled(),
+            "locale" => $resource->getLocale(),
+            "location" => $resource->getLocation()->getId()
         ];
         return $this->trashItemRepository->create(
             Event::RESOURCE_KEY,
@@ -81,17 +86,18 @@ class EventTrashItemHandler implements StoreTrashItemHandlerInterface, RestoreTr
         $eventId = (int)$trashItem->getResourceId();
         $event = new Event();
 
+        $event->setStartDate($data['startdate']);
+        $event->setEndDate($data['enddate']);
         $event->setTitle($data['title']);
         $event->setSubtitle($data['subtitle']);
         $event->setSummary($data['summary']);
         $event->setText($data['text']);
         $event->setFooter($data['footer']);
-
         $event->setEnabled($data['enabled']);
-
         $event->setRoutePath($data['slug']);
-
         $event->setExt($data['ext']);
+        $event->setLocale($data['locale']);
+        $event->setLocation($this->entityManager->find(Location::class, $data['location']));
 
         if($data['imageId']){
             $event->setImage($this->entityManager->find(MediaInterface::class, $data['imageId']));

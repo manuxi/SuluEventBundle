@@ -63,7 +63,7 @@ class LocationTrashItemHandler implements StoreTrashItemHandlerInterface, Restor
         return $this->trashItemRepository->create(
             Location::RESOURCE_KEY,
             (string)$resource->getId(),
-            $resource->getTitle(),
+            $resource->getName(),
             $data,
             null,
             $options,

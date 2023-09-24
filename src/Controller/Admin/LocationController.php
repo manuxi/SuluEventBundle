@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Manuxi\SuluEventBundle\Controller\Admin;
 
 use Manuxi\SuluEventBundle\Common\DoctrineListRepresentationFactory;
+use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\Location;
 use Manuxi\SuluEventBundle\Entity\Models\LocationModel;
 use Doctrine\ORM\OptimisticLockException;
@@ -12,6 +13,7 @@ use Doctrine\ORM\ORMException;
 use FOS\RestBundle\Controller\Annotations\RouteResource;
 use FOS\RestBundle\Routing\ClassResourceInterface;
 use FOS\RestBundle\View\ViewHandlerInterface;
+use Sulu\Bundle\TrashBundle\Application\TrashManager\TrashManagerInterface;
 use Sulu\Component\Rest\AbstractRestController;
 use Sulu\Component\Rest\Exception\EntityNotFoundException;
 use Symfony\Component\HttpFoundation\Request;
@@ -25,16 +27,19 @@ class LocationController extends AbstractRestController implements ClassResource
 {
     private LocationModel $locationModel;
     private DoctrineListRepresentationFactory $doctrineListRepresentationFactory;
+    private TrashManagerInterface $trashManager;
 
     public function __construct(
         LocationModel $locationModel,
         DoctrineListRepresentationFactory $doctrineListRepresentationFactory,
         ViewHandlerInterface $viewHandler,
+        TrashManagerInterface $trashManager,
         ?TokenStorageInterface $tokenStorage = null
     ) {
         parent::__construct($viewHandler, $tokenStorage);
         $this->locationModel = $locationModel;
         $this->doctrineListRepresentationFactory = $doctrineListRepresentationFactory;
+        $this->trashManager = $trashManager;
     }
 
     public function cgetAction(): Response
@@ -95,8 +100,10 @@ class LocationController extends AbstractRestController implements ClassResource
      */
     public function deleteAction(int $id): Response
     {
-        $location = $this->locationModel->getLocation($id);
-        $title = $location->getName() ?? 'n.a.';
+        $entity = $this->locationModel->getLocation($id);
+        $this->trashManager->store(Location::RESOURCE_KEY, $entity);
+
+        $title = $entity->getName() ?? 'n.a.';
         $this->locationModel->deleteLocation($id, $title);
         return $this->handleView($this->view(null, 204));
     }

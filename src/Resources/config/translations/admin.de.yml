@@ -53,8 +53,8 @@ sulu_event:
 
 sulu_activity:
     resource:
-    events: "Veranstaltung"
-    locations: "Orte"
+        events: "Veranstaltungen"
+        locations: "Orte"
     description:
         events:
             created: "{userFullName} hat die Veranstaltung \"{resourceTitle}\" erstellt."

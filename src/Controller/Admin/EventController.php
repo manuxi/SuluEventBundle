@@ -17,8 +17,10 @@ use FOS\RestBundle\Routing\ClassResourceInterface;
 use FOS\RestBundle\View\ViewHandlerInterface;
 //use HandcraftedInTheAlps\RestRoutingBundle\Controller\Annotations\RouteResource;
 //use HandcraftedInTheAlps\RestRoutingBundle\Routing\ClassResourceInterface;
+use Manuxi\SuluNewsBundle\Entity\News;
 use Sulu\Bundle\RouteBundle\Entity\RouteRepositoryInterface;
 use Sulu\Bundle\RouteBundle\Manager\RouteManagerInterface;
+use Sulu\Bundle\TrashBundle\Application\TrashManager\TrashManagerInterface;
 use Sulu\Component\Rest\AbstractRestController;
 use Sulu\Component\Rest\Exception\EntityNotFoundException;
 use Sulu\Component\Rest\Exception\RestException;
@@ -39,13 +41,14 @@ class EventController extends AbstractRestController implements ClassResourceInt
 {
     use RequestParametersTrait;
 
-    private $eventModel;
-    private $eventSeoModel;
-    private $eventExcerptModel;
-    private $doctrineListRepresentationFactory;
-    private $routeManager;
-    private $routeRepository;
-    private $securityChecker;
+    private EventModel $eventModel;
+    private EventSeoModel $eventSeoModel;
+    private EventExcerptModel $eventExcerptModel;
+    private RouteManagerInterface $routeManager;
+    private RouteRepositoryInterface $routeRepository;
+    private DoctrineListRepresentationFactory $doctrineListRepresentationFactory;
+    private SecurityCheckerInterface $securityChecker;
+    private TrashManagerInterface $trashManager;
 
     public function __construct(
         EventModel $eventModel,
@@ -56,6 +59,7 @@ class EventController extends AbstractRestController implements ClassResourceInt
         DoctrineListRepresentationFactory $doctrineListRepresentationFactory,
         SecurityCheckerInterface $securityChecker,
         ViewHandlerInterface $viewHandler,
+        TrashManagerInterface $trashManager,
         ?TokenStorageInterface $tokenStorage = null
     ) {
         parent::__construct($viewHandler, $tokenStorage);
@@ -66,6 +70,7 @@ class EventController extends AbstractRestController implements ClassResourceInt
         $this->routeManager                      = $routeManager;
         $this->routeRepository                   = $routeRepository;
         $this->securityChecker                   = $securityChecker;
+        $this->trashManager = $trashManager;
     }
 
     public function cgetAction(Request $request): Response
@@ -165,15 +170,19 @@ class EventController extends AbstractRestController implements ClassResourceInt
     }
 
     /**
+     * @param int $id
+     * @return Response
      * @throws EntityNotFoundException
      * @throws ORMException
      * @throws OptimisticLockException
      */
     public function deleteAction(int $id): Response
     {
-        $event = $this->eventModel->getEvent($id);
-        $title = $event->getTitle() ?? 'n.a.';
-        $this->removeRoutesForEntity($event);
+        $entity = $this->eventModel->getEvent($id);
+        $this->trashManager->store(Event::RESOURCE_KEY, $entity);
+
+        $title = $entity->getTitle() ?? 'n.a.';
+        $this->removeRoutesForEntity($entity);
 
         $this->eventModel->deleteEvent($id, $title);
         return $this->handleView($this->view(null, 204));
