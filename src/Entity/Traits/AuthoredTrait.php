@@ -9,14 +9,14 @@ use DateTime;
 trait AuthoredTrait
 {
 
-    protected DateTime $authored;
+    protected ?DateTime $authored = null;
 
     public function getAuthored(): ?DateTime
     {
         return $this->authored;
     }
 
-    public function setAuthored(DateTime $authored): self
+    public function setAuthored(?DateTime $authored): self
     {
         $this->authored = $authored;
         return $this;
