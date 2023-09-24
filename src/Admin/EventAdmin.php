@@ -39,7 +39,6 @@ class EventAdmin extends Admin
     private ViewBuilderFactoryInterface $viewBuilderFactory;
     private SecurityCheckerInterface $securityChecker;
     private WebspaceManagerInterface $webspaceManager;
-
     private ?AutomationViewBuilderFactoryInterface $automationViewBuilderFactory;
 
     public function __construct(

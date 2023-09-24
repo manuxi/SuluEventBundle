@@ -22,48 +22,48 @@ class EventTranslation implements AuditableInterface
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
      */
-    private $id;
+    private ?int $id = null;
 
     /**
      * @ORM\ManyToOne(targetEntity="Manuxi\SuluEventBundle\Entity\Event", inversedBy="translations")
      * @ORM\JoinColumn(nullable=false)
      */
-    private $event;
+    private Event $event;
 
     /**
      * @ORM\Column(type="string", length=5)
      */
-    private $locale;
+    private string $locale;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private $title;
+    private ?string $title;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private $subtitle;
+    private ?string $subtitle;
 
     /**
      * @ORM\Column(type="text", nullable=true)
      */
-    private $summary;
+    private ?string $summary;
 
     /**
      * @ORM\Column(type="text", nullable=true)
      */
-    private $text;
+    private ?string $text;
 
     /**
      * @ORM\Column(type="text", nullable=true)
      */
-    private $footer;
+    private ?string $footer;
 
     /**
      * @ORM\Column(type="string", length=255)
      */
-    private $routePath;
+    private string $routePath;
 
     public function __construct(Event $event, string $locale)
     {

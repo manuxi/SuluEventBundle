@@ -14,7 +14,7 @@ use Sulu\Component\SmartContent\ItemInterface;
 class EventDataItem implements ItemInterface
 {
 
-    private $entity;
+    private Event $entity;
 
     public function __construct(Event $entity)
     {

@@ -67,12 +67,15 @@ class EventTrashItemHandler implements StoreTrashItemHandlerInterface, RestoreTr
             "locale" => $resource->getLocale(),
             "location" => $resource->getLocation()->getId()
         ];
+
+        $restoreType = isset($options['locale']) ? 'translation' : null;
+
         return $this->trashItemRepository->create(
             Event::RESOURCE_KEY,
             (string)$resource->getId(),
             $resource->getTitle(),
             $data,
-            null,
+            $restoreType,
             $options,
             Event::SECURITY_CONTEXT,
             null,
@@ -85,6 +88,7 @@ class EventTrashItemHandler implements StoreTrashItemHandlerInterface, RestoreTr
         $data = $trashItem->getRestoreData();
         $eventId = (int)$trashItem->getResourceId();
         $event = new Event();
+        $event->setLocale($data['locale']);
 
         $event->setStartDate($data['startdate']);
         $event->setEndDate($data['enddate']);
@@ -96,7 +100,7 @@ class EventTrashItemHandler implements StoreTrashItemHandlerInterface, RestoreTr
         $event->setEnabled($data['enabled']);
         $event->setRoutePath($data['slug']);
         $event->setExt($data['ext']);
-        $event->setLocale($data['locale']);
+
         $event->setLocation($this->entityManager->find(Location::class, $data['location']));
 
         if($data['imageId']){

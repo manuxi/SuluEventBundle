@@ -9,7 +9,7 @@ use Sulu\Component\Webspace\Manager\WebspaceManagerInterface;
 class WebspaceSelector
 {
 
-    private $webspaceManager;
+    private WebspaceManagerInterface $webspaceManager;
 
     public function __construct(WebspaceManagerInterface $webspaceManager)
     {

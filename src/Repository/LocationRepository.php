@@ -30,7 +30,6 @@ class LocationRepository extends ServiceEntityRepository
 
     /**
      * @throws ORMException
-     * @throws OptimisticLockException
      */
     public function remove(int $id): void
     {
@@ -44,10 +43,6 @@ class LocationRepository extends ServiceEntityRepository
         $this->getEntityManager()->flush();
     }
 
-    /**
-     * @throws ORMException
-     * @throws OptimisticLockException
-     */
     public function save(Location $location): Location
     {
         $this->getEntityManager()->persist($location);

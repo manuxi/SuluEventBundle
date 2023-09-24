@@ -34,10 +34,6 @@ class EventSeoRepository extends ServiceEntityRepository
         return $eventSeo;
     }
 
-    /**
-     * @throws ORMException
-     * @throws OptimisticLockException
-     */
     public function remove(int $id): void
     {
         /** @var object $eventSeo */
@@ -50,10 +46,6 @@ class EventSeoRepository extends ServiceEntityRepository
         $this->getEntityManager()->flush();
     }
 
-    /**
-     * @throws ORMException
-     * @throws OptimisticLockException
-     */
     public function save(EventSeo $eventSeo): EventSeo
     {
         $this->getEntityManager()->persist($eventSeo);

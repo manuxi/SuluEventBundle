@@ -11,7 +11,7 @@ use Sulu\Component\Content\SimpleContentType;
 
 class EventSelectionContentType extends SimpleContentType
 {
-    private $eventRepository;
+    private EventRepository $eventRepository;
 
     public function __construct(EventRepository $eventRepository)
     {
@@ -21,6 +21,7 @@ class EventSelectionContentType extends SimpleContentType
     }
 
     /**
+     * @param PropertyInterface $property
      * @return Event[]
      */
     public function getContentData(PropertyInterface $property): array
@@ -38,10 +39,7 @@ class EventSelectionContentType extends SimpleContentType
         return $events;
     }
 
-    /**
-     * @return mixed[]
-     */
-    public function getViewData(PropertyInterface $property)
+    public function getViewData(PropertyInterface $property): mixed
     {
         return $property->getValue();
     }

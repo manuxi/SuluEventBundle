@@ -43,10 +43,6 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
         return $event;
     }
 
-    /**
-     * @throws ORMException
-     * @throws OptimisticLockException
-     */
     public function remove(int $id): void
     {
         /** @var object $event */
@@ -59,10 +55,6 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
         $this->getEntityManager()->flush();
     }
 
-    /**
-     * @throws ORMException
-     * @throws OptimisticLockException
-     */
     public function save(Event $event): Event
     {
         $this->getEntityManager()->persist($event);
@@ -120,13 +112,16 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
      * Returns filtered entities.
      * When pagination is active the result count is pageSize + 1 to determine has next page.
      *
-     * @param array   $filters  array of filters: tags, tagOperator
-     * @param int     $page
-     * @param int     $pageSize
-     * @param int     $limit
-     * @param string  $locale
+     * @param array $filters array of filters: tags, tagOperator
+     * @param int $page
+     * @param int $pageSize
+     * @param int $limit
+     * @param string $locale
      * @param mixed[] $options
-     *
+     * @param UserInterface|null $user
+     * @param null $entityClass
+     * @param null $entityAlias
+     * @param null $permission
      * @return object[]
      * @noinspection PhpMissingReturnTypeInspection
      * @noinspection PhpMissingParamTypeInspection
@@ -159,6 +154,9 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
     }
 
     /**
+     * @param QueryBuilder $queryBuilder
+     * @param string $alias
+     * @param string $locale
      * @param mixed[] $options
      *
      * @return string[]

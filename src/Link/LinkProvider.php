@@ -23,14 +23,11 @@ class LinkProvider implements LinkProviderInterface
         $this->translator = $translator;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getConfiguration(): LinkConfiguration
     {
         return LinkConfigurationBuilder::create()
             ->setTitle($this->translator->trans('sulu_event.event',[],'admin'))
-            ->setResourceKey(Event::RESOURCE_KEY) // the resourceKey of the entity that should be loaded
+            ->setResourceKey(Event::RESOURCE_KEY)
             ->setListAdapter('table')
             ->setDisplayProperties(['title'])
             ->setOverlayTitle($this->translator->trans('sulu_event.event',[],'admin'))
@@ -39,9 +36,6 @@ class LinkProvider implements LinkProviderInterface
             ->getLinkConfiguration();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function preload(array $hrefs, $locale, $published = true): array
     {
         if (0 === count($hrefs)) {

@@ -26,8 +26,8 @@ class LocationAdmin extends Admin
     public const EDIT_FORM_VIEW = 'sulu_event.location.edit_form';
     public const EDIT_FORM_DETAILS_VIEW = 'sulu_event.location.edit_form.details';
 
-    private $viewBuilderFactory;
-    private $securityChecker;
+    private ViewBuilderFactoryInterface $viewBuilderFactory;
+    private SecurityCheckerInterface $securityChecker;
 
     public function __construct(
         ViewBuilderFactoryInterface $viewBuilderFactory,
@@ -38,6 +38,7 @@ class LocationAdmin extends Admin
     }
 
     /**
+     * @param NavigationItemCollection $navigationItemCollection
      * @throws NavigationItemNotFoundException
      */
     public function configureNavigationItems(NavigationItemCollection $navigationItemCollection): void

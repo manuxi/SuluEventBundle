@@ -14,7 +14,7 @@ class AuthoredSubscriber implements EventSubscriber
 {
     const AUTHORED_PROPERTY_NAME = 'authored';
 
-    public function getSubscribedEvents()
+    public function getSubscribedEvents(): array
     {
         return [
             Events::loadClassMetadata,
@@ -26,8 +26,10 @@ class AuthoredSubscriber implements EventSubscriber
     /**
      * Load the class data, mapping the created and changed fields
      * to datetime fields.
+     * @param LoadClassMetadataEventArgs $event
+     * @throws \Doctrine\ORM\Mapping\MappingException
      */
-    public function loadClassMetadata(LoadClassMetadataEventArgs $event)
+    public function loadClassMetadata(LoadClassMetadataEventArgs $event): void
     {
         $metadata = $event->getClassMetadata();
         $reflection = $metadata->getReflectionClass();
@@ -45,16 +47,18 @@ class AuthoredSubscriber implements EventSubscriber
 
     /**
      * Set the timestamps before update.
+     * @param LifecycleEventArgs $event
      */
-    public function preUpdate(LifecycleEventArgs $event)
+    public function preUpdate(LifecycleEventArgs $event): void
     {
         $this->handleTimestamp($event);
     }
 
     /**
      * Set the timestamps before creation.
+     * @param LifecycleEventArgs $event
      */
-    public function prePersist(LifecycleEventArgs $event)
+    public function prePersist(LifecycleEventArgs $event): void
     {
         $this->handleTimestamp($event);
     }
@@ -62,8 +66,9 @@ class AuthoredSubscriber implements EventSubscriber
     /**
      * Set the timestamps. If created is NULL then set it. Always
      * set the changed field.
+     * @param LifecycleEventArgs $event
      */
-    private function handleTimestamp(LifecycleEventArgs $event)
+    private function handleTimestamp(LifecycleEventArgs $event): void
     {
         $entity = $event->getObject();
 

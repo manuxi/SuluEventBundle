@@ -34,10 +34,6 @@ class EventExcerptRepository extends ServiceEntityRepository
         return $eventExcerpt;
     }
 
-    /**
-     * @throws ORMException
-     * @throws OptimisticLockException
-     */
     public function remove(int $id): void
     {
         /** @var object $eventExcerpt */
@@ -50,10 +46,6 @@ class EventExcerptRepository extends ServiceEntityRepository
         $this->getEntityManager()->flush();
     }
 
-    /**
-     * @throws ORMException
-     * @throws OptimisticLockException
-     */
     public function save(EventExcerpt $eventExcerpt): EventExcerpt
     {
         $this->getEntityManager()->persist($eventExcerpt);

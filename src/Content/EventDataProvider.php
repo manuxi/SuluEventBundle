@@ -9,7 +9,7 @@ use Sulu\Component\SmartContent\Orm\BaseDataProvider;
 
 class EventDataProvider extends BaseDataProvider
 {
-    private $defaultLimit = 12;
+    private int $defaultLimit = 12;
 
     public function getConfiguration(): ProviderConfigurationInterface
     {
@@ -23,7 +23,7 @@ class EventDataProvider extends BaseDataProvider
 
                         ['column' => 'startDate', 'title' => 'sulu_event.start_date'],
                         ['column' => 'endDate', 'title' => 'event.end_date'],
-                        ['column' => 'translation.title', 'title' => 'sulu_admin.title'],
+                        ['column' => 'translation.title', 'title' => 'sulu_event.title'],
 
                     ]
                 )

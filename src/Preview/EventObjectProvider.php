@@ -10,7 +10,7 @@ use Sulu\Bundle\PreviewBundle\Preview\Object\PreviewObjectProviderInterface;
 
 class EventObjectProvider implements PreviewObjectProviderInterface
 {
-    private $eventRepository;
+    private EventRepository $eventRepository;
 
     public function __construct(EventRepository $eventRepository)
     {

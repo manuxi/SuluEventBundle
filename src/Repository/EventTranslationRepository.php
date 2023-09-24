@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Manuxi\SuluEventBundle\Repository;
 
 use Doctrine\Common\Collections\Criteria;
-use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\EventTranslation;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -37,7 +36,7 @@ class EventTranslationRepository extends ServiceEntityRepository
             ->select('IDENTITY(et.event) as event, et.locale, count(et.event) as eventCount')
             ->getQuery()
         ;
-//        dump($query->getSQL());
+
         return $query->getResult();
     }
 

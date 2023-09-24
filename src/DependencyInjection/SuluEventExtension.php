@@ -19,6 +19,8 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
     use PersistenceExtensionTrait;
 
     /**
+     * @param array $configs
+     * @param ContainerBuilder $container
      * @throws \Exception
      */
     public function load(array $configs, ContainerBuilder $container)
@@ -30,6 +32,7 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
         $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
         $loader->load('services.xml');
         $loader->load('controller.xml');
+        $loader->load('automation.xml');
 
         $this->configurePersistence($config['objects'], $container);
     }
@@ -206,7 +209,6 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
         $container->loadFromExtension('framework', [
             'default_locale' => 'en',
             'translator' => ['paths' => [__DIR__ . '/../Resources/config/translations/']],
-            // ...
         ]);
     }
 }

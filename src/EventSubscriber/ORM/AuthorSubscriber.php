@@ -11,6 +11,7 @@ use Doctrine\Persistence\Event\LoadClassMetadataEventArgs;
 use Manuxi\SuluEventBundle\Entity\Interfaces\AuthorInterface;
 use Sulu\Component\Security\Authentication\UserInterface;
 use Symfony\Component\Security\Core\Authentication\Token\AnonymousToken;
+use Symfony\Component\Security\Core\Authentication\Token\NullToken;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 
@@ -32,13 +33,13 @@ class AuthorSubscriber implements EventSubscriber
      * @param string $userClass
      * @param TokenStorageInterface|null $tokenStorage
      */
-    public function __construct($userClass, TokenStorageInterface $tokenStorage = null)
+    public function __construct(string $userClass, TokenStorageInterface $tokenStorage = null)
     {
         $this->tokenStorage = $tokenStorage;
         $this->userClass = $userClass;
     }
 
-    public function getSubscribedEvents()
+    public function getSubscribedEvents(): array
     {
         return [
             Events::loadClassMetadata,
@@ -48,8 +49,9 @@ class AuthorSubscriber implements EventSubscriber
 
     /**
      * Map creator and changer fields to User objects.
+     * @param LoadClassMetadataEventArgs $event
      */
-    public function loadClassMetadata(LoadClassMetadataEventArgs $event)
+    public function loadClassMetadata(LoadClassMetadataEventArgs $event): void
     {
         $metadata = $event->getClassMetadata();
         $reflection = $metadata->getReflectionClass();
@@ -72,7 +74,7 @@ class AuthorSubscriber implements EventSubscriber
         }
     }
 
-    public function onFlush(OnFlushEventArgs $event)
+    public function onFlush(OnFlushEventArgs $event): void
     {
         if (null === $this->tokenStorage) {
             return;
@@ -81,7 +83,7 @@ class AuthorSubscriber implements EventSubscriber
         $token = $this->tokenStorage->getToken();
 
         // if no token, do nothing
-        if (null === $token || $token instanceof AnonymousToken) {
+        if (null === $token || $token instanceof NullToken) {
             return;
         }
 
@@ -96,7 +98,7 @@ class AuthorSubscriber implements EventSubscriber
         $this->handleAuthor($event, $user, false);
     }
 
-    private function handleAuthor(OnFlushEventArgs $event, UserInterface $user, bool $insertions)
+    private function handleAuthor(OnFlushEventArgs $event, UserInterface $user, bool $insertions): void
     {
         $manager = $event->getEntityManager();
         $unitOfWork = $manager->getUnitOfWork();
@@ -127,12 +129,7 @@ class AuthorSubscriber implements EventSubscriber
         }
     }
 
-    /**
-     * Return the user from the token.
-     *
-     * @return UserInterface|null
-     */
-    private function getUser(TokenInterface $token)
+    private function getUser(TokenInterface $token): ?UserInterface
     {
         $user = $token->getUser();
 
