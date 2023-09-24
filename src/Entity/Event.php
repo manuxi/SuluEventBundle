@@ -78,7 +78,7 @@ class Event implements AuditableTranslatableInterface
     /**
      * @ORM\Column(type="string", nullable=true)
      */
-    private ?string $phoneNumber;
+    private ?string $phoneNumber = null;
 
     /**
      * @ORM\Column(type="json", nullable=true)
@@ -96,7 +96,7 @@ class Event implements AuditableTranslatableInterface
      * @ORM\OneToMany(targetEntity="Manuxi\SuluEventBundle\Entity\EventTranslation", mappedBy="event", cascade={"ALL"}, indexBy="locale", fetch="EXTRA_LAZY")
      * @Serializer\Exclude
      */
-    private $translations;
+    private Collection $translations;
 
     private string $locale = 'en';
 
@@ -112,6 +112,18 @@ class Event implements AuditableTranslatableInterface
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getLocale(): string
+    {
+        return $this->locale;
+    }
+
+    public function setLocale(string $locale): self
+    {
+        $this->locale = $locale;
+        $this->propagateLocale($locale);
+        return $this;
     }
 
     public function isEnabled(): bool
@@ -243,30 +255,6 @@ class Event implements AuditableTranslatableInterface
     }
 
     /**
-     * @Serializer\VirtualProperty(name="route_path")
-     */
-    public function getRoutePath(): ?string
-    {
-        $translation = $this->getTranslation($this->locale);
-        if (!$translation) {
-            return null;
-        }
-
-        return $translation->getRoutePath();
-    }
-
-    public function setRoutePath(string $routePath): self
-    {
-        $translation = $this->getTranslation($this->locale);
-        if (!$translation) {
-            $translation = $this->createTranslation($this->locale);
-        }
-
-        $translation->setRoutePath($routePath);
-        return $this;
-    }
-
-    /**
      * @Serializer\VirtualProperty(name="text")
      */
     public function getText(): ?string
@@ -311,6 +299,30 @@ class Event implements AuditableTranslatableInterface
         }
 
         $translation->setFooter($footer);
+        return $this;
+    }
+
+    /**
+     * @Serializer\VirtualProperty(name="route_path")
+     */
+    public function getRoutePath(): ?string
+    {
+        $translation = $this->getTranslation($this->locale);
+        if (!$translation) {
+            return null;
+        }
+
+        return $translation->getRoutePath();
+    }
+
+    public function setRoutePath(string $routePath): self
+    {
+        $translation = $this->getTranslation($this->locale);
+        if (!$translation) {
+            $translation = $this->createTranslation($this->locale);
+        }
+
+        $translation->setRoutePath($routePath);
         return $this;
     }
 
@@ -369,18 +381,6 @@ class Event implements AuditableTranslatableInterface
     public function hasExt(string $key): bool
     {
         return \array_key_exists($key, $this->ext);
-    }
-
-    public function getLocale(): string
-    {
-        return $this->locale;
-    }
-
-    public function setLocale(string $locale): self
-    {
-        $this->locale = $locale;
-        $this->propagateLocale($locale);
-        return $this;
     }
 
     /**

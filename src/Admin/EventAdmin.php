@@ -34,7 +34,6 @@ class EventAdmin extends Admin
     public const EDIT_FORM_VIEW_EXCERPT = 'sulu_event.event.edit_form.excerpt';
     public const EDIT_FORM_VIEW_SETTINGS = 'sulu_event.event.edit_form.settings';
     public const EDIT_FORM_VIEW_AUTOMATION = 'sulu_event.event.edit_form.automation';
-    public const EDIT_FORM_VIEW_ACTIVITY = 'sulu_event.event.edit_form.activity';
 
     private ViewBuilderFactoryInterface $viewBuilderFactory;
     private SecurityCheckerInterface $securityChecker;
@@ -98,7 +97,8 @@ class EventAdmin extends Admin
 
         if ($this->securityChecker->hasPermission(Event::SECURITY_CONTEXT, PermissionTypes::EDIT)) {
             // Configure Event List View
-            $listView = $this->viewBuilderFactory->createListViewBuilder(static::LIST_VIEW, '/events/:locale')
+            $listView = $this->viewBuilderFactory
+                ->createListViewBuilder(static::LIST_VIEW, '/events/:locale')
                 ->setResourceKey(Event::RESOURCE_KEY)
                 ->setListKey(Event::LIST_KEY)
                 ->setTitle('sulu_event.events')
@@ -163,8 +163,7 @@ class EventAdmin extends Admin
             $formToolbarActionsWithoutType = [];
             $previewCondition              = 'nodeType == 1';
 
-            if ($this->securityChecker->hasPermission(static::SECURITY_CONTEXT, PermissionTypes::ADD)
-                && $this->securityChecker->hasPermission(static::SECURITY_CONTEXT, PermissionTypes::ADD)) {
+            if ($this->securityChecker->hasPermission(static::SECURITY_CONTEXT, PermissionTypes::ADD)) {
                 $listToolbarActions[] = new ToolbarAction('sulu_admin.add');
             }
 

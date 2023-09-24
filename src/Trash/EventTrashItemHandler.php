@@ -51,21 +51,28 @@ class EventTrashItemHandler implements StoreTrashItemHandlerInterface, RestoreTr
         /* @var $resource Event */
 
         $image = $resource->getImage();
+        $pdf = $resource->getPdf();
 
         $data = [
-            "startdate" => $resource->getStartDate(),
-            "enddate" => $resource->getEndDate(),
             "title" => $resource->getTitle(),
             "subtitle" => $resource->getSubtitle(),
             "summary" => $resource->getSummary(),
             "text" => $resource->getText(),
             "footer" => $resource->getFooter(),
+            "startdate" => $resource->getStartDate(),
+            "enddate" => $resource->getEndDate(),
             "slug" => $resource->getRoutePath(),
             "ext" => $resource->getExt(),
-            "imageId" => $image ? $image->getId() : null,
             "enabled" => $resource->isEnabled(),
             "locale" => $resource->getLocale(),
-            "location" => $resource->getLocation()->getId()
+            "location" => $resource->getLocation()->getId(),
+
+            "imageId" => $image ? $image->getId() : null,
+            "pdfIdId" => $pdf ? $pdf->getId() : null,
+            "url" => $resource->getUrl(),
+            "email" => $resource->getEmail(),
+            "phone" => $resource->getPhoneNumber(),
+            "images" => $resource->getImages(),
         ];
 
         $restoreType = isset($options['locale']) ? 'translation' : null;
@@ -100,11 +107,17 @@ class EventTrashItemHandler implements StoreTrashItemHandlerInterface, RestoreTr
         $event->setEnabled($data['enabled']);
         $event->setRoutePath($data['slug']);
         $event->setExt($data['ext']);
-
         $event->setLocation($this->entityManager->find(Location::class, $data['location']));
+        $event->setUrl($data['url']);
+        $event->setEmail($data['email']);
+        $event->setPhoneNumber($data['phone']);
+        $event->setImages($data['images']);
 
         if($data['imageId']){
             $event->setImage($this->entityManager->find(MediaInterface::class, $data['imageId']));
+        }
+        if($data['pdfId']){
+            $event->setPdf($this->entityManager->find(MediaInterface::class, $data['pdfId']));
         }
 
         $this->domainEventCollector->collect(

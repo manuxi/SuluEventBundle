@@ -8,10 +8,8 @@ use Sulu\Component\Security\Authentication\UserInterface;
 
 trait AuthorTrait
 {
-    /**
-     * @var UserInterface|null
-     */
-    protected $author;
+
+    protected ?UserInterface $author = null;
 
     public function getAuthor(): ?UserInterface
     {

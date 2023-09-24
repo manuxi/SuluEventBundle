@@ -67,7 +67,7 @@
             <joins ref="translation"/>
         </property>
 
-        <property name="subtitle" visibility="always" searchability="yes" translation="sulu_admin.subtitle">
+        <property name="subtitle" visibility="always" searchability="yes" translation="sulu_event.subtitle">
             <field-name>subtitle</field-name>
             <entity-name>%sulu.model.event_translation.class%</entity-name>
 

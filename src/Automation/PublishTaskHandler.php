@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Manuxi\SuluEventBundle\Automation;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Manuxi\SuluEventBundle\Domain\Event\PublishedEvent;
+use Manuxi\SuluEventBundle\Domain\Event\Event\PublishedEvent;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Sulu\Bundle\ActivityBundle\Application\Collector\DomainEventCollectorInterface;
 use Sulu\Bundle\AutomationBundle\TaskHandler\AutomationTaskHandlerInterface;

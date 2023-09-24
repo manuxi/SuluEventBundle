@@ -10,7 +10,6 @@ use Doctrine\ORM\Events;
 use Doctrine\Persistence\Event\LoadClassMetadataEventArgs;
 use Manuxi\SuluEventBundle\Entity\Interfaces\AuthorInterface;
 use Sulu\Component\Security\Authentication\UserInterface;
-use Symfony\Component\Security\Core\Authentication\Token\AnonymousToken;
 use Symfony\Component\Security\Core\Authentication\Token\NullToken;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
@@ -100,7 +99,7 @@ class AuthorSubscriber implements EventSubscriber
 
     private function handleAuthor(OnFlushEventArgs $event, UserInterface $user, bool $insertions): void
     {
-        $manager = $event->getEntityManager();
+        $manager = $event->getObjectManager();
         $unitOfWork = $manager->getUnitOfWork();
 
         $entities = $insertions ? $unitOfWork->getScheduledEntityInsertions() :

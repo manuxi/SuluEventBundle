@@ -38,27 +38,27 @@ class EventTranslation implements AuditableInterface
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private ?string $title;
+    private ?string $title = null;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private ?string $subtitle;
+    private ?string $subtitle = null;
 
     /**
      * @ORM\Column(type="text", nullable=true)
      */
-    private ?string $summary;
+    private ?string $summary = null;
 
     /**
      * @ORM\Column(type="text", nullable=true)
      */
-    private ?string $text;
+    private ?string $text = null;
 
     /**
      * @ORM\Column(type="text", nullable=true)
      */
-    private ?string $footer;
+    private ?string $footer = null;
 
     /**
      * @ORM\Column(type="string", length=255)

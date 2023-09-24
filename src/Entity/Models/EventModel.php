@@ -288,6 +288,9 @@ class EventModel implements EventModelInterface
     }
 
     /**
+     * @param Event $entity
+     * @param array $data
+     * @return Event
      * @throws EntityNotFoundException
      */
     private function mapSettingsToEvent(Event $entity, array $data): Event

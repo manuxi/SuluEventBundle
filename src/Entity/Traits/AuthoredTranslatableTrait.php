@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Entity\Traits;
 
+use DateTime;
 use JMS\Serializer\Annotation as Serializer;
 
 trait AuthoredTranslatableTrait
@@ -14,7 +15,7 @@ trait AuthoredTranslatableTrait
     /**
      * @Serializer\VirtualProperty(name="authored")
      */
-    public function getAuthored(): ?\DateTime
+    public function getAuthored(): ?DateTime
     {
         $translation = $this->getTranslation($this->getLocale());
         if (!$translation) {
@@ -24,7 +25,7 @@ trait AuthoredTranslatableTrait
         return $translation->getAuthored();
     }
 
-    public function setAuthored(\DateTime $authored): self
+    public function setAuthored(DateTime $authored): self
     {
         $translation = $this->getTranslation($this->getLocale());
         if (!$translation) {
