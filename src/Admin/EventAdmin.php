@@ -167,11 +167,7 @@ class EventAdmin extends Admin
                 $listToolbarActions[] = new ToolbarAction('sulu_admin.add');
             }
 
-            if ($this->securityChecker->hasPermission(static::SECURITY_CONTEXT, PermissionTypes::LIVE)) {
-                $formToolbarActionsWithoutType[] = new ToolbarAction('sulu_admin.save_with_publishing');
-            } else {
-                $formToolbarActionsWithoutType[] = new ToolbarAction('sulu_admin.save');
-            }
+            $formToolbarActionsWithoutType[] = new ToolbarAction('sulu_admin.save');
 
             $viewCollection->add(
                 $this->viewBuilderFactory
