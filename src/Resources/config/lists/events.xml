@@ -45,8 +45,51 @@
             <entity-name>%sulu.model.event.class%</entity-name>
         </property>
 
+        <property name="enabled" visibility="yes" translation="sulu_event.enabled" type="bool">
+            <field-name>enabled</field-name>
+            <entity-name>%sulu.model.event.class%</entity-name>
+        </property>
+
+        <property name="startDate" visibility="always" translation="sulu_event.start_date" type="datetime">
+            <field-name>startDate</field-name>
+            <entity-name>%sulu.model.event.class%</entity-name>
+        </property>
+
+        <property name="endDate" visibility="always" translation="sulu_event.end_date" type="datetime">
+            <field-name>endDate</field-name>
+            <entity-name>%sulu.model.event.class%</entity-name>
+        </property>
+
         <property name="title" visibility="always" searchability="yes" translation="sulu_admin.title">
             <field-name>title</field-name>
+            <entity-name>%sulu.model.event_translation.class%</entity-name>
+
+            <joins ref="translation"/>
+        </property>
+
+        <property name="subtitle" visibility="always" searchability="yes" translation="sulu_admin.subtitle">
+            <field-name>subtitle</field-name>
+            <entity-name>%sulu.model.event_translation.class%</entity-name>
+
+            <joins ref="translation"/>
+        </property>
+
+        <property name="summary" visibility="no" searchability="yes" translation="sulu_event.summary">
+            <field-name>summary</field-name>
+            <entity-name>%sulu.model.event_translation.class%</entity-name>
+
+            <joins ref="translation"/>
+        </property>
+
+        <property name="text" visibility="no" searchability="yes" translation="sulu_event.text">
+            <field-name>text</field-name>
+            <entity-name>%sulu.model.event_translation.class%</entity-name>
+
+            <joins ref="translation"/>
+        </property>
+
+        <property name="footer" visibility="no" searchability="yes" translation="sulu_event.footer">
+            <field-name>footer</field-name>
             <entity-name>%sulu.model.event_translation.class%</entity-name>
 
             <joins ref="translation"/>
@@ -70,35 +113,6 @@
             <entity-name>%sulu.model.location.class%</entity-name>
 
             <joins ref="location"/>
-        </property>
-
-        <property name="teaser" visibility="no" searchability="yes" translation="sulu_event.teaser">
-            <field-name>teaser</field-name>
-            <entity-name>%sulu.model.event_translation.class%</entity-name>
-
-            <joins ref="translation"/>
-        </property>
-
-        <property name="description" visibility="no" searchability="yes" translation="sulu_event.description">
-            <field-name>description</field-name>
-            <entity-name>%sulu.model.event_translation.class%</entity-name>
-
-            <joins ref="translation"/>
-        </property>
-
-        <property name="enabled" visibility="yes" translation="sulu_event.enabled" type="bool">
-            <field-name>enabled</field-name>
-            <entity-name>%sulu.model.event.class%</entity-name>
-        </property>
-
-        <property name="startDate" visibility="always" translation="sulu_event.start_date" type="datetime">
-            <field-name>startDate</field-name>
-            <entity-name>%sulu.model.event.class%</entity-name>
-        </property>
-
-        <property name="endDate" visibility="always" translation="sulu_event.end_date" type="datetime">
-            <field-name>endDate</field-name>
-            <entity-name>%sulu.model.event.class%</entity-name>
         </property>
 
         <property name="created" translation="sulu_admin.created" type="datetime" visibility="yes">

@@ -8,6 +8,7 @@
             <argument type="service" id="sulu_admin.view_builder_factory"/>
             <argument type="service" id="sulu_security.security_checker"/>
             <argument type="service" id="sulu_core.webspace.webspace_manager"/>
+            <argument type="service" id="sulu_automation.automation_view_builder_factory"/>
 
             <tag name="sulu.admin"/>
             <tag name="sulu.context" context="admin"/>
@@ -43,7 +44,8 @@
             <argument type="service" id="doctrine"/>
         </service>
 
-        <!-- needed for massive search -->
+        <!-- needed for massive search/automation bundle? -->
+        <!-- Otherwise: "Make sure the service exists and is tagged with 'doctrine.repository_service'" -->
         <service id="Manuxi\SuluEventBundle\Repository\EventRepository" public="true" lazy="true">
             <argument type="service" id="doctrine"/>
             <tag name="doctrine.repository_service"/>
@@ -53,13 +55,11 @@
             <argument type="service" id="doctrine"/>
         </service>
 
-        <service id="sulu_event.repository.event_seo" class="Manuxi\SuluEventBundle\Repository\EventSeoRepository"
-                 public="true" lazy="true">
+        <service id="sulu_event.repository.event_seo" class="Manuxi\SuluEventBundle\Repository\EventSeoRepository" public="true" lazy="true">
             <argument type="service" id="doctrine"/>
         </service>
 
-        <service id="sulu_event.repository.event_excerpt" class="Manuxi\SuluEventBundle\Repository\EventExcerptRepository"
-                 public="true" lazy="true">
+        <service id="sulu_event.repository.event_excerpt" class="Manuxi\SuluEventBundle\Repository\EventExcerptRepository" public="true" lazy="true">
             <argument type="service" id="doctrine"/>
         </service>
 
@@ -116,6 +116,7 @@
             <argument type="service" id="sulu_event.repository.location"/>
             <argument type="service" id="sulu.repository.media"/>
             <argument type="service" id="sulu_security.user_repository"/>
+            <argument type="service" id="sulu_activity.domain_event_collector"/>
         </service>
 
         <service id="sulu_event.model.event_seo" class="Manuxi\SuluEventBundle\Entity\Models\EventSeoModel">
@@ -148,6 +149,25 @@
             <argument type="service" id="sulu_event.repository.event"/>
             <argument type="service" id="sulu_core.webspace.webspace_manager"/>
             <tag name="sulu.sitemap.provider"/>
+        </service>
+
+        <!--Link-->
+        <service id="sulu_event.link_provider" class="Manuxi\SuluEventBundle\Link\LinkProvider">
+            <argument type="service" id="sulu_event.repository.event"/>
+            <argument type="service" id="translator.default"/>
+            <tag name="sulu.link.provider" alias="actus"/>
+        </service>
+
+        <!--Trash-->
+        <service id="sulu_event.trash_item_handler" class="Manuxi\SuluEventBundle\Trash\TrashItemHandler">
+            <argument type="service" id="sulu_trash.trash_item_repository"/>
+            <argument type="service" id="doctrine.orm.default_entity_manager"/>
+            <argument type="service" id="sulu_trash.doctrine_restore_helper"/>
+            <argument type="service" id="sulu_activity.domain_event_collector"/>
+
+            <tag name="sulu_trash.store_trash_item_handler"/>
+            <tag name="sulu_trash.restore_trash_item_handler"/>
+            <tag name="sulu_trash.restore_configuration_provider"/>
         </service>
     </services>
 </container>

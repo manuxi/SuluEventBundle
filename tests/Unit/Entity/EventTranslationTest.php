@@ -11,22 +11,19 @@ use Sulu\Bundle\TestBundle\Testing\SuluTestCase;
 
 class EventTranslationTest extends SuluTestCase
 {
-    public static function tearDownAfterClass(): void
-    {
-        parent::tearDownAfterClass();
-    }
-
-    /**
-     * @var Event|ObjectProphecy
-     */
-    private $event;
-    private $translation;
-    private $testString = "Lorem ipsum dolor sit amet, ...";
+    private ObjectProphecy $event;
+    private EventTranslation $translation;
+    private string $testString = "Lorem ipsum dolor sit amet, ...";
 
     protected function setUp(): void
     {
         $this->event       = $this->prophesize(Event::class);
         $this->translation = new EventTranslation($this->event->reveal(), 'de');
+    }
+
+    public static function tearDownAfterClass(): void
+    {
+        parent::tearDownAfterClass();
     }
 
     public function testEvent(): void
@@ -46,18 +43,32 @@ class EventTranslationTest extends SuluTestCase
         $this->assertSame($this->testString, $this->translation->getTitle());
     }
 
-    public function testTeaser(): void
+    public function testSubtitle(): void
     {
-        $this->assertNull($this->translation->getTeaser());
-        $this->assertSame($this->translation, $this->translation->setTeaser($this->testString));
-        $this->assertSame($this->testString, $this->translation->getTeaser());
+        $this->assertNull($this->translation->getSubtitle());
+        $this->assertSame($this->translation, $this->translation->setSubtitle($this->testString));
+        $this->assertSame($this->testString, $this->translation->getSubtitle());
     }
 
-    public function testDescription(): void
+    public function testSummary(): void
     {
-        $this->assertNull($this->translation->getDescription());
-        $this->assertSame($this->translation, $this->translation->setDescription($this->testString));
-        $this->assertSame($this->testString, $this->translation->getDescription());
+        $this->assertNull($this->translation->getSummary());
+        $this->assertSame($this->translation, $this->translation->setSummary($this->testString));
+        $this->assertSame($this->testString, $this->translation->getSummary());
+    }
+
+    public function testText(): void
+    {
+        $this->assertNull($this->translation->getText());
+        $this->assertSame($this->translation, $this->translation->setText($this->testString));
+        $this->assertSame($this->testString, $this->translation->getText());
+    }
+
+    public function testFooter(): void
+    {
+        $this->assertNull($this->translation->getFooter());
+        $this->assertSame($this->translation, $this->translation->setFooter($this->testString));
+        $this->assertSame($this->testString, $this->translation->getFooter());
     }
 
     public function testRoutePath(): void

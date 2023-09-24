@@ -195,26 +195,50 @@ class Event implements AuditableTranslatableInterface
     }
 
     /**
-     * @Serializer\VirtualProperty(name="teaser")
+     * @Serializer\VirtualProperty(name="subtitle")
      */
-    public function getTeaser(): ?string
+    public function getSubtitle(): ?string
     {
         $translation = $this->getTranslation($this->locale);
         if (!$translation) {
             return null;
         }
 
-        return $translation->getTeaser();
+        return $translation->getSubtitle();
     }
 
-    public function setTeaser(string $teaser): self
+    public function setSubtitle(string $subtitle): self
     {
         $translation = $this->getTranslation($this->locale);
         if (!$translation) {
             $translation = $this->createTranslation($this->locale);
         }
 
-        $translation->setTeaser($teaser);
+        $translation->setSubtitle($subtitle);
+        return $this;
+    }
+
+    /**
+     * @Serializer\VirtualProperty(name="summary")
+     */
+    public function getSummary(): ?string
+    {
+        $translation = $this->getTranslation($this->locale);
+        if (!$translation) {
+            return null;
+        }
+
+        return $translation->getSummary();
+    }
+
+    public function setSummary(string $summary): self
+    {
+        $translation = $this->getTranslation($this->locale);
+        if (!$translation) {
+            $translation = $this->createTranslation($this->locale);
+        }
+
+        $translation->setSummary($summary);
         return $this;
     }
 
@@ -243,26 +267,50 @@ class Event implements AuditableTranslatableInterface
     }
 
     /**
-     * @Serializer\VirtualProperty(name="description")
+     * @Serializer\VirtualProperty(name="text")
      */
-    public function getDescription(): ?string
+    public function getText(): ?string
     {
         $translation = $this->getTranslation($this->locale);
         if (!$translation) {
             return null;
         }
 
-        return $translation->getDescription();
+        return $translation->getText();
     }
 
-    public function setDescription(string $description): self
+    public function setText(string $text): self
     {
         $translation = $this->getTranslation($this->locale);
         if (!$translation) {
             $translation = $this->createTranslation($this->locale);
         }
 
-        $translation->setDescription($description);
+        $translation->setText($text);
+        return $this;
+    }
+
+    /**
+     * @Serializer\VirtualProperty(name="footer")
+     */
+    public function getFooter(): ?string
+    {
+        $translation = $this->getTranslation($this->locale);
+        if (!$translation) {
+            return null;
+        }
+
+        return $translation->getFooter();
+    }
+
+    public function setFooter(string $footer): self
+    {
+        $translation = $this->getTranslation($this->locale);
+        if (!$translation) {
+            $translation = $this->createTranslation($this->locale);
+        }
+
+        $translation->setFooter($footer);
         return $this;
     }
 

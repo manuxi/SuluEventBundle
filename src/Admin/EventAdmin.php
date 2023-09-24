@@ -12,6 +12,8 @@ use Sulu\Bundle\AdminBundle\Admin\View\TogglerToolbarAction;
 use Sulu\Bundle\AdminBundle\Admin\View\ToolbarAction;
 use Sulu\Bundle\AdminBundle\Admin\View\ViewBuilderFactoryInterface;
 use Sulu\Bundle\AdminBundle\Admin\View\ViewCollection;
+use Sulu\Bundle\AutomationBundle\Admin\AutomationAdmin;
+use Sulu\Bundle\AutomationBundle\Admin\View\AutomationViewBuilderFactoryInterface;
 use Sulu\Component\Security\Authorization\PermissionTypes;
 use Sulu\Component\Security\Authorization\SecurityCheckerInterface;
 use Sulu\Component\Webspace\Manager\WebspaceManagerInterface;
@@ -30,20 +32,26 @@ class EventAdmin extends Admin
     //seo,excerpt, etc
     public const EDIT_FORM_VIEW_SEO = 'sulu_event.event.edit_form.seo';
     public const EDIT_FORM_VIEW_EXCERPT = 'sulu_event.event.edit_form.excerpt';
-    public const EDIT_FORM_VIEW_SETTINGS = 'sulu_event.edit_form.settings';
+    public const EDIT_FORM_VIEW_SETTINGS = 'sulu_event.event.edit_form.settings';
+    public const EDIT_FORM_VIEW_AUTOMATION = 'sulu_event.event.edit_form.automation';
+    public const EDIT_FORM_VIEW_ACTIVITY = 'sulu_event.event.edit_form.activity';
 
-    private $viewBuilderFactory;
-    private $securityChecker;
-    private $webspaceManager;
+    private ViewBuilderFactoryInterface $viewBuilderFactory;
+    private SecurityCheckerInterface $securityChecker;
+    private WebspaceManagerInterface $webspaceManager;
+
+    private ?AutomationViewBuilderFactoryInterface $automationViewBuilderFactory;
 
     public function __construct(
         ViewBuilderFactoryInterface $viewBuilderFactory,
         SecurityCheckerInterface $securityChecker,
-        WebspaceManagerInterface $webspaceManager
+        WebspaceManagerInterface $webspaceManager,
+        ?AutomationViewBuilderFactoryInterface $automationViewBuilderFactory
     ) {
         $this->viewBuilderFactory = $viewBuilderFactory;
         $this->securityChecker    = $securityChecker;
         $this->webspaceManager    = $webspaceManager;
+        $this->automationViewBuilderFactory = $automationViewBuilderFactory;
     }
 
     public function configureNavigationItems(NavigationItemCollection $navigationItemCollection): void
@@ -211,6 +219,17 @@ class EventAdmin extends Admin
                     ->setTabOrder(4096)
                     ->setParent(static::EDIT_FORM_VIEW)
             );
+
+            if ($this->automationViewBuilderFactory
+                && $this->securityChecker->hasPermission(AutomationAdmin::SECURITY_CONTEXT, PermissionTypes::EDIT)
+            ) {
+                $viewCollection->add(
+                    $this->automationViewBuilderFactory
+                        ->createTaskListViewBuilder(static::EDIT_FORM_VIEW_AUTOMATION,'/automation',Event::class)
+                        ->setTabOrder(5120)
+                        ->setParent(static::EDIT_FORM_VIEW)
+                );
+            }
         }
     }
 
@@ -227,6 +246,7 @@ class EventAdmin extends Admin
                         PermissionTypes::ADD,
                         PermissionTypes::EDIT,
                         PermissionTypes::DELETE,
+                        PermissionTypes::LIVE,
                     ],
                 ],
             ],

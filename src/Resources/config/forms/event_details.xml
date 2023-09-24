@@ -6,31 +6,37 @@
     <key>event_details</key>
 
     <properties>
-        <property name="title" type="text_line" mandatory="true">
+        <section name="mandatory">
             <meta>
-                <title>sulu_event.title</title>
-            </meta>
-            <params>
-                <param name="headline" value="true"/>
-            </params>
-            <tag name="sulu.rlp.part"/>
-        </property>
-
-        <property name="routePath" type="route" mandatory="true">
-            <meta>
-                <title>sulu_admin.url</title>
-            </meta>
-            <!--https://github.com/sulu/sulu/pull/5933-->
-            <params>
-                <param name="mode" value="leaf"/>
-            </params>
-        </property>
-
-        <section name="mainInfo">
-            <meta>
-                <title>sulu_event.header.main</title>
+                <title>sulu_event.header.content</title>
             </meta>
             <properties>
+                <property name="title" type="text_line" mandatory="true">
+                    <meta>
+                        <title>sulu_event.title</title>
+                    </meta>
+                    <params>
+                        <param name="headline" value="true"/>
+                    </params>
+                    <tag name="sulu.rlp.part"/>
+                </property>
+                <property name="subtitle" type="text_line">
+                    <meta>
+                        <title>sulu_event.subtitle</title>
+                    </meta>
+                    <tag name="sulu.rlp.part"/>
+                </property>
+
+                <property name="routePath" type="route" mandatory="true">
+                    <meta>
+                        <title>sulu_admin.url</title>
+                    </meta>
+                    <!--https://github.com/sulu/sulu/pull/5933-->
+                    <params>
+                        <param name="mode" value="leaf"/>
+                    </params>
+                </property>
+
                 <property name="startDate" type="datetime" colspan="6">
                     <meta>
                         <title>sulu_event.start_date</title>
@@ -58,24 +64,18 @@
                         </param>
                     </params>
                 </property>
-            </properties>
-        </section>
 
-        <section name="text">
-            <meta>
-                <title>sulu_event.header.text</title>
-            </meta>
-            <properties>
-                <property name="teaser" type="text_area">
+                <property name="summary" type="text_area">
                     <meta>
-                        <title>sulu_event.teaser</title>
+                        <title>sulu_event.summary</title>
                     </meta>
                 </property>
-                <property name="description" type="text_editor">
+                <property name="text" type="text_editor">
                     <meta>
-                        <title>sulu_admin.description</title>
+                        <title>sulu_admin.text</title>
                     </meta>
                 </property>
+
             </properties>
         </section>
 

@@ -1,0 +1,131 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Manuxi\SuluEventBundle\Trash;
+
+use DateTime;
+use Doctrine\ORM\EntityManagerInterface;
+use Manuxi\SuluEventBundle\Admin\EventAdmin;
+use Manuxi\SuluEventBundle\Domain\Event\RestoredEvent;
+use Manuxi\SuluEventBundle\Entity\Event;
+use Sulu\Bundle\ActivityBundle\Application\Collector\DomainEventCollectorInterface;
+use Sulu\Bundle\MediaBundle\Entity\MediaInterface;
+use Sulu\Bundle\RouteBundle\Entity\Route;
+use Sulu\Bundle\TrashBundle\Application\DoctrineRestoreHelper\DoctrineRestoreHelperInterface;
+use Sulu\Bundle\TrashBundle\Application\RestoreConfigurationProvider\RestoreConfiguration;
+use Sulu\Bundle\TrashBundle\Application\RestoreConfigurationProvider\RestoreConfigurationProviderInterface;
+use Sulu\Bundle\TrashBundle\Application\TrashItemHandler\RestoreTrashItemHandlerInterface;
+use Sulu\Bundle\TrashBundle\Application\TrashItemHandler\StoreTrashItemHandlerInterface;
+use Sulu\Bundle\TrashBundle\Domain\Model\TrashItemInterface;
+use Sulu\Bundle\TrashBundle\Domain\Repository\TrashItemRepositoryInterface;
+
+class TrashItemHandler implements StoreTrashItemHandlerInterface, RestoreTrashItemHandlerInterface, RestoreConfigurationProviderInterface
+{
+    private TrashItemRepositoryInterface $trashItemRepository;
+    private EntityManagerInterface $entityManager;
+    private DoctrineRestoreHelperInterface $doctrineRestoreHelper;
+    private DomainEventCollectorInterface $domainEventCollector;
+
+    public function __construct(
+        TrashItemRepositoryInterface   $trashItemRepository,
+        EntityManagerInterface         $entityManager,
+        DoctrineRestoreHelperInterface $doctrineRestoreHelper,
+        DomainEventCollectorInterface  $domainEventCollector
+    )
+    {
+        $this->trashItemRepository = $trashItemRepository;
+        $this->entityManager = $entityManager;
+        $this->doctrineRestoreHelper = $doctrineRestoreHelper;
+        $this->domainEventCollector = $domainEventCollector;
+    }
+
+    public static function getResourceKey(): string
+    {
+        return Event::RESOURCE_KEY;
+    }
+
+    public function store(object $resource, array $options = []): TrashItemInterface
+    {
+        /* @var $resource Event */
+
+        $image = $resource->getImage();
+
+        $data = [
+            "title" => $resource->getTitle(),
+            "subtitle" => $resource->getSubtitle(),
+            "summary" => $resource->getSummary(),
+            "text" => $resource->getText(),
+            "footer" => $resource->getFooter(),
+            "slug" => $resource->getRoutePath(),
+            "ext" => $resource->getExt(),
+            "imageId" => $image ? $image->getId() : null,
+            "enabled" => $resource->isEnabled()
+        ];
+        return $this->trashItemRepository->create(
+            Event::RESOURCE_KEY,
+            (string)$resource->getId(),
+            $resource->getTitle(),
+            $data,
+            null,
+            $options,
+            Event::SECURITY_CONTEXT,
+            null,
+            null
+        );
+    }
+
+    public function restore(TrashItemInterface $trashItem, array $restoreFormData = []): object
+    {
+        $data = $trashItem->getRestoreData();
+        $eventId = (int)$trashItem->getResourceId();
+        $event = new Event();
+
+        $event->setTitle($data['title']);
+        $event->setSubtitle($data['subtitle']);
+        $event->setSummary($data['summary']);
+        $event->setText($data['text']);
+        $event->setFooter($data['footer']);
+
+        $event->setEnabled($data['enabled']);
+
+        $event->setRoutePath($data['slug']);
+
+        $event->setExt($data['ext']);
+
+        if($data['imageId']){
+            $event->setImage($this->entityManager->find(MediaInterface::class, $data['imageId']));
+        }
+
+        $this->domainEventCollector->collect(
+            new RestoredEvent($event, $data)
+        );
+
+        $this->doctrineRestoreHelper->persistAndFlushWithId($event, $eventId);
+        $this->createRoute($this->entityManager, $eventId, $event->getRoutePath(), Event::class);
+        $this->entityManager->flush();
+        return $event;
+    }
+
+    private function createRoute(EntityManagerInterface $manager, int $id, string $slug, string $class)
+    {
+        $route = new Route();
+        $route->setPath($slug);
+        $route->setLocale('en');
+        $route->setEntityClass($class);
+        $route->setEntityId($id);
+        $route->setHistory(0);
+        $route->setCreated(new DateTime());
+        $route->setChanged(new DateTime());
+        $manager->persist($route);
+    }
+
+    public function getConfiguration(): RestoreConfiguration
+    {
+        return new RestoreConfiguration(
+            null,
+            EventAdmin::EDIT_FORM_VIEW,
+            ['id' => 'id']
+        );
+    }
+}

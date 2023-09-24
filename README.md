@@ -79,7 +79,13 @@ Example of the corresponding twig template for the event list:
             {% endif %}
         </p>
         <p>
-            {{ event.teaser|raw }}
+            {{ event.summary|raw }}
+        </p>
+        <p>
+            {{ event.text|raw }}
+        </p>
+        <p>
+            {{ event.footer|raw }}
         </p>
         <p>
             <a class="btn btn-primary" href="{{ event.routePath }}" role="button">

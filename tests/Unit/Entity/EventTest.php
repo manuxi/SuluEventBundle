@@ -16,12 +16,9 @@ use Sulu\Bundle\TestBundle\Testing\SuluTestCase;
 
 class EventTest extends SuluTestCase
 {
-    /**
-     * @var Location|ObjectProphecy
-     */
-    private $location;
-    private $event;
-    private $testString = "Lorem ipsum dolor sit amet, ...";
+    private ObjectProphecy $location;
+    private Event $event;
+    private string $testString = "Lorem ipsum dolor sit amet, ...";
 
     protected function setUp(): void
     {
@@ -94,26 +91,48 @@ class EventTest extends SuluTestCase
         $this->assertSame($this->testString, $this->event->getTranslations()['de']->getTitle());
     }
 
-    public function testTeaser(): void
+    public function testSubtitle(): void
     {
-        $this->assertNull($this->event->getTeaser());
-        $this->assertSame($this->event, $this->event->setTeaser($this->testString));
-        $this->assertSame($this->testString, $this->event->getTeaser());
+        $this->assertNull($this->event->getSubtitle());
+        $this->assertSame($this->event, $this->event->setSubtitle($this->testString));
+        $this->assertSame($this->testString, $this->event->getSubtitle());
 
         $this->assertInstanceOf(EventTranslation::class, $this->event->getTranslations()['de']);
         $this->assertSame('de', $this->event->getTranslations()['de']->getLocale());
-        $this->assertSame($this->testString, $this->event->getTranslations()['de']->getTeaser());
+        $this->assertSame($this->testString, $this->event->getTranslations()['de']->getSubtitle());
     }
 
-    public function testDescription(): void
+    public function testSummary(): void
     {
-        $this->assertNull($this->event->getDescription());
-        $this->assertSame($this->event, $this->event->setDescription($this->testString));
-        $this->assertSame($this->testString, $this->event->getDescription());
+        $this->assertNull($this->event->getSummary());
+        $this->assertSame($this->event, $this->event->setSummary($this->testString));
+        $this->assertSame($this->testString, $this->event->getSummary());
 
         $this->assertInstanceOf(EventTranslation::class, $this->event->getTranslations()['de']);
         $this->assertSame('de', $this->event->getTranslations()['de']->getLocale());
-        $this->assertSame($this->testString, $this->event->getTranslations()['de']->getDescription());
+        $this->assertSame($this->testString, $this->event->getTranslations()['de']->getSummary());
+    }
+
+    public function testText(): void
+    {
+        $this->assertNull($this->event->getText());
+        $this->assertSame($this->event, $this->event->setText($this->testString));
+        $this->assertSame($this->testString, $this->event->getText());
+
+        $this->assertInstanceOf(EventTranslation::class, $this->event->getTranslations()['de']);
+        $this->assertSame('de', $this->event->getTranslations()['de']->getLocale());
+        $this->assertSame($this->testString, $this->event->getTranslations()['de']->getText());
+    }
+
+    public function testFooter(): void
+    {
+        $this->assertNull($this->event->getFooter());
+        $this->assertSame($this->event, $this->event->setFooter($this->testString));
+        $this->assertSame($this->testString, $this->event->getFooter());
+
+        $this->assertInstanceOf(EventTranslation::class, $this->event->getTranslations()['de']);
+        $this->assertSame('de', $this->event->getTranslations()['de']->getLocale());
+        $this->assertSame($this->testString, $this->event->getTranslations()['de']->getFooter());
     }
 
     public function testRoutePath(): void
@@ -220,17 +239,17 @@ class EventTest extends SuluTestCase
     public function testTranslations(): void
     {
         $this->assertSame($this->event->getTranslations(), []);
-        $this->event->setDescription($this->testString);
+        $this->event->setText($this->testString);
         $this->assertNotSame($this->event->getTranslations(), []);
         $this->assertArrayHasKey('de', $this->event->getTranslations());
         $this->assertArrayNotHasKey('en', $this->event->getTranslations());
-        $this->assertSame($this->event->getDescription(), $this->testString);
+        $this->assertSame($this->event->getText(), $this->testString);
 
         $this->event->setLocale('en');
-        $this->event->setDescription($this->testString);
+        $this->event->setText($this->testString);
         $this->assertArrayHasKey('de', $this->event->getTranslations());
         $this->assertArrayHasKey('en', $this->event->getTranslations());
-        $this->assertSame($this->event->getDescription(), $this->testString);
-        //No need to test more, it's s already done...
+        $this->assertSame($this->event->getText(), $this->testString);
+        //No need to test more, it's already done...
     }
 }
