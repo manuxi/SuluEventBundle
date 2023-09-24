@@ -6,12 +6,12 @@ namespace Manuxi\SuluEventBundle\Entity\Models;
 
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
-use Manuxi\SuluEventBundle\Domain\Event\CopiedLanguageEvent;
-use Manuxi\SuluEventBundle\Domain\Event\CreatedEvent;
-use Manuxi\SuluEventBundle\Domain\Event\ModifiedEvent;
-use Manuxi\SuluEventBundle\Domain\Event\PublishedEvent;
-use Manuxi\SuluEventBundle\Domain\Event\RemovedEvent;
-use Manuxi\SuluEventBundle\Domain\Event\UnpublishedEvent;
+use Manuxi\SuluEventBundle\Domain\Event\Event\CopiedLanguageEvent;
+use Manuxi\SuluEventBundle\Domain\Event\Event\CreatedEvent;
+use Manuxi\SuluEventBundle\Domain\Event\Event\ModifiedEvent;
+use Manuxi\SuluEventBundle\Domain\Event\Event\PublishedEvent;
+use Manuxi\SuluEventBundle\Domain\Event\Event\RemovedEvent;
+use Manuxi\SuluEventBundle\Domain\Event\Event\UnpublishedEvent;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\Interfaces\EventModelInterface;
 use Manuxi\SuluEventBundle\Entity\Traits\ArrayPropertyTrait;
@@ -90,6 +90,9 @@ class EventModel implements EventModelInterface
     }
 
     /**
+     * @param int $id
+     * @param Request $request
+     * @return Event
      * @throws EntityNotFoundException
      * @throws ORMException
      * @throws OptimisticLockException

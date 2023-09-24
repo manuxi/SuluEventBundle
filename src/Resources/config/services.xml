@@ -133,6 +133,7 @@
         <service id="sulu_event.model.location" class="Manuxi\SuluEventBundle\Entity\Models\LocationModel">
             <argument type="service" id="sulu_event.repository.location"/>
             <argument type="service" id="sulu.repository.media"/>
+            <argument type="service" id="sulu_activity.domain_event_collector"/>
         </service>
 
         <service id="sulu_event.object_provider" public="true" class="Manuxi\SuluEventBundle\Preview\EventObjectProvider">
@@ -159,7 +160,18 @@
         </service>
 
         <!--Trash-->
-        <service id="sulu_event.trash_item_handler" class="Manuxi\SuluEventBundle\Trash\TrashItemHandler">
+        <service id="sulu_event.event_trash_item_handler" class="Manuxi\SuluEventBundle\Trash\EventTrashItemHandler">
+            <argument type="service" id="sulu_trash.trash_item_repository"/>
+            <argument type="service" id="doctrine.orm.default_entity_manager"/>
+            <argument type="service" id="sulu_trash.doctrine_restore_helper"/>
+            <argument type="service" id="sulu_activity.domain_event_collector"/>
+
+            <tag name="sulu_trash.store_trash_item_handler"/>
+            <tag name="sulu_trash.restore_trash_item_handler"/>
+            <tag name="sulu_trash.restore_configuration_provider"/>
+        </service>
+
+        <service id="sulu_event.location_trash_item_handler" class="Manuxi\SuluEventBundle\Trash\LocationTrashItemHandler">
             <argument type="service" id="sulu_trash.trash_item_repository"/>
             <argument type="service" id="doctrine.orm.default_entity_manager"/>
             <argument type="service" id="sulu_trash.doctrine_restore_helper"/>

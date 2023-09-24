@@ -53,6 +53,7 @@ sulu_event:
 sulu_activity:
     resource:
         events: "Event"
+        locations: "Locations"
     description:
         events:
             created: "{userFullName} created the event \"{resourceTitle}\"."
@@ -61,3 +62,8 @@ sulu_activity:
             restored: "{userFullName} restored the event \"{resourceTitle}\"."
             published: "{userFullName} published the event \"{resourceTitle}\"."
             unpublished: "{userFullName} unpublished the event \"{resourceTitle}\"."
+        locations:
+            created: "{userFullName} created the location \"{resourceTitle}\"."
+            modified: "{userFullName} modified the location \"{resourceTitle}\"."
+            removed: "{userFullName} deleted the location \"{resourceTitle}\"."
+            restored: "{userFullName} restored the location \"{resourceTitle}\"."

@@ -1,13 +1,11 @@
 <?php
 
-declare(strict_types=1);
-
-namespace Manuxi\SuluEventBundle\Domain\Event;
+namespace Manuxi\SuluEventBundle\Domain\Event\Event;
 
 use Manuxi\SuluEventBundle\Entity\Event;
 use Sulu\Bundle\ActivityBundle\Domain\Event\DomainEvent;
 
-class RemovedEvent extends DomainEvent
+abstract class AbstractDeletedEvent extends DomainEvent
 {
     private int $id;
     private string $title = '';
@@ -17,11 +15,6 @@ class RemovedEvent extends DomainEvent
         parent::__construct();
         $this->id = $id;
         $this->title = $title;
-    }
-
-    public function getEventType(): string
-    {
-        return 'removed';
     }
 
     public function getResourceKey(): string

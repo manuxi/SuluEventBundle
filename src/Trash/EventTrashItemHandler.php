@@ -7,7 +7,7 @@ namespace Manuxi\SuluEventBundle\Trash;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Manuxi\SuluEventBundle\Admin\EventAdmin;
-use Manuxi\SuluEventBundle\Domain\Event\RestoredEvent;
+use Manuxi\SuluEventBundle\Domain\Event\Event\RestoredEvent;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Sulu\Bundle\ActivityBundle\Application\Collector\DomainEventCollectorInterface;
 use Sulu\Bundle\MediaBundle\Entity\MediaInterface;
@@ -20,7 +20,7 @@ use Sulu\Bundle\TrashBundle\Application\TrashItemHandler\StoreTrashItemHandlerIn
 use Sulu\Bundle\TrashBundle\Domain\Model\TrashItemInterface;
 use Sulu\Bundle\TrashBundle\Domain\Repository\TrashItemRepositoryInterface;
 
-class TrashItemHandler implements StoreTrashItemHandlerInterface, RestoreTrashItemHandlerInterface, RestoreConfigurationProviderInterface
+class EventTrashItemHandler implements StoreTrashItemHandlerInterface, RestoreTrashItemHandlerInterface, RestoreConfigurationProviderInterface
 {
     private TrashItemRepositoryInterface $trashItemRepository;
     private EntityManagerInterface $entityManager;

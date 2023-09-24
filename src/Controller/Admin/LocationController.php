@@ -23,8 +23,8 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
  */
 class LocationController extends AbstractRestController implements ClassResourceInterface
 {
-    private $doctrineListRepresentationFactory;
-    private $locationModel;
+    private LocationModel $locationModel;
+    private DoctrineListRepresentationFactory $doctrineListRepresentationFactory;
 
     public function __construct(
         LocationModel $locationModel,
@@ -47,6 +47,9 @@ class LocationController extends AbstractRestController implements ClassResource
     }
 
     /**
+     * @param int $id
+     * @param Request $request
+     * @return Response
      * @throws EntityNotFoundException
      * @noinspection PhpUnusedParameterInspection
      */
@@ -57,6 +60,9 @@ class LocationController extends AbstractRestController implements ClassResource
     }
 
     /**
+     * @param Request $request
+     * @return Response
+     * @throws EntityNotFoundException
      * @throws ORMException
      * @throws OptimisticLockException
      */
@@ -67,9 +73,12 @@ class LocationController extends AbstractRestController implements ClassResource
     }
 
     /**
+     * @param int $id
+     * @param Request $request
+     * @return Response
+     * @throws EntityNotFoundException
      * @throws ORMException
      * @throws OptimisticLockException
-     * @throws EntityNotFoundException
      */
     public function putAction(int $id, Request $request): Response
     {
@@ -78,12 +87,17 @@ class LocationController extends AbstractRestController implements ClassResource
     }
 
     /**
+     * @param int $id
+     * @return Response
+     * @throws EntityNotFoundException
      * @throws ORMException
      * @throws OptimisticLockException
      */
     public function deleteAction(int $id): Response
     {
-        $this->locationModel->deleteLocation($id);
+        $location = $this->locationModel->getLocation($id);
+        $title = $location->getName() ?? 'n.a.';
+        $this->locationModel->deleteLocation($id, $title);
         return $this->handleView($this->view(null, 204));
     }
 

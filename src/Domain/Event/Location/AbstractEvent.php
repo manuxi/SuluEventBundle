@@ -2,26 +2,26 @@
 
 declare(strict_types=1);
 
-namespace Manuxi\SuluEventBundle\Domain\Event;
+namespace Manuxi\SuluEventBundle\Domain\Event\Location;
 
 use Manuxi\SuluEventBundle\Entity\Event;
+use Manuxi\SuluEventBundle\Entity\Location;
 use Sulu\Bundle\ActivityBundle\Domain\Event\DomainEvent;
 
-class CreatedEvent extends DomainEvent
+abstract class AbstractEvent extends DomainEvent
 {
-    private Event $event;
+    private Location $location;
     private array $payload = [];
 
-    public function __construct(Event $event, array $payload)
+    public function __construct(Location $location)
     {
         parent::__construct();
-        $this->event = $event;
-        $this->payload = $payload;
+        $this->location = $location;
     }
 
-    public function getEvent(): Event
+    public function getLocation(): Location
     {
-        return $this->event;
+        return $this->location;
     }
 
     public function getEventPayload(): ?array
@@ -29,24 +29,19 @@ class CreatedEvent extends DomainEvent
         return $this->payload;
     }
 
-    public function getEventType(): string
-    {
-        return 'created';
-    }
-
     public function getResourceKey(): string
     {
-        return Event::RESOURCE_KEY;
+        return Location::RESOURCE_KEY;
     }
 
     public function getResourceId(): string
     {
-        return (string)$this->event->getId();
+        return (string)$this->location->getId();
     }
 
     public function getResourceTitle(): ?string
     {
-        return $this->event->getTitle();
+        return $this->location->getName();
     }
 
     public function getResourceSecurityContext(): ?string

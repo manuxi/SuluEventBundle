@@ -6,10 +6,14 @@ namespace Manuxi\SuluEventBundle\Entity\Models;
 
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
+use Manuxi\SuluEventBundle\Domain\Event\Location\CreatedEvent;
+use Manuxi\SuluEventBundle\Domain\Event\Location\ModifiedEvent;
+use Manuxi\SuluEventBundle\Domain\Event\Location\RemovedEvent;
 use Manuxi\SuluEventBundle\Entity\Interfaces\LocationModelInterface;
 use Manuxi\SuluEventBundle\Entity\Location;
 use Manuxi\SuluEventBundle\Entity\Traits\ArrayPropertyTrait;
 use Manuxi\SuluEventBundle\Repository\LocationRepository;
+use Sulu\Bundle\ActivityBundle\Application\Collector\DomainEventCollectorInterface;
 use Sulu\Bundle\MediaBundle\Entity\MediaRepositoryInterface;
 use Sulu\Component\Rest\Exception\EntityNotFoundException;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,98 +22,117 @@ class LocationModel implements LocationModelInterface
 {
     use ArrayPropertyTrait;
 
-    private $locationRepository;
-    private $mediaRepository;
+    private LocationRepository $locationRepository;
+    private MediaRepositoryInterface $mediaRepository;
+    private DomainEventCollectorInterface $domainEventCollector;
 
     public function __construct(
         LocationRepository $locationRepository,
-        MediaRepositoryInterface $mediaRepository
+        MediaRepositoryInterface $mediaRepository,
+        DomainEventCollectorInterface $domainEventCollector
     ) {
         $this->locationRepository = $locationRepository;
         $this->mediaRepository = $mediaRepository;
+        $this->domainEventCollector = $domainEventCollector;
     }
 
     /**
+     * @param int $id
+     * @return Location
+     * @throws EntityNotFoundException
+     */
+    public function getLocation(int $id): Location
+    {
+        $entity = $this->locationRepository->findById($id);
+        if (!$entity) {
+            throw new EntityNotFoundException($this->locationRepository->getClassName(), $id);
+        }
+        return $entity;
+    }
+
+    /**
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function deleteLocation(int $id, string $title): void
+    {
+        $this->domainEventCollector->collect(
+            new RemovedEvent($id, $title)
+        );
+        $this->locationRepository->remove($id);
+    }
+
+    /**
+     * @param Request $request
+     * @return Location
      * @throws EntityNotFoundException
      * @throws ORMException
      * @throws OptimisticLockException
      */
     public function createLocation(Request $request): Location
     {
-        $location = $this->locationRepository->create();
-        $location = $this->mapDataToEntity($location, $request->request->all());
-        return $this->locationRepository->save($location);
+        $entity = $this->locationRepository->create();
+        $entity = $this->mapDataToEntity($entity, $request->request->all());
+        $this->domainEventCollector->collect(
+            new CreatedEvent($entity, $request->request->all())
+        );
+        return $this->locationRepository->save($entity);
     }
 
     /**
+     * @param int $id
+     * @param Request $request
+     * @return Location
      * @throws EntityNotFoundException
      * @throws ORMException
      * @throws OptimisticLockException
      */
     public function updateLocation(int $id, Request $request): Location
     {
-        $location = $this->getLocation($id);
-        $location = $this->mapDataToEntity($location, $request->request->all());
-        return $this->locationRepository->save($location);
+        $entity = $this->getLocation($id);
+        $entity = $this->mapDataToEntity($entity, $request->request->all());
+        $this->domainEventCollector->collect(
+            new ModifiedEvent($entity, $request->request->all())
+        );
+        return $this->locationRepository->save($entity);
     }
 
     /**
      * @throws EntityNotFoundException
      */
-    public function getLocation(int $id): Location
-    {
-        $location = $this->locationRepository->findById($id);
-        if (!$location) {
-            throw new EntityNotFoundException($this->locationRepository->getClassName(), $id);
-        }
-        return $location;
-    }
-
-    /**
-     * @throws ORMException
-     * @throws OptimisticLockException
-     */
-    public function deleteLocation(int $id): void
-    {
-        $this->locationRepository->remove($id);
-    }
-
-    /**
-     * @throws EntityNotFoundException
-     */
-    private function mapDataToEntity(Location $location, array $data): Location
+    private function mapDataToEntity(Location $entity, array $data): Location
     {
         $name = $this->getProperty($data, 'name');
         if ($name) {
-            $location->setName($name);
+            $entity->setName($name);
         }
         $street = $this->getProperty($data, 'street');
         if ($street) {
-            $location->setStreet($street);
+            $entity->setStreet($street);
         }
         $number = $this->getProperty($data, 'number');
         if ($number) {
-            $location->setNumber($number);
+            $entity->setNumber($number);
         }
         $city = $this->getProperty($data, 'city');
         if ($city) {
-            $location->setCity($city);
+            $entity->setCity($city);
         }
         $postalCode = $this->getProperty($data, 'postalCode');
         if ($postalCode) {
-            $location->setPostalCode($postalCode);
+            $entity->setPostalCode($postalCode);
         }
         $state = $this->getProperty($data, 'state');
         if ($state) {
-            $location->setState($state);
+            $entity->setState($state);
         }
         $countryCode = $this->getProperty($data, 'countryCode');
         if ($countryCode) {
-            $location->setCountryCode($countryCode);
+            $entity->setCountryCode($countryCode);
         }
         $notes = $this->getProperty($data, 'notes');
         if ($notes) {
-            $location->setNotes($notes);
+            $entity->setNotes($notes);
         }
         $imageId = $this->getPropertyMulti($data, ['image', 'id']);
         if ($imageId) {
@@ -117,8 +140,8 @@ class LocationModel implements LocationModelInterface
             if (!$image) {
                 throw new EntityNotFoundException($this->mediaRepository->getClassName(), $imageId);
             }
-            $location->setImage($image);
+            $entity->setImage($image);
         }
-        return $location;
+        return $entity;
     }
 }
