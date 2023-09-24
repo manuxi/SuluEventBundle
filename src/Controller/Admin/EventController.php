@@ -172,7 +172,7 @@ class EventController extends AbstractRestController implements ClassResourceInt
     public function deleteAction(int $id): Response
     {
         $event = $this->eventModel->getEvent($id);
-        $title = $event->getTitle();
+        $title = $event->getTitle() ?? 'n.a.';
         $this->removeRoutesForEntity($event);
 
         $this->eventModel->deleteEvent($id, $title);

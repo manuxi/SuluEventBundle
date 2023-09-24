@@ -70,9 +70,9 @@
                         <title>sulu_event.summary</title>
                     </meta>
                 </property>
-                <property name="text" type="text_editor">
+                <property name="text" type="text_editor" mandatory="true">
                     <meta>
-                        <title>sulu_admin.text</title>
+                        <title>sulu_event.text</title>
                     </meta>
                 </property>
 
@@ -117,6 +117,11 @@
                     <params>
                         <param name="types" value="image"/>
                     </params>
+                </property>
+                <property name="footer" type="text_editor">
+                    <meta>
+                        <title>sulu_event.footer</title>
+                    </meta>
                 </property>
             </properties>
         </section>

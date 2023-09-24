@@ -2,6 +2,7 @@ sulu_event:
     id: "Id"
     name: "Name"
     title: "Name of the Event"
+    subtitle: "Subtitle"
     summary: "Zusammenfassung"
     text: "Text"
     footer: "Footer"
@@ -51,9 +52,9 @@ sulu_event:
 
 sulu_activity:
     resource:
-        event: "Event"
+        events: "Event"
     description:
-        event:
+        events:
             created: "{userFullName} created the event \"{resourceTitle}\"."
             modified: "{userFullName} modified the event \"{resourceTitle}\"."
             removed: "{userFullName} deleted the event \"{resourceTitle}\"."
