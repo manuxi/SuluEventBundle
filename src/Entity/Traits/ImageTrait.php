@@ -20,8 +20,6 @@ trait ImageTrait
     }
 
     /**
-     * @return array<string, mixed>|null
-     *
      * @Serializer\VirtualProperty
      * @Serializer\SerializedName("image")
      */

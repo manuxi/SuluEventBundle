@@ -10,8 +10,9 @@ use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation as Serializer;
 use Manuxi\SuluEventBundle\Entity\Interfaces\AuditableTranslatableInterface;
 use Manuxi\SuluEventBundle\Entity\Traits\AuditableTranslatableTrait;
-use Manuxi\SuluEventBundle\Entity\Traits\ImageTrait;
+use Manuxi\SuluEventBundle\Entity\Traits\ImageTranslatableTrait;
 use Manuxi\SuluEventBundle\Entity\Traits\PdfTrait;
+use Manuxi\SuluEventBundle\Entity\Traits\UrlTranslatableTrait;
 
 /**
  * @ORM\Entity
@@ -20,9 +21,10 @@ use Manuxi\SuluEventBundle\Entity\Traits\PdfTrait;
  */
 class Event implements AuditableTranslatableInterface
 {
-    use ImageTrait;
     use PdfTrait;
     use AuditableTranslatableTrait;
+    use UrlTranslatableTrait;
+    use ImageTranslatableTrait;
 
     public const RESOURCE_KEY = 'events';
     public const FORM_KEY = 'event_details';
@@ -64,11 +66,6 @@ class Event implements AuditableTranslatableInterface
      * @ORM\Column(type="datetime_immutable", nullable=true)
      */
     private ?\DateTimeImmutable $endDate = null;
-
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private ?string $url = null;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
@@ -454,65 +451,31 @@ class Event implements AuditableTranslatableInterface
         return $this;
     }
 
-    /**
-     * @return string
-     */
-    public function getUrl(): ?string
-    {
-        return $this->url;
-    }
-
-    /**
-     * @param ?string $url
-     */
-    public function setUrl(?string $url): void
-    {
-        $this->url = $url;
-    }
-
-    /**
-     * @return string|null
-     */
     public function getEmail(): ?string
     {
         return $this->email;
     }
 
-    /**
-     * @param ?string $email
-     */
     public function setEmail(?string $email): void
     {
         $this->email = $email;
     }
 
-    /**
-     * @return string|null
-     */
     public function getPhoneNumber(): ?string
     {
         return $this->phoneNumber;
     }
 
-    /**
-     * @param ?string $phoneNumber
-     */
     public function setPhoneNumber(?string $phoneNumber): void
     {
         $this->phoneNumber = $phoneNumber;
     }
 
-    /**
-     * @return array|null
-     */
     public function getImages(): ?array
     {
         return $this->images;
     }
 
-    /**
-     * @param array|null $images
-     */
     public function setImages(?array $images): void
     {
         $this->images = $images;

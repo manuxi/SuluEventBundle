@@ -101,7 +101,7 @@
             <joins>
                 <join>
                     <entity-name>SuluMediaBundle:Media</entity-name>
-                    <field-name>%sulu.model.event.class%.image</field-name>
+                    <field-name>%sulu.model.event_translation.class%.image</field-name>
                 </join>
             </joins>
 
