@@ -11,7 +11,8 @@ use JMS\Serializer\Annotation as Serializer;
 use Manuxi\SuluEventBundle\Entity\Interfaces\AuditableTranslatableInterface;
 use Manuxi\SuluEventBundle\Entity\Traits\AuditableTranslatableTrait;
 use Manuxi\SuluEventBundle\Entity\Traits\ImageTranslatableTrait;
-use Manuxi\SuluEventBundle\Entity\Traits\PdfTrait;
+use Manuxi\SuluEventBundle\Entity\Traits\PdfTranslatableTrait;
+use Manuxi\SuluEventBundle\Entity\Traits\RouteTranslatableTrait;
 use Manuxi\SuluEventBundle\Entity\Traits\UrlTranslatableTrait;
 
 /**
@@ -21,15 +22,16 @@ use Manuxi\SuluEventBundle\Entity\Traits\UrlTranslatableTrait;
  */
 class Event implements AuditableTranslatableInterface
 {
-    use PdfTrait;
-    use AuditableTranslatableTrait;
-    use UrlTranslatableTrait;
-    use ImageTranslatableTrait;
-
     public const RESOURCE_KEY = 'events';
     public const FORM_KEY = 'event_details';
     public const LIST_KEY = 'events';
     public const SECURITY_CONTEXT = 'sulu.events.events';
+
+    use AuditableTranslatableTrait;
+    use RouteTranslatableTrait;
+    use UrlTranslatableTrait;
+    use PdfTranslatableTrait;
+    use ImageTranslatableTrait;
 
     /**
      * @ORM\Id()
@@ -296,30 +298,6 @@ class Event implements AuditableTranslatableInterface
         }
 
         $translation->setFooter($footer);
-        return $this;
-    }
-
-    /**
-     * @Serializer\VirtualProperty(name="route_path")
-     */
-    public function getRoutePath(): ?string
-    {
-        $translation = $this->getTranslation($this->locale);
-        if (!$translation) {
-            return null;
-        }
-
-        return $translation->getRoutePath();
-    }
-
-    public function setRoutePath(string $routePath): self
-    {
-        $translation = $this->getTranslation($this->locale);
-        if (!$translation) {
-            $translation = $this->createTranslation($this->locale);
-        }
-
-        $translation->setRoutePath($routePath);
         return $this;
     }
 

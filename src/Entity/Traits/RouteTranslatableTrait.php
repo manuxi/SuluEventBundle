@@ -4,36 +4,34 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Entity\Traits;
 
-use DateTime;
 use JMS\Serializer\Annotation as Serializer;
 
-trait UrlTranslatableTrait
+trait RouteTranslatableTrait
 {
-
     abstract public function getLocale();
     abstract protected function getTranslation(string $locale);
 
     /**
-     * @Serializer\VirtualProperty(name="url")
+     * @Serializer\VirtualProperty(name="route_path")
      */
-    public function getUrl(): ?string
+    public function getRoutePath(): ?string
     {
         $translation = $this->getTranslation($this->getLocale());
         if (!$translation) {
             return null;
         }
 
-        return $translation->getUrl();
+        return $translation->getRoutePath();
     }
 
-    public function setUrl(?string $url): self
+    public function setRoutePath(string $routePath): self
     {
         $translation = $this->getTranslation($this->getLocale());
         if (!$translation) {
             $translation = $this->createTranslation($this->getLocale());
         }
 
-        $translation->setUrl($url);
+        $translation->setRoutePath($routePath);
         return $this;
     }
 }

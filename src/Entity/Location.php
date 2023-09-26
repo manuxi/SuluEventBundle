@@ -15,11 +15,11 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Location
 {
-    use ImageTrait;
-
     public const RESOURCE_KEY = 'locations';
     public const FORM_KEY = 'location_details';
     public const LIST_KEY = 'locations';
+
+    use ImageTrait;
 
     /**
      * @ORM\Id

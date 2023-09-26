@@ -30,16 +30,14 @@ class EventSeo implements SeoInterface, SeoTranslatableInterface
      *
      * @Serializer\Exclude
      */
-    private $event;
+    private ?Event $event = null;
 
     /**
-     * @var Collection<string, EventTranslation>
-     *
      * @ORM\OneToMany(targetEntity="EventSeoTranslation", mappedBy="eventSeo", cascade={"ALL"}, indexBy="locale")
      *
      * @Serializer\Exclude
      */
-    private $translations;
+    private Collection $translations;
 
     public function __construct()
     {

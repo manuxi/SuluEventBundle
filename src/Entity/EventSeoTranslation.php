@@ -21,7 +21,7 @@ class EventSeoTranslation implements SeoTranslationInterface
      * @ORM\ManyToOne(targetEntity="Manuxi\SuluEventBundle\Entity\EventSeo", inversedBy="translations")
      * @ORM\JoinColumn(nullable=false)
      */
-    private $eventSeo;
+    private EventSeo $eventSeo;
 
     public function __construct(EventSeo $eventSeo, string $locale)
     {

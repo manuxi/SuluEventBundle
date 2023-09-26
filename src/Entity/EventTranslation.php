@@ -8,6 +8,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Manuxi\SuluEventBundle\Entity\Interfaces\AuditableInterface;
 use Manuxi\SuluEventBundle\Entity\Traits\AuditableTrait;
 use Manuxi\SuluEventBundle\Entity\Traits\ImageTrait;
+use Manuxi\SuluEventBundle\Entity\Traits\PdfTrait;
+use Manuxi\SuluEventBundle\Entity\Traits\RouteTrait;
 use Manuxi\SuluEventBundle\Entity\Traits\UrlTrait;
 
 /**
@@ -18,7 +20,9 @@ use Manuxi\SuluEventBundle\Entity\Traits\UrlTrait;
 class EventTranslation implements AuditableInterface
 {
     use AuditableTrait;
+    use RouteTrait;
     use UrlTrait;
+    use PdfTrait;
     use ImageTrait;
 
     /**
@@ -63,11 +67,6 @@ class EventTranslation implements AuditableInterface
      * @ORM\Column(type="text", nullable=true)
      */
     private ?string $footer = null;
-
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private string $routePath;
 
     public function __construct(Event $event, string $locale)
     {
@@ -148,17 +147,6 @@ class EventTranslation implements AuditableInterface
     public function setFooter(?string $footer): self
     {
         $this->footer = $footer;
-        return $this;
-    }
-
-    public function getRoutePath(): string
-    {
-        return $this->routePath ?? '';
-    }
-
-    public function setRoutePath(string $routePath): self
-    {
-        $this->routePath = $routePath;
         return $this;
     }
 

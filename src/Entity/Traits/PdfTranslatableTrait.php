@@ -7,47 +7,47 @@ namespace Manuxi\SuluEventBundle\Entity\Traits;
 use JMS\Serializer\Annotation as Serializer;
 use Sulu\Bundle\MediaBundle\Entity\MediaInterface;
 
-trait ImageTranslatableTrait
+trait PdfTranslatableTrait
 {
 
     abstract public function getLocale();
     abstract protected function getTranslation(string $locale);
 
     /**
-     * @Serializer\VirtualProperty(name="image")
+     * @Serializer\VirtualProperty(name="pdf")
      */
-    public function getImage(): ?MediaInterface
+    public function getPdf(): ?MediaInterface
     {
         $translation = $this->getTranslation($this->getLocale());
         if (!$translation) {
             return null;
         }
 
-        return $translation->getImage();
+        return $translation->getPdf();
     }
 
     /**
      * @Serializer\VirtualProperty
-     * @Serializer\SerializedName("image")
+     * @Serializer\SerializedName("pdf")
      */
-    public function getImageData(): ?array
+    public function getPdfData(): ?array
     {
         $translation = $this->getTranslation($this->getLocale());
         if (!$translation) {
             return null;
         }
 
-        return $translation->getImageData();
+        return $translation->getPdfData();
     }
 
-    public function setImage(?MediaInterface $image): self
+    public function setPdf(?MediaInterface $pdf): self
     {
         $translation = $this->getTranslation($this->getLocale());
         if (!$translation) {
             $translation = $this->createTranslation($this->getLocale());
         }
 
-        $translation->setImage($image);
+        $translation->setPdf($pdf);
         return $this;
     }
 }

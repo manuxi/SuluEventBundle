@@ -30,16 +30,14 @@ class EventExcerpt implements ExcerptInterface, ExcerptTranslatableInterface
      *
      * @Serializer\Exclude
      */
-    private $event;
+    private ?Event $event = null;
 
     /**
-     * @var Collection<string, EventTranslation>
-     *
      * @ORM\OneToMany(targetEntity="EventExcerptTranslation", mappedBy="eventExcerpt", cascade={"ALL"}, indexBy="locale")
      *
      * @Serializer\Exclude
      */
-    private $translations;
+    private Collection $translations;
 
     public function __construct()
     {

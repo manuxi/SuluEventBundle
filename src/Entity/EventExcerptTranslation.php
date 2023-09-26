@@ -22,7 +22,7 @@ class EventExcerptTranslation implements ExcerptTranslationInterface
      * @ORM\ManyToOne(targetEntity="Manuxi\SuluEventBundle\Entity\EventExcerpt", inversedBy="translations")
      * @ORM\JoinColumn(nullable=false)
      */
-    private $eventExcerpt;
+    private EventExcerpt $eventExcerpt;
 
     public function __construct(EventExcerpt $eventExcerpt, string $locale)
     {
