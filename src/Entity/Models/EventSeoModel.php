@@ -24,10 +24,6 @@ class EventSeoModel implements EventSeoModelInterface
         $this->eventSeoRepository = $eventSeoRepository;
     }
 
-    /**
-     * @throws ORMException
-     * @throws OptimisticLockException
-     */
     public function updateEventSeo(EventSeo $eventSeo, Request $request): EventSeo
     {
         $eventSeo = $this->mapDataToEventSeo($eventSeo, $request->request->all()['ext']['seo']);

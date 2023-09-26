@@ -61,8 +61,6 @@ class EventModel implements EventModelInterface
     /**
      * @param int $id
      * @param string $title
-     * @throws ORMException
-     * @throws OptimisticLockException
      */
     public function deleteEvent(int $id, string $title): void
     {
@@ -74,8 +72,6 @@ class EventModel implements EventModelInterface
 
     /**
      * @throws EntityNotFoundException
-     * @throws ORMException
-     * @throws OptimisticLockException
      */
     public function createEvent(Request $request): Event
     {

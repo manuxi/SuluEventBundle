@@ -171,20 +171,17 @@ class EventController extends AbstractRestController implements ClassResourceInt
 
     /**
      * @param int $id
+     * @param Request $request
      * @return Response
      * @throws EntityNotFoundException
-     * @throws ORMException
-     * @throws OptimisticLockException
      */
     public function deleteAction(int $id, Request $request): Response
     {
-        $entity = $this->eventModel->getEvent($id);
-        $locale = $request->query->get('locale');
-        $entity->setLocale($locale);
+        $entity = $this->eventModel->getEvent($id, $request);
+        $title = $entity->getTitle() ?? 'n.a.';
 
         $this->trashManager->store(Event::RESOURCE_KEY, $entity);
 
-        $title = $entity->getTitle() ?? 'n.a.';
         $this->removeRoutesForEntity($entity);
 
         $this->eventModel->deleteEvent($id, $title);

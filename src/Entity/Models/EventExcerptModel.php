@@ -39,8 +39,6 @@ class EventExcerptModel implements EventExcerptModelInterface
 
     /**
      * @throws EntityNotFoundException
-     * @throws ORMException
-     * @throws OptimisticLockException
      */
     public function updateEventExcerpt(EventExcerpt $eventExcerpt, Request $request): EventExcerpt
     {
