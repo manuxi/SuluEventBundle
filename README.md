@@ -31,8 +31,8 @@ SuluEventBundle:
 ```
 Last but not least the schema of the database needs to be updated.  
 
-Some tables will be created (prefixed):  
-location, event, event_seo, event_excerpt
+Some tables will be created (prefixed with app_):  
+location, event, event_translation, event_seo, event_excerpt
 (plus some ManyToMany relation tables).  
 
 See the needed queries with `php bin/console doctrine:schema:update --dump-sql`.  
@@ -88,8 +88,7 @@ Example of the corresponding twig template for the event list:
     </div>
 {% endfor %}
 ```
-The template for the single event is located here
-`templates/pages/event.html.twig`.
+
 Since the seo and excerpt tabs are available in the event editor, 
 meta information can be provided like it's done as usual when rendering your pages. 
 

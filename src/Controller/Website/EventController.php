@@ -17,11 +17,11 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class EventController extends AbstractController
 {
-    private $translator;
-    private $eventRepository;
-    private $webspaceManager;
-    private $templateAttributeResolver;
-    private $routeRepository;
+    private EventRepository $eventRepository;
+    private WebspaceManagerInterface $webspaceManager;
+    private TranslatorInterface $translator;
+    private TemplateAttributeResolverInterface $templateAttributeResolver;
+    private RouteRepositoryInterface $routeRepository;
 
     public function __construct(
         RequestStack $requestStack,
@@ -42,9 +42,14 @@ class EventController extends AbstractController
     }
 
     /**
+     * @param Event $event
+     * @param string $view
+     * @param bool $preview
+     * @param bool $partial
+     * @return Response
      * @throws \Exception
      */
-    public function indexAction(Event $event, string $view = 'pages/event', bool $preview = false, bool $partial = false): Response
+    public function indexAction(Event $event, string $view = '@SuluEvent/event', bool $preview = false, bool $partial = false): Response
     {
         $viewTemplate = $this->getViewTemplate($view, $this->request, $preview);
 
@@ -66,6 +71,7 @@ class EventController extends AbstractController
     /**
      * With the help of this method the corresponding localisations for the
      * current event are found e.g. to be linked in the language switcher.
+     * @param Event $event
      * @return array<string, array>
      */
     protected function getLocalizationsArrayForEntity(Event $event): array

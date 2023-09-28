@@ -1,0 +1,56 @@
+{% extends "body.html.twig" %}
+
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-12 pb-3">
+                <div class="title">
+                    {% set startTimeShort = event.startDate|date('H:i') %}
+
+                    {% if event.endDate %}
+                        {% set endTimeShort = event.endDate|date('H:i') %}
+                        {% if startTimeShort == "00:00" and endTimeShort == "00:00" %}
+                            {% set timeframe = event.startDate|format_datetime('full', 'none', locale=app.request.getLocale()) ~ ' - ' ~ event.endDate|format_datetime('full', 'none', locale=app.request.getLocale()) %}
+                        {% else %}
+                            {% set timeframe = event.startDate|format_datetime('full', 'short', locale=app.request.getLocale()) ~ ' - ' ~ event.endDate|format_datetime('full', 'short', locale=app.request.getLocale()) %}
+                        {% endif %}
+                    {% else %}
+                        {% if startTimeShort != "00:00" %}
+                            {% set timeframe = event.startDate|format_datetime('full', 'short', locale=app.request.getLocale())  %}
+                        {% else %}
+                            {% set timeframe = event.startDate|format_datetime('full', 'none', locale=app.request.getLocale()) %}
+                        {% endif %}
+                    {% endif %}
+                    {% set timeframe = timeframe ~ ' @ ' ~ event.location.name %}
+
+                    <h1 class="mb-2">{{ event.title }}</h1>
+                    {% if event.subtitle %}
+                        <h2 class="h3 mb-4">{{ event.subtitle }}</h2>
+                    {% endif %}
+                    <h3 class="h4 mb-4">{{ timeframe }}</h3>
+                    {% if event.summary %}
+                        <p class="mb-4 fw-bold fst-italic">{{ event.summary }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="content pb-3">
+                    {{ event.text|raw }}
+                </div>
+            </div>
+            <div class="col-12 py-3 bg-light text-dark">
+                <div class="footer mb-5">
+
+                    {% if event.footer %}
+                        {{ event.footer|raw }}
+                    {% endif %}
+
+                    {% if event.url %}
+                        <p class="mt-3"><a href="{{ event.url }}">{{ event.url }}</a></p>
+                    {% endif %}
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+{% endblock %}
