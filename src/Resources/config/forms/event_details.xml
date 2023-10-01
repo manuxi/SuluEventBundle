@@ -53,15 +53,14 @@
                         <title>sulu_event.location</title>
                     </meta>
                 </property>
-                <property name="url" type="url" colspan="6">
+                <property name="link" type="link" colspan="6">
                     <meta>
-                        <title>sulu_event.website</title>
+                        <title>sulu_event.link</title>
                     </meta>
+
                     <params>
-                        <param name="schemes" type="collection">
-                            <param name="https://"/>
-                            <param name="http://"/>
-                        </param>
+                        <param name="enable_anchor" value="true"/>
+                        <param name="enable_attributes" value="true"/>
                     </params>
                 </property>
 

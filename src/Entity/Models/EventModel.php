@@ -260,9 +260,9 @@ class EventModel implements EventModelInterface
             $entity->setPdf($pdf);
         }
 
-        $url = $this->getProperty($data, 'url');
-        if ($url) {
-            $entity->setUrl($url);
+        $link = $this->getProperty($data, 'link');
+        if ($link) {
+            $entity->setLink($link);
         }
 
         $phoneNumber = $this->getProperty($data, 'phoneNumber');

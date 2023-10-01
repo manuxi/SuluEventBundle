@@ -14,6 +14,7 @@ sulu_event:
     end_date: "Ende"
     pdf: "PDF"
     website: "Webseite"
+    link: "Verlinkung"
     email: "E-Mail"
     phone: "Telefonnummer"
     gallery: "Bilder-Galerie"
@@ -49,7 +50,7 @@ sulu_event:
     enddate_eq_startdate: "Wenn die Uhrzeit von Beginn und Ende auf 00:00 Uhr gesetzt sind, wird die Uhrzeit nicht angezeigt."
     add_location_first: "Bitte stellen Sie sicher, dass mindestens ein Veranstaltungsort hinzugefügt und somit wählbar ist."
     search_name: "Veranstaltung"
-    empty_list: "Liste ist leer."
+    empty_list: "Bitte Veranstaltung wählen..."
 
 sulu_activity:
     resource:

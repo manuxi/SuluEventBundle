@@ -17,7 +17,6 @@ use FOS\RestBundle\Routing\ClassResourceInterface;
 use FOS\RestBundle\View\ViewHandlerInterface;
 //use HandcraftedInTheAlps\RestRoutingBundle\Controller\Annotations\RouteResource;
 //use HandcraftedInTheAlps\RestRoutingBundle\Routing\ClassResourceInterface;
-use Manuxi\SuluNewsBundle\Entity\News;
 use Sulu\Bundle\RouteBundle\Entity\RouteRepositoryInterface;
 use Sulu\Bundle\RouteBundle\Manager\RouteManagerInterface;
 use Sulu\Bundle\TrashBundle\Application\TrashManager\TrashManagerInterface;

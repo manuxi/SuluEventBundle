@@ -8,9 +8,9 @@ use Doctrine\ORM\Mapping as ORM;
 use Manuxi\SuluEventBundle\Entity\Interfaces\AuditableInterface;
 use Manuxi\SuluEventBundle\Entity\Traits\AuditableTrait;
 use Manuxi\SuluEventBundle\Entity\Traits\ImageTrait;
+use Manuxi\SuluEventBundle\Entity\Traits\LinkTrait;
 use Manuxi\SuluEventBundle\Entity\Traits\PdfTrait;
 use Manuxi\SuluEventBundle\Entity\Traits\RouteTrait;
-use Manuxi\SuluEventBundle\Entity\Traits\UrlTrait;
 
 /**
  * @ORM\Entity
@@ -21,7 +21,7 @@ class EventTranslation implements AuditableInterface
 {
     use AuditableTrait;
     use RouteTrait;
-    use UrlTrait;
+    use LinkTrait;
     use PdfTrait;
     use ImageTrait;
 

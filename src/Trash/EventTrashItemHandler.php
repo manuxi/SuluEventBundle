@@ -69,7 +69,7 @@ class EventTrashItemHandler implements StoreTrashItemHandlerInterface, RestoreTr
 
             "imageId" => $image ? $image->getId() : null,
             "pdfIdId" => $pdf ? $pdf->getId() : null,
-            "url" => $resource->getUrl(),
+            "link" => $resource->getLink(),
             "email" => $resource->getEmail(),
             "phone" => $resource->getPhoneNumber(),
             "images" => $resource->getImages(),
@@ -108,7 +108,7 @@ class EventTrashItemHandler implements StoreTrashItemHandlerInterface, RestoreTr
         $event->setRoutePath($data['slug']);
         $event->setExt($data['ext']);
         $event->setLocation($this->entityManager->find(Location::class, $data['location']));
-        $event->setUrl($data['url']);
+        $event->setLink($data['link']);
         $event->setEmail($data['email']);
         $event->setPhoneNumber($data['phone']);
         $event->setImages($data['images']);

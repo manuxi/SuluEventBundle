@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Common;
 
-use Manuxi\SuluEventBundle\Repository\EventRepository;
 use Manuxi\SuluEventBundle\Repository\EventTranslationRepository;
 use Sulu\Bundle\MediaBundle\Media\Manager\MediaManagerInterface;
 use Sulu\Component\Rest\ListBuilder\Doctrine\DoctrineListBuilderFactory;
@@ -16,12 +15,12 @@ use Sulu\Component\Webspace\Manager\WebspaceManagerInterface;
 
 class DoctrineListRepresentationFactory
 {
-    private $restHelper;
-    private $listBuilderFactory;
-    private $fieldDescriptorFactory;
-    private $webspaceManager;
-    private $eventTranslationRepository;
-    private $mediaManager;
+    private RestHelperInterface $restHelper;
+    private DoctrineListBuilderFactory $listBuilderFactory;
+    private FieldDescriptorFactoryInterface $fieldDescriptorFactory;
+    private WebspaceManagerInterface $webspaceManager;
+    private EventTranslationRepository $eventTranslationRepository;
+    private MediaManagerInterface $mediaManager;
 
     public function __construct(
         RestHelperInterface $restHelper,

@@ -156,7 +156,7 @@
         <service id="sulu_event.link_provider" class="Manuxi\SuluEventBundle\Link\LinkProvider">
             <argument type="service" id="sulu_event.repository.event"/>
             <argument type="service" id="translator.default"/>
-            <tag name="sulu.link.provider" alias="actus"/>
+            <tag name="sulu.link.provider" alias="event"/>
         </service>
 
         <!--Trash-->
@@ -180,6 +180,12 @@
             <tag name="sulu_trash.store_trash_item_handler"/>
             <tag name="sulu_trash.restore_trash_item_handler"/>
             <tag name="sulu_trash.restore_configuration_provider"/>
+        </service>
+
+        <!--Twig-->
+        <service id="sulu_event.twig_extension" class="Manuxi\SuluEventBundle\Twig\EventExtension">
+            <argument type="service" id="sulu_event.repository.event"/>
+            <tag name="twig.extension"/>
         </service>
     </services>
 </container>

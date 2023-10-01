@@ -11,9 +11,9 @@ use JMS\Serializer\Annotation as Serializer;
 use Manuxi\SuluEventBundle\Entity\Interfaces\AuditableTranslatableInterface;
 use Manuxi\SuluEventBundle\Entity\Traits\AuditableTranslatableTrait;
 use Manuxi\SuluEventBundle\Entity\Traits\ImageTranslatableTrait;
+use Manuxi\SuluEventBundle\Entity\Traits\LinkTranslatableTrait;
 use Manuxi\SuluEventBundle\Entity\Traits\PdfTranslatableTrait;
 use Manuxi\SuluEventBundle\Entity\Traits\RouteTranslatableTrait;
-use Manuxi\SuluEventBundle\Entity\Traits\UrlTranslatableTrait;
 
 /**
  * @ORM\Entity
@@ -29,7 +29,7 @@ class Event implements AuditableTranslatableInterface
 
     use AuditableTranslatableTrait;
     use RouteTranslatableTrait;
-    use UrlTranslatableTrait;
+    use LinkTranslatableTrait;
     use PdfTranslatableTrait;
     use ImageTranslatableTrait;
 

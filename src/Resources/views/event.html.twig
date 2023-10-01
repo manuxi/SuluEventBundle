@@ -44,9 +44,7 @@
                         {{ event.footer|raw }}
                     {% endif %}
 
-                    {% if event.url %}
-                        <p class="mt-3"><a href="{{ event.url }}">{{ event.url }}</a></p>
-                    {% endif %}
+                    {% include '@SuluEvent/link.html.twig' with {link: event.link} %}
 
                 </div>
 

@@ -14,6 +14,7 @@ sulu_event:
     end_date: "End"
     pdf: "PDF"
     website: "Website"
+    link: "Link"
     email: "E-Mail"
     phone: "Phone"
     gallery: "Image-Gallery"
@@ -48,7 +49,7 @@ sulu_event:
     enddate_eq_startdate: "If the time of start and end are set to 00:00, the time will not be displayed."
     add_location_first: "Please make sure that at least one location is added and therefore selectable."
     search_name: "Event"
-    empty_list: "List is empty."
+    empty_list: "Please select event..."
 
 sulu_activity:
     resource:

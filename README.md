@@ -1,6 +1,6 @@
 # SuluEventBundle!
-![php workflow](https://github.com/manuxi/SuluNewsBundle/actions/workflows/php.yml/badge.svg)
-![symfony workflow](https://github.com/manuxi/SuluNewsBundle/actions/workflows/symfony.yml/badge.svg)
+![php workflow](https://github.com/manuxi/SuluEventBundle/actions/workflows/php.yml/badge.svg)
+![symfony workflow](https://github.com/manuxi/SuluEventBundle/actions/workflows/symfony.yml/badge.svg)
 <a href="https://github.com/manuxi/SuluEventBundle/tags" target="_blank">
     <img src="https://img.shields.io/github/v/tag/manuxi/SuluEventBundle" alt="GitHub license">
 </a>
