@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Content;
 
+use Manuxi\SuluEventBundle\Admin\EventAdmin;
 use Sulu\Component\SmartContent\Configuration\ProviderConfigurationInterface;
 use Sulu\Component\SmartContent\Orm\BaseDataProvider;
 
@@ -17,16 +18,11 @@ class EventDataProvider extends BaseDataProvider
             $this->configuration = self::createConfigurationBuilder()
                 ->enableLimit()
                 ->enablePagination()
-
                 ->enablePresentAs()
-                ->enableSorting([
-
-                        ['column' => 'startDate', 'title' => 'sulu_event.start_date'],
-                        ['column' => 'endDate', 'title' => 'event.end_date'],
-                        ['column' => 'translation.title', 'title' => 'sulu_event.title'],
-
-                    ]
-                )
+                ->enableCategories()
+                ->enableTags()
+                ->enableSorting($this->getSorting())
+                ->enableView(EventAdmin::EDIT_FORM_VIEW, ['id' => 'id', 'properties/webspaceKey' => 'webspace'])
                 ->getConfiguration();
         }
 
@@ -72,6 +68,15 @@ class EventDataProvider extends BaseDataProvider
         }
 
         return $count > ($page * $pageSize);
+    }
+
+    private function getSorting(): array
+    {
+        return [
+            ['column' => 'startDate', 'title' => 'sulu_event.start_date'],
+            ['column' => 'endDate', 'title' => 'event.end_date'],
+            ['column' => 'translation.title', 'title' => 'sulu_event.title'],
+        ];
     }
 
 }
