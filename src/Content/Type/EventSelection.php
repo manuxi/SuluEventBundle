@@ -11,7 +11,7 @@ use Sulu\Component\Content\SimpleContentType;
 
 class EventSelection extends SimpleContentType
 {
-    protected $entityManager;
+    protected EntityManagerInterface $entityManager;
 
     public function __construct(EntityManagerInterface $entityManager)
     {
@@ -21,6 +21,7 @@ class EventSelection extends SimpleContentType
     }
 
     /**
+     * @param PropertyInterface $property
      * @return Event[]
      */
     public function getContentData(PropertyInterface $property): array
@@ -42,6 +43,7 @@ class EventSelection extends SimpleContentType
     }
 
     /**
+     * @param PropertyInterface $property
      * @return array<string, array<int>|null>
      */
     public function getViewData(PropertyInterface $property): array

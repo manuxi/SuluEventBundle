@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Repository;
 
+use Datetime;
 use Doctrine\Common\Collections\Criteria;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -163,7 +164,11 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
      */
     protected function append(QueryBuilder $queryBuilder, string $alias, string $locale, $options = []): array
     {
+
         $queryBuilder->andWhere($alias . '.enabled = true');
+/*        $queryBuilder->andWhere('('. $alias .'.startDate >= :now OR ('. $alias .'.endDate IS NOT NULL AND '. $alias .'.endDate >= :now))');
+        $queryBuilder->setParameter("now", (new Datetime())->format("Y-m-d H:i:s"));
+        $queryBuilder->orderBy($alias . ".startDate", "ASC");*/
 
         return [];
     }

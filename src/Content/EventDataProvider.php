@@ -22,7 +22,7 @@ class EventDataProvider extends BaseDataProvider
                 ->enableCategories()
                 ->enableTags()
                 ->enableSorting($this->getSorting())
-                ->enableView(EventAdmin::EDIT_FORM_VIEW, ['id' => 'id', 'properties/webspaceKey' => 'webspace'])
+                ->enableView(EventAdmin::EDIT_FORM_VIEW, ['id' => 'id'])
                 ->getConfiguration();
         }
 
@@ -74,7 +74,7 @@ class EventDataProvider extends BaseDataProvider
     {
         return [
             ['column' => 'startDate', 'title' => 'sulu_event.start_date'],
-            ['column' => 'endDate', 'title' => 'event.end_date'],
+            ['column' => 'endDate', 'title' => 'sulu_event.end_date'],
             ['column' => 'translation.title', 'title' => 'sulu_event.title'],
         ];
     }

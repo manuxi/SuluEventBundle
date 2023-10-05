@@ -39,8 +39,10 @@ class DoctrineListRepresentationFactory
     }
 
     /**
+     * @param string $resourceKey
      * @param mixed[] $filters
      * @param mixed[] $parameters
+     * @return PaginatedRepresentation
      */
     public function createDoctrineListRepresentation(
         string $resourceKey,

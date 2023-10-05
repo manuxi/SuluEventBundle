@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Content;
 
+use DateTime;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
 use Sulu\Component\Content\Compat\PropertyInterface;
@@ -29,10 +30,13 @@ class EventSelectionContentType extends SimpleContentType
         $ids = $property->getValue();
         $locale = $property->getStructure()->getLanguageCode();
 
+        $datetime = new Datetime();
         $events = [];
         foreach ($ids ?: [] as $id) {
+            /* @var $event Event */
             $event = $this->eventRepository->findById((int) $id, $locale);
-            if ($event && $event->isEnabled()) {
+            if ($event && $event->isEnabled()
+                && (($event->getEndDate() && $event->getEndDate() >= $datetime) || $event->getStartDate() >= $datetime) ) {
                 $events[] = $event;
             }
         }
