@@ -5,12 +5,27 @@ declare(strict_types=1);
 namespace Manuxi\SuluEventBundle\Content;
 
 use Manuxi\SuluEventBundle\Admin\EventAdmin;
+use Sulu\Component\Serializer\ArraySerializerInterface;
 use Sulu\Component\SmartContent\Configuration\ProviderConfigurationInterface;
 use Sulu\Component\SmartContent\Orm\BaseDataProvider;
+use Sulu\Component\SmartContent\Orm\DataProviderRepositoryInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class EventDataProvider extends BaseDataProvider
 {
     private int $defaultLimit = 12;
+
+    private TranslatorInterface $translator;
+
+    public function __construct(
+        DataProviderRepositoryInterface $repository,
+        ArraySerializerInterface $serializer,
+        TranslatorInterface $translator
+    )
+    {
+        parent::__construct($repository, $serializer);
+        $this->translator = $translator;
+    }
 
     public function getConfiguration(): ProviderConfigurationInterface
     {
@@ -83,8 +98,8 @@ class EventDataProvider extends BaseDataProvider
     private function getTypes(): array
     {
         return [
-            ['type' => 'pending', 'title' => 'sulu_event.filter.pending'],
-            ['type' => 'expired', 'title' => 'sulu_event.filter.expired'],
+            ['type' => 'pending', 'title' => $this->translator->trans('sulu_event.filter.pending',[],'admin')],
+            ['type' => 'expired', 'title' => $this->translator->trans('sulu_event.filter.expired',[],'admin')],
         ];
     }
 
