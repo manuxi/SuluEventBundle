@@ -24,7 +24,6 @@
                     <meta>
                         <title>sulu_event.subtitle</title>
                     </meta>
-                    <tag name="sulu.rlp.part"/>
                 </property>
 
                 <property name="routePath" type="route" mandatory="true">

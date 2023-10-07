@@ -73,8 +73,8 @@ class EventDataProvider extends BaseDataProvider
     private function getSorting(): array
     {
         return [
-            ['column' => 'startDate', 'title' => 'sulu_event.start_date'],
-            ['column' => 'endDate', 'title' => 'sulu_event.end_date'],
+            ['column' => 'event.startDate', 'title' => 'sulu_event.start_date'],
+            ['column' => 'event.endDate', 'title' => 'sulu_event.end_date'],
             ['column' => 'translation.title', 'title' => 'sulu_event.title'],
         ];
     }

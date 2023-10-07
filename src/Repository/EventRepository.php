@@ -127,7 +127,7 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
      * @noinspection PhpMissingReturnTypeInspection
      * @noinspection PhpMissingParamTypeInspection
      */
-    public function findByFilters(
+/*    public function findByFilters(
         $filters,
         $page,
         $pageSize,
@@ -147,7 +147,7 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
             },
             $entities
         );
-    }
+    }*/
 
     protected function appendJoins(QueryBuilder $queryBuilder, $alias, $locale): void
     {
@@ -184,5 +184,124 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
         $queryBuilder->innerJoin($alias . '.translations', 'translation', Join::WITH, 'translation.locale = :locale');
         $queryBuilder->setParameter('locale', $locale);
     }
+
+    public function findByFilters($filters, $page, $pageSize, $limit, $locale, $options = []): array
+    {
+
+        $entities = $this->getActiveEvents($filters, $locale, $page, $pageSize, $limit, $options);
+
+        return \array_map(
+            function (Event $entity) use ($locale) {
+                return $entity->setLocale($locale);
+            },
+            $entities
+        );
+    }
+
+    public function getActiveEvents(array $filters, string $locale, ?int $page, $pageSize, ?int $limit, array $options): array
+    {
+        $pageCurrent = (key_exists('page', $options)) ? (int)$options['page'] : 0;
+
+        $queryBuilder = $this->createQueryBuilder('event')
+            ->leftJoin('event.translations', 'translation')
+            ->where('event.enabled = 1')
+            ->andWhere('translation.locale = :locale')->setParameter('locale', $locale)
+            ->orderBy('event.startDate', 'DESC')
+            ->setMaxResults($limit)
+            ->setFirstResult($pageCurrent * $limit);
+
+        $this->prepareFilter($queryBuilder, $filters);
+
+        $events = $queryBuilder->getQuery()->getResult();
+        if (!$events) {
+            return [];
+        }
+        return $events;
+    }
+
+    private function prepareFilter(QueryBuilder $queryBuilder, array $filters): void
+    {
+        if (isset($filters['sortBy'])) {
+            $queryBuilder->orderBy($filters['sortBy'], $filters['sortMethod']);
+        }
+
+        if (!empty($filters['tags']) || !empty($filters['categories'])) {
+            $queryBuilder->leftJoin('event.eventExcerpt', 'excerpt')
+                ->leftJoin('excerpt.translations', 'excerpt_translation');
+        }
+        $this->prepareTagsFilter($queryBuilder, $filters);
+        $this->prepareCategoriesFilter($queryBuilder, $filters);
+    }
+
+    private function prepareTagsFilter(QueryBuilder $queryBuilder, array $filters):void
+    {
+        if (!empty($filters['tags'])) {
+
+            $queryBuilder->leftJoin('excerpt_translation.tags', 'tags');
+
+            $i = 0;
+            if ($filters['tagOperator'] === "and") {
+                $andWhere = "";
+                foreach ($filters['tags'] as $tag) {
+                    if ($i === 0) {
+                        $andWhere .= "tags = :tag" . $i;
+                    } else {
+                        $andWhere .= " AND tags = :tag" . $i;
+                    }
+                    $queryBuilder->setParameter("tag" . $i, $tag);
+                    $i++;
+                }
+                $queryBuilder->andWhere($andWhere);
+            } else if ($filters['tagOperator'] === "or") {
+                $orWhere = "";
+                foreach ($filters['tags'] as $tag) {
+                    if ($i === 0) {
+                        $orWhere .= "tags = :tag" . $i;
+                    } else {
+                        $orWhere .= " OR tags = :tag" . $i;
+                    }
+                    $queryBuilder->setParameter("tag" . $i, $tag);
+                    $i++;
+                }
+                $queryBuilder->andWhere($orWhere);
+            }
+        }
+    }
+
+    private function prepareCategoriesFilter(QueryBuilder $queryBuilder, array $filters):void
+    {
+        if (!empty($filters['categories'])) {
+
+            $queryBuilder->leftJoin('excerpt_translation.categories', 'categories');
+
+            $i = 0;
+            if ($filters['categoryOperator'] === "and") {
+                $andWhere = "";
+                foreach ($filters['categories'] as $category) {
+                    if ($i === 0) {
+                        $andWhere .= "categories = :category" . $i;
+                    } else {
+                        $andWhere .= " AND categories = :category" . $i;
+                    }
+                    $queryBuilder->setParameter("category" . $i, $category);
+                    $i++;
+                }
+                $queryBuilder->andWhere($andWhere);
+            } else if ($filters['categoryOperator'] === "or") {
+                $orWhere = "";
+                foreach ($filters['categories'] as $category) {
+                    if ($i === 0) {
+                        $orWhere .= "categories = :category" . $i;
+                    } else {
+                        $orWhere .= " OR categories = :category" . $i;
+                    }
+                    $queryBuilder->setParameter("category" . $i, $category);
+                    $i++;
+                }
+                $queryBuilder->andWhere($orWhere);
+            }
+        }
+    }
+
 
 }
