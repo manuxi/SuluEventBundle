@@ -44,16 +44,6 @@
             <argument type="service" id="doctrine"/>
         </service>
 
-        <service id="sulu_event.repository.events_expired" class="Manuxi\SuluEventBundle\Repository\EventExpiredDataProviderRepository"
-                 public="true" lazy="true">
-            <argument type="service" id="doctrine"/>
-        </service>
-
-        <service id="sulu_event.repository.events_pending" class="Manuxi\SuluEventBundle\Repository\EventPendingDataProviderRepository"
-                 public="true" lazy="true">
-            <argument type="service" id="doctrine"/>
-        </service>
-
         <!-- needed for massive search/automation bundle? -->
         <!-- Otherwise: "Make sure the service exists and is tagged with 'doctrine.repository_service'" -->
         <service id="Manuxi\SuluEventBundle\Repository\EventRepository" public="true" lazy="true">
@@ -104,20 +94,6 @@
             <argument type="service" id="sulu_core.array_serializer"/>
 
             <tag name="sulu.smart_content.data_provider" alias="events"/>
-        </service>
-
-        <service id="sulu_event.event_expired_data_provider" class="Manuxi\SuluEventBundle\Content\EventExpiredDataProvider">
-            <argument type="service" id="sulu_event.repository.events_expired"/>
-            <argument type="service" id="sulu_core.array_serializer"/>
-
-            <tag name="sulu.smart_content.data_provider" alias="events_expired"/>
-        </service>
-
-        <service id="sulu_event.event_pending_data_provider" class="Manuxi\SuluEventBundle\Content\EventPendingDataProvider">
-            <argument type="service" id="sulu_event.repository.events_pending"/>
-            <argument type="service" id="sulu_core.array_serializer"/>
-
-            <tag name="sulu.smart_content.data_provider" alias="events_pending"/>
         </service>
 
         <service id="sulu_event.webspace_selector"

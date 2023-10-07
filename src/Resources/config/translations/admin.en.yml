@@ -50,7 +50,13 @@ sulu_event:
     add_location_first: "Please make sure that at least one location is added and therefore selectable."
     search_name: "Event"
     empty_list: "Please select event..."
-
+    sorting:
+        title: "Title of the event"
+        start_date: "Start of the event"
+        end_date: "Ende of the event"
+    filter:
+        pending: "Pending Events"
+        expired: "Expired Events"
 sulu_activity:
     resource:
         events: "Event"

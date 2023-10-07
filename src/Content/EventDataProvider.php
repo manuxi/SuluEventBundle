@@ -20,6 +20,7 @@ class EventDataProvider extends BaseDataProvider
                 ->enablePagination()
                 ->enablePresentAs()
                 ->enableCategories()
+                ->enableTypes($this->getTypes())
                 ->enableTags()
                 ->enableSorting($this->getSorting())
                 ->enableView(EventAdmin::EDIT_FORM_VIEW, ['id' => 'id'])
@@ -73,9 +74,17 @@ class EventDataProvider extends BaseDataProvider
     private function getSorting(): array
     {
         return [
-            ['column' => 'event.startDate', 'title' => 'sulu_event.start_date'],
-            ['column' => 'event.endDate', 'title' => 'sulu_event.end_date'],
-            ['column' => 'translation.title', 'title' => 'sulu_event.title'],
+            ['column' => 'event.startDate', 'title' => 'sulu_event.sorting.start_date'],
+            ['column' => 'event.endDate', 'title' => 'sulu_event.sorting.end_date'],
+            ['column' => 'translation.title', 'title' => 'sulu_event.sorting.title'],
+        ];
+    }
+
+    private function getTypes(): array
+    {
+        return [
+            ['type' => 'pending', 'title' => 'sulu_event.filter.pending'],
+            ['type' => 'expired', 'title' => 'sulu_event.filter.expired'],
         ];
     }
 

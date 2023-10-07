@@ -51,6 +51,13 @@ sulu_event:
     add_location_first: "Bitte stellen Sie sicher, dass mindestens ein Veranstaltungsort hinzugefügt und somit wählbar ist."
     search_name: "Veranstaltung"
     empty_list: "Bitte Veranstaltung wählen..."
+    sorting:
+        title: "Titel der Veranstaltung"
+        start_date: "Start der Veranstaltung"
+        end_date: "Ende der Veranstaltung"
+    filter:
+        pending: "Bevorstehende Veranstaltungen"
+        expired: "Beendete Veranstaltungen"
 
 sulu_activity:
     resource:

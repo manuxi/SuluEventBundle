@@ -187,7 +187,6 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
 
     public function findByFilters($filters, $page, $pageSize, $limit, $locale, $options = []): array
     {
-
         $entities = $this->getActiveEvents($filters, $locale, $page, $pageSize, $limit, $options);
 
         return \array_map(
@@ -229,6 +228,7 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
             $queryBuilder->leftJoin('event.eventExcerpt', 'excerpt')
                 ->leftJoin('excerpt.translations', 'excerpt_translation');
         }
+        $this->prepareTypesFilter($queryBuilder, $filters);
         $this->prepareTagsFilter($queryBuilder, $filters);
         $this->prepareCategoriesFilter($queryBuilder, $filters);
     }
@@ -303,5 +303,25 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
         }
     }
 
+    private function prepareTypesFilter(QueryBuilder $queryBuilder, array $filters): void
+    {
+        if(!empty($filters['types'])) {
+
+            //if pending and expired both are selected, we dont need them.
+            if (in_array("pending", $filters['types']) and in_array("expired", $filters['types'])) {
+                return;
+            }
+
+            foreach($filters['types'] as $index => $type) {
+                if ($type == "pending") {
+                    $queryBuilder->andWhere('(event.startDate >= :now OR (event.endDate IS NOT NULL AND event.endDate >= :now))');
+                    $queryBuilder->setParameter("now", (new Datetime())->format("Y-m-d H:i:s"));
+                } elseif ($type == "expired") {
+                    $queryBuilder->andWhere('(event.startDate < :now and (event.endDate IS NULL OR event.endDate < :now))');
+                    $queryBuilder->setParameter("now", (new Datetime())->format("Y-m-d H:i:s"));
+                }
+            }
+        }
+    }
 
 }
