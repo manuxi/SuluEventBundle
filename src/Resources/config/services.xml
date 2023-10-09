@@ -104,7 +104,7 @@
         </service>
 
         <service id="sulu_event.persistence.event_subscriber.orm.author" class="Manuxi\SuluEventBundle\EventSubscriber\ORM\AuthorSubscriber">
-            <argument>%sulu.model.user.class%</argument>
+            <argument>%sulu.model.contact.class%</argument>
             <argument type="service" id="security.token_storage" on-invalid="null"/>
             <tag name="doctrine.event_subscriber"/>
         </service>
@@ -116,7 +116,7 @@
             <argument type="service" id="sulu_event.repository.event"/>
             <argument type="service" id="sulu_event.repository.location"/>
             <argument type="service" id="sulu.repository.media"/>
-            <argument type="service" id="sulu_security.user_repository"/>
+            <argument type="service" id="sulu.repository.contact"/>
             <argument type="service" id="sulu_activity.domain_event_collector"/>
         </service>
 

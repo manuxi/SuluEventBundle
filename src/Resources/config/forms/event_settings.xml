@@ -101,11 +101,12 @@
 <!--            </properties>-->
 <!--        </section>-->
 
-        <section name="changelog">
+        <section name="editInfo">
             <meta>
-                <title>sulu_page.editing_information</title>
+                <title>sulu_event.header.change_author</title>
             </meta>
             <properties>
+
                 <property name="authored" type="datetime" colspan="6">
                     <meta>
                         <title>sulu_page.authored_date</title>
@@ -116,11 +117,50 @@
                         <title>sulu_page.author</title>
                     </meta>
                 </property>
-                <property name="changelog" type="changelog_line">
+                <property name="showDate" type="checkbox" colspan="2">
                     <meta>
-                        <title>sulu_page.changelog</title>
+                        <title>sulu_event.show_date</title>
                     </meta>
                 </property>
+                <property name="showAuthor" type="checkbox" colspan="2">
+                    <meta>
+                        <title>sulu_event.show_author</title>
+                    </meta>
+                </property>
+            </properties>
+        </section>
+        <section name="changelog">
+            <meta>
+                <title>sulu_event.header.created_changed</title>
+            </meta>
+            <properties>
+                <property name="created" type="datetime" disabledCondition="true" colspan="6">
+                    <meta>
+                        <title>sulu_event.created_date</title>
+                    </meta>
+                </property>
+                <property name="creator" type="single_contact_selection" disabledCondition="true" colspan="6">
+                    <meta>
+                        <title>sulu_event.creator</title>
+                    </meta>
+                </property>
+
+                <property name="changed" type="datetime" disabledCondition="true" colspan="6">
+                    <meta>
+                        <title>sulu_event.changed_date</title>
+                    </meta>
+                </property>
+                <property name="changer" type="single_contact_selection" disabledCondition="true" colspan="6">
+                    <meta>
+                        <title>sulu_event.changer</title>
+                    </meta>
+                </property>
+
+                <!--
+                <property name="changelog" type="changelog_line">
+                </property>
+                -->
+
             </properties>
         </section>
     </properties>

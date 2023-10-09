@@ -11,6 +11,7 @@ use Manuxi\SuluEventBundle\Domain\Event\Event\RestoredEvent;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\Location;
 use Sulu\Bundle\ActivityBundle\Application\Collector\DomainEventCollectorInterface;
+use Sulu\Bundle\ContactBundle\Entity\ContactInterface;
 use Sulu\Bundle\MediaBundle\Entity\MediaInterface;
 use Sulu\Bundle\RouteBundle\Entity\Route;
 use Sulu\Bundle\TrashBundle\Application\DoctrineRestoreHelper\DoctrineRestoreHelperInterface;
@@ -54,6 +55,7 @@ class EventTrashItemHandler implements StoreTrashItemHandlerInterface, RestoreTr
         $pdf = $resource->getPdf();
 
         $data = [
+            "locale" => $resource->getLocale(),
             "title" => $resource->getTitle(),
             "subtitle" => $resource->getSubtitle(),
             "summary" => $resource->getSummary(),
@@ -64,7 +66,6 @@ class EventTrashItemHandler implements StoreTrashItemHandlerInterface, RestoreTr
             "slug" => $resource->getRoutePath(),
             "ext" => $resource->getExt(),
             "enabled" => $resource->isEnabled(),
-            "locale" => $resource->getLocale(),
             "location" => $resource->getLocation()->getId(),
 
             "imageId" => $image ? $image->getId() : null,
@@ -73,6 +74,8 @@ class EventTrashItemHandler implements StoreTrashItemHandlerInterface, RestoreTr
             "email" => $resource->getEmail(),
             "phone" => $resource->getPhoneNumber(),
             "images" => $resource->getImages(),
+            "showAuthor" => $resource->getShowAuthor(),
+            "showDate" => $resource->getShowDate()
         ];
 
         $restoreType = isset($options['locale']) ? 'translation' : null;
@@ -108,10 +111,21 @@ class EventTrashItemHandler implements StoreTrashItemHandlerInterface, RestoreTr
         $event->setRoutePath($data['slug']);
         $event->setExt($data['ext']);
         $event->setLocation($this->entityManager->find(Location::class, $data['location']));
-        $event->setLink($data['link']);
         $event->setEmail($data['email']);
         $event->setPhoneNumber($data['phone']);
         $event->setImages($data['images']);
+        $event->setShowAuthor($data['showAuthor']);
+        $event->setShowDate($data['showDate']);
+
+        $event->setAuthored($data['authored'] ? new DateTime($data['authored']['date']) : new DateTime());
+
+        if ($data['author']) {
+            $event->setAuthor($this->entityManager->find(ContactInterface::class, $data['author']));
+        }
+
+        if($data['link']) {
+            $event->setLink($data['link']);
+        }
 
         if($data['imageId']){
             $event->setImage($this->entityManager->find(MediaInterface::class, $data['imageId']));
@@ -125,16 +139,16 @@ class EventTrashItemHandler implements StoreTrashItemHandlerInterface, RestoreTr
         );
 
         $this->doctrineRestoreHelper->persistAndFlushWithId($event, $eventId);
-        $this->createRoute($this->entityManager, $eventId, $event->getRoutePath(), Event::class);
+        $this->createRoute($this->entityManager, $eventId, $data['locale'], $event->getRoutePath(), Event::class);
         $this->entityManager->flush();
         return $event;
     }
 
-    private function createRoute(EntityManagerInterface $manager, int $id, string $slug, string $class)
+    private function createRoute(EntityManagerInterface $manager, int $id, string $locale, string $slug, string $class)
     {
         $route = new Route();
         $route->setPath($slug);
-        $route->setLocale('en');
+        $route->setLocale($locale);
         $route->setEntityClass($class);
         $route->setEntityId($id);
         $route->setHistory(0);

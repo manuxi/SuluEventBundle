@@ -9,6 +9,7 @@ use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\Events;
 use Doctrine\Persistence\Event\LoadClassMetadataEventArgs;
 use Manuxi\SuluEventBundle\Entity\Interfaces\AuthorInterface;
+use Sulu\Bundle\ContactBundle\Entity\ContactInterface;
 use Sulu\Component\Security\Authentication\UserInterface;
 use Symfony\Component\Security\Core\Authentication\Token\NullToken;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
@@ -18,24 +19,13 @@ class AuthorSubscriber implements EventSubscriber
 {
     const AUTHOR_PROPERTY_NAME = 'author';
 
-    /**
-     * @var TokenStorageInterface
-     */
-    private $tokenStorage;
+    private string $userClass;
+    private TokenStorageInterface $tokenStorage;
 
-    /**
-     * @var string
-     */
-    private $userClass;
-
-    /**
-     * @param string $userClass
-     * @param TokenStorageInterface|null $tokenStorage
-     */
     public function __construct(string $userClass, TokenStorageInterface $tokenStorage = null)
     {
-        $this->tokenStorage = $tokenStorage;
         $this->userClass = $userClass;
+        $this->tokenStorage = $tokenStorage;
     }
 
     public function getSubscribedEvents(): array
@@ -46,10 +36,6 @@ class AuthorSubscriber implements EventSubscriber
         ];
     }
 
-    /**
-     * Map creator and changer fields to User objects.
-     * @param LoadClassMetadataEventArgs $event
-     */
     public function loadClassMetadata(LoadClassMetadataEventArgs $event): void
     {
         $metadata = $event->getClassMetadata();
@@ -62,7 +48,7 @@ class AuthorSubscriber implements EventSubscriber
                     'targetEntity' => $this->userClass,
                     'joinColumns' => [
                         [
-                            'name' => 'idUsersAuthor',
+                            'name' => 'author_contact_id',
                             'onDelete' => 'SET NULL',
                             'referencedColumnName' => 'id',
                             'nullable' => true,
@@ -93,11 +79,13 @@ class AuthorSubscriber implements EventSubscriber
             return;
         }
 
-        $this->handleAuthor($event, $user, true);
-        $this->handleAuthor($event, $user, false);
+        $contact = $user->getContact();
+
+        $this->handleAuthor($event, $contact, true);
+        $this->handleAuthor($event, $contact, false);
     }
 
-    private function handleAuthor(OnFlushEventArgs $event, UserInterface $user, bool $insertions): void
+    private function handleAuthor(OnFlushEventArgs $event, ContactInterface $contact, bool $insertions): void
     {
         $manager = $event->getObjectManager();
         $unitOfWork = $manager->getUnitOfWork();
@@ -118,7 +106,7 @@ class AuthorSubscriber implements EventSubscriber
             if ($insertions
                 && (!isset($changeset[self::AUTHOR_PROPERTY_NAME]) || null === $changeset[self::AUTHOR_PROPERTY_NAME][1])
             ) {
-                $meta->setFieldValue($authorEntity, self::AUTHOR_PROPERTY_NAME, $user);
+                $meta->setFieldValue($authorEntity, self::AUTHOR_PROPERTY_NAME, $contact);
                 $recompute = true;
             }
 

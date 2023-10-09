@@ -18,8 +18,8 @@ use Manuxi\SuluEventBundle\Entity\Traits\ArrayPropertyTrait;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
 use Manuxi\SuluEventBundle\Repository\LocationRepository;
 use Sulu\Bundle\ActivityBundle\Application\Collector\DomainEventCollectorInterface;
+use Sulu\Bundle\ContactBundle\Entity\ContactRepository;
 use Sulu\Bundle\MediaBundle\Entity\MediaRepositoryInterface;
-use Sulu\Bundle\SecurityBundle\Entity\UserRepository;
 use Sulu\Component\Rest\Exception\EntityNotFoundException;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -30,20 +30,20 @@ class EventModel implements EventModelInterface
     private EventRepository $eventRepository;
     private LocationRepository $locationRepository;
     private MediaRepositoryInterface $mediaRepository;
-    private UserRepository $userRepository;
+    private ContactRepository $contactRepository;
     private DomainEventCollectorInterface $domainEventCollector;
 
     public function __construct(
         EventRepository $eventRepository,
         LocationRepository $locationRepository,
         MediaRepositoryInterface $mediaRepository,
-        UserRepository $userRepository,
+        ContactRepository $contactRepository,
         DomainEventCollectorInterface $domainEventCollector
     ) {
         $this->locationRepository = $locationRepository;
         $this->mediaRepository = $mediaRepository;
         $this->eventRepository = $eventRepository;
-        $this->userRepository = $userRepository;
+        $this->contactRepository = $contactRepository;
         $this->domainEventCollector = $domainEventCollector;
     }
 
@@ -193,6 +193,16 @@ class EventModel implements EventModelInterface
      */
     private function mapDataToEvent(Event $entity, array $data): Event
     {
+        $showAuthor = $this->getProperty($data, 'showAuthor');
+        if ($showAuthor) {
+            $entity->setShowAuthor($showAuthor);
+        }
+
+        $showDate = $this->getProperty($data, 'showDate');
+        if ($showDate) {
+            $entity->setShowDate($showDate);
+        }
+
         $title = $this->getProperty($data, 'title');
         if ($title) {
             $entity->setTitle($title);
@@ -294,9 +304,9 @@ class EventModel implements EventModelInterface
         //settings (author, authored) changeable
         $authorId = $this->getProperty($data, 'author');
         if ($authorId) {
-            $author = $this->userRepository->findUserById($authorId);
+            $author = $this->contactRepository->findById($authorId);
             if (!$author) {
-                throw new EntityNotFoundException($this->userRepository->getClassName(), $authorId);
+                throw new EntityNotFoundException($this->contactRepository->getClassName(), $authorId);
             }
             $entity->setAuthor($author);
         }

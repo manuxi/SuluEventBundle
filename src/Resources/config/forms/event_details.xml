@@ -52,14 +52,12 @@
                         <title>sulu_event.location</title>
                     </meta>
                 </property>
-                <property name="link" type="link" colspan="6">
+                <property name="image" type="single_media_selection" colspan="6">
                     <meta>
-                        <title>sulu_event.link</title>
+                        <title>sulu_event.hero.image</title>
                     </meta>
-
                     <params>
-                        <param name="enable_anchor" value="true"/>
-                        <param name="enable_attributes" value="true"/>
+                        <param name="types" value="image"/>
                     </params>
                 </property>
 
@@ -82,32 +80,6 @@
                 <title>sulu_event.header.additional</title>
             </meta>
             <properties>
-                <property name="image" type="single_media_selection" colspan="6">
-                    <meta>
-                        <title>sulu_event.mainimage</title>
-                    </meta>
-                    <params>
-                        <param name="types" value="image"/>
-                    </params>
-                </property>
-                <property name="pdf" type="single_media_selection" colspan="6">
-                    <meta>
-                        <title>sulu_event.pdf</title>
-                    </meta>
-                    <params>
-                        <param name="types" value="document"/>
-                    </params>
-                </property>
-                <property name="email" type="text_line" colspan="6">
-                    <meta>
-                        <title>sulu_event.email</title>
-                    </meta>
-                </property>
-                <property name="phoneNumber" type="text_line" colspan="6">
-                    <meta>
-                        <title>sulu_event.phone</title>
-                    </meta>
-                </property>
                 <property name="images" type="media_selection">
                     <meta>
                         <title>sulu_event.gallery</title>
@@ -119,6 +91,35 @@
                 <property name="footer" type="text_editor">
                     <meta>
                         <title>sulu_event.footer</title>
+                    </meta>
+                </property>
+
+                <property name="link" type="link" colspan="6">
+                    <meta>
+                        <title>sulu_event.link</title>
+                    </meta>
+                    <params>
+                        <param name="enable_anchor" value="true"/>
+                        <param name="enable_attributes" value="true"/>
+                    </params>
+                </property>
+                <property name="pdf" type="single_media_selection" colspan="6">
+                    <meta>
+                        <title>sulu_event.pdf</title>
+                    </meta>
+                    <params>
+                        <param name="types" value="document"/>
+                    </params>
+                </property>
+
+                <property name="email" type="text_line" colspan="6">
+                    <meta>
+                        <title>sulu_event.email</title>
+                    </meta>
+                </property>
+                <property name="phoneNumber" type="text_line" colspan="6">
+                    <meta>
+                        <title>sulu_event.phone</title>
                     </meta>
                 </property>
             </properties>

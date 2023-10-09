@@ -14,6 +14,8 @@ use Manuxi\SuluEventBundle\Entity\Traits\ImageTranslatableTrait;
 use Manuxi\SuluEventBundle\Entity\Traits\LinkTranslatableTrait;
 use Manuxi\SuluEventBundle\Entity\Traits\PdfTranslatableTrait;
 use Manuxi\SuluEventBundle\Entity\Traits\RouteTranslatableTrait;
+use Manuxi\SuluNewsBundle\Entity\Traits\ShowAuthorTranslatableTrait;
+use Manuxi\SuluNewsBundle\Entity\Traits\ShowDateTranslatableTrait;
 
 /**
  * @ORM\Entity
@@ -32,7 +34,8 @@ class Event implements AuditableTranslatableInterface
     use LinkTranslatableTrait;
     use PdfTranslatableTrait;
     use ImageTranslatableTrait;
-
+    use ShowAuthorTranslatableTrait;
+    use ShowDateTranslatableTrait;
     /**
      * @ORM\Id()
      * @ORM\GeneratedValue()

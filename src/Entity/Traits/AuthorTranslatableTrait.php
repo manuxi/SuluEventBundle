@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Manuxi\SuluEventBundle\Entity\Traits;
 
 use JMS\Serializer\Annotation as Serializer;
-use Sulu\Component\Security\Authentication\UserInterface;
+use Sulu\Bundle\ContactBundle\Entity\ContactInterface;
 
 trait AuthorTranslatableTrait
 {
@@ -25,7 +25,7 @@ trait AuthorTranslatableTrait
         return $translation->getAuthor() ? $translation->getAuthor()->getId() : null;
     }
 
-    public function setAuthor(UserInterface $author): self
+    public function setAuthor(?ContactInterface $author): self
     {
         $translation = $this->getTranslation($this->locale);
         if (!$translation) {

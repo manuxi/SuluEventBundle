@@ -23,12 +23,6 @@ class AuthoredSubscriber implements EventSubscriber
         ];
     }
 
-    /**
-     * Load the class data, mapping the created and changed fields
-     * to datetime fields.
-     * @param LoadClassMetadataEventArgs $event
-     * @throws \Doctrine\ORM\Mapping\MappingException
-     */
     public function loadClassMetadata(LoadClassMetadataEventArgs $event): void
     {
         $metadata = $event->getClassMetadata();

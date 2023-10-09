@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Entity\Traits;
 
-use Sulu\Component\Security\Authentication\UserInterface;
+use Sulu\Bundle\ContactBundle\Entity\ContactInterface;
 
 trait AuthorTrait
 {
 
-    protected ?UserInterface $author = null;
+    protected ?ContactInterface $author = null;
 
-    public function getAuthor(): ?UserInterface
+    public function getAuthor(): ?ContactInterface
     {
         return $this->author;
     }
 
-    public function setAuthor(?UserInterface $author): self
+    public function setAuthor(?ContactInterface $author): self
     {
         $this->author = $author;
         return $this;
