@@ -193,29 +193,9 @@ class EventModel implements EventModelInterface
      */
     private function mapDataToEvent(Event $entity, array $data): Event
     {
-        $showAuthor = $this->getProperty($data, 'showAuthor');
-        if ($showAuthor) {
-            $entity->setShowAuthor($showAuthor);
-        }
-
-        $showDate = $this->getProperty($data, 'showDate');
-        if ($showDate) {
-            $entity->setShowDate($showDate);
-        }
-
         $title = $this->getProperty($data, 'title');
         if ($title) {
             $entity->setTitle($title);
-        }
-
-        $subtitle = $this->getProperty($data, 'subtitle');
-        if ($subtitle) {
-            $entity->setSubtitle($subtitle);
-        }
-
-        $summary = $this->getProperty($data, 'summary');
-        if ($summary) {
-            $entity->setSummary($summary);
         }
 
         $text = $this->getProperty($data, 'text');
@@ -223,25 +203,43 @@ class EventModel implements EventModelInterface
             $entity->setText($text);
         }
 
-        $footer = $this->getProperty($data, 'footer');
-        if ($footer) {
-            $entity->setFooter($footer);
-        }
-
         $routePath = $this->getProperty($data, 'routePath');
         if ($routePath) {
             $entity->setRoutePath($routePath);
         }
 
+        $showAuthor = $this->getProperty($data, 'showAuthor');
+        $entity->setShowAuthor($showAuthor ? true : false);
+
+        $showDate = $this->getProperty($data, 'showDate');
+        $entity->setShowDate($showDate ? true : false);
+
+        $subtitle = $this->getProperty($data, 'subtitle');
+        $entity->setSubtitle($subtitle ?: null);
+
+        $summary = $this->getProperty($data, 'summary');
+        $entity->setSummary($summary ?: null);
+
+        $footer = $this->getProperty($data, 'footer');
+        $entity->setFooter($footer ?: null);
+
         $startDate = $this->getProperty($data, 'startDate');
-        if ($startDate) {
-            $entity->setStartDate(new \DateTimeImmutable($startDate));
-        }
+        $entity->setStartDate($startDate ? new \DateTimeImmutable($startDate) : null);
 
         $endDate = $this->getProperty($data, 'endDate');
-        if ($endDate) {
-            $entity->setEndDate(new \DateTimeImmutable($endDate));
-        }
+        $entity->setEndDate($endDate ? new \DateTimeImmutable($endDate) : null);
+
+        $link = $this->getProperty($data, 'link');
+        $entity->setLink($link ?: null);
+
+        $phoneNumber = $this->getProperty($data, 'phoneNumber');
+        $entity->setPhoneNumber($phoneNumber ?: null);
+
+        $email = $this->getProperty($data, 'email');
+        $entity->setEmail($email ?: null);
+
+        $images = $this->getProperty($data, 'images');
+        $entity->setImages($images ?: null);
 
         $locationId = $this->getProperty($data, 'locationId');
         if ($locationId) {
@@ -259,6 +257,8 @@ class EventModel implements EventModelInterface
                 throw new EntityNotFoundException($this->mediaRepository->getClassName(), $imageId);
             }
             $entity->setImage($image);
+        } else {
+            $entity->setImage(null);
         }
 
         $pdfId = $this->getPropertyMulti($data, ['pdf', 'id']);
@@ -268,26 +268,8 @@ class EventModel implements EventModelInterface
                 throw new EntityNotFoundException($this->mediaRepository->getClassName(), $pdfId);
             }
             $entity->setPdf($pdf);
-        }
-
-        $link = $this->getProperty($data, 'link');
-        if ($link) {
-            $entity->setLink($link);
-        }
-
-        $phoneNumber = $this->getProperty($data, 'phoneNumber');
-        if ($phoneNumber) {
-            $entity->setPhoneNumber($phoneNumber);
-        }
-
-        $email = $this->getProperty($data, 'email');
-        if ($email) {
-            $entity->setEmail($email);
-        }
-
-        $images = $this->getProperty($data, 'images');
-        if ($images) {
-            $entity->setImages($images);
+        } else {
+            $entity->setPdf(null);
         }
 
         return $entity;

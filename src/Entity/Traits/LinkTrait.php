@@ -18,7 +18,7 @@ trait LinkTrait
         return $this->link;
     }
 
-    public function setLink(array $link): self
+    public function setLink(?array $link): self
     {
         $this->link = $link;
         return $this;

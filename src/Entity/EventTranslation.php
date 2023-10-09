@@ -11,8 +11,8 @@ use Manuxi\SuluEventBundle\Entity\Traits\ImageTrait;
 use Manuxi\SuluEventBundle\Entity\Traits\LinkTrait;
 use Manuxi\SuluEventBundle\Entity\Traits\PdfTrait;
 use Manuxi\SuluEventBundle\Entity\Traits\RouteTrait;
-use Manuxi\SuluNewsBundle\Entity\Traits\ShowAuthorTrait;
-use Manuxi\SuluNewsBundle\Entity\Traits\ShowDateTrait;
+use Manuxi\SuluEventBundle\Entity\Traits\ShowAuthorTrait;
+use Manuxi\SuluEventBundle\Entity\Traits\ShowDateTrait;
 
 /**
  * @ORM\Entity

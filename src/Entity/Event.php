@@ -14,8 +14,8 @@ use Manuxi\SuluEventBundle\Entity\Traits\ImageTranslatableTrait;
 use Manuxi\SuluEventBundle\Entity\Traits\LinkTranslatableTrait;
 use Manuxi\SuluEventBundle\Entity\Traits\PdfTranslatableTrait;
 use Manuxi\SuluEventBundle\Entity\Traits\RouteTranslatableTrait;
-use Manuxi\SuluNewsBundle\Entity\Traits\ShowAuthorTranslatableTrait;
-use Manuxi\SuluNewsBundle\Entity\Traits\ShowDateTranslatableTrait;
+use Manuxi\SuluEventBundle\Entity\Traits\ShowAuthorTranslatableTrait;
+use Manuxi\SuluEventBundle\Entity\Traits\ShowDateTranslatableTrait;
 
 /**
  * @ORM\Entity
