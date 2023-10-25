@@ -6,8 +6,26 @@
 </a>
 
 This bundle was made based on [Sulu workshop](https://github.com/sulu/sulu-workshop). 
-I made it to have the possibility to manage events in my projects and to get a better knowledge of sulu. 
-The events and their meta information is translatable. Please feel comfortable submitting feature requests. 
+I made it to have the possibility to manage events in my projects. 
+
+This bundle contains
+- Several filters for Event Content Type
+- Link Provider
+- Sitemap Provider
+- Handler for Trash Items
+- Handler for Automation
+- Possibility to assign a contact as author
+- Twig Extension for resolving events / get a list of events
+- Events for displaying Activities
+and more...
+
+The news and their meta information is translatable.
+
+It contains an example twig template.
+
+The events and their meta information is translatable. 
+
+Please feel comfortable submitting feature requests. 
 This bundle is still in development. Use at own risk 🤞🏻
 
 
