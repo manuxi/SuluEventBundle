@@ -3,7 +3,7 @@
 namespace Manuxi\SuluEventBundle\Tests\Unit\Entity\Traits;
 
 use Manuxi\SuluEventBundle\Entity\Traits\AuthorTrait;
-use Sulu\Bundle\SecurityBundle\Entity\User;
+use Sulu\Bundle\ContactBundle\Entity\Contact;
 use Sulu\Bundle\TestBundle\Testing\SuluTestCase;
 
 class AuthorTraitTest extends SuluTestCase
@@ -14,7 +14,7 @@ class AuthorTraitTest extends SuluTestCase
     protected function setUp(): void
     {
         $this->mock = $this->getMockForTrait(AuthorTrait::class);
-        $this->user = $this->prophesize(User::class);
+        $this->user = $this->prophesize(Contact::class);
     }
 
     public function testSetAuthored(): void
