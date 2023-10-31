@@ -47,7 +47,7 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
                         'event' => [
                             'name' => 'event.search_name',
                             'icon' => 'su-calendar',
-                            'security_context' => EventAdmin::SECURITY_CONTEXT,
+                            'security_context' => Event::SECURITY_CONTEXT,
                             "contexts" => [
                                 "event",
                             ],
