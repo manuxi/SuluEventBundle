@@ -57,7 +57,7 @@ sulu_event:
     enable_shadow_event: "Enable shadow event"
     enddate_eq_startdate: "If the time of start and end are set to 00:00, the time will not be displayed."
     add_location_first: "Please make sure that at least one location is added and therefore selectable."
-    search_name: "Event"
+    search_name: "Events"
     empty_list: "Please select event..."
     sorting:
         title: "Title of the event"

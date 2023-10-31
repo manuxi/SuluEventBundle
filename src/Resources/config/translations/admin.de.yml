@@ -58,7 +58,7 @@ sulu_event:
     enable_shadow_event: "Shadow Veranstaltung aktivieren"
     enddate_eq_startdate: "Wenn die Uhrzeit von Beginn und Ende auf 00:00 Uhr gesetzt sind, wird die Uhrzeit nicht angezeigt."
     add_location_first: "Bitte stellen Sie sicher, dass mindestens ein Veranstaltungsort hinzugefügt und somit wählbar ist."
-    search_name: "Veranstaltung"
+    search_name: "Veranstaltungen"
     empty_list: "Bitte Veranstaltung wählen..."
     sorting:
         title: "Titel der Veranstaltung"
