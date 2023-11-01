@@ -4,16 +4,15 @@
         <index value="event"/>
         <id property="id"/>
         <title expr="object.getTitle()"/>
-        <subtitle expr="object.getSubtitle()"/>
-        <summary expr="object.getSummary()"/>
-        <text expr="object.getText()"/>
+        <description expr="object.getSubtitle()"/>
         <url expr="object.getRoutePath()" />
         <locale property="locale"/>
         <fields>
-            <field name="name" expr="object.getTitle()" type="string"/>
+            <field name="title" expr="object.getTitle()" type="string"/>
             <field name="subtitle" expr="object.getSubtitle()" type="string"/>
             <field name="summary" expr="object.getSummary()" type="string"/>
             <field name="text" expr="object.getText()" type="string"/>
+            <field name="footer" expr="object.getFooter()" type="string"/>
         </fields>
     </mapping>
 </massive-search-mapping>

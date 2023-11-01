@@ -100,7 +100,7 @@ class Event implements AuditableTranslatableInterface
      */
     private Collection $translations;
 
-    private string $locale = 'en';
+    private string $locale = 'de';
 
     private array $ext = [];
 
