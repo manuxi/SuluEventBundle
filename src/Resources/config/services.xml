@@ -192,11 +192,11 @@
         </service>
 
         <!--Twig-->
-        <service id="sulu_event.twig_extension" class="Manuxi\SuluEventBundle\Twig\EventTwigExtension">
+        <service id="sulu_event.default.twig_extension" class="Manuxi\SuluEventBundle\Twig\EventTwigExtension">
             <argument type="service" id="sulu_event.repository.event"/>
             <tag name="twig.extension"/>
         </service>
-        <service id="sulu_event.twig_extension" class="Manuxi\SuluEventBundle\Twig\EventSettingsTwigExtension">
+        <service id="sulu_event.settings.twig_extension" class="Manuxi\SuluEventBundle\Twig\EventSettingsTwigExtension">
             <argument type="service" id="doctrine.orm.default_entity_manager"/>
             <tag name="twig.extension"/>
         </service>
