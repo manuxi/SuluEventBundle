@@ -57,13 +57,6 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
                             ],
 
                         ],
-/*                        'website' => [
-                            "name" => "event.search_name",
-                            'icon' => 'su-calendar',
-                            "contexts" => [
-                                "event",
-                            ],
-                        ],*/
                     ],
                 ]
             );
@@ -113,6 +106,11 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
                             'routes' => [
                                 'list' => 'sulu_event.get_locations',
                                 'detail' => 'sulu_event.get_location',
+                            ],
+                        ],
+                        'event-settings' => [
+                            'routes' => [
+                                'detail' => 'sulu_event.get_event-settings',
                             ],
                         ],
                     ],
@@ -197,11 +195,6 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
                 ]
             );
         }
-
-//        $container->prependExtensionConfig(
-//            'sulu_event',
-//            ['templates' => ['view' => 'event/index.html.twig']]
-//        );
 
         $container->loadFromExtension('framework', [
             'default_locale' => 'en',

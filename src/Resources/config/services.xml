@@ -22,6 +22,14 @@
             <tag name="sulu.context" context="admin"/>
         </service>
 
+        <service id="sulu_event.admin.settings" class="Manuxi\SuluEventBundle\Admin\SettingsAdmin">
+            <argument type="service" id="sulu_admin.view_builder_factory"/>
+            <argument type="service" id="sulu_security.security_checker"/>
+
+            <tag name="sulu.admin"/>
+            <tag name="sulu.context" context="admin"/>
+        </service>
+
         <service id="sulu_event.doctrine_list_representation_factory" class="Manuxi\SuluEventBundle\Common\DoctrineListRepresentationFactory">
             <argument type="service" id="sulu_core.rest_helper"/>
             <argument type="service" id="sulu_core.doctrine_list_builder_factory"/>
@@ -184,8 +192,12 @@
         </service>
 
         <!--Twig-->
-        <service id="sulu_event.twig_extension" class="Manuxi\SuluEventBundle\Twig\EventExtension">
+        <service id="sulu_event.twig_extension" class="Manuxi\SuluEventBundle\Twig\EventTwigExtension">
             <argument type="service" id="sulu_event.repository.event"/>
+            <tag name="twig.extension"/>
+        </service>
+        <service id="sulu_event.twig_extension" class="Manuxi\SuluEventBundle\Twig\EventSettingsTwigExtension">
+            <argument type="service" id="doctrine.orm.default_entity_manager"/>
             <tag name="twig.extension"/>
         </service>
     </services>

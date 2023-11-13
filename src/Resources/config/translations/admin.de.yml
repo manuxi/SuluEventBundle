@@ -68,6 +68,20 @@ sulu_event:
         pending: "Bevorstehende Veranstaltungen"
         expired: "Beendete Veranstaltungen"
 
+    config:
+        tab: "Einstellungen"
+        title:
+            navi: "Einstellungen"
+            general: "Einstellungen für Einzelansicht"
+            breadcrumbs: "Zielseiten für Breadcrumbs"
+        properties:
+            toggle_header: "Header anzeigen"
+            toggle_hero: "Standard Hero anzeigen"
+            toggle_breadcrumbs: "Breadcrumbs anzeigen"
+            page_events: "Übersichtsseite Alle Veranstaltungen"
+            page_events_pending: "Übersichtsseite bevorstehende Veranstaltungen"
+            page_events_expired: "Übersichtsseite vergangene Veranstaltungen"
+
 sulu_activity:
     resource:
         events: "Veranstaltungen"
@@ -85,3 +99,5 @@ sulu_activity:
             modified: "{userFullName} hat den Ort \"{resourceTitle}\" geändert."
             removed: "{userFullName} hat den Ort \"{resourceTitle}\" gelöscht."
             restored: "{userFullName} hat den Ort \"{resourceTitle}\" wieder hergestellt."
+        event_settings:
+            modified: "{userFullName} hat die Einstellungen für Veranstaltungen geändert."

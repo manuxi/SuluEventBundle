@@ -12,3 +12,10 @@ app_locations_api:
     name_prefix: sulu_event.
     options:
         expose: true
+sulu_event_settings_api:
+    type: rest
+    prefix: /admin/api
+    resource: Manuxi\SuluEventBundle\Controller\Admin\SettingsController
+    name_prefix: sulu_event.
+    options:
+        expose: true

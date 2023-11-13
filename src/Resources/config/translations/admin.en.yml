@@ -66,6 +66,21 @@ sulu_event:
     filter:
         pending: "Pending Events"
         expired: "Expired Events"
+
+    config:
+        tab: "Settings"
+        title:
+            navi: "Settings"
+            general: "Settings for Single View"
+            breadcrumbs: "Target Pages for Breadcrumbs"
+        properties:
+            toggle_header: "Display Header"
+            toggle_hero: "Display Default Hero"
+            toggle_breadcrumbs: "Display Breadcrumbs"
+            page_events: "Overview All Events"
+            page_events_pending: "Overview pending Events"
+            page_events_expired: "Overview expired Events"
+
 sulu_activity:
     resource:
         events: "Event"
@@ -83,3 +98,5 @@ sulu_activity:
             modified: "{userFullName} modified the location \"{resourceTitle}\"."
             removed: "{userFullName} deleted the location \"{resourceTitle}\"."
             restored: "{userFullName} restored the location \"{resourceTitle}\"."
+        event_settings:
+            modified: "{userFullName} modified the settings for events."

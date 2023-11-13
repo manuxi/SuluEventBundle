@@ -9,7 +9,7 @@ use Manuxi\SuluEventBundle\Repository\EventRepository;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
 
-class EventExtension extends AbstractExtension
+class EventTwigExtension extends AbstractExtension
 {
     private EventRepository $eventRepository;
 
