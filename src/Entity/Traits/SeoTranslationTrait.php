@@ -4,41 +4,30 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Entity\Traits;
 
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 trait SeoTranslationTrait
 {
-    /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     */
-    private $id;
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: Types::INTEGER)]
+    private int $id;
 
-    /**
-     * @ORM\Column(type="string", length=5)
-     */
-    private $locale;
+    #[ORM\Column(type: Types::STRING, length: 5)]
+    private ?string $locale = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $title;
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    private ?string $title = null;
 
-    /**
-     * @ORM\Column(type="text", nullable=true)
-     */
-    private $canonicalUrl;
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $canonicalUrl = null;
 
-    /**
-     * @ORM\Column(type="text", nullable=true)
-     */
-    private $keywords;
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $keywords = null;
 
-    /**
-     * @ORM\Column(type="text", nullable=true)
-     */
-    private $description;
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $description = null;
 
     public function getId(): ?int
     {

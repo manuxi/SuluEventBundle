@@ -13,30 +13,22 @@ use Manuxi\SuluEventBundle\Entity\Interfaces\ExcerptInterface;
 use Manuxi\SuluEventBundle\Entity\Interfaces\ExcerptTranslatableInterface;
 use Manuxi\SuluEventBundle\Entity\Traits\ExcerptTrait;
 use Manuxi\SuluEventBundle\Entity\Traits\ExcerptTranslatableTrait;
+use Manuxi\SuluEventBundle\Repository\EventExcerptRepository;
 
-/**
- * @ORM\Entity
- * @ORM\Table(name="app_event_excerpt")
- * @ORM\Entity(repositoryClass="Manuxi\SuluEventBundle\Repository\EventExcerptRepository")
- */
+#[ORM\Entity(repositoryClass: EventExcerptRepository::class)]
+#[ORM\Table(name: 'app_event_excerpt')]
 class EventExcerpt implements ExcerptInterface, ExcerptTranslatableInterface
 {
     use ExcerptTrait;
     use ExcerptTranslatableTrait;
 
-    /**
-     * @ORM\OneToOne(targetEntity="Manuxi\SuluEventBundle\Entity\Event", inversedBy="eventExcerpt", cascade={"persist", "remove"})
-     * @JoinColumn(name="event_id", referencedColumnName="id", nullable=false)
-     *
-     * @Serializer\Exclude
-     */
+    #[Serializer\Exclude]
+    #[ORM\OneToOne(inversedBy: 'eventExcerpt', targetEntity: Event::class, cascade: ['persist', 'remove'])]
+    #[ORM\JoinColumn(name: 'event_id', referencedColumnName: "id", nullable: false)]
     private ?Event $event = null;
 
-    /**
-     * @ORM\OneToMany(targetEntity="EventExcerptTranslation", mappedBy="eventExcerpt", cascade={"ALL"}, indexBy="locale")
-     *
-     * @Serializer\Exclude
-     */
+    #[Serializer\Exclude]
+    #[ORM\OneToMany(mappedBy: 'eventExcerpt', targetEntity: EventExcerptTranslation::class, cascade: ['all'], indexBy: 'locale')]
     private Collection $translations;
 
     public function __construct()

@@ -7,5 +7,5 @@ namespace Manuxi\SuluEventBundle\Entity\Interfaces;
 interface AuthoredTranslatableInterface
 {
     public function getAuthored(): ?\DateTime;
-    public function setAuthored(\DateTime $authored);
+    public function setAuthored(?\DateTime $authored);
 }

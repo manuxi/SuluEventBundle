@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Entity\Traits;
 
-use DateTime;
 use JMS\Serializer\Annotation as Serializer;
 
 trait LinkTranslatableTrait
@@ -13,9 +12,7 @@ trait LinkTranslatableTrait
     abstract public function getLocale();
     abstract protected function getTranslation(string $locale);
 
-    /**
-     * @Serializer\VirtualProperty(name="link")
-     */
+    #[Serializer\VirtualProperty(name: 'link')]
     public function getLink(): ?array
     {
         $translation = $this->getTranslation($this->getLocale());

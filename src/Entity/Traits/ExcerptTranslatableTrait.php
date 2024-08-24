@@ -27,9 +27,7 @@ trait ExcerptTranslatableTrait
         return $this;
     }
 
-    /**
-     * @Serializer\VirtualProperty(name="title")
-     */
+    #[Serializer\VirtualProperty(name: "title")]
     public function getTitle(): ?string
     {
         $translation = $this->getTranslation($this->locale);
@@ -49,9 +47,7 @@ trait ExcerptTranslatableTrait
         return $this;
     }
 
-    /**
-     * @Serializer\VirtualProperty(name="more")
-     */
+    #[Serializer\VirtualProperty(name: "more")]
     public function getMore(): ?string
     {
         $translation = $this->getTranslation($this->locale);
@@ -71,9 +67,7 @@ trait ExcerptTranslatableTrait
         return $this;
     }
 
-    /**
-     * @Serializer\VirtualProperty(name="description")
-     */
+    #[Serializer\VirtualProperty(name: "description")]
     public function getDescription(): ?string
     {
         $translation = $this->getTranslation($this->locale);
@@ -105,9 +99,9 @@ trait ExcerptTranslatableTrait
     }
 
     /**
-     * @return CategoryInterface[]
-     * @Serializer\VirtualProperty(name="categories")
+     * @return ?CategoryInterface[]
      */
+    #[Serializer\VirtualProperty(name: "categories")]
     public function getCategories(): ?array
     {
         $translation = $this->getTranslation($this->locale);
@@ -137,9 +131,7 @@ trait ExcerptTranslatableTrait
         return $this;
     }
 
-    /**
-     * @Serializer\VirtualProperty(name="tags")
-     */
+    #[Serializer\VirtualProperty(name: "tags")]
     public function getTags(): array
     {
         $translation = $this->getTranslation($this->locale);
@@ -172,8 +164,8 @@ trait ExcerptTranslatableTrait
     /**
      * Usually this method should be named getIcons() but since the VirtualProperty annotation seems not to work
      * properly in traits this method is renamed to match the property (icon) for now.
-     * @Serializer\VirtualProperty(name="icon")
      */
+    #[Serializer\VirtualProperty(name: "icon")]
     public function getIcon(): ?array
     {
         $translation = $this->getTranslation($this->locale);
@@ -203,9 +195,7 @@ trait ExcerptTranslatableTrait
         return $this;
     }
 
-    /**
-     * @Serializer\VirtualProperty(name="images")
-     */
+    #[Serializer\VirtualProperty(name: "images")]
     public function getImages(): ?array
     {
         $translation = $this->getTranslation($this->locale);

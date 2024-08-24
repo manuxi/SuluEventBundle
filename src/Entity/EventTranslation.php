@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Entity;
 
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Manuxi\SuluEventBundle\Entity\Interfaces\AuditableInterface;
 use Manuxi\SuluEventBundle\Entity\Traits\AuditableTrait;
@@ -13,12 +14,10 @@ use Manuxi\SuluEventBundle\Entity\Traits\PdfTrait;
 use Manuxi\SuluEventBundle\Entity\Traits\RouteTrait;
 use Manuxi\SuluEventBundle\Entity\Traits\ShowAuthorTrait;
 use Manuxi\SuluEventBundle\Entity\Traits\ShowDateTrait;
+use Manuxi\SuluEventBundle\Repository\EventTranslationRepository;
 
-/**
- * @ORM\Entity
- * @ORM\Table(name="app_event_translation")
- * @ORM\Entity(repositoryClass="Manuxi\SuluEventBundle\Repository\EventTranslationRepository")
- */
+#[ORM\Entity(repositoryClass: EventTranslationRepository::class)]
+#[ORM\Table(name: 'app_event_translation')]
 class EventTranslation implements AuditableInterface
 {
     use AuditableTrait;
@@ -29,47 +28,31 @@ class EventTranslation implements AuditableInterface
     use ShowAuthorTrait;
     use ShowDateTrait;
 
-    /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: Types::INTEGER)]
     private ?int $id = null;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="Manuxi\SuluEventBundle\Entity\Event", inversedBy="translations")
-     * @ORM\JoinColumn(nullable=false)
-     */
+    #[ORM\ManyToOne(targetEntity: Event::class, inversedBy: 'translations')]
+    #[ORM\JoinColumn(nullable: false)]
     private Event $event;
 
-    /**
-     * @ORM\Column(type="string", length=5)
-     */
+    #[ORM\Column(type: Types::STRING, length: 5)]
     private string $locale;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
     private ?string $title = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
     private ?string $subtitle = null;
 
-    /**
-     * @ORM\Column(type="text", nullable=true)
-     */
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $summary = null;
 
-    /**
-     * @ORM\Column(type="text", nullable=true)
-     */
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $text = null;
 
-    /**
-     * @ORM\Column(type="text", nullable=true)
-     */
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $footer = null;
 
     public function __construct(Event $event, string $locale)

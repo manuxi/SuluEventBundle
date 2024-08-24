@@ -13,30 +13,22 @@ use Manuxi\SuluEventBundle\Entity\Interfaces\SeoInterface;
 use Manuxi\SuluEventBundle\Entity\Interfaces\SeoTranslatableInterface;
 use Manuxi\SuluEventBundle\Entity\Traits\SeoTrait;
 use Manuxi\SuluEventBundle\Entity\Traits\SeoTranslatableTrait;
+use Manuxi\SuluEventBundle\Repository\EventSeoRepository;
 
-/**
- * @ORM\Entity
- * @ORM\Table(name="app_event_seo")
- * @ORM\Entity(repositoryClass="Manuxi\SuluEventBundle\Repository\EventSeoRepository")
- */
+#[ORM\Entity(repositoryClass: EventSeoRepository::class)]
+#[ORM\Table(name: 'app_event_seo')]
 class EventSeo implements SeoInterface, SeoTranslatableInterface
 {
     use SeoTrait;
     use SeoTranslatableTrait;
 
-    /**
-     * @ORM\OneToOne(targetEntity="Manuxi\SuluEventBundle\Entity\Event", inversedBy="eventSeo", cascade={"persist", "remove"})
-     * @JoinColumn(name="event_id", referencedColumnName="id", nullable=false)
-     *
-     * @Serializer\Exclude
-     */
+    #[Serializer\Exclude]
+    #[ORM\OneToOne(inversedBy: 'eventSeo', targetEntity: Event::class, cascade: ['persist', 'remove'])]
+    #[ORM\JoinColumn(name: 'event_id', referencedColumnName: "id", nullable: false)]
     private ?Event $event = null;
 
-    /**
-     * @ORM\OneToMany(targetEntity="EventSeoTranslation", mappedBy="eventSeo", cascade={"ALL"}, indexBy="locale")
-     *
-     * @Serializer\Exclude
-     */
+    #[Serializer\Exclude]
+    #[ORM\OneToMany(mappedBy: 'eventSeo', targetEntity: EventSeoTranslation::class, cascade: ['all'], indexBy: 'locale')]
     private Collection $translations;
 
     public function __construct()

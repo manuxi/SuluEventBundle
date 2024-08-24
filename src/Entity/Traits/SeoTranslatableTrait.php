@@ -8,7 +8,7 @@ use JMS\Serializer\Annotation as Serializer;
 
 trait SeoTranslatableTrait
 {
-    private $locale = 'en';
+    private string $locale = 'en';
 
     abstract protected function getTranslation(string $locale);
     abstract protected function createTranslation(string $locale);
@@ -24,9 +24,7 @@ trait SeoTranslatableTrait
         return $this;
     }
 
-    /**
-     * @Serializer\VirtualProperty(name="title")
-     */
+    #[Serializer\VirtualProperty(name: "title")]
     public function getTitle(): ?string
     {
         $translation = $this->getTranslation($this->locale);
@@ -49,9 +47,7 @@ trait SeoTranslatableTrait
         return $this;
     }
 
-    /**
-     * @Serializer\VirtualProperty(name="keywords")
-     */
+    #[Serializer\VirtualProperty(name: "keywords")]
     public function getKeywords(): ?string
     {
         $translation = $this->getTranslation($this->locale);
@@ -74,9 +70,7 @@ trait SeoTranslatableTrait
         return $this;
     }
 
-    /**
-     * @Serializer\VirtualProperty(name="canonicalUrl")
-     */
+    #[Serializer\VirtualProperty(name: "canonicalUrl")]
     public function getCanonicalUrl(): ?string
     {
         $translation = $this->getTranslation($this->locale);
@@ -99,9 +93,7 @@ trait SeoTranslatableTrait
         return $this;
     }
 
-    /**
-     * @Serializer\VirtualProperty(name="description")
-     */
+    #[Serializer\VirtualProperty(name: "description")]
     public function getDescription(): ?string
     {
         $translation = $this->getTranslation($this->locale);

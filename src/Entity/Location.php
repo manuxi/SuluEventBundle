@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Entity;
 
+use Doctrine\DBAL\Types\Types;
 use Manuxi\SuluEventBundle\Entity\Traits\ImageTrait;
 use Manuxi\SuluEventBundle\Repository\LocationRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity
- * @ORM\Table(name="app_location")
- * @ORM\Entity(repositoryClass=LocationRepository::class)
- */
+#[ORM\Entity(repositoryClass: LocationRepository::class)]
+#[ORM\Table(name: 'app_location')]
 class Location
 {
     public const RESOURCE_KEY = 'locations';
@@ -21,52 +19,34 @@ class Location
 
     use ImageTrait;
 
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
-    private $id;
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: Types::INTEGER)]
+    private ?int $id = null;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private $name;
+    #[ORM\Column(type: Types::STRING, length: 255)]
+    private string $name;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $street;
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    private ?string $street;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $number;
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    private ?string $number;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $postalCode;
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    private ?string $postalCode;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $city;
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    private ?string $city;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $state;
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    private ?string $state;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $countryCode;
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    private ?string $countryCode;
 
-    /**
-     * @ORM\Column(type="text", nullable=true)
-     */
-    private $notes;
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $notes;
 
     public function getId(): ?int
     {
@@ -155,7 +135,7 @@ class Location
         return $this->notes;
     }
 
-    public function setNotes($notes): self
+    public function setNotes(?string $notes): self
     {
         $this->notes = $notes;
         return $this;

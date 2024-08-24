@@ -13,9 +13,7 @@ trait UrlTranslatableTrait
     abstract public function getLocale();
     abstract protected function getTranslation(string $locale);
 
-    /**
-     * @Serializer\VirtualProperty(name="url")
-     */
+    #[Serializer\VirtualProperty(name: "url")]
     public function getUrl(): ?string
     {
         $translation = $this->getTranslation($this->getLocale());

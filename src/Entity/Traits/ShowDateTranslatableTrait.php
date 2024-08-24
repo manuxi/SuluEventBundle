@@ -11,9 +11,7 @@ trait ShowDateTranslatableTrait
     abstract public function getLocale();
     abstract protected function getTranslation(string $locale);
 
-    /**
-     * @Serializer\VirtualProperty(name="show_date")
-     */
+    #[Serializer\VirtualProperty(name: "show_date")]
     public function getShowDate(): ?bool
     {
         $translation = $this->getTranslation($this->getLocale());

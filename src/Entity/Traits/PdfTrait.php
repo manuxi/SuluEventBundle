@@ -9,10 +9,9 @@ use Sulu\Bundle\MediaBundle\Entity\MediaInterface;
 trait PdfTrait
 {
 
-    /**
-     * @ORM\ManyToOne(targetEntity=MediaInterface::class)
-     * @Serializer\Exclude()
-     */
+    #[ORM\ManyToOne(targetEntity: MediaInterface::class)]
+    #[ORM\JoinColumn(onDelete: 'SET NULL')]
+    #[Serializer\Exclude]
     private ?MediaInterface $pdf = null;
 
     public function getPdf(): ?MediaInterface
@@ -20,12 +19,8 @@ trait PdfTrait
         return $this->pdf;
     }
 
-    /**
-     * @return array<string, mixed>|null
-     *
-     * @Serializer\VirtualProperty
-     * @Serializer\SerializedName("pdf")
-     */
+    #[Serializer\VirtualProperty]
+    #[Serializer\SerializedName("pdf")]
     public function getPdfData(): ?array
     {
         if ($pdf = $this->getPdf()) {

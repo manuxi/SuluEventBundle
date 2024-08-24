@@ -2,14 +2,13 @@
 
 namespace Manuxi\SuluEventBundle\Entity;
 
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Sulu\Component\Persistence\Model\AuditableInterface;
 use Sulu\Component\Persistence\Model\AuditableTrait;
 
-/**
- * @ORM\Entity()
- * @ORM\Table(name="app_event_settings")
- */
+#[ORM\Entity()]
+#[ORM\Table(name: 'app_event_settings')]
 class EventSettings implements AuditableInterface
 {
     use AuditableTrait;
@@ -18,41 +17,27 @@ class EventSettings implements AuditableInterface
     public const FORM_KEY = 'config';
     public const SECURITY_CONTEXT = 'sulu.event.settings';
 
-    /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: Types::INTEGER)]
     private ?int $id = null;
 
-    /**
-     * @ORM\Column(type="boolean", nullable=true)
-     */
+    #[ORM\Column(type: Types::BOOLEAN, nullable: true)]
     private ?bool $toggleHeader = null;
 
-    /**
-     * @ORM\Column(type="boolean", nullable=true)
-     */
+    #[ORM\Column(type: Types::BOOLEAN, nullable: true)]
     private ?bool $toggleHero = null;
 
-    /**
-     * @ORM\Column(type="boolean", nullable=true)
-     */
+    #[ORM\Column(type: Types::BOOLEAN, nullable: true)]
     private ?bool $toggleBreadcrumbs = null;
 
-    /**
-     * @ORM\Column(type="string", nullable=true)
-     */
+    #[ORM\Column(type: Types::STRING, nullable: true)]
     private ?string $pageEvents = null;
 
-    /**
-     * @ORM\Column(type="string", nullable=true)
-     */
+    #[ORM\Column(type: Types::STRING, nullable: true)]
     private ?string $pageEventsPending = null;
 
-    /**
-     * @ORM\Column(type="string", nullable=true)
-     */
+    #[ORM\Column(type: Types::STRING, nullable: true)]
     private ?string $pageEventsExpired = null;
 
     public function getId(): ?int

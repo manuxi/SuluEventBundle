@@ -6,6 +6,7 @@ namespace Manuxi\SuluEventBundle\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation as Serializer;
 use Manuxi\SuluEventBundle\Entity\Interfaces\AuditableTranslatableInterface;
@@ -16,12 +17,10 @@ use Manuxi\SuluEventBundle\Entity\Traits\PdfTranslatableTrait;
 use Manuxi\SuluEventBundle\Entity\Traits\RouteTranslatableTrait;
 use Manuxi\SuluEventBundle\Entity\Traits\ShowAuthorTranslatableTrait;
 use Manuxi\SuluEventBundle\Entity\Traits\ShowDateTranslatableTrait;
+use Manuxi\SuluEventBundle\Repository\EventRepository;
 
-/**
- * @ORM\Entity
- * @ORM\Table(name="app_event")
- * @ORM\Entity(repositoryClass="Manuxi\SuluEventBundle\Repository\EventRepository")
- */
+#[ORM\Entity(repositoryClass: EventRepository::class)]
+#[ORM\Table(name: 'app_event')]
 class Event implements AuditableTranslatableInterface
 {
     public const RESOURCE_KEY = 'events';
@@ -36,68 +35,44 @@ class Event implements AuditableTranslatableInterface
     use ImageTranslatableTrait;
     use ShowAuthorTranslatableTrait;
     use ShowDateTranslatableTrait;
-    /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     */
+
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: Types::INTEGER)]
     private ?int $id = null;
 
-    /**
-     * @ORM\OneToOne(targetEntity="Manuxi\SuluEventBundle\Entity\EventSeo", mappedBy="event", cascade={"persist", "remove"})
-     *
-     * @Serializer\Exclude
-     */
+    #[Serializer\Exclude]
+    #[ORM\OneToOne(mappedBy: 'event', targetEntity: EventSeo::class, cascade: ['persist', 'remove'])]
     private ?EventSeo $eventSeo = null;
 
-    /**
-     * @ORM\OneToOne(targetEntity="Manuxi\SuluEventBundle\Entity\EventExcerpt", mappedBy="event", cascade={"persist", "remove"})
-     *
-     * @Serializer\Exclude
-     */
+    #[Serializer\Exclude]
+    #[ORM\OneToOne(mappedBy: 'event', targetEntity: EventExcerpt::class, cascade: ['persist', 'remove'])]
     private ?EventExcerpt $eventExcerpt = null;
 
-    /**
-     * @ORM\Column(type="boolean", nullable=false)
-     */
+    #[ORM\Column(type: Types::BOOLEAN, nullable: false)]
     private bool $enabled;
 
-    /**
-     * @ORM\Column(type="datetime_immutable", nullable=true)
-     */
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $startDate = null;
 
-    /**
-     * @ORM\Column(type="datetime_immutable", nullable=true)
-     */
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $endDate = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
     private ?string $email = null;
 
-    /**
-     * @ORM\Column(type="string", nullable=true)
-     */
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
     private ?string $phoneNumber = null;
 
-    /**
-     * @ORM\Column(type="json", nullable=true)
-     */
+    #[ORM\Column(type: Types::JSON, nullable: true)]
     private ?array $images = null;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="Manuxi\SuluEventBundle\Entity\Location")
-     * @ORM\JoinColumn(onDelete="SET NULL")
-     */
+    #[ORM\ManyToOne(targetEntity: Location::class)]
+    #[ORM\JoinColumn(onDelete: 'SET NULL')]
     private ?Location $location = null;
 
-    /**
-     * @var Collection<string, EventTranslation>
-     * @ORM\OneToMany(targetEntity="Manuxi\SuluEventBundle\Entity\EventTranslation", mappedBy="event", cascade={"ALL"}, indexBy="locale", fetch="EXTRA_LAZY")
-     * @Serializer\Exclude
-     */
+    #[Serializer\Exclude]
+    #[ORM\OneToMany(mappedBy: 'event', targetEntity: EventTranslation::class, cascade: ['all'], fetch: 'EXTRA_LAZY', indexBy: 'locale')]
     private Collection $translations;
 
     private string $locale = 'de';
@@ -172,9 +147,7 @@ class Event implements AuditableTranslatableInterface
         return $this;
     }
 
-    /**
-     * @Serializer\VirtualProperty
-     */
+    #[Serializer\VirtualProperty]
     public function getLocationId(): ?int
     {
         if (!$this->location) {
@@ -184,9 +157,7 @@ class Event implements AuditableTranslatableInterface
         return $this->location->getId();
     }
 
-    /**
-     * @Serializer\VirtualProperty(name="title")
-     */
+    #[Serializer\VirtualProperty(name: "title")]
     public function getTitle(): ?string
     {
         $translation = $this->getTranslation($this->locale);
@@ -208,9 +179,7 @@ class Event implements AuditableTranslatableInterface
         return $this;
     }
 
-    /**
-     * @Serializer\VirtualProperty(name="subtitle")
-     */
+    #[Serializer\VirtualProperty(name: "subtitle")]
     public function getSubtitle(): ?string
     {
         $translation = $this->getTranslation($this->locale);
@@ -232,9 +201,7 @@ class Event implements AuditableTranslatableInterface
         return $this;
     }
 
-    /**
-     * @Serializer\VirtualProperty(name="summary")
-     */
+    #[Serializer\VirtualProperty(name: "summary")]
     public function getSummary(): ?string
     {
         $translation = $this->getTranslation($this->locale);
@@ -256,9 +223,7 @@ class Event implements AuditableTranslatableInterface
         return $this;
     }
 
-    /**
-     * @Serializer\VirtualProperty(name="text")
-     */
+    #[Serializer\VirtualProperty(name: "text")]
     public function getText(): ?string
     {
         $translation = $this->getTranslation($this->locale);
@@ -280,9 +245,7 @@ class Event implements AuditableTranslatableInterface
         return $this;
     }
 
-    /**
-     * @Serializer\VirtualProperty(name="footer")
-     */
+    #[Serializer\VirtualProperty(name: "footer")]
     public function getFooter(): ?string
     {
         $translation = $this->getTranslation($this->locale);
@@ -336,9 +299,7 @@ class Event implements AuditableTranslatableInterface
         return $this;
     }
 
-    /**
-     * @Serializer\VirtualProperty(name="ext")
-     */
+    #[Serializer\VirtualProperty(name: "ext")]
     public function getExt(): array
     {
         return $this->ext;
@@ -407,9 +368,7 @@ class Event implements AuditableTranslatableInterface
         return $this;
     }
 
-    /**
-     * @Serializer\VirtualProperty("availableLocales")
-     */
+    #[Serializer\VirtualProperty(name: "availableLocales")]
     public function getAvailableLocales(): array
     {
         return \array_values($this->translations->getKeys());

@@ -11,9 +11,7 @@ trait ShowAuthorTranslatableTrait
     abstract public function getLocale();
     abstract protected function getTranslation(string $locale);
 
-    /**
-     * @Serializer\VirtualProperty(name="show_author")
-     */
+    #[Serializer\VirtualProperty(name: "show_author")]
     public function getShowAuthor(): ?bool
     {
         $translation = $this->getTranslation($this->getLocale());
