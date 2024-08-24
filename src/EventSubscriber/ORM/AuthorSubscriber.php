@@ -48,7 +48,7 @@ class AuthorSubscriber implements EventSubscriber
                     'targetEntity' => $this->userClass,
                     'joinColumns' => [
                         [
-                            'name' => 'author_contact_id',
+                            'name' => 'author_id',
                             'onDelete' => 'SET NULL',
                             'referencedColumnName' => 'id',
                             'nullable' => true,
