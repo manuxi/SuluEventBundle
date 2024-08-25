@@ -25,28 +25,28 @@ class Location
     private ?int $id = null;
 
     #[ORM\Column(type: Types::STRING, length: 255)]
-    private string $name;
+    private ?string $name = null;
 
     #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
-    private ?string $street;
+    private ?string $street = null;
 
     #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
-    private ?string $number;
+    private ?string $number = null;
 
     #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
-    private ?string $postalCode;
+    private ?string $postalCode = null;
 
     #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
-    private ?string $city;
+    private ?string $city = null;
 
     #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
-    private ?string $state;
+    private ?string $state = null;
 
     #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
-    private ?string $countryCode;
+    private ?string $countryCode = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $notes;
+    private ?string $notes = null;
 
     public function getId(): ?int
     {

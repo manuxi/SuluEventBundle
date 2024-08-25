@@ -10,7 +10,7 @@ use Sulu\Bundle\MediaBundle\Entity\MediaInterface;
 
 class LocationTest extends TestCase
 {
-    private $location;
+    private ?Location $location = null;
 
     protected function setUp(): void
     {

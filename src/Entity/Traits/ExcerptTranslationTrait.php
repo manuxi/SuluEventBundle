@@ -27,7 +27,7 @@ trait ExcerptTranslationTrait
     private ?int $id = null;
 
     #[ORM\Column(type: Types::STRING, length: 5)]
-    private string $locale = 'de';
+    private string $locale = 'en';
 
     #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
     private ?string $title = null;
