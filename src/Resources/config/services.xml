@@ -111,13 +111,16 @@
             <argument type="service" id="sulu_core.webspace.webspace_manager"/>
         </service>
 
-        <service id="sulu_event.persistence.event_subscriber.orm.author" class="Manuxi\SuluEventBundle\EventSubscriber\ORM\AuthorSubscriber">
+        <service id="sulu_event.persistence.event_listener.doctrine.author" class="Manuxi\SuluEventBundle\EventListener\Doctrine\AuthorListener">
             <argument>%sulu.model.contact.class%</argument>
             <argument type="service" id="security.token_storage" on-invalid="null"/>
-            <tag name="doctrine.event_subscriber"/>
+            <tag name="doctrine.event_listener" event="loadClassMetadata"/>
+            <tag name="doctrine.event_listener" event="onFlush"/>
         </service>
-        <service id="sulu_event.persistence.event_subscriber.orm.authored" class="Manuxi\SuluEventBundle\EventSubscriber\ORM\AuthoredSubscriber">
-            <tag name="doctrine.event_subscriber"/>
+        <service id="sulu_event.persistence.event_listener.doctrine.authored" class="Manuxi\SuluEventBundle\EventListener\Doctrine\AuthoredListener">
+            <tag name="doctrine.event_listener" event="loadClassMetadata"/>
+            <tag name="doctrine.event_listener" event="preUpdate"/>
+            <tag name="doctrine.event_listener" event="prePersist"/>
         </service>
 
         <service id="sulu_event.model.event" class="Manuxi\SuluEventBundle\Entity\Models\EventModel">

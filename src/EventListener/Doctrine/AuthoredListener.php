@@ -2,26 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Manuxi\SuluEventBundle\EventSubscriber\ORM;
+namespace Manuxi\SuluEventBundle\EventListener\Doctrine;
 
-use Doctrine\Common\EventSubscriber;
-use Doctrine\ORM\Events;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
 use Doctrine\Persistence\Event\LoadClassMetadataEventArgs;
 use Manuxi\SuluEventBundle\Entity\Interfaces\AuthoredInterface;
 
-class AuthoredSubscriber implements EventSubscriber
+class AuthoredListener
 {
     const AUTHORED_PROPERTY_NAME = 'authored';
-
-    public function getSubscribedEvents(): array
-    {
-        return [
-            Events::loadClassMetadata,
-            Events::preUpdate,
-            Events::prePersist,
-        ];
-    }
 
     public function loadClassMetadata(LoadClassMetadataEventArgs $event): void
     {
