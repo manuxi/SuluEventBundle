@@ -197,7 +197,7 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
         );
     }
 
-    public function getActiveEvents(array $filters, string $locale, ?int $page, $pageSize, ?int $limit, array $options): array
+    public function getActiveEvents(array $filters, string $locale, ?int $page, $pageSize, $limit = null, array $options): array
     {
         $pageCurrent = (key_exists('page', $options)) ? (int)$options['page'] : 0;
 
