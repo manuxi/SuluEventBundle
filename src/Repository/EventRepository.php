@@ -101,12 +101,24 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
 
     public function findAllScheduledEvents(int $limit)
     {
-        $query = $this->createQueryBuilder('e')
-            ->where('e.enabled = 1 AND (e.startDate >= :now OR (e.endDate IS NOT NULL AND e.endDate >= :now))')
-            ->orderBy("e.startDate", "ASC")
+        $now = new \DateTimeImmutable();
+        $queryBuilder = $this->createQueryBuilder('e')
+            ->where('e.enabled = :enabled')
+            ->andWhere(
+                $queryBuilder->expr()->orX(
+                    $queryBuilder->expr()->gte('e.startDate', ':now'),
+                    $queryBuilder->expr()->andX(
+                        $queryBuilder->expr()->isNotNull('e.endDate'),
+                        $queryBuilder->expr()->gte('e.endDate', ':now')
+                    )
+                )
+            )
+            ->orderBy('e.startDate', 'ASC')
             ->setMaxResults($limit)
-            ->setParameter("now", (new \DateTimeImmutable())->format("Y-m-d"));
-        return $query->getQuery()->getResult();
+            ->setParameter('enabled', 1)
+            ->setParameter('now', $now->format('Y-m-d'));
+
+        return $queryBuilder->getQuery()->getResult();
     }
 
     /**
@@ -127,27 +139,27 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
      * @noinspection PhpMissingReturnTypeInspection
      * @noinspection PhpMissingParamTypeInspection
      */
-/*    public function findByFilters(
-        $filters,
-        $page,
-        $pageSize,
-        $limit,
-        $locale,
-        $options = [],
-        ?UserInterface $user = null,
-        $entityClass = null,
-        $entityAlias = null,
-        $permission = null
-    ) {
-        $entities = $this->parentFindByFilters($filters, $page, $pageSize, $limit, $locale, $options);
+    /*    public function findByFilters(
+            $filters,
+            $page,
+            $pageSize,
+            $limit,
+            $locale,
+            $options = [],
+            ?UserInterface $user = null,
+            $entityClass = null,
+            $entityAlias = null,
+            $permission = null
+        ) {
+            $entities = $this->parentFindByFilters($filters, $page, $pageSize, $limit, $locale, $options);
 
-        return \array_map(
-            function (Event $entity) use ($locale) {
-                return $entity->setLocale($locale);
-            },
-            $entities
-        );
-    }*/
+            return \array_map(
+                function (Event $entity) use ($locale) {
+                    return $entity->setLocale($locale);
+                },
+                $entities
+            );
+        }*/
 
     protected function appendJoins(QueryBuilder $queryBuilder, $alias, $locale): void
     {
@@ -166,9 +178,9 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
     {
 
         $queryBuilder->andWhere($alias . '.enabled = true');
-/*        $queryBuilder->andWhere('('. $alias .'.startDate >= :now OR ('. $alias .'.endDate IS NOT NULL AND '. $alias .'.endDate >= :now))');
-        $queryBuilder->setParameter("now", (new Datetime())->format("Y-m-d H:i:s"));
-        $queryBuilder->orderBy($alias . ".startDate", "ASC");*/
+        /*        $queryBuilder->andWhere('('. $alias .'.startDate >= :now OR ('. $alias .'.endDate IS NOT NULL AND '. $alias .'.endDate >= :now))');
+                $queryBuilder->setParameter("now", (new Datetime())->format("Y-m-d H:i:s"));
+                $queryBuilder->orderBy($alias . ".startDate", "ASC");*/
 
         return [];
     }
@@ -199,23 +211,33 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
 
     public function getActiveEvents(array $filters, string $locale, ?int $page, $pageSize, $limit = null, array $options): array
     {
-        $pageCurrent = (key_exists('page', $options)) ? (int)$options['page'] : 0;
+        // Determine the current page
+        $pageCurrent = array_key_exists('page', $options) ? (int) $options['page'] : 0;
 
+        // Initialize the query builder
         $queryBuilder = $this->createQueryBuilder('event')
             ->leftJoin('event.translations', 'translation')
-            ->where('event.enabled = 1')
-            ->andWhere('translation.locale = :locale')->setParameter('locale', $locale)
-            ->orderBy('event.startDate', 'DESC')
-            ->setMaxResults($limit)
-            ->setFirstResult($pageCurrent * $limit);
+            ->where('event.enabled = :enabled')
+            ->andWhere('translation.locale = :locale')
+            ->setParameter('enabled', 1)
+            ->setParameter('locale', $locale)
+            ->orderBy('event.startDate', 'DESC');
 
+        // Apply limit and pagination
+        if ($limit !== null) {
+            $queryBuilder->setMaxResults($limit);
+        }
+        if ($pageCurrent !== null && $limit !== null) {
+            $queryBuilder->setFirstResult($pageCurrent * $limit);
+        }
+
+        // Apply additional filters
         $this->prepareFilter($queryBuilder, $filters);
 
+        // Execute the query and return results
         $events = $queryBuilder->getQuery()->getResult();
-        if (!$events) {
-            return [];
-        }
-        return $events;
+
+        return $events ?: [];
     }
 
     private function prepareFilter(QueryBuilder $queryBuilder, array $filters): void
