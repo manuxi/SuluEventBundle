@@ -29,7 +29,7 @@ class EventTranslationRepository extends ServiceEntityRepository
         $query = $this->createQueryBuilder('et')
             ->addCriteria($this->createIdsInCriteria($ids))
             ->groupby('et.event')
-            ->having('eventCount < :countLocales')
+            ->having('COUNT(et.event) < :countLocales')
             ->setParameter('countLocales', $countLocales)
             ->andHaving('et.locale = :locale')
             ->setParameter('locale', $missingLocale)
