@@ -102,7 +102,8 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
     public function findAllScheduledEvents(int $limit)
     {
         $now = new \DateTimeImmutable();
-        $queryBuilder = $this->createQueryBuilder('e')
+        $queryBuilder = $this->createQueryBuilder('e');
+        $queryBuilder
             ->where('e.enabled = :enabled')
             ->andWhere(
                 $queryBuilder->expr()->orX(
