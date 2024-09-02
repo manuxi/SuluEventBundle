@@ -103,7 +103,8 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
     {
         $now = new \DateTimeImmutable();
         $queryBuilder = $this->createQueryBuilder('e');
-        $queryBuilder->where('e.enabled = :enabled')
+        $queryBuilder
+            ->where('e.enabled = :enabled')
             ->andWhere(
                 $queryBuilder->expr()->orX(
                     $queryBuilder->expr()->gte('e.startDate', ':now'),
