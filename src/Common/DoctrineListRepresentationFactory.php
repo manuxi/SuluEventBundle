@@ -8,6 +8,7 @@ use Manuxi\SuluEventBundle\Repository\EventTranslationRepository;
 use Sulu\Bundle\MediaBundle\Media\Manager\MediaManagerInterface;
 use Sulu\Component\Rest\ListBuilder\Doctrine\DoctrineListBuilderFactory;
 use Sulu\Component\Rest\ListBuilder\Doctrine\FieldDescriptor\DoctrineFieldDescriptor;
+use Sulu\Component\Rest\ListBuilder\ListRestHelperInterface;
 use Sulu\Component\Rest\ListBuilder\Metadata\FieldDescriptorFactoryInterface;
 use Sulu\Component\Rest\ListBuilder\PaginatedRepresentation;
 use Sulu\Component\Rest\RestHelperInterface;
@@ -16,6 +17,7 @@ use Sulu\Component\Webspace\Manager\WebspaceManagerInterface;
 class DoctrineListRepresentationFactory
 {
     private RestHelperInterface $restHelper;
+    private ListRestHelperInterface $listRestHelper;
     private DoctrineListBuilderFactory $listBuilderFactory;
     private FieldDescriptorFactoryInterface $fieldDescriptorFactory;
     private WebspaceManagerInterface $webspaceManager;
@@ -24,6 +26,7 @@ class DoctrineListRepresentationFactory
 
     public function __construct(
         RestHelperInterface $restHelper,
+        ListRestHelperInterface $listRestHelper,
         DoctrineListBuilderFactory $listBuilderFactory,
         FieldDescriptorFactoryInterface $fieldDescriptorFactory,
         WebspaceManagerInterface $webspaceManager,
@@ -31,6 +34,7 @@ class DoctrineListRepresentationFactory
         MediaManagerInterface $mediaManager
     ) {
         $this->restHelper                   = $restHelper;
+        $this->listRestHelper               = $listRestHelper;
         $this->listBuilderFactory           = $listBuilderFactory;
         $this->fieldDescriptorFactory       = $fieldDescriptorFactory;
         $this->webspaceManager              = $webspaceManager;
@@ -65,6 +69,16 @@ class DoctrineListRepresentationFactory
         }
 
         $list = $listBuilder->execute();
+
+        // sort the items to reflect the order of the given ids if the list was requested to include specific ids
+        $requestedIds = $this->listRestHelper->getIds();
+        if (null !== $requestedIds) {
+            $idPositions = array_flip($requestedIds);
+
+            usort($list, function ($a, $b) use ($idPositions) {
+                return $idPositions[$a['id']] - $idPositions[$b['id']];
+            });
+        }
 
         $list = $this->addGhostLocaleToListElements($list, $parameters['locale'] ?? null);
         $list = $this->addImagesToListElements($list, $parameters['locale'] ?? null);

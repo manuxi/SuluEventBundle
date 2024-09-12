@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Content;
 
+use Countable;
 use Manuxi\SuluEventBundle\Admin\EventAdmin;
 use Sulu\Component\Serializer\ArraySerializerInterface;
 use Sulu\Component\SmartContent\Configuration\ProviderConfigurationInterface;
@@ -64,13 +65,13 @@ class EventDataProvider extends BaseDataProvider
      * It combines the limit/query-count with the page and page-size.
      *
      * @noinspection PhpUnusedPrivateMethodInspection
-     * @param \Countable $queryResult
+     * @param Countable $queryResult
      * @param int|null $limit
      * @param int $page
      * @param int|null $pageSize
      * @return bool
      */
-    private function hasNextPage(\Countable $queryResult, ?int $limit, int $page, ?int $pageSize): bool
+    private function hasNextPage(Countable $queryResult, ?int $limit, int $page, ?int $pageSize): bool
     {
         $count = $queryResult->count();
 

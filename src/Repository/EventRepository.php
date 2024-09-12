@@ -88,7 +88,9 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
     public function countForSitemap()
     {
         $query = $this->createQueryBuilder('e')
-            ->select('count(e)');
+            ->select('count(e)')
+            ->where('e.enabled = :enabled')
+            ->setParameter('enabled', 1);
         return $query->getQuery()->getSingleScalarResult();
     }
 
@@ -121,46 +123,6 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
 
         return $queryBuilder->getQuery()->getResult();
     }
-
-    /**
-     * Returns filtered entities.
-     * When pagination is active the result count is pageSize + 1 to determine has next page.
-     *
-     * @param array $filters array of filters: tags, tagOperator
-     * @param int $page
-     * @param int $pageSize
-     * @param int $limit
-     * @param string $locale
-     * @param mixed[] $options
-     * @param UserInterface|null $user
-     * @param null $entityClass
-     * @param null $entityAlias
-     * @param null $permission
-     * @return object[]
-     * @noinspection PhpMissingReturnTypeInspection
-     * @noinspection PhpMissingParamTypeInspection
-     */
-    /*    public function findByFilters(
-            $filters,
-            $page,
-            $pageSize,
-            $limit,
-            $locale,
-            $options = [],
-            ?UserInterface $user = null,
-            $entityClass = null,
-            $entityAlias = null,
-            $permission = null
-        ) {
-            $entities = $this->parentFindByFilters($filters, $page, $pageSize, $limit, $locale, $options);
-
-            return \array_map(
-                function (Event $entity) use ($locale) {
-                    return $entity->setLocale($locale);
-                },
-                $entities
-            );
-        }*/
 
     protected function appendJoins(QueryBuilder $queryBuilder, $alias, $locale): void
     {
@@ -212,9 +174,6 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
 
     public function getActiveEvents(array $filters, string $locale, ?int $page, $pageSize, $limit = null, array $options): array
     {
-        // Determine the current page
-        $pageCurrent = array_key_exists('page', $options) ? (int) $options['page'] : 0;
-
         // Initialize the query builder
         $queryBuilder = $this->createQueryBuilder('event')
             ->leftJoin('event.translations', 'translation')
@@ -224,16 +183,13 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
             ->setParameter('locale', $locale)
             ->orderBy('event.startDate', 'DESC');
 
-        // Apply limit and pagination
-        if ($limit !== null) {
-            $queryBuilder->setMaxResults($limit);
-        }
-        if ($pageCurrent !== null && $limit !== null) {
-            $queryBuilder->setFirstResult($pageCurrent * $limit);
-        }
-
         // Apply additional filters
-        $this->prepareFilter($queryBuilder, $filters);
+        $this->prepareFilters($queryBuilder, $filters);
+
+        // Apply offset/max results
+        if (!$this->setOffsetResults($queryBuilder, $page, $pageSize, $limit)) {
+            return [];
+        }
 
         // Execute the query and return results
         $events = $queryBuilder->getQuery()->getResult();
@@ -241,7 +197,27 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
         return $events ?: [];
     }
 
-    private function prepareFilter(QueryBuilder $queryBuilder, array $filters): void
+    private function setOffsetResults(QueryBuilder $queryBuilder, $page, $pageSize, $limit = null): bool {
+        if (null !== $page && $pageSize > 0) {
+
+            $pageOffset = ($page - 1) * $pageSize;
+            $restLimit = $limit - $pageOffset;
+
+            $maxResults = (null !== $limit && $pageSize > $restLimit ? $restLimit : $pageSize);
+
+            if ($maxResults <= 0) {
+                return false;
+            }
+
+            $queryBuilder->setMaxResults($maxResults);
+            $queryBuilder->setFirstResult($pageOffset);
+        } elseif (null !== $limit) {
+            $queryBuilder->setMaxResults($limit);
+        }
+        return true;
+    }
+
+    private function prepareFilters(QueryBuilder $queryBuilder, array $filters): void
     {
         if (isset($filters['sortBy'])) {
             $queryBuilder->orderBy($filters['sortBy'], $filters['sortMethod']);

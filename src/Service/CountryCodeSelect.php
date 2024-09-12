@@ -8,9 +8,7 @@ use Symfony\Component\Intl\Countries;
 
 class CountryCodeSelect
 {
-    /**
-     * @return array[]
-     */
+
     public function getValues(): array
     {
         $values = [];
