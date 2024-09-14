@@ -10,13 +10,11 @@ use Sulu\Bundle\ActivityBundle\Domain\Event\DomainEvent;
 
 abstract class AbstractEvent extends DomainEvent
 {
-    private Location $location;
     private array $payload = [];
 
-    public function __construct(Location $location)
+    public function __construct(private Location $location)
     {
         parent::__construct();
-        $this->location = $location;
     }
 
     public function getLocation(): Location

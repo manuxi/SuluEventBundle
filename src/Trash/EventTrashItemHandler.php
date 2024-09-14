@@ -24,23 +24,12 @@ use Sulu\Bundle\TrashBundle\Domain\Repository\TrashItemRepositoryInterface;
 
 class EventTrashItemHandler implements StoreTrashItemHandlerInterface, RestoreTrashItemHandlerInterface, RestoreConfigurationProviderInterface
 {
-    private TrashItemRepositoryInterface $trashItemRepository;
-    private EntityManagerInterface $entityManager;
-    private DoctrineRestoreHelperInterface $doctrineRestoreHelper;
-    private DomainEventCollectorInterface $domainEventCollector;
-
     public function __construct(
-        TrashItemRepositoryInterface   $trashItemRepository,
-        EntityManagerInterface         $entityManager,
-        DoctrineRestoreHelperInterface $doctrineRestoreHelper,
-        DomainEventCollectorInterface  $domainEventCollector
-    )
-    {
-        $this->trashItemRepository = $trashItemRepository;
-        $this->entityManager = $entityManager;
-        $this->doctrineRestoreHelper = $doctrineRestoreHelper;
-        $this->domainEventCollector = $domainEventCollector;
-    }
+        private TrashItemRepositoryInterface $trashItemRepository,
+        private EntityManagerInterface $entityManager,
+        private DoctrineRestoreHelperInterface $doctrineRestoreHelper,
+        private DomainEventCollectorInterface $domainEventCollector
+    ) {}
 
     public static function getResourceKey(): string
     {

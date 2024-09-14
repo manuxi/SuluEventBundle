@@ -27,25 +27,13 @@ class EventModel implements EventModelInterface
 {
     use ArrayPropertyTrait;
 
-    private EventRepository $eventRepository;
-    private LocationRepository $locationRepository;
-    private MediaRepositoryInterface $mediaRepository;
-    private ContactRepository $contactRepository;
-    private DomainEventCollectorInterface $domainEventCollector;
-
     public function __construct(
-        EventRepository $eventRepository,
-        LocationRepository $locationRepository,
-        MediaRepositoryInterface $mediaRepository,
-        ContactRepository $contactRepository,
-        DomainEventCollectorInterface $domainEventCollector
-    ) {
-        $this->locationRepository = $locationRepository;
-        $this->mediaRepository = $mediaRepository;
-        $this->eventRepository = $eventRepository;
-        $this->contactRepository = $contactRepository;
-        $this->domainEventCollector = $domainEventCollector;
-    }
+        private EventRepository $eventRepository,
+        private LocationRepository $locationRepository,
+        private MediaRepositoryInterface $mediaRepository,
+        private ContactRepository $contactRepository,
+        private DomainEventCollectorInterface $domainEventCollector
+    ) {}
 
     /**
      * @throws EntityNotFoundException

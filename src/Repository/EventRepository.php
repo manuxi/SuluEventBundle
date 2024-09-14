@@ -160,6 +160,33 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
         $queryBuilder->setParameter('locale', $locale);
     }
 
+    public function hasNextPage(array $filters, ?int $page, ?int $pageSize, ?int $limit, string $locale, array $options = []): bool
+    {
+        //$pageCurrent = (key_exists('page', $options)) ? (int)$options['page'] : 0;
+
+        $queryBuilder = $this->createQueryBuilder('event')
+            ->select('count(event.id)')
+            ->leftJoin('event.translations', 'translation')
+            ->where('event.enabled = :enabled')
+            ->setParameter('enabled', 1)
+            ->andWhere('translation.locale = :locale')
+            ->setParameter('locale', $locale)
+            ->orderBy('event.startDate', 'DESC');
+
+        $this->prepareFilters($queryBuilder, $filters);
+
+        $eventsCount = $queryBuilder->getQuery()->getSingleScalarResult();
+
+        $pos = (int)($pageSize * $page);
+        if (null !== $limit && $limit <= $pos) {
+            return false;
+        } elseif ($pos < (int)$eventsCount) {
+            return true;
+        }
+
+        return false;
+    }
+
     public function findByFilters($filters, $page, $pageSize, $limit, $locale, $options = []): array
     {
         $entities = $this->getActiveEvents($filters, $locale, $page, $pageSize, $limit, $options);

@@ -10,12 +10,8 @@ use Sulu\Bundle\PreviewBundle\Preview\Object\PreviewObjectProviderInterface;
 
 class EventObjectProvider implements PreviewObjectProviderInterface
 {
-    private EventRepository $eventRepository;
-
-    public function __construct(EventRepository $eventRepository)
-    {
-        $this->eventRepository = $eventRepository;
-    }
+    public function __construct(private EventRepository $eventRepository)
+    {}
 
     public function getObject($id, $locale)
     {

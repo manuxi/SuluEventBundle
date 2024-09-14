@@ -40,36 +40,19 @@ class EventController extends AbstractRestController implements ClassResourceInt
 {
     use RequestParametersTrait;
 
-    private EventModel $eventModel;
-    private EventSeoModel $eventSeoModel;
-    private EventExcerptModel $eventExcerptModel;
-    private RouteManagerInterface $routeManager;
-    private RouteRepositoryInterface $routeRepository;
-    private DoctrineListRepresentationFactory $doctrineListRepresentationFactory;
-    private SecurityCheckerInterface $securityChecker;
-    private TrashManagerInterface $trashManager;
-
     public function __construct(
-        EventModel $eventModel,
-        EventSeoModel $eventSeoModel,
-        EventExcerptModel $eventExcerptModel,
-        RouteManagerInterface $routeManager,
-        RouteRepositoryInterface $routeRepository,
-        DoctrineListRepresentationFactory $doctrineListRepresentationFactory,
-        SecurityCheckerInterface $securityChecker,
+        private EventModel $eventModel,
+        private EventSeoModel $eventSeoModel,
+        private EventExcerptModel $eventExcerptModel,
+        private RouteManagerInterface $routeManager,
+        private RouteRepositoryInterface $routeRepository,
+        private DoctrineListRepresentationFactory $doctrineListRepresentationFactory,
+        private SecurityCheckerInterface $securityChecker,
+        private TrashManagerInterface $trashManager,
         ViewHandlerInterface $viewHandler,
-        TrashManagerInterface $trashManager,
         ?TokenStorageInterface $tokenStorage = null
     ) {
         parent::__construct($viewHandler, $tokenStorage);
-        $this->eventModel                        = $eventModel;
-        $this->eventSeoModel                     = $eventSeoModel;
-        $this->eventExcerptModel                 = $eventExcerptModel;
-        $this->doctrineListRepresentationFactory = $doctrineListRepresentationFactory;
-        $this->routeManager                      = $routeManager;
-        $this->routeRepository                   = $routeRepository;
-        $this->securityChecker                   = $securityChecker;
-        $this->trashManager = $trashManager;
     }
 
     public function cgetAction(Request $request): Response

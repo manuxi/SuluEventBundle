@@ -5,86 +5,37 @@ declare(strict_types=1);
 namespace Manuxi\SuluEventBundle\Content;
 
 use Countable;
+use Doctrine\ORM\EntityManagerInterface;
 use Manuxi\SuluEventBundle\Admin\EventAdmin;
+use Manuxi\SuluEventBundle\Entity\Event;
 use Sulu\Component\Serializer\ArraySerializerInterface;
 use Sulu\Component\SmartContent\Configuration\ProviderConfigurationInterface;
+use Sulu\Component\SmartContent\DataProviderResult;
 use Sulu\Component\SmartContent\Orm\BaseDataProvider;
 use Sulu\Component\SmartContent\Orm\DataProviderRepositoryInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class EventDataProvider extends BaseDataProvider
 {
     private int $defaultLimit = 12;
 
-    private TranslatorInterface $translator;
-
     public function __construct(
         DataProviderRepositoryInterface $repository,
         ArraySerializerInterface $serializer,
-        TranslatorInterface $translator
-    )
-    {
+        private RequestStack $requestStack,
+        private EntityManagerInterface $entityManager,
+        private TranslatorInterface $translator
+    ) {
         parent::__construct($repository, $serializer);
-        $this->translator = $translator;
     }
 
-    public function getConfiguration(): ProviderConfigurationInterface
+    private function getTypes(): array
     {
-        if (null === $this->configuration) {
-            $this->configuration = self::createConfigurationBuilder()
-                ->enableLimit()
-                ->enablePagination()
-                ->enablePresentAs()
-                ->enableCategories()
-                ->enableTypes($this->getTypes())
-                ->enableTags()
-                ->enableSorting($this->getSorting())
-                ->enableView(EventAdmin::EDIT_FORM_VIEW, ['id' => 'id'])
-                ->getConfiguration();
-        }
-
-        return parent::getConfiguration();
-    }
-
-    /**
-     * @param mixed[] $data
-     * @return array
-     */
-    protected function decorateDataItems(array $data): array
-    {
-        return \array_map(
-            static function ($item) {
-                return new EventDataItem($item);
-            },
-            $data
-        );
-    }
-
-    /**
-     * Returns flag "hasNextPage".
-     * It combines the limit/query-count with the page and page-size.
-     *
-     * @noinspection PhpUnusedPrivateMethodInspection
-     * @param Countable $queryResult
-     * @param int|null $limit
-     * @param int $page
-     * @param int|null $pageSize
-     * @return bool
-     */
-    private function hasNextPage(Countable $queryResult, ?int $limit, int $page, ?int $pageSize): bool
-    {
-        $count = $queryResult->count();
-
-        if (null === $pageSize || $pageSize > $this->defaultLimit) {
-            $pageSize = $this->defaultLimit;
-        }
-
-        $offset = ($page - 1) * $pageSize;
-        if ($limit && $offset + $pageSize > $limit) {
-            return false;
-        }
-
-        return $count > ($page * $pageSize);
+        return [
+            ['type' => 'pending', 'title' => $this->translator->trans('sulu_event.filter.pending',[],'admin')],
+            ['type' => 'expired', 'title' => $this->translator->trans('sulu_event.filter.expired',[],'admin')],
+        ];
     }
 
     private function getSorting(): array
@@ -96,12 +47,48 @@ class EventDataProvider extends BaseDataProvider
         ];
     }
 
-    private function getTypes(): array
+    public function getConfiguration(): ProviderConfigurationInterface
     {
-        return [
-            ['type' => 'pending', 'title' => $this->translator->trans('sulu_event.filter.pending',[],'admin')],
-            ['type' => 'expired', 'title' => $this->translator->trans('sulu_event.filter.expired',[],'admin')],
-        ];
+        if (null === $this->configuration) {
+            $this->configuration = self::createConfigurationBuilder()
+                ->enableLimit()
+                ->enablePagination()
+                ->enablePresentAs()
+                ->enableCategories()
+                ->enableTags()
+                ->enableTypes($this->getTypes())
+                ->enableSorting($this->getSorting())
+                ->enableView(EventAdmin::EDIT_FORM_VIEW, ['id' => 'id'])
+                ->getConfiguration();
+        }
+
+        return parent::getConfiguration();
+    }
+
+    public function resolveResourceItems(
+        array $filters,
+        array $propertyParameter,
+        array $options = [],
+        $limit = null,
+        $page = 1,
+        $pageSize = null
+    ): DataProviderResult
+    {
+        $locale = $options['locale'];
+        $request = $this->requestStack->getCurrentRequest();
+        $options['page'] = $request->get('p');
+        $events = $this->entityManager->getRepository(Event::class)->findByFilters($filters, $page, $pageSize, $limit, $locale, $options);
+        return new DataProviderResult($events, $this->entityManager->getRepository(Event::class)->hasNextPage($filters, $page, $pageSize, $limit, $locale, $options));
+    }
+
+    protected function decorateDataItems(array $data): array
+    {
+        return \array_map(
+            static function ($item) {
+                return new EventDataItem($item);
+            },
+            $data
+        );
     }
 
 }

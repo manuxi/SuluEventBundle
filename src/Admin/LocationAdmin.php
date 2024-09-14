@@ -26,16 +26,10 @@ class LocationAdmin extends Admin
     public const EDIT_FORM_VIEW = 'sulu_event.location.edit_form';
     public const EDIT_FORM_DETAILS_VIEW = 'sulu_event.location.edit_form.details';
 
-    private ViewBuilderFactoryInterface $viewBuilderFactory;
-    private SecurityCheckerInterface $securityChecker;
-
     public function __construct(
-        ViewBuilderFactoryInterface $viewBuilderFactory,
-        SecurityCheckerInterface $securityChecker
-    ) {
-        $this->viewBuilderFactory = $viewBuilderFactory;
-        $this->securityChecker = $securityChecker;
-    }
+        private ViewBuilderFactoryInterface $viewBuilderFactory,
+        private SecurityCheckerInterface $securityChecker
+    ) {}
 
     /**
      * @param NavigationItemCollection $navigationItemCollection

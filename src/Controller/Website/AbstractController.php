@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Controller\Website;
 
+use Exception;
 use Sulu\Bundle\HttpCacheBundle\Cache\SuluHttpCache;
 use Sulu\Bundle\MediaBundle\Media\Manager\MediaManagerInterface;
 use Sulu\Bundle\WebsiteBundle\Controller\WebsiteController;
@@ -14,22 +15,22 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 
 abstract class AbstractController extends WebsiteController
 {
-    /**
-     * @var Request|null
-     */
-    protected $request;
-    protected $mediaManager;
+    protected ?Request $request;
 
     public function __construct(
         RequestStack $requestStack,
-        MediaManagerInterface $mediaManager
+        protected MediaManagerInterface $mediaManager
     ) {
-        $this->request      = $requestStack->getCurrentRequest();
-        $this->mediaManager = $mediaManager;
+        $this->request = $requestStack->getCurrentRequest();
     }
 
     /**
-     * @throws \Exception
+     * @param string $viewTemplate
+     * @param array $parameters
+     * @param bool $preview
+     * @param bool $partial
+     * @return Response
+     * @throws Exception
      */
     protected function prepareResponse(string $viewTemplate, array $parameters, bool $preview, bool $partial): Response
     {

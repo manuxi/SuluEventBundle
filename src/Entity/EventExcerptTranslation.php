@@ -15,13 +15,12 @@ class EventExcerptTranslation implements ExcerptTranslationInterface
 {
     use ExcerptTranslationTrait;
 
-    #[ORM\ManyToOne(targetEntity: EventExcerpt::class, inversedBy: 'translations')]
-    #[ORM\JoinColumn(nullable: false)]
-    private EventExcerpt $eventExcerpt;
-
-    public function __construct(EventExcerpt $eventExcerpt, string $locale)
-    {
-        $this->eventExcerpt = $eventExcerpt;
+    public function __construct(
+        #[ORM\ManyToOne(targetEntity: EventExcerpt::class, inversedBy: 'translations')]
+        #[ORM\JoinColumn(nullable: false)]
+        private EventExcerpt $eventExcerpt,
+        string $locale
+    ) {
         $this->setLocale($locale);
         $this->initExcerptTranslationTrait();
     }

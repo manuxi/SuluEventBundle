@@ -33,26 +33,15 @@ class EventAdmin extends Admin
     public const EDIT_FORM_VIEW_SEO = 'sulu_event.edit_form.seo';
     public const EDIT_FORM_VIEW_EXCERPT = 'sulu_event.edit_form.excerpt';
 
-
     public const EDIT_FORM_VIEW_SETTINGS = 'sulu_event.event.edit_form.settings';
     public const EDIT_FORM_VIEW_AUTOMATION = 'sulu_event.event.edit_form.automation';
 
-    private ViewBuilderFactoryInterface $viewBuilderFactory;
-    private SecurityCheckerInterface $securityChecker;
-    private WebspaceManagerInterface $webspaceManager;
-    private ?AutomationViewBuilderFactoryInterface $automationViewBuilderFactory;
-
     public function __construct(
-        ViewBuilderFactoryInterface $viewBuilderFactory,
-        SecurityCheckerInterface $securityChecker,
-        WebspaceManagerInterface $webspaceManager,
-        ?AutomationViewBuilderFactoryInterface $automationViewBuilderFactory
-    ) {
-        $this->viewBuilderFactory = $viewBuilderFactory;
-        $this->securityChecker    = $securityChecker;
-        $this->webspaceManager    = $webspaceManager;
-        $this->automationViewBuilderFactory = $automationViewBuilderFactory;
-    }
+        private ViewBuilderFactoryInterface $viewBuilderFactory,
+        private SecurityCheckerInterface $securityChecker,
+        private WebspaceManagerInterface $webspaceManager,
+        private ?AutomationViewBuilderFactoryInterface $automationViewBuilderFactory
+    ) {}
 
     public function configureNavigationItems(NavigationItemCollection $navigationItemCollection): void
     {

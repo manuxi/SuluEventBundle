@@ -22,19 +22,11 @@ class LocationModel implements LocationModelInterface
 {
     use ArrayPropertyTrait;
 
-    private LocationRepository $locationRepository;
-    private MediaRepositoryInterface $mediaRepository;
-    private DomainEventCollectorInterface $domainEventCollector;
-
     public function __construct(
-        LocationRepository $locationRepository,
-        MediaRepositoryInterface $mediaRepository,
-        DomainEventCollectorInterface $domainEventCollector
-    ) {
-        $this->locationRepository = $locationRepository;
-        $this->mediaRepository = $mediaRepository;
-        $this->domainEventCollector = $domainEventCollector;
-    }
+        private LocationRepository $locationRepository,
+        private MediaRepositoryInterface $mediaRepository,
+        private DomainEventCollectorInterface $domainEventCollector
+    ) {}
 
     /**
      * @param int $id

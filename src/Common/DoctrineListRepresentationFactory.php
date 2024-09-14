@@ -16,38 +16,16 @@ use Sulu\Component\Webspace\Manager\WebspaceManagerInterface;
 
 class DoctrineListRepresentationFactory
 {
-    private RestHelperInterface $restHelper;
-    private ListRestHelperInterface $listRestHelper;
-    private DoctrineListBuilderFactory $listBuilderFactory;
-    private FieldDescriptorFactoryInterface $fieldDescriptorFactory;
-    private WebspaceManagerInterface $webspaceManager;
-    private EventTranslationRepository $eventTranslationRepository;
-    private MediaManagerInterface $mediaManager;
-
     public function __construct(
-        RestHelperInterface $restHelper,
-        ListRestHelperInterface $listRestHelper,
-        DoctrineListBuilderFactory $listBuilderFactory,
-        FieldDescriptorFactoryInterface $fieldDescriptorFactory,
-        WebspaceManagerInterface $webspaceManager,
-        EventTranslationRepository $eventTranslationRepository,
-        MediaManagerInterface $mediaManager
-    ) {
-        $this->restHelper                   = $restHelper;
-        $this->listRestHelper               = $listRestHelper;
-        $this->listBuilderFactory           = $listBuilderFactory;
-        $this->fieldDescriptorFactory       = $fieldDescriptorFactory;
-        $this->webspaceManager              = $webspaceManager;
-        $this->eventTranslationRepository   = $eventTranslationRepository;
-        $this->mediaManager                 = $mediaManager;
-    }
+        private RestHelperInterface $restHelper,
+        private ListRestHelperInterface $listRestHelper,
+        private DoctrineListBuilderFactory $listBuilderFactory,
+        private FieldDescriptorFactoryInterface $fieldDescriptorFactory,
+        private WebspaceManagerInterface $webspaceManager,
+        private EventTranslationRepository $eventTranslationRepository,
+        private MediaManagerInterface $mediaManager
+    ) {}
 
-    /**
-     * @param string $resourceKey
-     * @param mixed[] $filters
-     * @param mixed[] $parameters
-     * @return PaginatedRepresentation
-     */
     public function createDoctrineListRepresentation(
         string $resourceKey,
         array $filters = [],
@@ -92,9 +70,6 @@ class DoctrineListRepresentationFactory
         );
     }
 
-    /**
-     * @param mixed[]
-     */
     private function addImagesToListElements(array $listeElements, ?string $locale): array
     {
         $ids = array_filter(array_column($listeElements, 'image'));

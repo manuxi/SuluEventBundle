@@ -15,13 +15,12 @@ class EventSeoTranslation implements SeoTranslationInterface
 {
     use SeoTranslationTrait;
 
-    #[ORM\ManyToOne(targetEntity: EventSeo::class, inversedBy: 'translations')]
-    #[ORM\JoinColumn(nullable: false)]
-    private EventSeo $eventSeo;
-
-    public function __construct(EventSeo $eventSeo, string $locale)
-    {
-        $this->eventSeo = $eventSeo;
+    public function __construct(
+        #[ORM\ManyToOne(targetEntity: EventSeo::class, inversedBy: 'translations')]
+        #[ORM\JoinColumn(nullable: false)]
+        private EventSeo $eventSeo,
+        string $locale
+    ) {
         $this->setLocale($locale);
     }
 

@@ -16,13 +16,9 @@ class EventSeoModel implements EventSeoModelInterface
 {
     use ArrayPropertyTrait;
 
-    private $eventSeoRepository;
-
     public function __construct(
-        EventSeoRepository $eventSeoRepository
-    ) {
-        $this->eventSeoRepository = $eventSeoRepository;
-    }
+        private EventSeoRepository $eventSeoRepository
+    ) {}
 
     public function updateEventSeo(EventSeo $eventSeo, Request $request): EventSeo
     {

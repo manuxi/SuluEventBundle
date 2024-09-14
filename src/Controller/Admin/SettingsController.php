@@ -23,18 +23,12 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
  */
 class SettingsController extends AbstractRestController implements ClassResourceInterface, SecuredControllerInterface
 {
-    private EntityManagerInterface $entityManager;
-    private DomainEventCollectorInterface $domainEventCollector;
-
     public function __construct(
-        EntityManagerInterface $entityManager,
+        private EntityManagerInterface $entityManager,
+        private DomainEventCollectorInterface $domainEventCollector,
         ViewHandlerInterface $viewHandler,
-        DomainEventCollectorInterface $domainEventCollector,
         ?TokenStorageInterface $tokenStorage = null
     ) {
-        $this->entityManager = $entityManager;
-        $this->domainEventCollector = $domainEventCollector;
-
         parent::__construct($viewHandler, $tokenStorage);
     }
 

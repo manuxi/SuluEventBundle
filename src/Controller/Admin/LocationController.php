@@ -25,21 +25,14 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
  */
 class LocationController extends AbstractRestController implements ClassResourceInterface
 {
-    private LocationModel $locationModel;
-    private DoctrineListRepresentationFactory $doctrineListRepresentationFactory;
-    private TrashManagerInterface $trashManager;
-
     public function __construct(
-        LocationModel $locationModel,
-        DoctrineListRepresentationFactory $doctrineListRepresentationFactory,
+        private LocationModel $locationModel,
+        private DoctrineListRepresentationFactory $doctrineListRepresentationFactory,
+        private TrashManagerInterface $trashManager,
         ViewHandlerInterface $viewHandler,
-        TrashManagerInterface $trashManager,
         ?TokenStorageInterface $tokenStorage = null
     ) {
         parent::__construct($viewHandler, $tokenStorage);
-        $this->locationModel = $locationModel;
-        $this->doctrineListRepresentationFactory = $doctrineListRepresentationFactory;
-        $this->trashManager = $trashManager;
     }
 
     public function cgetAction(): Response

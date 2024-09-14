@@ -8,14 +8,9 @@ use Sulu\Bundle\ActivityBundle\Domain\Event\DomainEvent;
 
 abstract class AbstractDeletedEvent extends DomainEvent
 {
-    private int $id;
-    private string $title = '';
-
-    public function __construct(int $id, string $title)
+    public function __construct(private int $id, private string $title = '')
     {
         parent::__construct();
-        $this->id = $id;
-        $this->title = $title;
     }
 
     public function getResourceKey(): string

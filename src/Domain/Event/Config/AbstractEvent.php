@@ -10,13 +10,11 @@ use Sulu\Bundle\ActivityBundle\Domain\Event\DomainEvent;
 
 abstract class AbstractEvent extends DomainEvent
 {
-    private EventSettings $event;
     private array $payload = [];
 
-    public function __construct(EventSettings $event)
+    public function __construct(private EventSettings $event)
     {
         parent::__construct();
-        $this->event = $event;
     }
 
     public function getEvent(): EventSettings

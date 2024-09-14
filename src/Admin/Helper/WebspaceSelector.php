@@ -8,13 +8,8 @@ use Sulu\Component\Webspace\Manager\WebspaceManagerInterface;
 
 class WebspaceSelector
 {
-
-    private WebspaceManagerInterface $webspaceManager;
-
-    public function __construct(WebspaceManagerInterface $webspaceManager)
-    {
-        $this->webspaceManager = $webspaceManager;
-    }
+    public function __construct(private WebspaceManagerInterface $webspaceManager)
+    {}
 
     public function getValues(): array
     {

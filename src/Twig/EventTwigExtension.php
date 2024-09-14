@@ -11,12 +11,8 @@ use Twig\TwigFunction;
 
 class EventTwigExtension extends AbstractExtension
 {
-    private EventRepository $eventRepository;
-
-    public function __construct(EventRepository $eventRepository)
-    {
-        $this->eventRepository = $eventRepository;
-    }
+    public function __construct(private EventRepository $eventRepository)
+    {}
 
     public function getFunctions()
     {

@@ -11,12 +11,8 @@ use Sulu\Component\Content\SimpleContentType;
 
 class SingleEventSelection extends SimpleContentType
 {
-    protected $entityManager;
-
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(protected EntityManagerInterface $entityManager)
     {
-        $this->entityManager = $entityManager;
-
         parent::__construct('single_event_selection');
     }
 
@@ -31,10 +27,6 @@ class SingleEventSelection extends SimpleContentType
         return $this->entityManager->getRepository(Event::class)->find($id);
     }
 
-    /**
-     * @param PropertyInterface $property
-     * @return array<string, int|null>
-     */
     public function getViewData(PropertyInterface $property): array
     {
         return [

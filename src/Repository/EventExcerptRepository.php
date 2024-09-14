@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Manuxi\SuluEventBundle\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\OptimisticLockException;
-use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
 use Manuxi\SuluEventBundle\Entity\EventExcerpt;
 

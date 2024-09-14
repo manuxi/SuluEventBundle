@@ -10,13 +10,9 @@ use Twig\TwigFunction;
 
 class EventSettingsTwigExtension extends AbstractExtension
 {
-    private EntityManagerInterface $entityManager;
-
     public function __construct(
-        EntityManagerInterface $entityManager
-    ) {
-        $this->entityManager = $entityManager;
-    }
+        private EntityManagerInterface $entityManager
+    ) {}
 
     public function getFunctions()
     {

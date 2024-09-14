@@ -12,13 +12,9 @@ use Sulu\Component\Content\SimpleContentType;
 
 class EventSelectionContentType extends SimpleContentType
 {
-    private EventRepository $eventRepository;
-
-    public function __construct(EventRepository $eventRepository)
+    public function __construct(private EventRepository $eventRepository)
     {
         parent::__construct('event_selection');
-
-        $this->eventRepository = $eventRepository;
     }
 
     /**

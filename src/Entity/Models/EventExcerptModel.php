@@ -20,24 +20,17 @@ class EventExcerptModel implements EventExcerptModelInterface
 {
     use ArrayPropertyTrait;
 
-    private $eventExcerptRepository;
-    private $categoryManager;
-    private $tagManager;
-    private $mediaRepository;
-
     public function __construct(
-        EventExcerptRepository $eventExcerptRepository,
-        CategoryManagerInterface $categoryManager,
-        TagManagerInterface $tagManager,
-        MediaRepositoryInterface $mediaRepository
-    ) {
-        $this->eventExcerptRepository = $eventExcerptRepository;
-        $this->categoryManager = $categoryManager;
-        $this->tagManager = $tagManager;
-        $this->mediaRepository = $mediaRepository;
-    }
+        private EventExcerptRepository $eventExcerptRepository,
+        private CategoryManagerInterface $categoryManager,
+        private TagManagerInterface $tagManager,
+        private MediaRepositoryInterface $mediaRepository
+    ) {}
 
     /**
+     * @param EventExcerpt $eventExcerpt
+     * @param Request $request
+     * @return EventExcerpt
      * @throws EntityNotFoundException
      */
     public function updateEventExcerpt(EventExcerpt $eventExcerpt, Request $request): EventExcerpt
@@ -47,6 +40,9 @@ class EventExcerptModel implements EventExcerptModelInterface
     }
 
     /**
+     * @param EventExcerpt $eventExcerpt
+     * @param array $data
+     * @return EventExcerpt
      * @throws EntityNotFoundException
      */
     private function mapDataToEventExcerpt(EventExcerpt $eventExcerpt, array $data): EventExcerpt

@@ -14,14 +14,10 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class LinkProvider implements LinkProviderInterface
 {
-    private EventRepository $eventRepository;
-    private TranslatorInterface $translator;
-
-    public function __construct(EventRepository $eventRepository, TranslatorInterface $translator)
-    {
-        $this->eventRepository = $eventRepository;
-        $this->translator = $translator;
-    }
+    public function __construct(
+        private EventRepository $eventRepository,
+        private TranslatorInterface $translator
+    ) {}
 
     public function getConfiguration(): LinkConfiguration
     {

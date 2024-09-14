@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Controller\Website;
 
+use Exception;
 use JMS\Serializer\SerializerBuilder;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
@@ -17,28 +18,16 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class EventController extends AbstractController
 {
-    private EventRepository $eventRepository;
-    private WebspaceManagerInterface $webspaceManager;
-    private TranslatorInterface $translator;
-    private TemplateAttributeResolverInterface $templateAttributeResolver;
-    private RouteRepositoryInterface $routeRepository;
-
     public function __construct(
         RequestStack $requestStack,
         MediaManagerInterface $mediaManager,
-        EventRepository $eventRepository,
-        WebspaceManagerInterface $webspaceManager,
-        TranslatorInterface $translator,
-        TemplateAttributeResolverInterface $templateAttributeResolver,
-        RouteRepositoryInterface $routeRepository
+        private EventRepository $eventRepository,
+        private WebspaceManagerInterface $webspaceManager,
+        private TranslatorInterface $translator,
+        private TemplateAttributeResolverInterface $templateAttributeResolver,
+        private RouteRepositoryInterface $routeRepository
     ) {
         parent::__construct($requestStack, $mediaManager);
-
-        $this->eventRepository           = $eventRepository;
-        $this->webspaceManager           = $webspaceManager;
-        $this->translator                = $translator;
-        $this->templateAttributeResolver = $templateAttributeResolver;
-        $this->routeRepository           = $routeRepository;
     }
 
     /**
@@ -47,7 +36,7 @@ class EventController extends AbstractController
      * @param bool $preview
      * @param bool $partial
      * @return Response
-     * @throws \Exception
+     * @throws Exception
      */
     public function indexAction(Event $event, string $view = '@SuluEvent/event', bool $preview = false, bool $partial = false): Response
     {

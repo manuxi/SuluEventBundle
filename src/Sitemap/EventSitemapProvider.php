@@ -12,17 +12,12 @@ use Sulu\Component\Webspace\Manager\WebspaceManagerInterface;
 
 class EventSitemapProvider implements SitemapProviderInterface
 {
-    private $eventRepository;
-    private $webspaceManager;
     private $locales = [];
 
     public function __construct(
-        EventRepository $eventRepository,
-        WebspaceManagerInterface $webspaceManager
-    ) {
-        $this->eventRepository = $eventRepository;
-        $this->webspaceManager = $webspaceManager;
-    }
+        private EventRepository $eventRepository,
+        private WebspaceManagerInterface $webspaceManager
+    ) {}
 
     public function build($page, $scheme, $host)
     {

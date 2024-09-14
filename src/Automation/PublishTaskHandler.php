@@ -15,20 +15,11 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class PublishTaskHandler implements AutomationTaskHandlerInterface
 {
-    private EntityManagerInterface $entityManager;
-    private TranslatorInterface $translator;
-    private DomainEventCollectorInterface $domainEventCollector;
-
     public function __construct(
-        EntityManagerInterface $entityManager,
-        TranslatorInterface $translator,
-        DomainEventCollectorInterface $domainEventCollector
-    )
-    {
-        $this->entityManager = $entityManager;
-        $this->translator = $translator;
-        $this->domainEventCollector = $domainEventCollector;
-    }
+        private EntityManagerInterface $entityManager,
+        private TranslatorInterface $translator,
+        private DomainEventCollectorInterface $domainEventCollector
+    ) {}
 
     public function handle($workload): void
     {

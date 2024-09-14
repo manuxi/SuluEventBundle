@@ -15,16 +15,11 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class UnpublishTaskHandler implements AutomationTaskHandlerInterface
 {
-    private EntityManagerInterface $entityManager;
-    private TranslatorInterface $translator;
-    private DomainEventCollectorInterface $domainEventCollector;
-
-    public function __construct(EntityManagerInterface $entityManager, TranslatorInterface $translator, DomainEventCollectorInterface $domainEventCollector)
-    {
-        $this->entityManager = $entityManager;
-        $this->translator = $translator;
-        $this->domainEventCollector = $domainEventCollector;
-    }
+    public function __construct(
+        private EntityManagerInterface $entityManager,
+        private TranslatorInterface $translator,
+        private DomainEventCollectorInterface $domainEventCollector
+    ) {}
 
     public function handle($workload): void
     {

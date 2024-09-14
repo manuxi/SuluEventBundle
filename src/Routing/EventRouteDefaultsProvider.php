@@ -11,12 +11,8 @@ use Sulu\Bundle\RouteBundle\Routing\Defaults\RouteDefaultsProviderInterface;
 
 class EventRouteDefaultsProvider implements RouteDefaultsProviderInterface
 {
-
-    private EventRepository $eventRepository;
-
-    public function __construct(EventRepository $eventRepository) {
-        $this->eventRepository = $eventRepository;
-    }
+    public function __construct(private EventRepository $eventRepository)
+    {}
 
     public function getByEntity($entityClass, $id, $locale, $object = null): array
     {

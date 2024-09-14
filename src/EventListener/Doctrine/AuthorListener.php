@@ -17,14 +17,10 @@ class AuthorListener
 {
     const AUTHOR_PROPERTY_NAME = 'author';
 
-    private string $userClass;
-    private TokenStorageInterface $tokenStorage;
-
-    public function __construct(string $userClass, TokenStorageInterface $tokenStorage = null)
-    {
-        $this->userClass = $userClass;
-        $this->tokenStorage = $tokenStorage;
-    }
+    public function __construct(
+        private string $userClass,
+        private ?TokenStorageInterface $tokenStorage = null
+    ) {}
 
     public function loadClassMetadata(LoadClassMetadataEventArgs $event): void
     {

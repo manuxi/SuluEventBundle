@@ -101,6 +101,8 @@
         <service id="sulu_event.event_data_provider" class="Manuxi\SuluEventBundle\Content\EventDataProvider">
             <argument type="service" id="sulu_event.repository.event"/>
             <argument type="service" id="sulu_core.array_serializer"/>
+            <argument type="service" id="request_stack"/>
+            <argument type="service" id="doctrine.orm.entity_manager" />
             <argument type="service" id="translator.default"/>
 
             <tag name="sulu.smart_content.data_provider" alias="events"/>
