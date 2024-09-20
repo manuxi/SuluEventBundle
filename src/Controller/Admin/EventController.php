@@ -15,10 +15,6 @@ use FOS\RestBundle\Controller\Annotations as Rest;
 use FOS\RestBundle\Controller\Annotations\RouteResource;
 use FOS\RestBundle\Routing\ClassResourceInterface;
 use FOS\RestBundle\View\ViewHandlerInterface;
-//use HandcraftedInTheAlps\RestRoutingBundle\Controller\Annotations\RouteResource;
-//use HandcraftedInTheAlps\RestRoutingBundle\Routing\ClassResourceInterface;
-use Sulu\Bundle\RouteBundle\Entity\RouteRepositoryInterface;
-use Sulu\Bundle\RouteBundle\Manager\RouteManagerInterface;
 use Sulu\Bundle\TrashBundle\Application\TrashManager\TrashManagerInterface;
 use Sulu\Component\Rest\AbstractRestController;
 use Sulu\Component\Rest\Exception\EntityNotFoundException;
@@ -44,8 +40,6 @@ class EventController extends AbstractRestController implements ClassResourceInt
         private EventModel $eventModel,
         private EventSeoModel $eventSeoModel,
         private EventExcerptModel $eventExcerptModel,
-        private RouteManagerInterface $routeManager,
-        private RouteRepositoryInterface $routeRepository,
         private DoctrineListRepresentationFactory $doctrineListRepresentationFactory,
         private SecurityCheckerInterface $securityChecker,
         private TrashManagerInterface $trashManager,
@@ -85,8 +79,6 @@ class EventController extends AbstractRestController implements ClassResourceInt
     public function postAction(Request $request): Response
     {
         $event = $this->eventModel->createEvent($request);
-        $this->updateRoutesForEntity($event);
-
         return $this->handleView($this->view($event, 201));
     }
 
@@ -143,7 +135,6 @@ class EventController extends AbstractRestController implements ClassResourceInt
     public function putAction(int $id, Request $request): Response
     {
         $event = $this->eventModel->updateEvent($id, $request);
-        $this->updateRoutesForEntity($event);
 
         $this->eventSeoModel->updateEventSeo($event->getEventSeo(), $request);
         $this->eventExcerptModel->updateEventExcerpt($event->getEventExcerpt(), $request);
@@ -160,13 +151,10 @@ class EventController extends AbstractRestController implements ClassResourceInt
     public function deleteAction(int $id, Request $request): Response
     {
         $entity = $this->eventModel->getEvent($id, $request);
-        $title = $entity->getTitle() ?? 'n.a.';
 
         $this->trashManager->store(Event::RESOURCE_KEY, $entity);
 
-        $this->removeRoutesForEntity($entity);
-
-        $this->eventModel->deleteEvent($id, $title);
+        $this->eventModel->deleteEvent($entity);
         return $this->handleView($this->view(null, 204));
     }
 
@@ -175,26 +163,4 @@ class EventController extends AbstractRestController implements ClassResourceInt
         return Event::SECURITY_CONTEXT;
     }
 
-    protected function updateRoutesForEntity(Event $entity): void
-    {
-        $this->routeManager->createOrUpdateByAttributes(
-            Event::class,
-            (string) $entity->getId(),
-            $entity->getLocale(),
-            $entity->getRoutePath()
-        );
-    }
-
-    protected function removeRoutesForEntity(Event $entity): void
-    {
-        $routes = $this->routeRepository->findAllByEntity(
-            Event::class,
-            (string) $entity->getId(),
-            $entity->getLocale()
-        );
-
-        foreach ($routes as $route) {
-            $this->routeRepository->remove($route);
-        }
-    }
 }

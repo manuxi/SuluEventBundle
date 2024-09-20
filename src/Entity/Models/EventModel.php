@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Entity\Models;
 
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Manuxi\SuluEventBundle\Domain\Event\Event\CopiedLanguageEvent;
@@ -20,6 +21,8 @@ use Manuxi\SuluEventBundle\Repository\LocationRepository;
 use Sulu\Bundle\ActivityBundle\Application\Collector\DomainEventCollectorInterface;
 use Sulu\Bundle\ContactBundle\Entity\ContactRepository;
 use Sulu\Bundle\MediaBundle\Entity\MediaRepositoryInterface;
+use Sulu\Bundle\RouteBundle\Entity\RouteRepositoryInterface;
+use Sulu\Bundle\RouteBundle\Manager\RouteManagerInterface;
 use Sulu\Component\Rest\Exception\EntityNotFoundException;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -32,6 +35,9 @@ class EventModel implements EventModelInterface
         private LocationRepository $locationRepository,
         private MediaRepositoryInterface $mediaRepository,
         private ContactRepository $contactRepository,
+        private RouteManagerInterface $routeManager,
+        private RouteRepositoryInterface $routeRepository,
+        private EntityManagerInterface $entityManager,
         private DomainEventCollectorInterface $domainEventCollector
     ) {}
 
@@ -50,12 +56,13 @@ class EventModel implements EventModelInterface
      * @param int $id
      * @param string $title
      */
-    public function deleteEvent(int $id, string $title): void
+    public function deleteEvent(Event $entity): void
     {
         $this->domainEventCollector->collect(
-            new RemovedEvent($id, $title)
+            new RemovedEvent($entity->getId(), $entity->getTitle() ?? '')
         );
-        $this->eventRepository->remove($id);
+        $this->removeRoutesForEntity($entity);
+        $this->eventRepository->remove($entity->getId());
     }
 
     /**
@@ -70,7 +77,15 @@ class EventModel implements EventModelInterface
             new CreatedEvent($entity, $request->request->all())
         );
 
-        return $this->eventRepository->save($entity);
+        //need the id for updateRoutesForEntity(), so we have to persist and flush here
+        $entity = $this->eventRepository->save($entity);
+
+        $this->updateRoutesForEntity($entity);
+
+        //explicit flush to save routes persisted by updateRoutesForEntity()
+        $this->entityManager->flush();
+
+        return $entity;
     }
 
     /**
@@ -86,6 +101,7 @@ class EventModel implements EventModelInterface
         $entity = $this->findEventByIdAndLocale($id, $request);
         $entity = $this->mapDataToEvent($entity, $request->request->all());
         $entity = $this->mapSettingsToEvent($entity, $request->request->all());
+        $this->updateRoutesForEntity($entity);
 
         $this->domainEventCollector->collect(
             new ModifiedEvent($entity, $request->request->all())
@@ -290,5 +306,28 @@ class EventModel implements EventModelInterface
             $entity->setAuthored(null);
         }
         return $entity;
+    }
+
+    private function updateRoutesForEntity(Event $entity): void
+    {
+        $this->routeManager->createOrUpdateByAttributes(
+            Event::class,
+            (string) $entity->getId(),
+            $entity->getLocale(),
+            $entity->getRoutePath()
+        );
+    }
+
+    private function removeRoutesForEntity(Event $entity): void
+    {
+        $routes = $this->routeRepository->findAllByEntity(
+            Event::class,
+            (string) $entity->getId(),
+            $entity->getLocale()
+        );
+
+        foreach ($routes as $route) {
+            $this->routeRepository->remove($route);
+        }
     }
 }
