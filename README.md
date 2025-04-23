@@ -28,6 +28,7 @@ The events and their meta information is translatable.
 Please feel comfortable submitting feature requests. 
 This bundle is still in development. Use at own risk 🤞🏻
 
+![image](https://github.com/user-attachments/assets/72b11ff1-dd25-458c-952c-c27ff22c7abf)
 
 ## 👩🏻‍🏭 Installation
 Install the package with:
