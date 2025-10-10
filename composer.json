@@ -1,5 +1,6 @@
 {
     "name": "manuxi/sulu-event-bundle",
+    "version": "1.0.0",
     "description": "Say hello to Sulu events!",
     "type": "symfony-bundle",
     "keywords": [
