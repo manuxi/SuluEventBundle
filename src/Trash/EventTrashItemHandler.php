@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Trash;
 
-use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Manuxi\SuluEventBundle\Admin\EventAdmin;
 use Manuxi\SuluEventBundle\Domain\Event\Event\RestoredEvent;
@@ -28,8 +27,9 @@ class EventTrashItemHandler implements StoreTrashItemHandlerInterface, RestoreTr
         private TrashItemRepositoryInterface $trashItemRepository,
         private EntityManagerInterface $entityManager,
         private DoctrineRestoreHelperInterface $doctrineRestoreHelper,
-        private DomainEventCollectorInterface $domainEventCollector
-    ) {}
+        private DomainEventCollectorInterface $domainEventCollector,
+    ) {
+    }
 
     public static function getResourceKey(): string
     {
@@ -44,34 +44,36 @@ class EventTrashItemHandler implements StoreTrashItemHandlerInterface, RestoreTr
         $pdf = $resource->getPdf();
 
         $data = [
-            "locale" => $resource->getLocale(),
-            "title" => $resource->getTitle(),
-            "subtitle" => $resource->getSubtitle(),
-            "summary" => $resource->getSummary(),
-            "text" => $resource->getText(),
-            "footer" => $resource->getFooter(),
-            "startdate" => $resource->getStartDate(),
-            "enddate" => $resource->getEndDate(),
-            "slug" => $resource->getRoutePath(),
-            "ext" => $resource->getExt(),
-            "enabled" => $resource->isEnabled(),
-            "location" => $resource->getLocation()->getId(),
+            'locale' => $resource->getLocale(),
+            'title' => $resource->getTitle(),
+            'subtitle' => $resource->getSubtitle(),
+            'summary' => $resource->getSummary(),
+            'text' => $resource->getText(),
+            'footer' => $resource->getFooter(),
+            'startdate' => $resource->getStartDate(),
+            'enddate' => $resource->getEndDate(),
+            'slug' => $resource->getRoutePath(),
+            'published' => $resource->isPublished(),
+            'publishedAt' => $resource->getPublishedAt(),
+            'ext' => $resource->getExt(),
+            'enabled' => $resource->isEnabled(),
+            'location' => $resource->getLocation()->getId(),
 
-            "imageId" => $image ? $image->getId() : null,
-            "pdfIdId" => $pdf ? $pdf->getId() : null,
-            "link" => $resource->getLink(),
-            "email" => $resource->getEmail(),
-            "phone" => $resource->getPhoneNumber(),
-            "images" => $resource->getImages(),
-            "showAuthor" => $resource->getShowAuthor(),
-            "showDate" => $resource->getShowDate()
+            'imageId' => $image ? $image->getId() : null,
+            'pdfIdId' => $pdf ? $pdf->getId() : null,
+            'link' => $resource->getLink(),
+            'email' => $resource->getEmail(),
+            'phone' => $resource->getPhoneNumber(),
+            'images' => $resource->getImages(),
+            'showAuthor' => $resource->getShowAuthor(),
+            'showDate' => $resource->getShowDate(),
         ];
 
         $restoreType = isset($options['locale']) ? 'translation' : null;
 
         return $this->trashItemRepository->create(
             Event::RESOURCE_KEY,
-            (string)$resource->getId(),
+            (string) $resource->getId(),
             $resource->getTitle(),
             $data,
             $restoreType,
@@ -85,7 +87,7 @@ class EventTrashItemHandler implements StoreTrashItemHandlerInterface, RestoreTr
     public function restore(TrashItemInterface $trashItem, array $restoreFormData = []): object
     {
         $data = $trashItem->getRestoreData();
-        $eventId = (int)$trashItem->getResourceId();
+        $eventId = (int) $trashItem->getResourceId();
         $event = new Event();
         $event->setLocale($data['locale']);
 
@@ -98,6 +100,8 @@ class EventTrashItemHandler implements StoreTrashItemHandlerInterface, RestoreTr
         $event->setFooter($data['footer']);
         $event->setEnabled($data['enabled']);
         $event->setRoutePath($data['slug']);
+        $event->setPublished($data['published']);
+        $event->setPublishedAt($data['publishedAt'] ? new \DateTime($data['publishedAt']['date']) : null);
         $event->setExt($data['ext']);
         $event->setLocation($this->entityManager->find(Location::class, $data['location']));
         $event->setEmail($data['email']);
@@ -106,20 +110,20 @@ class EventTrashItemHandler implements StoreTrashItemHandlerInterface, RestoreTr
         $event->setShowAuthor($data['showAuthor']);
         $event->setShowDate($data['showDate']);
 
-        $event->setAuthored($data['authored'] ? new DateTime($data['authored']['date']) : new DateTime());
+        $event->setAuthored($data['authored'] ? new \DateTime($data['authored']['date']) : new \DateTime());
 
         if ($data['author']) {
             $event->setAuthor($this->entityManager->find(ContactInterface::class, $data['author']));
         }
 
-        if($data['link']) {
+        if ($data['link']) {
             $event->setLink($data['link']);
         }
 
-        if($data['imageId']){
+        if ($data['imageId']) {
             $event->setImage($this->entityManager->find(MediaInterface::class, $data['imageId']));
         }
-        if($data['pdfId']){
+        if ($data['pdfId']) {
             $event->setPdf($this->entityManager->find(MediaInterface::class, $data['pdfId']));
         }
 
@@ -130,6 +134,7 @@ class EventTrashItemHandler implements StoreTrashItemHandlerInterface, RestoreTr
         $this->doctrineRestoreHelper->persistAndFlushWithId($event, $eventId);
         $this->createRoute($this->entityManager, $eventId, $data['locale'], $event->getRoutePath(), Event::class);
         $this->entityManager->flush();
+
         return $event;
     }
 
@@ -141,8 +146,8 @@ class EventTrashItemHandler implements StoreTrashItemHandlerInterface, RestoreTr
         $route->setEntityClass($class);
         $route->setEntityId($id);
         $route->setHistory(0);
-        $route->setCreated(new DateTime());
-        $route->setChanged(new DateTime());
+        $route->setCreated(new \DateTime());
+        $route->setChanged(new \DateTime());
         $manager->persist($route);
     }
 

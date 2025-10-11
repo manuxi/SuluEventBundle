@@ -7,19 +7,23 @@ namespace Manuxi\SuluEventBundle\Automation;
 use Doctrine\ORM\EntityManagerInterface;
 use Manuxi\SuluEventBundle\Domain\Event\Event\PublishedEvent;
 use Manuxi\SuluEventBundle\Entity\Event;
+use Manuxi\SuluEventBundle\Search\Event\EventPublishedEvent as EventPublishedEventForSearch;
 use Sulu\Bundle\ActivityBundle\Application\Collector\DomainEventCollectorInterface;
 use Sulu\Bundle\AutomationBundle\TaskHandler\AutomationTaskHandlerInterface;
 use Sulu\Bundle\AutomationBundle\TaskHandler\TaskHandlerConfiguration;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class PublishTaskHandler implements AutomationTaskHandlerInterface
 {
     public function __construct(
-        private EntityManagerInterface $entityManager,
-        private TranslatorInterface $translator,
-        private DomainEventCollectorInterface $domainEventCollector
-    ) {}
+        private readonly EntityManagerInterface $entityManager,
+        private readonly TranslatorInterface $translator,
+        private readonly DomainEventCollectorInterface $domainEventCollector,
+        private readonly EventDispatcherInterface $dispatcher,
+    ) {
+    }
 
     public function handle($workload): void
     {
@@ -28,8 +32,8 @@ class PublishTaskHandler implements AutomationTaskHandlerInterface
         }
         $class = $workload['class'];
         $repository = $this->entityManager->getRepository($class);
-        $entity = $repository->findById((int)$workload['id'], $workload['locale']);
-        if ($entity === null) {
+        $entity = $repository->findById((int) $workload['id'], $workload['locale']);
+        if (null === $entity) {
             return;
         }
 
@@ -41,6 +45,7 @@ class PublishTaskHandler implements AutomationTaskHandlerInterface
 
         $repository->save($entity);
 
+        $this->dispatcher->dispatch(new EventPublishedEventForSearch($entity));
     }
 
     public function configureOptionsResolver(OptionsResolver $optionsResolver): OptionsResolver
@@ -52,11 +57,11 @@ class PublishTaskHandler implements AutomationTaskHandlerInterface
 
     public function supports(string $entityClass): bool
     {
-        return $entityClass === Event::class || \is_subclass_of($entityClass, Event::class);
+        return Event::class === $entityClass || \is_subclass_of($entityClass, Event::class);
     }
 
     public function getConfiguration(): TaskHandlerConfiguration
     {
-        return TaskHandlerConfiguration::create($this->translator->trans("sulu_event.publish", [], 'admin'));
+        return TaskHandlerConfiguration::create($this->translator->trans('sulu_event.publish', [], 'admin'));
     }
 }

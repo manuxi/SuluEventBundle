@@ -14,6 +14,7 @@ use Manuxi\SuluEventBundle\Entity\Traits\AuditableTranslatableTrait;
 use Manuxi\SuluEventBundle\Entity\Traits\ImageTranslatableTrait;
 use Manuxi\SuluEventBundle\Entity\Traits\LinkTranslatableTrait;
 use Manuxi\SuluEventBundle\Entity\Traits\PdfTranslatableTrait;
+use Manuxi\SuluEventBundle\Entity\Traits\PublishedTranslatableTrait;
 use Manuxi\SuluEventBundle\Entity\Traits\RouteTranslatableTrait;
 use Manuxi\SuluEventBundle\Entity\Traits\ShowAuthorTranslatableTrait;
 use Manuxi\SuluEventBundle\Entity\Traits\ShowDateTranslatableTrait;
@@ -23,18 +24,18 @@ use Manuxi\SuluEventBundle\Repository\EventRepository;
 #[ORM\Table(name: 'app_event')]
 class Event implements AuditableTranslatableInterface
 {
+    use AuditableTranslatableTrait;
+    use PublishedTranslatableTrait;
+    use ImageTranslatableTrait;
+    use LinkTranslatableTrait;
+    use PdfTranslatableTrait;
+    use RouteTranslatableTrait;
+    use ShowAuthorTranslatableTrait;
+    use ShowDateTranslatableTrait;
     public const RESOURCE_KEY = 'events';
     public const FORM_KEY = 'event_details';
     public const LIST_KEY = 'events';
     public const SECURITY_CONTEXT = 'sulu.events.events';
-
-    use AuditableTranslatableTrait;
-    use RouteTranslatableTrait;
-    use LinkTranslatableTrait;
-    use PdfTranslatableTrait;
-    use ImageTranslatableTrait;
-    use ShowAuthorTranslatableTrait;
-    use ShowDateTranslatableTrait;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -48,9 +49,6 @@ class Event implements AuditableTranslatableInterface
     #[Serializer\Exclude]
     #[ORM\OneToOne(mappedBy: 'event', targetEntity: EventExcerpt::class, cascade: ['persist', 'remove'])]
     private ?EventExcerpt $eventExcerpt = null;
-
-    #[ORM\Column(type: Types::BOOLEAN, nullable: false)]
-    private bool $enabled;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $startDate = null;
@@ -81,7 +79,6 @@ class Event implements AuditableTranslatableInterface
 
     public function __construct()
     {
-        $this->enabled      = false;
         $this->translations = new ArrayCollection();
         $this->initExt();
     }
@@ -100,17 +97,7 @@ class Event implements AuditableTranslatableInterface
     {
         $this->locale = $locale;
         $this->propagateLocale($locale);
-        return $this;
-    }
 
-    public function isEnabled(): bool
-    {
-        return $this->enabled;
-    }
-
-    public function setEnabled(bool $enabled): self
-    {
-        $this->enabled = $enabled;
         return $this;
     }
 
@@ -122,6 +109,7 @@ class Event implements AuditableTranslatableInterface
     public function setStartDate(?\DateTimeImmutable $startDate): self
     {
         $this->startDate = $startDate;
+
         return $this;
     }
 
@@ -133,6 +121,7 @@ class Event implements AuditableTranslatableInterface
     public function setEndDate(?\DateTimeImmutable $endDate): self
     {
         $this->endDate = $endDate;
+
         return $this;
     }
 
@@ -144,6 +133,7 @@ class Event implements AuditableTranslatableInterface
     public function setLocation(?Location $location): self
     {
         $this->location = $location;
+
         return $this;
     }
 
@@ -157,7 +147,7 @@ class Event implements AuditableTranslatableInterface
         return $this->location->getId();
     }
 
-    #[Serializer\VirtualProperty(name: "title")]
+    #[Serializer\VirtualProperty(name: 'title')]
     public function getTitle(): ?string
     {
         $translation = $this->getTranslation($this->locale);
@@ -176,10 +166,11 @@ class Event implements AuditableTranslatableInterface
         }
 
         $translation->setTitle($title);
+
         return $this;
     }
 
-    #[Serializer\VirtualProperty(name: "subtitle")]
+    #[Serializer\VirtualProperty(name: 'subtitle')]
     public function getSubtitle(): ?string
     {
         $translation = $this->getTranslation($this->locale);
@@ -198,10 +189,11 @@ class Event implements AuditableTranslatableInterface
         }
 
         $translation->setSubtitle($subtitle);
+
         return $this;
     }
 
-    #[Serializer\VirtualProperty(name: "summary")]
+    #[Serializer\VirtualProperty(name: 'summary')]
     public function getSummary(): ?string
     {
         $translation = $this->getTranslation($this->locale);
@@ -220,10 +212,11 @@ class Event implements AuditableTranslatableInterface
         }
 
         $translation->setSummary($summary);
+
         return $this;
     }
 
-    #[Serializer\VirtualProperty(name: "text")]
+    #[Serializer\VirtualProperty(name: 'text')]
     public function getText(): ?string
     {
         $translation = $this->getTranslation($this->locale);
@@ -242,10 +235,11 @@ class Event implements AuditableTranslatableInterface
         }
 
         $translation->setText($text);
+
         return $this;
     }
 
-    #[Serializer\VirtualProperty(name: "footer")]
+    #[Serializer\VirtualProperty(name: 'footer')]
     public function getFooter(): ?string
     {
         $translation = $this->getTranslation($this->locale);
@@ -264,6 +258,7 @@ class Event implements AuditableTranslatableInterface
         }
 
         $translation->setFooter($footer);
+
         return $this;
     }
 
@@ -280,6 +275,7 @@ class Event implements AuditableTranslatableInterface
     public function setEventSeo(?EventSeo $eventSeo): self
     {
         $this->eventSeo = $eventSeo;
+
         return $this;
     }
 
@@ -296,10 +292,11 @@ class Event implements AuditableTranslatableInterface
     public function setEventExcerpt(?EventExcerpt $eventExcerpt): self
     {
         $this->eventExcerpt = $eventExcerpt;
+
         return $this;
     }
 
-    #[Serializer\VirtualProperty(name: "ext")]
+    #[Serializer\VirtualProperty(name: 'ext')]
     public function getExt(): array
     {
         return $this->ext;
@@ -308,12 +305,14 @@ class Event implements AuditableTranslatableInterface
     public function setExt(array $ext): self
     {
         $this->ext = $ext;
+
         return $this;
     }
 
     public function addExt(string $key, $value): self
     {
         $this->ext[$key] = $value;
+
         return $this;
     }
 
@@ -343,6 +342,7 @@ class Event implements AuditableTranslatableInterface
     {
         $translation = new EventTranslation($this, $locale);
         $this->translations->set($locale, $translation);
+
         return $translation;
     }
 
@@ -353,6 +353,7 @@ class Event implements AuditableTranslatableInterface
         $eventExcerpt = $this->getEventExcerpt();
         $eventExcerpt->setLocale($locale);
         $this->initExt();
+
         return $this;
     }
 
@@ -368,7 +369,7 @@ class Event implements AuditableTranslatableInterface
         return $this;
     }
 
-    #[Serializer\VirtualProperty(name: "availableLocales")]
+    #[Serializer\VirtualProperty(name: 'availableLocales')]
     public function getAvailableLocales(): array
     {
         return \array_values($this->translations->getKeys());
@@ -377,17 +378,18 @@ class Event implements AuditableTranslatableInterface
     public function copyToLocale(string $locale): self
     {
         if ($currentTranslation = $this->getTranslation($this->getLocale())) {
-           $newTranslation = clone $currentTranslation;
-           $newTranslation->setLocale($locale);
-           $this->translations->set($locale, $newTranslation);
+            $newTranslation = clone $currentTranslation;
+            $newTranslation->setLocale($locale);
+            $this->translations->set($locale, $newTranslation);
 
-           //copy ext also...
-           foreach($this->ext as $translatable) {
-               $translatable->copyToLocale($locale);
-           }
+            // copy ext also...
+            foreach ($this->ext as $translatable) {
+                $translatable->copyToLocale($locale);
+            }
 
-           $this->setLocale($locale);
+            $this->setLocale($locale);
         }
+
         return $this;
     }
 
@@ -420,5 +422,4 @@ class Event implements AuditableTranslatableInterface
     {
         $this->images = $images;
     }
-
 }

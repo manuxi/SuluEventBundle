@@ -45,9 +45,11 @@
             <entity-name>%sulu.model.event.class%</entity-name>
         </property>
 
-        <property name="enabled" visibility="yes" translation="sulu_event.enabled" type="bool">
-            <field-name>enabled</field-name>
-            <entity-name>%sulu.model.event.class%</entity-name>
+        <property name="title" visibility="always" searchability="yes" translation="sulu_admin.title">
+            <field-name>title</field-name>
+            <entity-name>%sulu.model.event_translation.class%</entity-name>
+
+            <joins ref="translation"/>
         </property>
 
         <property name="startDate" visibility="always" translation="sulu_event.start_date" type="datetime">
@@ -58,13 +60,6 @@
         <property name="endDate" visibility="always" translation="sulu_event.end_date" type="datetime">
             <field-name>endDate</field-name>
             <entity-name>%sulu.model.event.class%</entity-name>
-        </property>
-
-        <property name="title" visibility="always" searchability="yes" translation="sulu_admin.title">
-            <field-name>title</field-name>
-            <entity-name>%sulu.model.event_translation.class%</entity-name>
-
-            <joins ref="translation"/>
         </property>
 
         <property name="subtitle" visibility="always" searchability="yes" translation="sulu_event.subtitle">
@@ -113,6 +108,18 @@
             <entity-name>%sulu.model.location.class%</entity-name>
 
             <joins ref="location"/>
+        </property>
+
+        <property name="publishedState" visibility="yes" translation="sulu_event.published" type="bool">
+            <field-name>published</field-name>
+            <entity-name>%sulu.model.event_translation.class%</entity-name>
+
+        </property>
+
+        <property name="published" visibility="yes" translation="sulu_event.published_date" type="datetime">
+            <field-name>publishedAt</field-name>
+            <entity-name>%sulu.model.event_translation.class%</entity-name>
+
         </property>
 
         <property name="created" translation="sulu_admin.created" type="datetime" visibility="yes">

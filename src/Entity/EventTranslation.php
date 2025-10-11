@@ -11,6 +11,7 @@ use Manuxi\SuluEventBundle\Entity\Traits\AuditableTrait;
 use Manuxi\SuluEventBundle\Entity\Traits\ImageTrait;
 use Manuxi\SuluEventBundle\Entity\Traits\LinkTrait;
 use Manuxi\SuluEventBundle\Entity\Traits\PdfTrait;
+use Manuxi\SuluEventBundle\Entity\Traits\PublishedTrait;
 use Manuxi\SuluEventBundle\Entity\Traits\RouteTrait;
 use Manuxi\SuluEventBundle\Entity\Traits\ShowAuthorTrait;
 use Manuxi\SuluEventBundle\Entity\Traits\ShowDateTrait;
@@ -22,9 +23,10 @@ class EventTranslation implements AuditableInterface
 {
     use AuditableTrait;
     use RouteTrait;
+    use ImageTrait;
     use LinkTrait;
     use PdfTrait;
-    use ImageTrait;
+    use PublishedTrait;
     use ShowAuthorTrait;
     use ShowDateTrait;
 
@@ -53,8 +55,9 @@ class EventTranslation implements AuditableInterface
         #[ORM\JoinColumn(nullable: false)]
         private Event $event,
         #[ORM\Column(type: Types::STRING, length: 5)]
-        private string $locale
-    ) {}
+        private string $locale,
+    ) {
+    }
 
     public function getId(): ?int
     {
@@ -74,6 +77,7 @@ class EventTranslation implements AuditableInterface
     public function setLocale(string $locale): self
     {
         $this->locale = $locale;
+
         return $this;
     }
 
@@ -85,6 +89,7 @@ class EventTranslation implements AuditableInterface
     public function setTitle(?string $title): self
     {
         $this->title = $title;
+
         return $this;
     }
 
@@ -96,6 +101,7 @@ class EventTranslation implements AuditableInterface
     public function setSubtitle(?string $subtitle): self
     {
         $this->subtitle = $subtitle;
+
         return $this;
     }
 
@@ -107,6 +113,7 @@ class EventTranslation implements AuditableInterface
     public function setSummary(?string $summary): self
     {
         $this->summary = $summary;
+
         return $this;
     }
 
@@ -118,6 +125,7 @@ class EventTranslation implements AuditableInterface
     public function setText(?string $text): self
     {
         $this->text = $text;
+
         return $this;
     }
 
@@ -129,7 +137,7 @@ class EventTranslation implements AuditableInterface
     public function setFooter(?string $footer): self
     {
         $this->footer = $footer;
+
         return $this;
     }
-
 }

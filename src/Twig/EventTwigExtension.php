@@ -12,13 +12,14 @@ use Twig\TwigFunction;
 class EventTwigExtension extends AbstractExtension
 {
     public function __construct(private EventRepository $eventRepository)
-    {}
+    {
+    }
 
-    public function getFunctions()
+    public function getFunctions(): array
     {
         return [
             new TwigFunction('sulu_resolve_event', [$this, 'resolveEvent']),
-            new TwigFunction('sulu_get_events', [$this, 'getEvents'])
+            new TwigFunction('sulu_get_events', [$this, 'getEvents']),
         ];
     }
 

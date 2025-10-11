@@ -4,20 +4,25 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Controller\Admin;
 
-use Manuxi\SuluEventBundle\Common\DoctrineListRepresentationFactory;
-use Manuxi\SuluEventBundle\Entity\Event;
-use Manuxi\SuluEventBundle\Entity\Models\EventExcerptModel;
-use Manuxi\SuluEventBundle\Entity\Models\EventModel;
-use Manuxi\SuluEventBundle\Entity\Models\EventSeoModel;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use FOS\RestBundle\Controller\Annotations\RouteResource;
 use FOS\RestBundle\Routing\ClassResourceInterface;
 use FOS\RestBundle\View\ViewHandlerInterface;
+use Manuxi\SuluEventBundle\Common\DoctrineListRepresentationFactory;
+use Manuxi\SuluEventBundle\Entity\Event;
+use Manuxi\SuluEventBundle\Entity\Models\EventExcerptModel;
+use Manuxi\SuluEventBundle\Entity\Models\EventModel;
+use Manuxi\SuluEventBundle\Entity\Models\EventSeoModel;
+use Manuxi\SuluEventBundle\Search\Event\EventPublishedEvent;
+use Manuxi\SuluEventBundle\Search\Event\EventRemovedEvent;
+use Manuxi\SuluEventBundle\Search\Event\EventSavedEvent;
+use Manuxi\SuluEventBundle\Search\Event\EventUnpublishedEvent;
 use Sulu\Bundle\TrashBundle\Application\TrashManager\TrashManagerInterface;
 use Sulu\Component\Rest\AbstractRestController;
 use Sulu\Component\Rest\Exception\EntityNotFoundException;
+use Sulu\Component\Rest\Exception\MissingParameterException;
 use Sulu\Component\Rest\Exception\RestException;
 use Sulu\Component\Rest\RequestParametersTrait;
 use Sulu\Component\Security\Authorization\PermissionTypes;
@@ -28,6 +33,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @RouteResource("event")
@@ -37,21 +43,22 @@ class EventController extends AbstractRestController implements ClassResourceInt
     use RequestParametersTrait;
 
     public function __construct(
-        private EventModel $eventModel,
-        private EventSeoModel $eventSeoModel,
-        private EventExcerptModel $eventExcerptModel,
-        private DoctrineListRepresentationFactory $doctrineListRepresentationFactory,
-        private SecurityCheckerInterface $securityChecker,
-        private TrashManagerInterface $trashManager,
+        private readonly EventModel $eventModel,
+        private readonly EventSeoModel $eventSeoModel,
+        private readonly EventExcerptModel $eventExcerptModel,
+        private readonly DoctrineListRepresentationFactory $doctrineListRepresentationFactory,
+        private readonly SecurityCheckerInterface $securityChecker,
+        private readonly TrashManagerInterface $trashManager,
+        private readonly EventDispatcherInterface $dispatcher,
         ViewHandlerInterface $viewHandler,
-        ?TokenStorageInterface $tokenStorage = null
+        ?TokenStorageInterface $tokenStorage = null,
     ) {
         parent::__construct($viewHandler, $tokenStorage);
     }
 
     public function cgetAction(Request $request): Response
     {
-        $locale             = $request->query->get('locale');
+        $locale = $request->query->get('locale');
         $listRepresentation = $this->doctrineListRepresentationFactory->createDoctrineListRepresentation(
             Event::RESOURCE_KEY,
             [],
@@ -59,7 +66,6 @@ class EventController extends AbstractRestController implements ClassResourceInt
         );
 
         return $this->handleView($this->view($listRepresentation));
-
     }
 
     /**
@@ -68,6 +74,7 @@ class EventController extends AbstractRestController implements ClassResourceInt
     public function getAction(int $id, Request $request): Response
     {
         $event = $this->eventModel->getEvent($id, $request);
+
         return $this->handleView($this->view($event));
     }
 
@@ -78,8 +85,11 @@ class EventController extends AbstractRestController implements ClassResourceInt
      */
     public function postAction(Request $request): Response
     {
-        $event = $this->eventModel->createEvent($request);
-        return $this->handleView($this->view($event, 201));
+        $entity = $this->eventModel->createEvent($request);
+
+        $this->dispatcher->dispatch(new EventSavedEvent($entity));
+
+        return $this->handleView($this->view($entity, 201));
     }
 
     /**
@@ -92,17 +102,24 @@ class EventController extends AbstractRestController implements ClassResourceInt
     public function postTriggerAction(int $id, Request $request): Response
     {
         $action = $this->getRequestParameter($request, 'action', true);
-        $locale = $this->getRequestParameter($request, 'locale', true);
 
         try {
             switch ($action) {
-                case 'enable':
-                    $event = $this->eventModel->enableEvent($id, $request);
+                case 'publish':
+                    $entity = $this->eventModel->publish($id, $request);
+                    $this->dispatcher->dispatch(new EventPublishedEvent($entity));
                     break;
-                case 'disable':
-                    $event = $this->eventModel->disableEvent($id, $request);
+                case 'draft':
+                case 'unpublish':
+                    $entity = $this->eventModel->unpublish($id, $request);
+                    $this->dispatcher->dispatch(new EventUnpublishedEvent($entity));
+                    break;
+                case 'copy':
+                    $entity = $this->eventModel->copy($id, $request);
+                    $this->dispatcher->dispatch(new EventSavedEvent($entity));
                     break;
                 case 'copy-locale':
+                    $locale = $this->getRequestParameter($request, 'locale', true);
                     $srcLocale = $this->getRequestParameter($request, 'src', false, $locale);
                     $destLocales = $this->getRequestParameter($request, 'dest', true);
                     $destLocales = explode(',', $destLocales);
@@ -114,17 +131,19 @@ class EventController extends AbstractRestController implements ClassResourceInt
                         );
                     }
 
-                    $event = $this->eventModel->copyLanguage($id, $request, $srcLocale, $destLocales);
+                    $entity = $this->eventModel->copyLanguage($id, $request, $srcLocale, $destLocales);
+                    $this->dispatcher->dispatch(new EventSavedEvent($entity));
                     break;
                 default:
                     throw new BadRequestHttpException(sprintf('Unknown action "%s".', $action));
             }
         } catch (RestException $exc) {
             $view = $this->view($exc->toArray(), 400);
+
             return $this->handleView($view);
         }
 
-        return $this->handleView($this->view($event));
+        return $this->handleView($this->view($entity));
     }
 
     /**
@@ -134,18 +153,39 @@ class EventController extends AbstractRestController implements ClassResourceInt
      */
     public function putAction(int $id, Request $request): Response
     {
-        $event = $this->eventModel->updateEvent($id, $request);
+        try {
+            $action = $this->getRequestParameter($request, 'action', true);
+            try {
+                $entity = match ($action) {
+                    'publish' => $this->eventModel->publish($id, $request),
+                    'draft', 'unpublish' => $this->eventModel->unpublish($id, $request),
+                    default => throw new BadRequestHttpException(sprintf('Unknown action "%s".', $action)),
+                };
+                if ($entity) {
+                    if ($action === 'publish') {
+                        $this->dispatcher->dispatch(new EventPublishedEvent($entity));
+                    } else {
+                        $this->dispatcher->dispatch(new EventUnpublishedEvent($entity));
+                    }
+                }
+            } catch (RestException $exc) {
+                $view = $this->view($exc->toArray(), 400);
+                return $this->handleView($view);
+            }
+        } catch(MissingParameterException $e) {
+            $entity = $this->eventModel->updateEvent($id, $request);
 
-        $this->eventSeoModel->updateEventSeo($event->getEventSeo(), $request);
-        $this->eventExcerptModel->updateEventExcerpt($event->getEventExcerpt(), $request);
+            //make changed content available
+            $this->dispatcher->dispatch(new EventSavedEvent($entity));
 
-        return $this->handleView($this->view($event));
+            $this->eventSeoModel->updateEventSeo($entity->getEventSeo(), $request);
+            $this->eventExcerptModel->updateEventExcerpt($entity->getEventExcerpt(), $request);
+        }
+
+        return $this->handleView($this->view($entity));
     }
 
     /**
-     * @param int $id
-     * @param Request $request
-     * @return Response
      * @throws EntityNotFoundException
      */
     public function deleteAction(int $id, Request $request): Response
@@ -155,6 +195,9 @@ class EventController extends AbstractRestController implements ClassResourceInt
         $this->trashManager->store(Event::RESOURCE_KEY, $entity);
 
         $this->eventModel->deleteEvent($entity);
+
+        $this->dispatcher->dispatch(new EventRemovedEvent($entity));
+
         return $this->handleView($this->view(null, 204));
     }
 
@@ -162,5 +205,4 @@ class EventController extends AbstractRestController implements ClassResourceInt
     {
         return Event::SECURITY_CONTEXT;
     }
-
 }

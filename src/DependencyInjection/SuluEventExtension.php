@@ -19,17 +19,14 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
     use PersistenceExtensionTrait;
 
     /**
-     * @param array $configs
-     * @param ContainerBuilder $container
      * @throws \Exception
      */
     public function load(array $configs, ContainerBuilder $container)
     {
-
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
-        $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
+        $loader = new XmlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.xml');
         $loader->load('controller.xml');
         $loader->load('automation.xml');
@@ -44,7 +41,7 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
                 'sulu_search',
                 [
                     'indexes' => [
-                        'event' => [
+                        'events' => [
                             'name' => 'sulu_event.search_name',
                             'icon' => 'su-calendar',
                             'security_context' => Event::SECURITY_CONTEXT,
@@ -55,7 +52,6 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
                                     'locale' => 'locale',
                                 ],
                             ],
-
                         ],
                     ],
                 ]
@@ -70,9 +66,9 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
                         Event::class => [
                             'generator' => 'schema',
                             'options' => [
-                                //@TODO: works not yet as expected, does not translate correctly
-                                //see https://github.com/sulu/sulu/pull/5920
-                                'route_schema' => '/{translator.trans("sulu_event.events")}/{implode("-", object)}'
+                                // @TODO: works not yet as expected, does not translate correctly
+                                // see https://github.com/sulu/sulu/pull/5920
+                                'route_schema' => '/{translator.trans("sulu_event.events")}/{implode("-", object)}',
                             ],
                             'resource_key' => Event::RESOURCE_KEY,
                         ],
@@ -87,12 +83,12 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
                 [
                     'lists' => [
                         'directories' => [
-                            __DIR__ . '/../Resources/config/lists',
+                            __DIR__.'/../Resources/config/lists',
                         ],
                     ],
                     'forms' => [
                         'directories' => [
-                            __DIR__ . '/../Resources/config/forms',
+                            __DIR__.'/../Resources/config/forms',
                         ],
                     ],
                     'resources' => [
@@ -122,22 +118,22 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
                                 'view' => [
                                     'name' => EventAdmin::EDIT_FORM_VIEW,
                                     'result_to_view' => [
-                                        'id' => 'id'
-                                    ]
+                                        'id' => 'id',
+                                    ],
                                 ],
                                 'types' => [
                                     'list_overlay' => [
                                         'adapter' => 'table',
                                         'list_key' => Event::LIST_KEY,
                                         'display_properties' => [
-                                            'title'
+                                            'title',
                                         ],
                                         'icon' => 'su-calendar',
                                         'label' => 'sulu_event.event_selection_label',
-                                        'overlay_title' => 'sulu_event.select_events'
-                                    ]
-                                ]
-                            ]
+                                        'overlay_title' => 'sulu_event.select_events',
+                                    ],
+                                ],
+                            ],
                         ],
                         'single_selection' => [
                             'single_event_selection' => [
@@ -146,27 +142,27 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
                                 'view' => [
                                     'name' => EventAdmin::EDIT_FORM_VIEW,
                                     'result_to_view' => [
-                                        'id' => 'id'
-                                    ]
+                                        'id' => 'id',
+                                    ],
                                 ],
                                 'types' => [
                                     'list_overlay' => [
                                         'adapter' => 'table',
                                         'list_key' => Event::LIST_KEY,
                                         'display_properties' => [
-                                            'title'
+                                            'title',
                                         ],
                                         'icon' => 'su-calendar',
                                         'empty_text' => 'sulu_event.no_event_selected',
-                                        'overlay_title' => 'sulu_event.select_event'
+                                        'overlay_title' => 'sulu_event.select_event',
                                     ],
                                     'auto_complete' => [
                                         'display_property' => 'title',
                                         'search_properties' => [
-                                            'title'
-                                        ]
-                                    ]
-                                ]
+                                            'title',
+                                        ],
+                                    ],
+                                ],
                             ],
                             'single_location_selection' => [
                                 'default_type' => 'list_overlay',
@@ -176,21 +172,21 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
                                         'adapter' => 'table',
                                         'list_key' => Location::LIST_KEY,
                                         'display_properties' => [
-                                            'name'
+                                            'name',
                                         ],
                                         'icon' => 'fa-home',
                                         'empty_text' => 'sulu_event.no_location_selected',
-                                        'overlay_title' => 'sulu_event.select_location'
+                                        'overlay_title' => 'sulu_event.select_location',
                                     ],
                                     'auto_complete' => [
                                         'display_property' => 'name',
                                         'search_properties' => [
-                                            'name'
-                                        ]
-                                    ]
-                                ]
+                                            'name',
+                                        ],
+                                    ],
+                                ],
                             ],
-                        ]
+                        ],
                     ],
                 ]
             );
@@ -198,7 +194,7 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
 
         $container->loadFromExtension('framework', [
             'default_locale' => 'en',
-            'translator' => ['paths' => [__DIR__ . '/../Resources/config/translations/']],
+            'translator' => ['paths' => [__DIR__.'/../Resources/config/translations/']],
         ]);
     }
 }

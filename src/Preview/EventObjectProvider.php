@@ -11,11 +11,12 @@ use Sulu\Bundle\PreviewBundle\Preview\Object\PreviewObjectProviderInterface;
 class EventObjectProvider implements PreviewObjectProviderInterface
 {
     public function __construct(private EventRepository $eventRepository)
-    {}
+    {
+    }
 
     public function getObject($id, $locale)
     {
-        return $this->eventRepository->findById((int)$id, $locale);
+        return $this->eventRepository->findById((int) $id, $locale);
     }
 
     public function getId($object)
@@ -28,7 +29,7 @@ class EventObjectProvider implements PreviewObjectProviderInterface
         // TODO: Implement setValues() method.
     }
 
-    public function setContext($object, $locale, array $context)
+    public function setContext($object, $locale, array $context): mixed
     {
         if (\array_key_exists('template', $context)) {
             $object->setStructureType($context['template']);
@@ -37,7 +38,7 @@ class EventObjectProvider implements PreviewObjectProviderInterface
         return $object;
     }
 
-    public function serialize($object)
+    public function serialize($object): string
     {
         return serialize($object);
     }
@@ -46,7 +47,7 @@ class EventObjectProvider implements PreviewObjectProviderInterface
     {
         return unserialize($serializedObject);
     }
-    
+
     public function getSecurityContext($id, $locale): ?string
     {
         $webspaceKey = $this->documentInspector->getWebspace($this->getObject($id, $locale));

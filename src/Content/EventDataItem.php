@@ -8,12 +8,13 @@ use JMS\Serializer\Annotation as Serializer;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Sulu\Component\SmartContent\ItemInterface;
 
-#[Serializer\ExclusionPolicy("all")]
+#[Serializer\ExclusionPolicy('all')]
 class EventDataItem implements ItemInterface
 {
     public function __construct(
-        private Event $entity
-    ) {}
+        private readonly Event $entity,
+    ) {
+    }
 
     #[Serializer\VirtualProperty]
     public function getId(): string

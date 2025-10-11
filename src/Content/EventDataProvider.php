@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Content;
 
-use Countable;
 use Doctrine\ORM\EntityManagerInterface;
 use Manuxi\SuluEventBundle\Admin\EventAdmin;
 use Manuxi\SuluEventBundle\Entity\Event;
@@ -25,7 +24,7 @@ class EventDataProvider extends BaseDataProvider
         ArraySerializerInterface $serializer,
         private RequestStack $requestStack,
         private EntityManagerInterface $entityManager,
-        private TranslatorInterface $translator
+        private TranslatorInterface $translator,
     ) {
         parent::__construct($repository, $serializer);
     }
@@ -33,8 +32,8 @@ class EventDataProvider extends BaseDataProvider
     private function getTypes(): array
     {
         return [
-            ['type' => 'pending', 'title' => $this->translator->trans('sulu_event.filter.pending',[],'admin')],
-            ['type' => 'expired', 'title' => $this->translator->trans('sulu_event.filter.expired',[],'admin')],
+            ['type' => 'pending', 'title' => $this->translator->trans('sulu_event.filter.pending', [], 'admin')],
+            ['type' => 'expired', 'title' => $this->translator->trans('sulu_event.filter.expired', [], 'admin')],
         ];
     }
 
@@ -43,7 +42,10 @@ class EventDataProvider extends BaseDataProvider
         return [
             ['column' => 'event.startDate', 'title' => 'sulu_event.sorting.start_date'],
             ['column' => 'event.endDate', 'title' => 'sulu_event.sorting.end_date'],
-            ['column' => 'translation.title', 'title' => 'sulu_event.sorting.title'],
+            ['column' => 'translation.authored', 'title' => 'sulu_event.authored'],
+            ['column' => 'translation.title', 'title' => 'sulu_event.title'],
+            ['column' => 'translation.published', 'title' => 'sulu_event.published'],
+            ['column' => 'translation.publishedAt', 'title' => 'sulu_event.published_at'],
         ];
     }
 
@@ -71,13 +73,13 @@ class EventDataProvider extends BaseDataProvider
         array $options = [],
         $limit = null,
         $page = 1,
-        $pageSize = null
-    ): DataProviderResult
-    {
+        $pageSize = null,
+    ): DataProviderResult {
         $locale = $options['locale'];
         $request = $this->requestStack->getCurrentRequest();
         $options['page'] = $request->get('p');
         $events = $this->entityManager->getRepository(Event::class)->findByFilters($filters, $page, $pageSize, $limit, $locale, $options);
+
         return new DataProviderResult($events, $this->entityManager->getRepository(Event::class)->hasNextPage($filters, $page, $pageSize, $limit, $locale, $options));
     }
 
@@ -90,5 +92,4 @@ class EventDataProvider extends BaseDataProvider
             $data
         );
     }
-
 }

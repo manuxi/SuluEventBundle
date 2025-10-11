@@ -13,11 +13,11 @@ class EventTranslationTest extends SuluTestCase
 {
     private ObjectProphecy $event;
     private EventTranslation $translation;
-    private string $testString = "Lorem ipsum dolor sit amet, ...";
+    private string $testString = 'Lorem ipsum dolor sit amet, ...';
 
     protected function setUp(): void
     {
-        $this->event       = $this->prophesize(Event::class);
+        $this->event = $this->prophesize(Event::class);
         $this->translation = new EventTranslation($this->event->reveal(), 'de');
     }
 
@@ -79,5 +79,22 @@ class EventTranslationTest extends SuluTestCase
         $this->assertSame($testRoutePath, $this->translation->getRoutePath());
     }
 
+    public function testPublished(): void
+    {
+        $this->assertFalse($this->translation->isPublished());
+        $this->assertSame($this->translation, $this->translation->setPublished(true));
+        $this->assertTrue($this->translation->isPublished());
+        $this->assertSame($this->translation, $this->translation->setPublished(false));
+        $this->assertFalse($this->translation->isPublished());
+    }
 
+    public function testPublishedAt(): void
+    {
+        $this->assertNull($this->translation->getPublishedAt());
+        $this->assertSame($this->translation, $this->translation->setPublished(true));
+        $this->assertNotNull($this->translation->getPublishedAt());
+        $this->assertSame(\DateTime::class, get_class($this->translation->getPublishedAt()));
+        $this->assertSame($this->translation, $this->translation->setPublished(false));
+        $this->assertNull($this->translation->getPublishedAt());
+    }
 }

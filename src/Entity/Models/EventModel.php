@@ -31,31 +31,29 @@ class EventModel implements EventModelInterface
     use ArrayPropertyTrait;
 
     public function __construct(
-        private EventRepository $eventRepository,
-        private LocationRepository $locationRepository,
-        private MediaRepositoryInterface $mediaRepository,
-        private ContactRepository $contactRepository,
-        private RouteManagerInterface $routeManager,
-        private RouteRepositoryInterface $routeRepository,
-        private EntityManagerInterface $entityManager,
-        private DomainEventCollectorInterface $domainEventCollector
-    ) {}
+        private readonly EventRepository $eventRepository,
+        private readonly LocationRepository $locationRepository,
+        private readonly MediaRepositoryInterface $mediaRepository,
+        private readonly ContactRepository $contactRepository,
+        private readonly RouteManagerInterface $routeManager,
+        private readonly RouteRepositoryInterface $routeRepository,
+        private readonly EntityManagerInterface $entityManager,
+        private readonly DomainEventCollectorInterface $domainEventCollector,
+    ) {
+    }
 
     /**
      * @throws EntityNotFoundException
      */
-    public function getEvent(int $id, Request $request = null): Event
+    public function getEvent(int $id, ?Request $request = null): Event
     {
-        if(null === $request) {
+        if (null === $request) {
             return $this->findEventById($id);
         }
+
         return $this->findEventByIdAndLocale($id, $request);
     }
 
-    /**
-     * @param int $id
-     * @param string $title
-     */
     public function deleteEvent(Event $entity): void
     {
         $this->domainEventCollector->collect(
@@ -72,26 +70,20 @@ class EventModel implements EventModelInterface
     {
         $entity = $this->eventRepository->create((string) $this->getLocaleFromRequest($request));
         $entity = $this->mapDataToEvent($entity, $request->request->all());
+        $entity = $this->eventRepository->save($entity);
+        $this->updateRoutesForEntity($entity);
+
+        // explicit flush to save routes persisted by updateRoutesForEntity()
+        $this->entityManager->flush();
 
         $this->domainEventCollector->collect(
             new CreatedEvent($entity, $request->request->all())
         );
 
-        //need the id for updateRoutesForEntity(), so we have to persist and flush here
-        $entity = $this->eventRepository->save($entity);
-
-        $this->updateRoutesForEntity($entity);
-
-        //explicit flush to save routes persisted by updateRoutesForEntity()
-        $this->entityManager->flush();
-
         return $entity;
     }
 
     /**
-     * @param int $id
-     * @param Request $request
-     * @return Event
      * @throws EntityNotFoundException
      * @throws ORMException
      * @throws OptimisticLockException
@@ -101,47 +93,46 @@ class EventModel implements EventModelInterface
         $entity = $this->findEventByIdAndLocale($id, $request);
         $entity = $this->mapDataToEvent($entity, $request->request->all());
         $entity = $this->mapSettingsToEvent($entity, $request->request->all());
+        $entity = $this->eventRepository->save($entity);
+
         $this->updateRoutesForEntity($entity);
+        $this->entityManager->flush();
 
         $this->domainEventCollector->collect(
             new ModifiedEvent($entity, $request->request->all())
         );
 
-        return $this->eventRepository->save($entity);
+        return $entity;
     }
 
     /**
      * @throws EntityNotFoundException
-     * @throws ORMException
-     * @throws OptimisticLockException
      */
-    public function enableEvent(int $id, Request $request): Event
+    public function publish(int $id, Request $request): Event
     {
         $entity = $this->findEventByIdAndLocale($id, $request);
-        $entity->setEnabled(true);
+        $entity = $this->eventRepository->publish($entity);
 
         $this->domainEventCollector->collect(
             new PublishedEvent($entity, $request->request->all())
         );
 
-        return $this->eventRepository->save($entity);
+        return $entity;
     }
 
     /**
      * @throws EntityNotFoundException
-     * @throws ORMException
-     * @throws OptimisticLockException
      */
-    public function disableEvent(int $id, Request $request): Event
+    public function unpublish(int $id, Request $request): Event
     {
         $entity = $this->findEventByIdAndLocale($id, $request);
-        $entity->setEnabled(false);
+        $entity = $this->eventRepository->unpublish($entity);
 
         $this->domainEventCollector->collect(
             new UnpublishedEvent($entity, $request->request->all())
         );
 
-        return $this->eventRepository->save($entity);
+        return $entity;
     }
 
     public function copyLanguage(int $id, Request $request, string $srcLocale, array $destLocales): Event
@@ -149,11 +140,11 @@ class EventModel implements EventModelInterface
         $entity = $this->findEventById($id);
         $entity->setLocale($srcLocale);
 
-        foreach($destLocales as $destLocale) {
+        foreach ($destLocales as $destLocale) {
             $entity = $entity->copyToLocale($destLocale);
         }
 
-        //@todo: test with more than one different locale
+        // @todo: test with more than one different locale
         $entity->setLocale($this->getLocaleFromRequest($request));
 
         $this->domainEventCollector->collect(
@@ -172,6 +163,7 @@ class EventModel implements EventModelInterface
         if (!$entity) {
             throw new EntityNotFoundException($this->eventRepository->getClassName(), $id);
         }
+
         return $entity;
     }
 
@@ -184,6 +176,7 @@ class EventModel implements EventModelInterface
         if (!$entity) {
             throw new EntityNotFoundException($this->eventRepository->getClassName(), $id);
         }
+
         return $entity;
     }
 
@@ -200,6 +193,11 @@ class EventModel implements EventModelInterface
         $title = $this->getProperty($data, 'title');
         if ($title) {
             $entity->setTitle($title);
+        }
+
+        $published = $this->getProperty($data, 'published');
+        if ($published) {
+            $entity->setPublished($published);
         }
 
         $text = $this->getProperty($data, 'text');
@@ -280,14 +278,11 @@ class EventModel implements EventModelInterface
     }
 
     /**
-     * @param Event $entity
-     * @param array $data
-     * @return Event
      * @throws EntityNotFoundException
      */
     private function mapSettingsToEvent(Event $entity, array $data): Event
     {
-        //settings (author, authored) changeable
+        // settings (author, authored) changeable
         $authorId = $this->getProperty($data, 'author');
         if ($authorId) {
             $author = $this->contactRepository->findById($authorId);
@@ -305,6 +300,7 @@ class EventModel implements EventModelInterface
         } else {
             $entity->setAuthored(null);
         }
+
         return $entity;
     }
 

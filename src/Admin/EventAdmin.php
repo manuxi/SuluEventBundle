@@ -8,6 +8,7 @@ use Manuxi\SuluEventBundle\Entity\Event;
 use Sulu\Bundle\AdminBundle\Admin\Admin;
 use Sulu\Bundle\AdminBundle\Admin\Navigation\NavigationItem;
 use Sulu\Bundle\AdminBundle\Admin\Navigation\NavigationItemCollection;
+use Sulu\Bundle\AdminBundle\Admin\View\DropdownToolbarAction;
 use Sulu\Bundle\AdminBundle\Admin\View\TogglerToolbarAction;
 use Sulu\Bundle\AdminBundle\Admin\View\ToolbarAction;
 use Sulu\Bundle\AdminBundle\Admin\View\ViewBuilderFactoryInterface;
@@ -29,7 +30,7 @@ class EventAdmin extends Admin
     public const EDIT_FORM_DETAILS_VIEW = 'sulu_event.event.edit_form.details';
     public const SECURITY_CONTEXT = 'sulu.modules.events';
 
-    //seo,excerpt, etc
+    // seo,excerpt, etc
     public const EDIT_FORM_VIEW_SEO = 'sulu_event.edit_form.seo';
     public const EDIT_FORM_VIEW_EXCERPT = 'sulu_event.edit_form.excerpt';
 
@@ -40,8 +41,9 @@ class EventAdmin extends Admin
         private ViewBuilderFactoryInterface $viewBuilderFactory,
         private SecurityCheckerInterface $securityChecker,
         private WebspaceManagerInterface $webspaceManager,
-        private ?AutomationViewBuilderFactoryInterface $automationViewBuilderFactory
-    ) {}
+        private ?AutomationViewBuilderFactoryInterface $automationViewBuilderFactory,
+    ) {
+    }
 
     public function configureNavigationItems(NavigationItemCollection $navigationItemCollection): void
     {
@@ -66,15 +68,16 @@ class EventAdmin extends Admin
     {
         $formToolbarActions = [];
         $listToolbarActions = [];
+        $previewCondition = 'nodeType == 1';
 
         $locales = $this->webspaceManager->getAllLocales();
 
-        if ($this->securityChecker->hasPermission(Event::SECURITY_CONTEXT, PermissionTypes::ADD)) {
-            $listToolbarActions[] = new ToolbarAction('sulu_admin.add');
-        }
-
         if ($this->securityChecker->hasPermission(Event::SECURITY_CONTEXT, PermissionTypes::EDIT)) {
             $formToolbarActions[] = new ToolbarAction('sulu_admin.save');
+        }
+
+        if ($this->securityChecker->hasPermission(Event::SECURITY_CONTEXT, PermissionTypes::ADD)) {
+            $listToolbarActions[] = new ToolbarAction('sulu_admin.add');
         }
 
         if ($this->securityChecker->hasPermission(Event::SECURITY_CONTEXT, PermissionTypes::DELETE)) {
@@ -85,6 +88,35 @@ class EventAdmin extends Admin
         if ($this->securityChecker->hasPermission(Event::SECURITY_CONTEXT, PermissionTypes::VIEW)) {
             $listToolbarActions[] = new ToolbarAction('sulu_admin.export');
         }
+
+        if ($this->securityChecker->hasPermission(Event::SECURITY_CONTEXT, PermissionTypes::LIVE)) {
+            $editDropdownToolbarActions = [
+                new ToolbarAction('sulu_admin.publish'),
+                new ToolbarAction('sulu_admin.set_unpublished'),
+            ];
+
+            if (\count($locales) > 1) {
+                $editDropdownToolbarActions[] = new ToolbarAction('sulu_admin.copy_locale');
+            }
+
+            $formToolbarActions[] = new DropdownToolbarAction(
+                'sulu_admin.edit',
+                'su-cog',
+                $editDropdownToolbarActions
+            );
+        }
+
+        // publish/unpublish toolbar actions
+        /*$formToolbarActions = [
+            new ToolbarAction('sulu_admin.save'),
+            new ToolbarAction('sulu_admin.delete'),
+            new TogglerToolbarAction(
+                'sulu_event.published',
+                'published',
+                'publish',
+                'unpublish'
+            ),
+        ];*/
 
         if ($this->securityChecker->hasPermission(Event::SECURITY_CONTEXT, PermissionTypes::EDIT)) {
             // Configure Event List View
@@ -128,18 +160,6 @@ class EventAdmin extends Admin
                 ->addLocales($locales);
             $viewCollection->add($editFormView);
 
-            //enable/disable toolbar actions
-            $formToolbarActions = [
-                new ToolbarAction('sulu_admin.save'),
-                new ToolbarAction('sulu_admin.delete'),
-                new TogglerToolbarAction(
-                    'sulu_event.enable_event',
-                    'enabled',
-                    'enable',
-                    'disable'
-                ),
-            ];
-
             $editDetailsFormView = $this->viewBuilderFactory
                 ->createPreviewFormViewBuilder(static::EDIT_FORM_DETAILS_VIEW, '/details')
                 ->setPreviewCondition('id != null')
@@ -150,15 +170,15 @@ class EventAdmin extends Admin
                 ->setParent(static::EDIT_FORM_VIEW);
             $viewCollection->add($editDetailsFormView);
 
-            //seo,excerpt, etc
-            $formToolbarActionsWithoutType = [];
-            $previewCondition              = 'nodeType == 1';
+            // seo,excerpt, etc
+            /*            $formToolbarActionsWithoutType = [];
+                        $previewCondition = 'nodeType == 1';
 
-            if ($this->securityChecker->hasPermission(static::SECURITY_CONTEXT, PermissionTypes::ADD)) {
-                $listToolbarActions[] = new ToolbarAction('sulu_admin.add');
-            }
+                        if ($this->securityChecker->hasPermission(static::SECURITY_CONTEXT, PermissionTypes::ADD)) {
+                            $listToolbarActions[] = new ToolbarAction('sulu_admin.add');
+                        }
 
-            $formToolbarActionsWithoutType[] = new ToolbarAction('sulu_admin.save');
+                        $formToolbarActionsWithoutType[] = new ToolbarAction('sulu_admin.save');*/
 
             $viewCollection->add(
                 $this->viewBuilderFactory
@@ -168,7 +188,7 @@ class EventAdmin extends Admin
                     ->setFormKey('page_seo')
                     ->setTabTitle('sulu_page.seo')
 //                    ->setTabCondition('nodeType == 1 && shadowOn == false')
-                    ->addToolbarActions($formToolbarActionsWithoutType)
+                    ->addToolbarActions($formToolbarActions)
 //                    ->addRouterAttributesToFormRequest($routerAttributesToFormRequest)
                     ->setPreviewCondition($previewCondition)
                     ->setTitleVisible(true)
@@ -183,7 +203,7 @@ class EventAdmin extends Admin
                     ->setFormKey('page_excerpt')
                     ->setTabTitle('sulu_page.excerpt')
 //                    ->setTabCondition('(nodeType == 1 || nodeType == 4) && shadowOn == false')
-                    ->addToolbarActions($formToolbarActionsWithoutType)
+                    ->addToolbarActions($formToolbarActions)
 //                    ->addRouterAttributesToFormRequest($routerAttributesToFormRequest)
 //                    ->addRouterAttributesToFormMetadata($routerAttributesToFormMetadata)
                     ->setPreviewCondition($previewCondition)
@@ -198,7 +218,7 @@ class EventAdmin extends Admin
                     ->setResourceKey(Event::RESOURCE_KEY)
                     ->setFormKey('event_settings')
                     ->setTabTitle('sulu_page.settings')
-                    ->addToolbarActions($formToolbarActionsWithoutType)
+                    ->addToolbarActions($formToolbarActions)
                     ->setPreviewCondition($previewCondition)
                     ->setTitleVisible(true)
                     ->setTabOrder(4096)
@@ -210,7 +230,7 @@ class EventAdmin extends Admin
             ) {
                 $viewCollection->add(
                     $this->automationViewBuilderFactory
-                        ->createTaskListViewBuilder(static::EDIT_FORM_VIEW_AUTOMATION,'/automation',Event::class)
+                        ->createTaskListViewBuilder(static::EDIT_FORM_VIEW_AUTOMATION, '/automation', Event::class)
                         ->setTabOrder(5120)
                         ->setParent(static::EDIT_FORM_VIEW)
                 );

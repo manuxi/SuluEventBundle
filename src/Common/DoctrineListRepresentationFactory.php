@@ -23,15 +23,15 @@ class DoctrineListRepresentationFactory
         private FieldDescriptorFactoryInterface $fieldDescriptorFactory,
         private WebspaceManagerInterface $webspaceManager,
         private EventTranslationRepository $eventTranslationRepository,
-        private MediaManagerInterface $mediaManager
-    ) {}
+        private MediaManagerInterface $mediaManager,
+    ) {
+    }
 
     public function createDoctrineListRepresentation(
         string $resourceKey,
         array $filters = [],
-        array $parameters = []
-    ): PaginatedRepresentation
-    {
+        array $parameters = [],
+    ): PaginatedRepresentation {
         /** @var DoctrineFieldDescriptor[] $fieldDescriptors */
         $fieldDescriptors = $this->fieldDescriptorFactory->getFieldDescriptors($resourceKey);
 
@@ -86,7 +86,8 @@ class DoctrineListRepresentationFactory
         return $listeElements;
     }
 
-    private function addGhostLocaleToListElements(array $listeElements, ?string $currentLocale) {
+    private function addGhostLocaleToListElements(array $listeElements, ?string $currentLocale)
+    {
         $availableLocales = $locales = $this->webspaceManager->getAllLocales();
         $localesCount = count($availableLocales);
         if (($key = array_search($currentLocale, $locales)) !== false) {
@@ -95,11 +96,11 @@ class DoctrineListRepresentationFactory
 
         $ids = array_filter(array_column($listeElements, 'id'));
 
-        foreach($locales as $locale) {
+        foreach ($locales as $locale) {
             $missingLocales = $this->eventTranslationRepository->findMissingLocaleByIds($ids, $locale, $localesCount);
-            foreach($missingLocales as $missingLocale) {
+            foreach ($missingLocales as $missingLocale) {
                 foreach ($listeElements as $key => $element) {
-                    if ($element['id'] === (int)$missingLocale['event'] && !array_key_exists('ghostLocale', $element)) {
+                    if ($element['id'] === (int) $missingLocale['event'] && !array_key_exists('ghostLocale', $element)) {
                         $listeElements[$key]['ghostLocale'] = $locale;
 //                        $listeElements[$key]['localizationState'] = [
 //                            'state' => 'ghost',

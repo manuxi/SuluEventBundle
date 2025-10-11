@@ -7,6 +7,7 @@
             <argument type="service" id="doctrine.orm.default_entity_manager"/>
             <argument type="service" id="translator.default"/>
             <argument type="service" id="sulu_activity.domain_event_collector"/>
+            <argument type="service" id="event_dispatcher"/>
             <tag name="task.handler"/>
         </service>
 
@@ -14,6 +15,7 @@
             <argument type="service" id="doctrine.orm.default_entity_manager"/>
             <argument type="service" id="translator.default"/>
             <argument type="service" id="sulu_activity.domain_event_collector"/>
+            <argument type="service" id="event_dispatcher"/>
             <tag name="task.handler"/>
         </service>
     </services>

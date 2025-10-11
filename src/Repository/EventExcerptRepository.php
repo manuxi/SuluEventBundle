@@ -18,7 +18,6 @@ use Manuxi\SuluEventBundle\Entity\EventExcerpt;
  */
 class EventExcerptRepository extends ServiceEntityRepository
 {
-
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, EventExcerpt::class);
@@ -48,6 +47,7 @@ class EventExcerptRepository extends ServiceEntityRepository
     {
         $this->getEntityManager()->persist($eventExcerpt);
         $this->getEntityManager()->flush();
+
         return $eventExcerpt;
     }
 
@@ -62,5 +62,4 @@ class EventExcerptRepository extends ServiceEntityRepository
 
         return $eventExcerpt;
     }
-
 }

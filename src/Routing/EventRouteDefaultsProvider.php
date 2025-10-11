@@ -12,20 +12,25 @@ use Sulu\Bundle\RouteBundle\Routing\Defaults\RouteDefaultsProviderInterface;
 class EventRouteDefaultsProvider implements RouteDefaultsProviderInterface
 {
     public function __construct(private EventRepository $eventRepository)
-    {}
+    {
+    }
 
     public function getByEntity($entityClass, $id, $locale, $object = null): array
     {
         return [
-            '_controller' => EventController::class . '::indexAction',
-            'event' => $this->eventRepository->findById((int)$id, $locale),
+            '_controller' => EventController::class.'::indexAction',
+            'event' => $this->eventRepository->findById((int) $id, $locale),
         ];
     }
 
     public function isPublished($entityClass, $id, $locale): bool
     {
-        $entity = $this->eventRepository->findById((int)$id, $locale);
-        return $entity->isEnabled();
+        $entity = $this->eventRepository->findById((int) $id, $locale);
+        if (!$this->supports($entityClass) || !$entity instanceof Event) {
+            return false;
+        }
+
+        return $entity->isPublished();
     }
 
     public function supports($entityClass): bool
