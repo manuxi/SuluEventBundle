@@ -135,6 +135,7 @@
             <argument type="service" id="sulu.repository.route"/>
             <argument type="service" id="doctrine.orm.entity_manager" />
             <argument type="service" id="sulu_activity.domain_event_collector"/>
+            <argument type="service" id="event_dispatcher"/>
         </service>
 
         <service id="sulu_event.model.event_seo" class="Manuxi\SuluEventBundle\Entity\Models\EventSeoModel">

@@ -18,6 +18,9 @@ use Manuxi\SuluEventBundle\Entity\Interfaces\EventModelInterface;
 use Manuxi\SuluEventBundle\Entity\Traits\ArrayPropertyTrait;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
 use Manuxi\SuluEventBundle\Repository\LocationRepository;
+use Manuxi\SuluEventBundle\Search\Event\EventPublishedEvent;
+use Manuxi\SuluEventBundle\Search\Event\EventSavedEvent;
+use Manuxi\SuluEventBundle\Search\Event\EventUnpublishedEvent;
 use Sulu\Bundle\ActivityBundle\Application\Collector\DomainEventCollectorInterface;
 use Sulu\Bundle\ContactBundle\Entity\ContactRepository;
 use Sulu\Bundle\MediaBundle\Entity\MediaRepositoryInterface;
@@ -25,6 +28,7 @@ use Sulu\Bundle\RouteBundle\Entity\RouteRepositoryInterface;
 use Sulu\Bundle\RouteBundle\Manager\RouteManagerInterface;
 use Sulu\Component\Rest\Exception\EntityNotFoundException;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class EventModel implements EventModelInterface
 {
@@ -39,6 +43,7 @@ class EventModel implements EventModelInterface
         private readonly RouteRepositoryInterface $routeRepository,
         private readonly EntityManagerInterface $entityManager,
         private readonly DomainEventCollectorInterface $domainEventCollector,
+        private readonly EventDispatcherInterface $dispatcher,
     ) {
     }
 
@@ -70,16 +75,18 @@ class EventModel implements EventModelInterface
     {
         $entity = $this->eventRepository->create((string) $this->getLocaleFromRequest($request));
         $entity = $this->mapDataToEvent($entity, $request->request->all());
+
+        $this->domainEventCollector->collect(
+            new CreatedEvent($entity, $request->request->all())
+        );
+
         $entity = $this->eventRepository->save($entity);
         $this->updateRoutesForEntity($entity);
 
         // explicit flush to save routes persisted by updateRoutesForEntity()
         $this->entityManager->flush();
 
-        $this->domainEventCollector->collect(
-            new CreatedEvent($entity, $request->request->all())
-        );
-
+        $this->dispatcher->dispatch(new EventSavedEvent($entity));
         return $entity;
     }
 
@@ -93,16 +100,18 @@ class EventModel implements EventModelInterface
         $entity = $this->findEventByIdAndLocale($id, $request);
         $entity = $this->mapDataToEvent($entity, $request->request->all());
         $entity = $this->mapSettingsToEvent($entity, $request->request->all());
-        $entity = $this->eventRepository->save($entity);
-
-        $this->updateRoutesForEntity($entity);
-        $this->entityManager->flush();
 
         $this->domainEventCollector->collect(
             new ModifiedEvent($entity, $request->request->all())
         );
+        $entity = $this->eventRepository->save($entity);
+        $this->updateRoutesForEntity($entity);
 
+        $this->entityManager->flush();
+
+        $this->dispatcher->dispatch(new EventSavedEvent($entity));
         return $entity;
+
     }
 
     /**
@@ -111,12 +120,14 @@ class EventModel implements EventModelInterface
     public function publish(int $id, Request $request): Event
     {
         $entity = $this->findEventByIdAndLocale($id, $request);
-        $entity = $this->eventRepository->publish($entity);
+        $this->dispatcher->dispatch(new EventUnpublishedEvent($entity));
 
         $this->domainEventCollector->collect(
             new PublishedEvent($entity, $request->request->all())
         );
 
+        $entity = $this->eventRepository->publish($entity);
+        $this->dispatcher->dispatch(new EventPublishedEvent($entity));
         return $entity;
     }
 
@@ -126,11 +137,12 @@ class EventModel implements EventModelInterface
     public function unpublish(int $id, Request $request): Event
     {
         $entity = $this->findEventByIdAndLocale($id, $request);
-        $entity = $this->eventRepository->unpublish($entity);
-
+        $this->dispatcher->dispatch(new EventUnpublishedEvent($entity));
         $this->domainEventCollector->collect(
             new UnpublishedEvent($entity, $request->request->all())
         );
+        $entity = $this->eventRepository->unpublish($entity);
+        $this->dispatcher->dispatch(new EventUnpublishedEvent($entity));
 
         return $entity;
     }
@@ -150,8 +162,10 @@ class EventModel implements EventModelInterface
         $this->domainEventCollector->collect(
             new CopiedLanguageEvent($entity, $request->request->all())
         );
+        $entity = $this->eventRepository->save($entity);
+        $this->dispatcher->dispatch(new EventSavedEvent($entity));
 
-        return $this->eventRepository->save($entity);
+        return $entity;
     }
 
     /**
@@ -196,9 +210,7 @@ class EventModel implements EventModelInterface
         }
 
         $published = $this->getProperty($data, 'published');
-        if ($published) {
-            $entity->setPublished($published);
-        }
+        $entity->setPublished($published ?? false);
 
         $text = $this->getProperty($data, 'text');
         if ($text) {

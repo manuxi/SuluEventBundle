@@ -27,13 +27,13 @@ class EventTest extends SuluTestCase
         $this->location = $this->prophesize(Location::class);
     }
 
-    public function testEnabled(): void
+    public function testPublished(): void
     {
-        $this->assertFalse($this->event->isEnabled());
-        $this->assertSame($this->event, $this->event->setEnabled(true));
-        $this->assertTrue($this->event->isEnabled());
-        $this->assertSame($this->event, $this->event->setEnabled(false));
-        $this->assertFalse($this->event->isEnabled());
+        $this->assertFalse($this->event->isPublished());
+        $this->assertSame($this->event, $this->event->setPublished(true));
+        $this->assertTrue($this->event->isPublished());
+        $this->assertSame($this->event, $this->event->setPublished(false));
+        $this->assertFalse($this->event->isPublished());
     }
 
     public function testStartDate(): void

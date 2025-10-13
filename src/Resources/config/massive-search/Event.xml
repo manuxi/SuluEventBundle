@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <massive-search-mapping xmlns="http://massiveart.io/schema/dic/massive-search-mapping">
     <mapping class="Manuxi\SuluEventBundle\Entity\Event">
-        <index value="'events' ~ (object.isPublished() ? '' : '_draft')" expr="'events' ~ (object.isPublished() ? '' : '_draft')"/>
-        <id property="id"/>
+        <index value="events' ~ (object.isPublished() ? '_published' : '')" expr="'events' ~ (object.isPublished() ? '_published' : '')"/>
+        <id expr="object.getIdentifier()"/>
         <title expr="object.getTitle()"/>
         <description expr="object.getSubtitle()"/>
         <url expr="object.getRoutePath()" />

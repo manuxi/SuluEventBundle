@@ -49,7 +49,6 @@ class EventController extends AbstractRestController implements ClassResourceInt
         private readonly DoctrineListRepresentationFactory $doctrineListRepresentationFactory,
         private readonly SecurityCheckerInterface $securityChecker,
         private readonly TrashManagerInterface $trashManager,
-        private readonly EventDispatcherInterface $dispatcher,
         ViewHandlerInterface $viewHandler,
         ?TokenStorageInterface $tokenStorage = null,
     ) {
@@ -86,9 +85,6 @@ class EventController extends AbstractRestController implements ClassResourceInt
     public function postAction(Request $request): Response
     {
         $entity = $this->eventModel->createEvent($request);
-
-        $this->dispatcher->dispatch(new EventSavedEvent($entity));
-
         return $this->handleView($this->view($entity, 201));
     }
 
@@ -107,16 +103,13 @@ class EventController extends AbstractRestController implements ClassResourceInt
             switch ($action) {
                 case 'publish':
                     $entity = $this->eventModel->publish($id, $request);
-                    $this->dispatcher->dispatch(new EventPublishedEvent($entity));
                     break;
                 case 'draft':
                 case 'unpublish':
                     $entity = $this->eventModel->unpublish($id, $request);
-                    $this->dispatcher->dispatch(new EventUnpublishedEvent($entity));
                     break;
                 case 'copy':
                     $entity = $this->eventModel->copy($id, $request);
-                    $this->dispatcher->dispatch(new EventSavedEvent($entity));
                     break;
                 case 'copy-locale':
                     $locale = $this->getRequestParameter($request, 'locale', true);
@@ -132,7 +125,6 @@ class EventController extends AbstractRestController implements ClassResourceInt
                     }
 
                     $entity = $this->eventModel->copyLanguage($id, $request, $srcLocale, $destLocales);
-                    $this->dispatcher->dispatch(new EventSavedEvent($entity));
                     break;
                 default:
                     throw new BadRequestHttpException(sprintf('Unknown action "%s".', $action));
@@ -161,22 +153,12 @@ class EventController extends AbstractRestController implements ClassResourceInt
                     'draft', 'unpublish' => $this->eventModel->unpublish($id, $request),
                     default => throw new BadRequestHttpException(sprintf('Unknown action "%s".', $action)),
                 };
-                if ($entity) {
-                    if ($action === 'publish') {
-                        $this->dispatcher->dispatch(new EventPublishedEvent($entity));
-                    } else {
-                        $this->dispatcher->dispatch(new EventUnpublishedEvent($entity));
-                    }
-                }
             } catch (RestException $exc) {
                 $view = $this->view($exc->toArray(), 400);
                 return $this->handleView($view);
             }
         } catch(MissingParameterException $e) {
             $entity = $this->eventModel->updateEvent($id, $request);
-
-            //make changed content available
-            $this->dispatcher->dispatch(new EventSavedEvent($entity));
 
             $this->eventSeoModel->updateEventSeo($entity->getEventSeo(), $request);
             $this->eventExcerptModel->updateEventExcerpt($entity->getEventExcerpt(), $request);
@@ -195,8 +177,6 @@ class EventController extends AbstractRestController implements ClassResourceInt
         $this->trashManager->store(Event::RESOURCE_KEY, $entity);
 
         $this->eventModel->deleteEvent($entity);
-
-        $this->dispatcher->dispatch(new EventRemovedEvent($entity));
 
         return $this->handleView($this->view(null, 204));
     }

@@ -167,6 +167,10 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
      */
     protected function append(QueryBuilder $queryBuilder, string $alias, string $locale, $options = []): array
     {
+        $queryBuilder->innerJoin($alias . '.translations', 'translation', Join::WITH, 'translation.locale = :locale');
+        $queryBuilder->setParameter('locale', $locale);
+        $queryBuilder->andWhere('translation.published = :published');
+        $queryBuilder->setParameter('published', true);
         //$queryBuilder->andWhere($alias.'.published = true');
         /*        $queryBuilder->andWhere('('. $alias .'.startDate >= :now OR ('. $alias .'.endDate IS NOT NULL AND '. $alias .'.endDate >= :now))');
                 $queryBuilder->setParameter("now", (new Datetime())->format("Y-m-d H:i:s"));
@@ -195,7 +199,7 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
             ->select('count(event.id)')
             ->leftJoin('event.translations', 'translation')
             ->where('event.published = :published')
-            ->setParameter('published', 1)
+            ->setParameter('published', true)
             ->andWhere('translation.locale = :locale')
             ->setParameter('locale', $locale)
             ->orderBy('event.startDate', 'DESC');
@@ -232,8 +236,10 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
 
         $queryBuilder = $this->createQueryBuilder('event')
             ->leftJoin('event.translations', 'translation')
-            ->where('translation.published = :published')->setParameter('published', 1)
-            ->andWhere('translation.locale = :locale')->setParameter('locale', $locale)
+            ->where('translation.published = :published')
+            ->setParameter('published', true)
+            ->andWhere('translation.locale = :locale')
+            ->setParameter('locale', $locale)
             ->orderBy('translation.publishedAt', 'DESC')
             ->setMaxResults($limit)
             ->setFirstResult($pageCurrent * $limit);
@@ -260,7 +266,7 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
             ->leftJoin('event.translations', 'translation')
             ->where('event.published = :published')
             ->andWhere('translation.locale = :locale')
-            ->setParameter('published', 1)
+            ->setParameter('published', true)
             ->setParameter('locale', $locale)
             ->orderBy('event.startDate', 'DESC');
 

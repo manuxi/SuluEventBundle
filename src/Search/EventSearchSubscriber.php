@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Search;
 
+use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Search\Event\EventPublishedEvent;
 use Manuxi\SuluEventBundle\Search\Event\EventRemovedEvent;
 use Manuxi\SuluEventBundle\Search\Event\EventSavedEvent;
@@ -30,13 +31,16 @@ class EventSearchSubscriber implements EventSubscriberInterface
         ];
     }
 
+    private function refreshEntity (Event $entity)
+    {
+        //$repository->findById($entity->getId(), $entity->getLocale());
+    }
+
     public function onPublished(EventPublishedEvent $event): void
     {
         $eventEntity = $event->getEntity();
         $this->logger->info('EventSearchSubscriber: PublishedEvent: id: '.$eventEntity->getId().', locale: '.$eventEntity->getLocale().', published: '.($eventEntity->getPublished() ? 1 : 0));
-        if ($eventEntity->isPublished()) {
-            $this->searchManager->index($eventEntity);
-        }
+        $this->searchManager->index($eventEntity);
     }
 
     public function onUnpublished(EventUnpublishedEvent $event): void
@@ -49,17 +53,15 @@ class EventSearchSubscriber implements EventSubscriberInterface
     public function onSaved(EventSavedEvent $event): void
     {
         $this->logger->info('EventSearchSubscriber: SavedEvent');
-        $entity = $event->getEntity();
-        $this->searchManager->deindex($entity);
-        if ($entity->isPublished()) {
-            $this->searchManager->index($entity);
-        }
+        $eventEntity = $event->getEntity();
+        $this->searchManager->index($eventEntity);
+
     }
 
     public function onRemoved(EventRemovedEvent $event): void
     {
         $this->logger->info('EventSearchSubscriber: RemovedEvent');
-        $entity = $event->getEntity();
-        $this->searchManager->deindex($entity);
+        $eventEntity = $event->getEntity();
+        $this->searchManager->deindex($eventEntity);
     }
 }

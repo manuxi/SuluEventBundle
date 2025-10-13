@@ -25,10 +25,10 @@ use Manuxi\SuluEventBundle\Repository\EventRepository;
 class Event implements AuditableTranslatableInterface
 {
     use AuditableTranslatableTrait;
-    use PublishedTranslatableTrait;
     use ImageTranslatableTrait;
     use LinkTranslatableTrait;
     use PdfTranslatableTrait;
+    use PublishedTranslatableTrait;
     use RouteTranslatableTrait;
     use ShowAuthorTranslatableTrait;
     use ShowDateTranslatableTrait;
@@ -99,6 +99,12 @@ class Event implements AuditableTranslatableInterface
         $this->propagateLocale($locale);
 
         return $this;
+    }
+
+    public function getIdentifier(): string
+    {
+        #return hash('sha256', $this->id.'|'.$this->locale);
+        return $this->id.'-'.$this->locale;
     }
 
     public function getStartDate(): ?\DateTimeImmutable

@@ -56,7 +56,6 @@ class EventTrashItemHandler implements StoreTrashItemHandlerInterface, RestoreTr
             'published' => $resource->isPublished(),
             'publishedAt' => $resource->getPublishedAt(),
             'ext' => $resource->getExt(),
-            'enabled' => $resource->isEnabled(),
             'location' => $resource->getLocation()->getId(),
 
             'imageId' => $image ? $image->getId() : null,
@@ -91,14 +90,13 @@ class EventTrashItemHandler implements StoreTrashItemHandlerInterface, RestoreTr
         $event = new Event();
         $event->setLocale($data['locale']);
 
-        $event->setStartDate($data['startdate']);
-        $event->setEndDate($data['enddate']);
+        $event->setStartDate($data['startdate'] ? new \DateTimeImmutable($data['startdate']['date']) : null);
+        $event->setEndDate($data['enddate'] ? new \DateTimeImmutable($data['enddate']['date']) : null);
         $event->setTitle($data['title']);
         $event->setSubtitle($data['subtitle']);
         $event->setSummary($data['summary']);
         $event->setText($data['text']);
         $event->setFooter($data['footer']);
-        $event->setEnabled($data['enabled']);
         $event->setRoutePath($data['slug']);
         $event->setPublished($data['published']);
         $event->setPublishedAt($data['publishedAt'] ? new \DateTime($data['publishedAt']['date']) : null);
@@ -110,21 +108,12 @@ class EventTrashItemHandler implements StoreTrashItemHandlerInterface, RestoreTr
         $event->setShowAuthor($data['showAuthor']);
         $event->setShowDate($data['showDate']);
 
-        $event->setAuthored($data['authored'] ? new \DateTime($data['authored']['date']) : new \DateTime());
-
-        if ($data['author']) {
-            $event->setAuthor($this->entityManager->find(ContactInterface::class, $data['author']));
-        }
-
         if ($data['link']) {
             $event->setLink($data['link']);
         }
 
         if ($data['imageId']) {
             $event->setImage($this->entityManager->find(MediaInterface::class, $data['imageId']));
-        }
-        if ($data['pdfId']) {
-            $event->setPdf($this->entityManager->find(MediaInterface::class, $data['pdfId']));
         }
 
         $this->domainEventCollector->collect(

@@ -21,6 +21,11 @@ abstract class AbstractEvent extends DomainEvent
         return $this->event;
     }
 
+    public function getEntity(): Event
+    {
+        return $this->event;
+    }
+
     public function getEventPayload(): ?array
     {
         return $this->payload;

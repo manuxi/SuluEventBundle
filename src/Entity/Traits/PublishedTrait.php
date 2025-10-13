@@ -32,9 +32,12 @@ trait PublishedTrait
         $this->publishedState = $published;
         if (true === $published) {
             $this->setPublishedAt(new \DateTime());
+            $this->setPublishedState(1);
         } else {
             $this->setPublishedAt(null);
+            $this->setPublishedState(0);
         }
+
 
         return $this;
     }
