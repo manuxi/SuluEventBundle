@@ -19,6 +19,7 @@ use Manuxi\SuluEventBundle\Entity\Traits\ArrayPropertyTrait;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
 use Manuxi\SuluEventBundle\Repository\LocationRepository;
 use Manuxi\SuluEventBundle\Search\Event\EventPublishedEvent;
+use Manuxi\SuluEventBundle\Search\Event\EventRemovedEvent;
 use Manuxi\SuluEventBundle\Search\Event\EventSavedEvent;
 use Manuxi\SuluEventBundle\Search\Event\EventUnpublishedEvent;
 use Sulu\Bundle\ActivityBundle\Application\Collector\DomainEventCollectorInterface;
@@ -64,6 +65,7 @@ class EventModel implements EventModelInterface
         $this->domainEventCollector->collect(
             new RemovedEvent($entity->getId(), $entity->getTitle() ?? '')
         );
+        $this->dispatcher->dispatch(new EventRemovedEvent($entity));
         $this->removeRoutesForEntity($entity);
         $this->eventRepository->remove($entity->getId());
     }
@@ -108,8 +110,8 @@ class EventModel implements EventModelInterface
             new ModifiedEvent($entity, $request->request->all())
         );
         $entity = $this->eventRepository->save($entity);
-        $this->updateRoutesForEntity($entity);
 
+        $this->updateRoutesForEntity($entity);
         $this->entityManager->flush();
 
         $this->dispatcher->dispatch(new EventSavedEvent($entity));

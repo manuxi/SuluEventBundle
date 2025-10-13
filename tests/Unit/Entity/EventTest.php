@@ -29,7 +29,7 @@ class EventTest extends SuluTestCase
 
     public function testPublished(): void
     {
-        $this->assertFalse($this->event->isPublished());
+        $this->assertNull($this->event->isPublished());
         $this->assertSame($this->event, $this->event->setPublished(true));
         $this->assertTrue($this->event->isPublished());
         $this->assertSame($this->event, $this->event->setPublished(false));

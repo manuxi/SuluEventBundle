@@ -7,8 +7,8 @@ use Doctrine\ORM\Mapping as ORM;
 
 trait PublishedTrait
 {
-    #[ORM\Column(type: Types::BOOLEAN, nullable: true)]
-    private ?bool $published = null;
+    #[ORM\Column(type: Types::BOOLEAN, nullable: false)]
+    private ?bool $published = false;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTime $publishedAt = null;
