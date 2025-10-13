@@ -73,7 +73,7 @@ sulu_event:
         title:
             navi: "Einstellungen"
             general: "Einstellungen für Einzelansicht"
-            breadcrumbs: "Zielseiten für Breadcrumbs"
+            breadcrumbs: "Zwischenseiten für Breadcrumbs"
         properties:
             toggle_header: "Header anzeigen"
             toggle_hero: "Standard Hero anzeigen"

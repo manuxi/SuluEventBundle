@@ -1,0 +1,21 @@
+app_events_api:
+    type: rest
+    prefix: /admin/api
+    resource: Manuxi\SuluEventBundle\Controller\Admin\EventController
+    name_prefix: sulu_event.
+    options:
+        expose: true
+app_locations_api:
+    type: rest
+    resource: Manuxi\SuluEventBundle\Controller\Admin\LocationController
+    prefix: /admin/api
+    name_prefix: sulu_event.
+    options:
+        expose: true
+sulu_event_settings_api:
+    type: rest
+    prefix: /admin/api
+    resource: Manuxi\SuluEventBundle\Controller\Admin\SettingsController
+    name_prefix: sulu_event.
+    options:
+        expose: true

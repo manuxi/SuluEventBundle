@@ -17,13 +17,14 @@ This bundle contains
 - Possibility to assign a contact as author
 - Twig Extension for resolving events / get a list of events
 - Events for displaying Activities
-and more...
+- Search indexes
+  - refresh whenever entity is changed
+  - distinct between normal and draft
+  and more...
 
-The news and their meta information is translatable.
+The events and their meta information is translatable.
 
 It contains an example twig template.
-
-The events and their meta information is translatable. 
 
 Please feel comfortable submitting feature requests. 
 This bundle is still in development. Use at own risk 🤞🏻
@@ -46,8 +47,20 @@ return [
 Please add the following to your `routes_admin.yaml`:
 ```yaml
 SuluEventBundle:
-    resource: '@SuluEventBundle/Resources/config/routes_admin.yml'
+    resource: '@SuluEventBundle/Resources/config/routes_admin.yaml'
 ```
+Don't forget fo add the index to your sulu_search.yaml:
+
+add "events_published"!
+
+"events_published" is the index of published, "events" the index of unpublished elements. The latter one is an additionally dropdown element in the admin search.
+```yaml
+sulu_search:
+    website:
+        indexes:
+            - events_published
+            - ...
+``` 
 Last but not least the schema of the database needs to be updated.  
 
 Some tables will be created (prefixed with app_):  
@@ -112,7 +125,9 @@ Since the seo and excerpt tabs are available in the event editor,
 meta information can be provided like it's done as usual when rendering your pages. 
 
 ## 🧶 Configuration
-There exists no configuration yet. I'm on it :)
+This bundle contains settings for controlling the following tasks:
+- Settings for single view - Switch for header, default hero snippet and breadcrumbs
+- Landing pages for breadcrumbs: this can be used to configure the intermediate pages for the breadcrumbs
 
 ## 👩‍🍳 Contributing
 For the sake of simplicity this extension was kept small.
