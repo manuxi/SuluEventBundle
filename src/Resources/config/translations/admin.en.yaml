@@ -72,7 +72,7 @@ sulu_event:
         title:
             navi: "Settings"
             general: "Settings for Single View"
-            breadcrumbs: "Target Pages for Breadcrumbs"
+            breadcrumbs: "Intermediate Pages for Breadcrumbs"
         properties:
             toggle_header: "Display Header"
             toggle_hero: "Display Default Hero"

@@ -9,8 +9,9 @@ use Manuxi\SuluEventBundle\Admin\EventAdmin;
 use Manuxi\SuluEventBundle\Domain\Event\Event\RestoredEvent;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\Location;
+use Manuxi\SuluEventBundle\Search\Event\EventRemovedEvent;
+use Manuxi\SuluEventBundle\Search\Event\EventSavedEvent;
 use Sulu\Bundle\ActivityBundle\Application\Collector\DomainEventCollectorInterface;
-use Sulu\Bundle\ContactBundle\Entity\ContactInterface;
 use Sulu\Bundle\MediaBundle\Entity\MediaInterface;
 use Sulu\Bundle\RouteBundle\Entity\Route;
 use Sulu\Bundle\TrashBundle\Application\DoctrineRestoreHelper\DoctrineRestoreHelperInterface;
@@ -20,14 +21,16 @@ use Sulu\Bundle\TrashBundle\Application\TrashItemHandler\RestoreTrashItemHandler
 use Sulu\Bundle\TrashBundle\Application\TrashItemHandler\StoreTrashItemHandlerInterface;
 use Sulu\Bundle\TrashBundle\Domain\Model\TrashItemInterface;
 use Sulu\Bundle\TrashBundle\Domain\Repository\TrashItemRepositoryInterface;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class EventTrashItemHandler implements StoreTrashItemHandlerInterface, RestoreTrashItemHandlerInterface, RestoreConfigurationProviderInterface
 {
     public function __construct(
-        private TrashItemRepositoryInterface $trashItemRepository,
-        private EntityManagerInterface $entityManager,
-        private DoctrineRestoreHelperInterface $doctrineRestoreHelper,
-        private DomainEventCollectorInterface $domainEventCollector,
+        private readonly TrashItemRepositoryInterface $trashItemRepository,
+        private readonly EntityManagerInterface $entityManager,
+        private readonly DoctrineRestoreHelperInterface $doctrineRestoreHelper,
+        private readonly DomainEventCollectorInterface $domainEventCollector,
+        private readonly EventDispatcherInterface $dispatcher,
     ) {
     }
 
@@ -58,8 +61,8 @@ class EventTrashItemHandler implements StoreTrashItemHandlerInterface, RestoreTr
             'ext' => $resource->getExt(),
             'location' => $resource->getLocation()->getId(),
 
-            'imageId' => $image ? $image->getId() : null,
-            'pdfIdId' => $pdf ? $pdf->getId() : null,
+            'imageId' => $image?->getId(),
+            'pdfIdId' => $pdf?->getId(),
             'link' => $resource->getLink(),
             'email' => $resource->getEmail(),
             'phone' => $resource->getPhoneNumber(),
@@ -69,6 +72,8 @@ class EventTrashItemHandler implements StoreTrashItemHandlerInterface, RestoreTr
         ];
 
         $restoreType = isset($options['locale']) ? 'translation' : null;
+
+        $this->dispatcher->dispatch(new EventRemovedEvent($resource));
 
         return $this->trashItemRepository->create(
             Event::RESOURCE_KEY,
@@ -86,45 +91,47 @@ class EventTrashItemHandler implements StoreTrashItemHandlerInterface, RestoreTr
     public function restore(TrashItemInterface $trashItem, array $restoreFormData = []): object
     {
         $data = $trashItem->getRestoreData();
-        $eventId = (int) $trashItem->getResourceId();
-        $event = new Event();
-        $event->setLocale($data['locale']);
+        $entityId = (int) $trashItem->getResourceId();
+        $entity = new Event();
+        $entity->setLocale($data['locale']);
 
-        $event->setStartDate($data['startdate'] ? new \DateTimeImmutable($data['startdate']['date']) : null);
-        $event->setEndDate($data['enddate'] ? new \DateTimeImmutable($data['enddate']['date']) : null);
-        $event->setTitle($data['title']);
-        $event->setSubtitle($data['subtitle']);
-        $event->setSummary($data['summary']);
-        $event->setText($data['text']);
-        $event->setFooter($data['footer']);
-        $event->setRoutePath($data['slug']);
-        $event->setPublished($data['published']);
-        $event->setPublishedAt($data['publishedAt'] ? new \DateTime($data['publishedAt']['date']) : null);
-        $event->setExt($data['ext']);
-        $event->setLocation($this->entityManager->find(Location::class, $data['location']));
-        $event->setEmail($data['email']);
-        $event->setPhoneNumber($data['phone']);
-        $event->setImages($data['images']);
-        $event->setShowAuthor($data['showAuthor']);
-        $event->setShowDate($data['showDate']);
+        $entity->setStartDate($data['startdate'] ? new \DateTimeImmutable($data['startdate']['date']) : null);
+        $entity->setEndDate($data['enddate'] ? new \DateTimeImmutable($data['enddate']['date']) : null);
+        $entity->setTitle($data['title']);
+        $entity->setSubtitle($data['subtitle']);
+        $entity->setSummary($data['summary']);
+        $entity->setText($data['text']);
+        $entity->setFooter($data['footer']);
+        $entity->setRoutePath($data['slug']);
+        $entity->setPublished($data['published']);
+        $entity->setPublishedAt($data['publishedAt'] ? new \DateTime($data['publishedAt']['date']) : null);
+        $entity->setExt($data['ext']);
+        $entity->setLocation($this->entityManager->find(Location::class, $data['location']));
+        $entity->setEmail($data['email']);
+        $entity->setPhoneNumber($data['phone']);
+        $entity->setImages($data['images']);
+        $entity->setShowAuthor($data['showAuthor']);
+        $entity->setShowDate($data['showDate']);
 
         if ($data['link']) {
-            $event->setLink($data['link']);
+            $entity->setLink($data['link']);
         }
 
         if ($data['imageId']) {
-            $event->setImage($this->entityManager->find(MediaInterface::class, $data['imageId']));
+            $entity->setImage($this->entityManager->find(MediaInterface::class, $data['imageId']));
         }
 
         $this->domainEventCollector->collect(
-            new RestoredEvent($event, $data)
+            new RestoredEvent($entity, $data)
         );
 
-        $this->doctrineRestoreHelper->persistAndFlushWithId($event, $eventId);
-        $this->createRoute($this->entityManager, $eventId, $data['locale'], $event->getRoutePath(), Event::class);
+        $this->doctrineRestoreHelper->persistAndFlushWithId($entity, $entityId);
+        $this->createRoute($this->entityManager, $entityId, $data['locale'], $entity->getRoutePath(), Event::class);
         $this->entityManager->flush();
 
-        return $event;
+        $this->dispatcher->dispatch(new EventSavedEvent($entity));
+
+        return $entity;
     }
 
     private function createRoute(EntityManagerInterface $manager, int $id, string $locale, string $slug, string $class)

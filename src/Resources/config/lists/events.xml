@@ -110,13 +110,13 @@
             <joins ref="location"/>
         </property>
 
-        <property name="publishedState" visibility="yes" translation="sulu_event.published">
+        <property name="published" visibility="yes" translation="sulu_event.published" type="bool">
             <field-name>published</field-name>
             <entity-name>%sulu.model.event_translation.class%</entity-name>
             <joins ref="translation"/>
         </property>
 
-        <property name="published" visibility="yes" translation="sulu_event.published_date" type="datetime">
+        <property name="publishedAt" visibility="yes" translation="sulu_event.published_date" type="datetime">
             <field-name>publishedAt</field-name>
             <entity-name>%sulu.model.event_translation.class%</entity-name>
             <joins ref="translation"/>

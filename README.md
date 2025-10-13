@@ -53,7 +53,7 @@ Don't forget fo add the index to your sulu_search.yaml:
 
 add "events_published"!
 
-"events_published" is the index of published, "events" the index of unpublished elements. The latter one is an additionally dropdown element in the admin search.
+"events_published" is the index of published, "events" the index of unpublished elements. Both indexes are searchable in admin.
 ```yaml
 sulu_search:
     website:
@@ -126,7 +126,7 @@ meta information can be provided like it's done as usual when rendering your pag
 
 ## 🧶 Configuration
 This bundle contains settings for controlling the following tasks:
-- Settings for single view - Switch for header, default hero snippet and breadcrumbs
+- Settings for single view - Toggle for header, default hero snippet and breadcrumbs
 - Landing pages for breadcrumbs: this can be used to configure the intermediate pages for the breadcrumbs
 
 ## 👩‍🍳 Contributing
