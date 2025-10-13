@@ -2,7 +2,7 @@
 <massive-search-mapping xmlns="http://massiveart.io/schema/dic/massive-search-mapping">
     <mapping class="Manuxi\SuluEventBundle\Entity\Event">
         <index value="events' ~ (object.isPublished() ? '_published' : '')" expr="'events' ~ (object.isPublished() ? '_published' : '')"/>
-        <id expr="object.getIdentifier()"/>
+        <id property="id"/>
         <title expr="object.getTitle()"/>
         <description expr="object.getSubtitle()"/>
         <url expr="object.getRoutePath()" />

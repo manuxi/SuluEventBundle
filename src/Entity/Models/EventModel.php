@@ -87,6 +87,7 @@ class EventModel implements EventModelInterface
         $this->entityManager->flush();
 
         $this->dispatcher->dispatch(new EventSavedEvent($entity));
+
         return $entity;
     }
 
@@ -98,6 +99,8 @@ class EventModel implements EventModelInterface
     public function updateEvent(int $id, Request $request): Event
     {
         $entity = $this->findEventByIdAndLocale($id, $request);
+        $this->dispatcher->dispatch(new EventUnpublishedEvent($entity));
+
         $entity = $this->mapDataToEvent($entity, $request->request->all());
         $entity = $this->mapSettingsToEvent($entity, $request->request->all());
 
@@ -110,8 +113,8 @@ class EventModel implements EventModelInterface
         $this->entityManager->flush();
 
         $this->dispatcher->dispatch(new EventSavedEvent($entity));
-        return $entity;
 
+        return $entity;
     }
 
     /**
@@ -128,6 +131,7 @@ class EventModel implements EventModelInterface
 
         $entity = $this->eventRepository->publish($entity);
         $this->dispatcher->dispatch(new EventPublishedEvent($entity));
+
         return $entity;
     }
 
@@ -142,7 +146,7 @@ class EventModel implements EventModelInterface
             new UnpublishedEvent($entity, $request->request->all())
         );
         $entity = $this->eventRepository->unpublish($entity);
-        $this->dispatcher->dispatch(new EventUnpublishedEvent($entity));
+        $this->dispatcher->dispatch(new EventPublishedEvent($entity));
 
         return $entity;
     }

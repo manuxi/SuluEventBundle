@@ -182,7 +182,6 @@
         <!--SearchSubscriber-->
         <service id="sulu_event.search_subscriber" class="Manuxi\SuluEventBundle\Search\EventSearchSubscriber">
             <argument type="service" id="massive_search.search_manager"/>
-            <argument type="service" id="logger"/>
             <tag name="kernel.event_subscriber"/>
         </service>
 

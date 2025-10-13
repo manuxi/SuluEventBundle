@@ -41,8 +41,20 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
                 'sulu_search',
                 [
                     'indexes' => [
+                        'events' => [
+                            'name' => 'sulu_event.search.index.events',
+                            'icon' => 'su-calendar',
+                            'security_context' => Event::SECURITY_CONTEXT,
+                            'view' => [
+                                'name' => EventAdmin::EDIT_FORM_VIEW,
+                                'result_to_view' => [
+                                    'id' => 'id',
+                                    'locale' => 'locale',
+                                ],
+                            ],
+                        ],
                         'events_published' => [
-                            'name' => 'sulu_event.search_name',
+                            'name' => 'sulu_event.search.index.events_published',
                             'icon' => 'su-calendar',
                             'security_context' => Event::SECURITY_CONTEXT,
                             'view' => [

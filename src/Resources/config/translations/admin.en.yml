@@ -80,7 +80,10 @@ sulu_event:
             page_events: "Overview All Events"
             page_events_pending: "Overview pending Events"
             page_events_expired: "Overview expired Events"
-
+    search:
+        index:
+            events: "Events (Draft)"
+            events_published: "Events"
 sulu_activity:
     resource:
         events: "Event"

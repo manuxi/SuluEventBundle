@@ -81,7 +81,10 @@ sulu_event:
             page_events: "Übersichtsseite Alle Veranstaltungen"
             page_events_pending: "Übersichtsseite bevorstehende Veranstaltungen"
             page_events_expired: "Übersichtsseite vergangene Veranstaltungen"
-
+    search:
+        index:
+            events: "Veranstaltungen (Entwurf)"
+            events_published: "Veranstaltungen"
 sulu_activity:
     resource:
         events: "Veranstaltungen"
