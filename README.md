@@ -6,7 +6,7 @@
 </a>
 
 This bundle was made based on [Sulu workshop](https://github.com/sulu/sulu-workshop). 
-I made it to have the possibility to manage events in my projects. 
+I made it to have the possibility to manage events in my projects. Over time, more and more features have been added.
 
 This bundle contains
 - Several filters for Event Content Type
@@ -19,8 +19,8 @@ This bundle contains
 - Events for displaying Activities
 - Search indexes
   - refresh whenever entity is changed
-  - distinct between normal and draft
-  and more...
+  - distinct between published and draft
+and more...
 
 The events and their meta information is translatable.
 
