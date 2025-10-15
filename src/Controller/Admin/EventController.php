@@ -15,10 +15,6 @@ use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\Models\EventExcerptModel;
 use Manuxi\SuluEventBundle\Entity\Models\EventModel;
 use Manuxi\SuluEventBundle\Entity\Models\EventSeoModel;
-use Manuxi\SuluEventBundle\Search\Event\EventPublishedEvent;
-use Manuxi\SuluEventBundle\Search\Event\EventRemovedEvent;
-use Manuxi\SuluEventBundle\Search\Event\EventSavedEvent;
-use Manuxi\SuluEventBundle\Search\Event\EventUnpublishedEvent;
 use Sulu\Bundle\TrashBundle\Application\TrashManager\TrashManagerInterface;
 use Sulu\Component\Rest\AbstractRestController;
 use Sulu\Component\Rest\Exception\EntityNotFoundException;
@@ -33,7 +29,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @RouteResource("event")
@@ -85,6 +80,7 @@ class EventController extends AbstractRestController implements ClassResourceInt
     public function postAction(Request $request): Response
     {
         $entity = $this->eventModel->createEvent($request);
+
         return $this->handleView($this->view($entity, 201));
     }
 
@@ -155,9 +151,10 @@ class EventController extends AbstractRestController implements ClassResourceInt
                 };
             } catch (RestException $exc) {
                 $view = $this->view($exc->toArray(), 400);
+
                 return $this->handleView($view);
             }
-        } catch(MissingParameterException $e) {
+        } catch (MissingParameterException $e) {
             $entity = $this->eventModel->updateEvent($id, $request);
 
             $this->eventSeoModel->updateEventSeo($entity->getEventSeo(), $request);
