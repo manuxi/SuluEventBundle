@@ -6,7 +6,6 @@ namespace Manuxi\SuluEventBundle\Repository;
 
 use Datetime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
@@ -64,12 +63,14 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
     public function publish(Event $entity): Event
     {
         $entity->setPublished(true);
+
         return $this->save($entity);
     }
 
     public function unpublish(Event $entity): Event
     {
         $entity->setPublished(false);
+
         return $this->save($entity);
     }
 
@@ -100,13 +101,15 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
     {
         $queryBuilder = $this->createQueryBuilder('event')
             ->leftJoin('event.translations', 'translation')
-            ->where('translation.published = :published')->setParameter('published', 1)
-            ->andWhere('translation.locale = :locale')->setParameter('locale', $locale)
+            ->where('translation.published = :published')
+            ->setParameter('published', true)
+            ->andWhere('translation.locale = :locale')
+            ->setParameter('locale', $locale)
             ->orderBy('translation.publishedAt', 'DESC')
             ->setMaxResults($limit)
             ->setFirstResult($offset);
 
-        $this->prepareFilter($queryBuilder, []);
+        $this->prepareFilters($queryBuilder, []);
 
         $abbreviations = $queryBuilder->getQuery()->getResult();
         if (!$abbreviations) {
@@ -116,39 +119,37 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
         return $abbreviations;
     }
 
-    public function countForSitemap()
+    public function countForSitemap(string $locale)
     {
-        $query = $this->createQueryBuilder('e')
-            ->select('count(e)')
-            ->where('e.published = :published')
-            ->setParameter('published', 1);
+        $query = $this->createQueryBuilder('event')
+            ->select('count(event)')
+            ->leftJoin('event.translations', 'translation')
+            ->where('translation.published = :published')
+            ->setParameter('published', true)
+            ->andWhere('translation.locale = :locale')
+            ->setParameter('locale', $locale);
 
         return $query->getQuery()->getSingleScalarResult();
     }
 
-/*    public static function createEnabledCriteria(): Criteria
-    {
-        return Criteria::create()
-            ->andWhere(Criteria::expr()->eq('enabled', true))
-        ;
-    }*/
-
     public function findAllScheduledEvents(int $limit)
     {
         $now = new \DateTimeImmutable();
-        $queryBuilder = $this->createQueryBuilder('e');
+        $queryBuilder = $this->createQueryBuilder('event');
         $queryBuilder
-            ->where('e.published = :published')
+            ->leftJoin('event.translations', 'translation')
+            ->where('translation.published = :published')
+            ->setParameter('published', true)
             ->andWhere(
                 $queryBuilder->expr()->orX(
-                    $queryBuilder->expr()->gte('e.startDate', ':now'),
+                    $queryBuilder->expr()->gte('event.startDate', ':now'),
                     $queryBuilder->expr()->andX(
-                        $queryBuilder->expr()->isNotNull('e.endDate'),
-                        $queryBuilder->expr()->gte('e.endDate', ':now')
+                        $queryBuilder->expr()->isNotNull('event.endDate'),
+                        $queryBuilder->expr()->gte('event.endDate', ':now')
                     )
                 )
             )
-            ->orderBy('e.startDate', 'ASC')
+            ->orderBy('event.startDate', 'ASC')
             ->setMaxResults($limit)
             ->setParameter('published', 1)
             ->setParameter('now', $now->format('Y-m-d'));
@@ -167,11 +168,11 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
      */
     protected function append(QueryBuilder $queryBuilder, string $alias, string $locale, $options = []): array
     {
-        $queryBuilder->innerJoin($alias . '.translations', 'translation', Join::WITH, 'translation.locale = :locale');
+        $queryBuilder->innerJoin($alias.'.translations', 'translation', Join::WITH, 'translation.locale = :locale');
         $queryBuilder->setParameter('locale', $locale);
         $queryBuilder->andWhere('translation.published = :published');
         $queryBuilder->setParameter('published', true);
-        //$queryBuilder->andWhere($alias.'.published = true');
+        // $queryBuilder->andWhere($alias.'.published = true');
         /*        $queryBuilder->andWhere('('. $alias .'.startDate >= :now OR ('. $alias .'.endDate IS NOT NULL AND '. $alias .'.endDate >= :now))');
                 $queryBuilder->setParameter("now", (new Datetime())->format("Y-m-d H:i:s"));
                 $queryBuilder->orderBy($alias . ".startDate", "ASC");*/
@@ -198,7 +199,7 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
         $queryBuilder = $this->createQueryBuilder('event')
             ->select('count(event.id)')
             ->leftJoin('event.translations', 'translation')
-            ->where('event.published = :published')
+            ->where('translation.published = :published')
             ->setParameter('published', true)
             ->andWhere('translation.locale = :locale')
             ->setParameter('locale', $locale)
@@ -244,7 +245,7 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
             ->setMaxResults($limit)
             ->setFirstResult($pageCurrent * $limit);
 
-        $this->prepareFilter($queryBuilder, $filters);
+        $this->prepareFilters($queryBuilder, $filters);
 
         // Apply offset/max results
         if (!$this->setOffsetResults($queryBuilder, $page, $pageSize, $limit)) {
@@ -257,31 +258,6 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
         }
 
         return $events;
-    }
-
-    public function getActiveEvents(array $filters, string $locale, ?int $page, $pageSize, $limit = null, array $options = []): array
-    {
-        // Initialize the query builder
-        $queryBuilder = $this->createQueryBuilder('event')
-            ->leftJoin('event.translations', 'translation')
-            ->where('event.published = :published')
-            ->andWhere('translation.locale = :locale')
-            ->setParameter('published', true)
-            ->setParameter('locale', $locale)
-            ->orderBy('event.startDate', 'DESC');
-
-        // Apply additional filters
-        $this->prepareFilters($queryBuilder, $filters);
-
-        // Apply offset/max results
-        if (!$this->setOffsetResults($queryBuilder, $page, $pageSize, $limit)) {
-            return [];
-        }
-
-        // Execute the query and return results
-        $events = $queryBuilder->getQuery()->getResult();
-
-        return $events ?: [];
     }
 
     private function setOffsetResults(QueryBuilder $queryBuilder, $page, $pageSize, $limit = null): bool
@@ -320,91 +296,91 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
         $this->prepareCategoriesFilter($queryBuilder, $filters);
     }
 
+    private function prepareTypesFilter(QueryBuilder $queryBuilder, array $filters): void
+    {
+        if (empty($filters['types'])) {
+            return;
+        }
+
+        $hasPending = in_array('pending', $filters['types'], true);
+        $hasExpired = in_array('expired', $filters['types'], true);
+
+        // if pending and expired both are selected, we don't need them.
+        if ($hasPending && $hasExpired) {
+            return;
+        }
+
+        $now = new \Datetime();
+        $todayStart = (clone $now)->setTime(0, 0, 0);
+
+        if ($hasPending) {
+            $queryBuilder->andWhere(
+                '(event.endDate IS NOT NULL AND event.endDate >= :now) OR '.
+                '(event.endDate IS NULL AND event.startDate >= :todayStart)'
+            );
+            $queryBuilder->setParameter('now', $now);
+            $queryBuilder->setParameter('todayStart', $todayStart);
+        } elseif ($hasExpired) {
+            $queryBuilder->andWhere(
+                '(event.endDate IS NOT NULL AND event.endDate < :now) OR '.
+                '(event.endDate IS NULL AND event.startDate < :todayStart)'
+            );
+            $queryBuilder->setParameter('now', $now);
+            $queryBuilder->setParameter('todayStart', $todayStart);
+        }
+    }
+
     private function prepareTagsFilter(QueryBuilder $queryBuilder, array $filters): void
     {
-        if (!empty($filters['tags'])) {
-            $queryBuilder->leftJoin('excerpt_translation.tags', 'tags');
+        if (empty($filters['tags'])) {
+            return;
+        }
 
-            $i = 0;
-            if ('and' === $filters['tagOperator']) {
-                $andWhere = '';
-                foreach ($filters['tags'] as $tag) {
-                    if (0 === $i) {
-                        $andWhere .= 'tags = :tag'.$i;
-                    } else {
-                        $andWhere .= ' AND tags = :tag'.$i;
-                    }
-                    $queryBuilder->setParameter('tag'.$i, $tag);
-                    ++$i;
-                }
-                $queryBuilder->andWhere($andWhere);
-            } elseif ('or' === $filters['tagOperator']) {
-                $orWhere = '';
-                foreach ($filters['tags'] as $tag) {
-                    if (0 === $i) {
-                        $orWhere .= 'tags = :tag'.$i;
-                    } else {
-                        $orWhere .= ' OR tags = :tag'.$i;
-                    }
-                    $queryBuilder->setParameter('tag'.$i, $tag);
-                    ++$i;
-                }
-                $queryBuilder->andWhere($orWhere);
+        $operator = $filters['tagOperator'] ?? 'or';
+
+        if ('and' === $operator) {
+            // AND: Entity must have ALL tags (multiple JOINs necessary)
+            foreach ($filters['tags'] as $i => $tag) {
+                $alias = 'tag'.$i;
+                $queryBuilder
+                    ->innerJoin('excerpt_translation.tags', $alias)
+                    ->andWhere($queryBuilder->expr()->eq($alias.'.id', ':tag'.$i))
+                    ->setParameter('tag'.$i, $tag);
             }
+        } else {
+            // OR: Entity must at least have one of the tags
+            $queryBuilder
+                ->leftJoin('excerpt_translation.tags', 'tags')
+                ->andWhere($queryBuilder->expr()->in('tags.id', ':tags'))
+                ->setParameter('tags', $filters['tags']);
         }
     }
 
     private function prepareCategoriesFilter(QueryBuilder $queryBuilder, array $filters): void
     {
-        if (!empty($filters['categories'])) {
+        if (empty($filters['categories'])) {
+            return;
+        }
+
+        $operator = $filters['categoryOperator'] ?? 'or';
+
+        if ('and' === $operator) {
+            // AND: Entity must have ALL categories (multiple JOINs necessary)
             $queryBuilder->leftJoin('excerpt_translation.categories', 'categories');
 
-            $i = 0;
-            if ('and' === $filters['categoryOperator']) {
-                $andWhere = '';
-                foreach ($filters['categories'] as $category) {
-                    if (0 === $i) {
-                        $andWhere .= 'categories = :category'.$i;
-                    } else {
-                        $andWhere .= ' AND categories = :category'.$i;
-                    }
-                    $queryBuilder->setParameter('category'.$i, $category);
-                    ++$i;
-                }
-                $queryBuilder->andWhere($andWhere);
-            } elseif ('or' === $filters['categoryOperator']) {
-                $orWhere = '';
-                foreach ($filters['categories'] as $category) {
-                    if (0 === $i) {
-                        $orWhere .= 'categories = :category'.$i;
-                    } else {
-                        $orWhere .= ' OR categories = :category'.$i;
-                    }
-                    $queryBuilder->setParameter('category'.$i, $category);
-                    ++$i;
-                }
-                $queryBuilder->andWhere($orWhere);
+            foreach ($filters['categories'] as $i => $category) {
+                $alias = 'category'.$i;
+                $queryBuilder
+                    ->innerJoin('excerpt_translation.categories', $alias)
+                    ->andWhere($queryBuilder->expr()->eq($alias.'.id', ':category'.$i))
+                    ->setParameter('category'.$i, $category);
             }
-        }
-    }
-
-    private function prepareTypesFilter(QueryBuilder $queryBuilder, array $filters): void
-    {
-        if (!empty($filters['types'])) {
-            // if pending and expired both are selected, we dont need them.
-            if (in_array('pending', $filters['types']) and in_array('expired', $filters['types'])) {
-                return;
-            }
-
-            foreach ($filters['types'] as $index => $type) {
-                if ('pending' == $type) {
-                    $queryBuilder->andWhere('(event.startDate >= :now OR (event.endDate IS NOT NULL AND event.endDate >= :now))');
-                    $queryBuilder->setParameter('now', (new \Datetime())->format('Y-m-d H:i:s'));
-                } elseif ('expired' == $type) {
-                    $queryBuilder->andWhere('(event.startDate < :now and (event.endDate IS NULL OR event.endDate < :now))');
-                    $queryBuilder->setParameter('now', (new \Datetime())->format('Y-m-d H:i:s'));
-                }
-            }
+        } else {
+            // OR: Entity must at least have one of the categories
+            $queryBuilder
+                ->leftJoin('excerpt_translation.categories', 'categories')
+                ->andWhere($queryBuilder->expr()->in('categories.id', ':categories'))
+                ->setParameter('categories', $filters['categories']);
         }
     }
 }

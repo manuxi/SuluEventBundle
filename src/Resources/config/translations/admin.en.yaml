@@ -28,6 +28,8 @@ sulu_event:
     creator: "Created by"
     changed_date: "Last Change at"
     changer: "Last change by"
+    author: "Author"
+    authored: "authored"
     hero:
         image: "Hero-Image"
     header:

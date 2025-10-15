@@ -108,6 +108,20 @@
             <tag name="sulu.smart_content.data_provider" alias="events"/>
         </service>
 
+        <!--
+        <service id="sulu_event.event_data_provider.events_pending"
+                 class="Manuxi\SuluEventBundle\Content\EventDataProviderPending"
+                 parent="sulu_event.event_data_provider">
+            <tag name="sulu.smart_content.data_provider" alias="events_pending"/>
+        </service>
+
+        <service id="sulu_event.event_data_provider.events_expired"
+                 class="Manuxi\SuluEventBundle\Content\EventDataProviderExpired"
+                 parent="sulu_event.event_data_provider">
+            <tag name="sulu.smart_content.data_provider" alias="events_expired"/>
+        </service>
+        -->
+
         <service id="sulu_event.webspace_selector"
                  class="Manuxi\SuluEventBundle\Admin\Helper\WebspaceSelector"
                  public="true">

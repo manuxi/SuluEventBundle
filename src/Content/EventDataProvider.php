@@ -24,12 +24,12 @@ class EventDataProvider extends BaseDataProvider
         ArraySerializerInterface $serializer,
         private RequestStack $requestStack,
         private EntityManagerInterface $entityManager,
-        private TranslatorInterface $translator,
+        protected TranslatorInterface $translator,
     ) {
         parent::__construct($repository, $serializer);
     }
 
-    private function getTypes(): array
+    protected function getTypes(): array
     {
         return [
             ['type' => 'pending', 'title' => $this->translator->trans('sulu_event.filter.pending', [], 'admin')],
@@ -37,7 +37,7 @@ class EventDataProvider extends BaseDataProvider
         ];
     }
 
-    private function getSorting(): array
+    protected function getSorting(): array
     {
         return [
             ['column' => 'event.startDate', 'title' => 'sulu_event.sorting.start_date'],
@@ -78,9 +78,12 @@ class EventDataProvider extends BaseDataProvider
         $locale = $options['locale'];
         $request = $this->requestStack->getCurrentRequest();
         $options['page'] = $request->get('p');
-        $events = $this->entityManager->getRepository(Event::class)->findByFilters($filters, $page, $pageSize, $limit, $locale, $options);
 
-        return new DataProviderResult($events, $this->entityManager->getRepository(Event::class)->hasNextPage($filters, $page, $pageSize, $limit, $locale, $options));
+        $repo = $this->entityManager->getRepository(Event::class);
+
+        $events = $repo->findByFilters($filters, $page, $pageSize, $limit, $locale, $options);
+
+        return new DataProviderResult($events, $repo->hasNextPage($filters, $page, $pageSize, $limit, $locale, $options));
     }
 
     protected function decorateDataItems(array $data): array
