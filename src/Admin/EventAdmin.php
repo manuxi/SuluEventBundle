@@ -85,6 +85,35 @@ class EventAdmin extends Admin
             $listToolbarActions[] = new ToolbarAction('sulu_admin.delete');
         }
 
+        /*
+        if ($this->securityChecker->hasPermission(Event::SECURITY_CONTEXT, PermissionTypes::DELETE)) {
+
+            $formToolbarActions[] = new DropdownToolbarAction(
+                'sulu_admin.delete',
+                'su-trash-alt',
+                [
+                    new ToolbarAction(
+                        'sulu_admin.delete',
+                        [
+                            'visible_condition' => '(!_permissions || _permissions.delete) && url != "/"',
+                            'router_attributes_to_back_view' => ['webspace'],
+                        ]
+                    ),
+                    new ToolbarAction(
+                        'sulu_admin.delete',
+                        [
+                            'visible_condition' => '(!_permissions || _permissions.delete) && url != "/"',
+                            'router_attributes_to_back_view' => ['webspace'],
+                            'delete_locale' => true,
+                        ]
+                    ),
+                ]
+            );
+
+            $listToolbarActions[] = new ToolbarAction('sulu_admin.delete');
+        }
+        */
+
         if ($this->securityChecker->hasPermission(Event::SECURITY_CONTEXT, PermissionTypes::VIEW)) {
             $listToolbarActions[] = new ToolbarAction('sulu_admin.export');
         }

@@ -6,7 +6,7 @@ namespace Manuxi\SuluEventBundle\EventListener\Doctrine;
 
 use Doctrine\Persistence\Event\LifecycleEventArgs;
 use Doctrine\Persistence\Event\LoadClassMetadataEventArgs;
-use Manuxi\SuluEventBundle\Entity\Interfaces\AuthoredInterface;
+use Manuxi\SuluSharedToolsBundle\Entity\Interfaces\AuthoredInterface;
 
 class AuthoredListener
 {
@@ -17,7 +17,7 @@ class AuthoredListener
         $metadata = $event->getClassMetadata();
         $reflection = $metadata->getReflectionClass();
 
-        if (null !== $reflection && $reflection->implementsInterface('Manuxi\SuluEventBundle\Entity\Interfaces\AuthoredInterface')) {
+        if (null !== $reflection && $reflection->implementsInterface('Manuxi\SuluSharedToolsBundle\Entity\Interfaces\AuthoredInterface')) {
             if (!$metadata->hasField(self::AUTHORED_PROPERTY_NAME)) {
                 $metadata->mapField([
                     'fieldName' => self::AUTHORED_PROPERTY_NAME,

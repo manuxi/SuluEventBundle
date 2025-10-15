@@ -1,2 +1,10 @@
 sulu_event:
-    events: Veranstaltungen
+    events: "Veranstaltungen"
+
+search:
+    index:
+        events: "Veranstaltungen"
+        events_published: "Veranstaltungen"
+    icon:
+        abbreviations: "tags"
+        abbreviations_published: "tags"

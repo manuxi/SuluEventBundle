@@ -8,8 +8,8 @@ use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Manuxi\SuluEventBundle\Entity\EventSeo;
 use Manuxi\SuluEventBundle\Entity\Interfaces\EventSeoModelInterface;
-use Manuxi\SuluEventBundle\Entity\Traits\ArrayPropertyTrait;
 use Manuxi\SuluEventBundle\Repository\EventSeoRepository;
+use Manuxi\SuluSharedToolsBundle\Entity\Traits\ArrayPropertyTrait;
 use Symfony\Component\HttpFoundation\Request;
 
 class EventSeoModel implements EventSeoModelInterface

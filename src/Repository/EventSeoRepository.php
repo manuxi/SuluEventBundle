@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Repository;
 
-use Manuxi\SuluEventBundle\Entity\EventSeo;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\OptimisticLockException;
-use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
+use Manuxi\SuluEventBundle\Entity\EventSeo;
 
 /**
  * @method EventSeo|null find($id, $lockMode = null, $lockVersion = null)
@@ -20,7 +18,6 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class EventSeoRepository extends ServiceEntityRepository
 {
-
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, EventSeo::class);
@@ -50,6 +47,7 @@ class EventSeoRepository extends ServiceEntityRepository
     {
         $this->getEntityManager()->persist($eventSeo);
         $this->getEntityManager()->flush();
+
         return $eventSeo;
     }
 
@@ -64,5 +62,4 @@ class EventSeoRepository extends ServiceEntityRepository
 
         return $eventSeo;
     }
-
 }

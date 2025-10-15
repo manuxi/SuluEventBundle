@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Manuxi\SuluEventBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Manuxi\SuluEventBundle\Entity\Interfaces\ExcerptTranslationInterface;
 use Manuxi\SuluEventBundle\Entity\Traits\ExcerptTranslationTrait;
 use Manuxi\SuluEventBundle\Repository\EventExcerptTranslationRepository;
+use Manuxi\SuluSharedToolsBundle\Entity\Interfaces\ExcerptTranslationInterface;
 
 #[ORM\Entity(repositoryClass: EventExcerptTranslationRepository::class)]
 #[ORM\Table(name: 'app_event_excerpt_translation')]
@@ -19,7 +19,7 @@ class EventExcerptTranslation implements ExcerptTranslationInterface
         #[ORM\ManyToOne(targetEntity: EventExcerpt::class, inversedBy: 'translations')]
         #[ORM\JoinColumn(nullable: false)]
         private EventExcerpt $eventExcerpt,
-        string $locale
+        string $locale,
     ) {
         $this->setLocale($locale);
         $this->initExcerptTranslationTrait();

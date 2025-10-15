@@ -6,15 +6,15 @@ namespace Manuxi\SuluEventBundle\Entity;
 
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Manuxi\SuluEventBundle\Entity\Interfaces\AuditableInterface;
-use Manuxi\SuluEventBundle\Entity\Traits\AuditableTrait;
-use Manuxi\SuluEventBundle\Entity\Traits\ImageTrait;
-use Manuxi\SuluEventBundle\Entity\Traits\LinkTrait;
-use Manuxi\SuluEventBundle\Entity\Traits\PdfTrait;
-use Manuxi\SuluEventBundle\Entity\Traits\PublishedTrait;
-use Manuxi\SuluEventBundle\Entity\Traits\RouteTrait;
-use Manuxi\SuluEventBundle\Entity\Traits\ShowAuthorTrait;
-use Manuxi\SuluEventBundle\Entity\Traits\ShowDateTrait;
+use Manuxi\SuluSharedToolsBundle\Entity\Interfaces\AuditableInterface;
+use Manuxi\SuluSharedToolsBundle\Entity\Traits\AuditableTrait;
+use Manuxi\SuluSharedToolsBundle\Entity\Traits\ImageTrait;
+use Manuxi\SuluSharedToolsBundle\Entity\Traits\LinkTrait;
+use Manuxi\SuluSharedToolsBundle\Entity\Traits\PdfTrait;
+use Manuxi\SuluSharedToolsBundle\Entity\Traits\PublishedTrait;
+use Manuxi\SuluSharedToolsBundle\Entity\Traits\RouteTrait;
+use Manuxi\SuluSharedToolsBundle\Entity\Traits\ShowAuthorTrait;
+use Manuxi\SuluSharedToolsBundle\Entity\Traits\ShowDateTrait;
 use Manuxi\SuluEventBundle\Repository\EventTranslationRepository;
 
 #[ORM\Entity(repositoryClass: EventTranslationRepository::class)]

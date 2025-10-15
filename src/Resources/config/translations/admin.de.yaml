@@ -20,6 +20,8 @@ sulu_event:
     publish: "veröffentlichen"
     unpublish: "Veröffentlichen beenden"
     published: "veröffentlicht"
+    published_state: "Status"
+    not_published: "nicht veröffentlicht"
     published_date: "Veröffentlichungsdatum"
     published_at: "Veröffentlicht am"
     show_author: "Autor anzeigen"

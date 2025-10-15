@@ -9,11 +9,11 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\Mapping\JoinColumn;
 use JMS\Serializer\Annotation as Serializer;
-use Manuxi\SuluEventBundle\Entity\Interfaces\ExcerptInterface;
-use Manuxi\SuluEventBundle\Entity\Interfaces\ExcerptTranslatableInterface;
-use Manuxi\SuluEventBundle\Entity\Traits\ExcerptTrait;
-use Manuxi\SuluEventBundle\Entity\Traits\ExcerptTranslatableTrait;
 use Manuxi\SuluEventBundle\Repository\EventExcerptRepository;
+use Manuxi\SuluSharedToolsBundle\Entity\Interfaces\ExcerptInterface;
+use Manuxi\SuluSharedToolsBundle\Entity\Interfaces\ExcerptTranslatableInterface;
+use Manuxi\SuluSharedToolsBundle\Entity\Traits\ExcerptTrait;
+use Manuxi\SuluSharedToolsBundle\Entity\Traits\ExcerptTranslatableTrait;
 
 #[ORM\Entity(repositoryClass: EventExcerptRepository::class)]
 #[ORM\Table(name: 'app_event_excerpt')]
@@ -24,7 +24,7 @@ class EventExcerpt implements ExcerptInterface, ExcerptTranslatableInterface
 
     #[Serializer\Exclude]
     #[ORM\OneToOne(inversedBy: 'eventExcerpt', targetEntity: Event::class, cascade: ['persist', 'remove'])]
-    #[ORM\JoinColumn(name: 'event_id', referencedColumnName: "id", nullable: false)]
+    #[JoinColumn(name: 'event_id', referencedColumnName: 'id', nullable: false)]
     private ?Event $event = null;
 
     #[Serializer\Exclude]
@@ -44,6 +44,7 @@ class EventExcerpt implements ExcerptInterface, ExcerptTranslatableInterface
     public function setEvent(Event $event): self
     {
         $this->event = $event;
+
         return $this;
     }
 
@@ -71,5 +72,4 @@ class EventExcerpt implements ExcerptInterface, ExcerptTranslatableInterface
 
         return $translation;
     }
-
 }

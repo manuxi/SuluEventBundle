@@ -20,6 +20,8 @@ sulu_event:
     publish: "publish"
     unpublish: "unpublish"
     published: "published"
+    published_state: "State"
+    not_published: "not published"
     published_date: "Publish Date"
     published_at: "Published at"
     show_author: "Show Author"

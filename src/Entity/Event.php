@@ -9,16 +9,16 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation as Serializer;
-use Manuxi\SuluEventBundle\Entity\Interfaces\AuditableTranslatableInterface;
-use Manuxi\SuluEventBundle\Entity\Traits\AuditableTranslatableTrait;
-use Manuxi\SuluEventBundle\Entity\Traits\ImageTranslatableTrait;
-use Manuxi\SuluEventBundle\Entity\Traits\LinkTranslatableTrait;
-use Manuxi\SuluEventBundle\Entity\Traits\PdfTranslatableTrait;
-use Manuxi\SuluEventBundle\Entity\Traits\PublishedTranslatableTrait;
-use Manuxi\SuluEventBundle\Entity\Traits\RouteTranslatableTrait;
-use Manuxi\SuluEventBundle\Entity\Traits\ShowAuthorTranslatableTrait;
-use Manuxi\SuluEventBundle\Entity\Traits\ShowDateTranslatableTrait;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
+use Manuxi\SuluSharedToolsBundle\Entity\Interfaces\AuditableTranslatableInterface;
+use Manuxi\SuluSharedToolsBundle\Entity\Traits\AuditableTranslatableTrait;
+use Manuxi\SuluSharedToolsBundle\Entity\Traits\ImageTranslatableTrait;
+use Manuxi\SuluSharedToolsBundle\Entity\Traits\LinkTranslatableTrait;
+use Manuxi\SuluSharedToolsBundle\Entity\Traits\PdfTranslatableTrait;
+use Manuxi\SuluSharedToolsBundle\Entity\Traits\PublishedTranslatableTrait;
+use Manuxi\SuluSharedToolsBundle\Entity\Traits\RouteTranslatableTrait;
+use Manuxi\SuluSharedToolsBundle\Entity\Traits\ShowAuthorTranslatableTrait;
+use Manuxi\SuluSharedToolsBundle\Entity\Traits\ShowDateTranslatableTrait;
 
 #[ORM\Entity(repositoryClass: EventRepository::class)]
 #[ORM\Table(name: 'app_event')]
@@ -32,6 +32,7 @@ class Event implements AuditableTranslatableInterface
     use RouteTranslatableTrait;
     use ShowAuthorTranslatableTrait;
     use ShowDateTranslatableTrait;
+
     public const RESOURCE_KEY = 'events';
     public const FORM_KEY = 'event_details';
     public const LIST_KEY = 'events';
@@ -103,7 +104,7 @@ class Event implements AuditableTranslatableInterface
 
     public function getIdentifier(): string
     {
-        #return hash('sha256', $this->id.'|'.$this->locale);
+        // return hash('sha256', $this->id.'|'.$this->locale);
         return $this->id.'-'.$this->locale;
     }
 

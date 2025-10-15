@@ -59,7 +59,7 @@
             <params>
                 <param name="values"
                        type="expression"
-                       value="service('sulu_event.country_code_select').getValues()"
+                       value="service('sulu_shared_tools.country_code_select').getValues()"
                 />
             </params>
         </property>

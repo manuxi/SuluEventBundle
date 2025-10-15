@@ -9,11 +9,11 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\Mapping\JoinColumn;
 use JMS\Serializer\Annotation as Serializer;
-use Manuxi\SuluEventBundle\Entity\Interfaces\SeoInterface;
-use Manuxi\SuluEventBundle\Entity\Interfaces\SeoTranslatableInterface;
-use Manuxi\SuluEventBundle\Entity\Traits\SeoTrait;
-use Manuxi\SuluEventBundle\Entity\Traits\SeoTranslatableTrait;
 use Manuxi\SuluEventBundle\Repository\EventSeoRepository;
+use Manuxi\SuluSharedToolsBundle\Entity\Interfaces\SeoInterface;
+use Manuxi\SuluSharedToolsBundle\Entity\Interfaces\SeoTranslatableInterface;
+use Manuxi\SuluSharedToolsBundle\Entity\Traits\SeoTrait;
+use Manuxi\SuluSharedToolsBundle\Entity\Traits\SeoTranslatableTrait;
 
 #[ORM\Entity(repositoryClass: EventSeoRepository::class)]
 #[ORM\Table(name: 'app_event_seo')]
@@ -24,7 +24,7 @@ class EventSeo implements SeoInterface, SeoTranslatableInterface
 
     #[Serializer\Exclude]
     #[ORM\OneToOne(inversedBy: 'eventSeo', targetEntity: Event::class, cascade: ['persist', 'remove'])]
-    #[ORM\JoinColumn(name: 'event_id', referencedColumnName: "id", nullable: false)]
+    #[JoinColumn(name: 'event_id', referencedColumnName: 'id', nullable: false)]
     private ?Event $event = null;
 
     #[Serializer\Exclude]
@@ -44,6 +44,7 @@ class EventSeo implements SeoInterface, SeoTranslatableInterface
     public function setEvent(Event $event): self
     {
         $this->event = $event;
+
         return $this;
     }
 

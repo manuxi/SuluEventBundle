@@ -110,8 +110,16 @@
             <joins ref="location"/>
         </property>
 
+        <!--
         <property name="published" visibility="yes" translation="sulu_event.published" type="bool">
             <field-name>published</field-name>
+            <entity-name>%sulu.model.event_translation.class%</entity-name>
+            <joins ref="translation"/>
+        </property>
+        -->
+
+        <property name="publishedState" translation="sulu_event.published" visibility="yes" type="bool">
+            <field-name>publishedState</field-name>
             <entity-name>%sulu.model.event_translation.class%</entity-name>
             <joins ref="translation"/>
         </property>

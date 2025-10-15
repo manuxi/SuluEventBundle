@@ -19,6 +19,7 @@
     "require": {
         "php": "^8.1",
         "doctrine/doctrine-bundle": "^2.13",
+        "manuxi/sulu-shared-tools-bundle": "^0.1.0",
         "massive/search-bundle": "^2.9",
         "phpcr/phpcr-migrations-bundle": "^1.6",
         "sulu/automation-bundle": "^2.1",

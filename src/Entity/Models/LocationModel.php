@@ -11,8 +11,8 @@ use Manuxi\SuluEventBundle\Domain\Event\Location\ModifiedEvent;
 use Manuxi\SuluEventBundle\Domain\Event\Location\RemovedEvent;
 use Manuxi\SuluEventBundle\Entity\Interfaces\LocationModelInterface;
 use Manuxi\SuluEventBundle\Entity\Location;
-use Manuxi\SuluEventBundle\Entity\Traits\ArrayPropertyTrait;
 use Manuxi\SuluEventBundle\Repository\LocationRepository;
+use Manuxi\SuluSharedToolsBundle\Entity\Traits\ArrayPropertyTrait;
 use Sulu\Bundle\ActivityBundle\Application\Collector\DomainEventCollectorInterface;
 use Sulu\Bundle\MediaBundle\Entity\MediaRepositoryInterface;
 use Sulu\Component\Rest\Exception\EntityNotFoundException;
@@ -25,12 +25,11 @@ class LocationModel implements LocationModelInterface
     public function __construct(
         private LocationRepository $locationRepository,
         private MediaRepositoryInterface $mediaRepository,
-        private DomainEventCollectorInterface $domainEventCollector
-    ) {}
+        private DomainEventCollectorInterface $domainEventCollector,
+    ) {
+    }
 
     /**
-     * @param int $id
-     * @return Location
      * @throws EntityNotFoundException
      */
     public function getLocation(int $id): Location
@@ -39,6 +38,7 @@ class LocationModel implements LocationModelInterface
         if (!$entity) {
             throw new EntityNotFoundException($this->locationRepository->getClassName(), $id);
         }
+
         return $entity;
     }
 
@@ -55,8 +55,6 @@ class LocationModel implements LocationModelInterface
     }
 
     /**
-     * @param Request $request
-     * @return Location
      * @throws EntityNotFoundException
      * @throws ORMException
      * @throws OptimisticLockException
@@ -68,13 +66,11 @@ class LocationModel implements LocationModelInterface
         $this->domainEventCollector->collect(
             new CreatedEvent($entity, $request->request->all())
         );
+
         return $this->locationRepository->save($entity);
     }
 
     /**
-     * @param int $id
-     * @param Request $request
-     * @return Location
      * @throws EntityNotFoundException
      * @throws ORMException
      * @throws OptimisticLockException
@@ -86,6 +82,7 @@ class LocationModel implements LocationModelInterface
         $this->domainEventCollector->collect(
             new ModifiedEvent($entity, $request->request->all())
         );
+
         return $this->locationRepository->save($entity);
     }
 
@@ -134,6 +131,7 @@ class LocationModel implements LocationModelInterface
             }
             $entity->setImage($image);
         }
+
         return $entity;
     }
 }

@@ -5,19 +5,18 @@ declare(strict_types=1);
 namespace Manuxi\SuluEventBundle\Entity;
 
 use Doctrine\DBAL\Types\Types;
-use Manuxi\SuluEventBundle\Entity\Traits\ImageTrait;
-use Manuxi\SuluEventBundle\Repository\LocationRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Manuxi\SuluEventBundle\Repository\LocationRepository;
+use Manuxi\SuluSharedToolsBundle\Entity\Traits\ImageTrait;
 
 #[ORM\Entity(repositoryClass: LocationRepository::class)]
 #[ORM\Table(name: 'app_location')]
 class Location
 {
+    use ImageTrait;
     public const RESOURCE_KEY = 'locations';
     public const FORM_KEY = 'location_details';
     public const LIST_KEY = 'locations';
-
-    use ImageTrait;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -61,6 +60,7 @@ class Location
     public function setName(string $name): self
     {
         $this->name = $name;
+
         return $this;
     }
 
@@ -72,6 +72,7 @@ class Location
     public function setStreet(?string $street): self
     {
         $this->street = $street;
+
         return $this;
     }
 
@@ -83,6 +84,7 @@ class Location
     public function setNumber(?string $number): self
     {
         $this->number = $number;
+
         return $this;
     }
 
@@ -94,6 +96,7 @@ class Location
     public function setPostalCode(?string $postalCode): self
     {
         $this->postalCode = $postalCode;
+
         return $this;
     }
 
@@ -105,6 +108,7 @@ class Location
     public function setCity(?string $city): self
     {
         $this->city = $city;
+
         return $this;
     }
 
@@ -116,6 +120,7 @@ class Location
     public function setState(?string $state): self
     {
         $this->state = $state;
+
         return $this;
     }
 
@@ -127,6 +132,7 @@ class Location
     public function setCountryCode(?string $countryCode): self
     {
         $this->countryCode = $countryCode;
+
         return $this;
     }
 
@@ -138,7 +144,7 @@ class Location
     public function setNotes(?string $notes): self
     {
         $this->notes = $notes;
+
         return $this;
     }
-
 }

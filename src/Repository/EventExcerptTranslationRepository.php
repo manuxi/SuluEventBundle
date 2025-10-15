@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Repository;
 
-use Manuxi\SuluEventBundle\Entity\EventExcerptTranslation;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Manuxi\SuluEventBundle\Entity\EventExcerptTranslation;
 
 /**
  * @method EventExcerptTranslation|null find($id, $lockMode = null, $lockVersion = null)

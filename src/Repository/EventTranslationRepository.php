@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Repository;
 
-use Doctrine\Common\Collections\Criteria;
-use Manuxi\SuluEventBundle\Entity\EventTranslation;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Common\Collections\Criteria;
 use Doctrine\Persistence\ManagerRegistry;
+use Manuxi\SuluEventBundle\Entity\EventTranslation;
 
 /**
  * @method EventTranslation|null find($id, $lockMode = null, $lockVersion = null)
@@ -44,7 +44,6 @@ class EventTranslationRepository extends ServiceEntityRepository
     {
         return Criteria::create()
             ->andWhere(Criteria::expr()->in('event', $ids))
-            ;
+        ;
     }
-
 }
