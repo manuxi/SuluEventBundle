@@ -12,7 +12,7 @@ use Manuxi\SuluSharedToolsBundle\Entity\Traits\ImageTrait;
 use Manuxi\SuluSharedToolsBundle\Entity\Traits\LinkTrait;
 use Manuxi\SuluSharedToolsBundle\Entity\Traits\PdfTrait;
 use Manuxi\SuluSharedToolsBundle\Entity\Traits\PublishedTrait;
-use Manuxi\SuluSharedToolsBundle\Entity\Traits\RouteTrait;
+use Manuxi\SuluSharedToolsBundle\Entity\Traits\RoutePathTrait;
 use Manuxi\SuluSharedToolsBundle\Entity\Traits\ShowAuthorTrait;
 use Manuxi\SuluSharedToolsBundle\Entity\Traits\ShowDateTrait;
 use Manuxi\SuluEventBundle\Repository\EventTranslationRepository;
@@ -22,7 +22,7 @@ use Manuxi\SuluEventBundle\Repository\EventTranslationRepository;
 class EventTranslation implements AuditableInterface
 {
     use AuditableTrait;
-    use RouteTrait;
+    use RoutePathTrait;
     use ImageTrait;
     use LinkTrait;
     use PdfTrait;

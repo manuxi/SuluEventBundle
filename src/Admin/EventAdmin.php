@@ -50,7 +50,7 @@ class EventAdmin extends Admin
         if ($this->securityChecker->hasPermission(Event::SECURITY_CONTEXT, PermissionTypes::EDIT)) {
             $rootNavigationItem = new NavigationItem(static::NAV_ITEM);
             $rootNavigationItem->setIcon('su-calendar');
-            $rootNavigationItem->setPosition(32);
+            $rootNavigationItem->setPosition(37);
             $rootNavigationItem->setView(static::LIST_VIEW);
 
             // Configure a NavigationItem with a View
