@@ -1,9 +1,9 @@
 # SuluEventBundle!
 ![php workflow](https://github.com/manuxi/SuluEventBundle/actions/workflows/php.yml/badge.svg)
 ![symfony workflow](https://github.com/manuxi/SuluEventBundle/actions/workflows/symfony.yml/badge.svg)
-<a href="https://github.com/manuxi/SuluEventBundle/tags" target="_blank">
-    <img src="https://img.shields.io/github/v/tag/manuxi/SuluEventBundle" alt="GitHub license">
-</a>
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/manuxi/SuluEventBundle/LICENSE)
+![GitHub Tag](https://img.shields.io/github/v/tag/manuxi/SuluEventBundle)
+![Supports Sulu 2.6 or later](https://img.shields.io/badge/%20Sulu->=2.6-0088cc?color=00b2df)
 
 This bundle was made based on [Sulu workshop](https://github.com/sulu/sulu-workshop). 
 I made it to have the possibility to manage events in my projects. Over time, more and more features have been added.
@@ -127,7 +127,7 @@ meta information can be provided like it's done as usual when rendering your pag
 ## 🧶 Configuration
 This bundle contains settings for controlling the following tasks:
 - Settings for single view - Toggle for header, default hero snippet and breadcrumbs
-- Landing pages for breadcrumbs: this can be used to configure the intermediate pages for the breadcrumbs
+- Intermediate pages for breadcrumbs: this can be used to configure the intermediate pages for the breadcrumbs
 
 ## 👩‍🍳 Contributing
 For the sake of simplicity this extension was kept small.
