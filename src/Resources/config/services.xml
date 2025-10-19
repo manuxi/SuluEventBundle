@@ -180,10 +180,10 @@
         </service>
 
         <!--SearchSubscriber-->
-        <service id="sulu_event.search_subscriber" class="Manuxi\SuluEventBundle\Search\EventSearchSubscriber">
+        <!--<service id="sulu_event.search_subscriber" class="Manuxi\SuluEventBundle\Search\EventSearchSubscriber">
             <argument type="service" id="massive_search.search_manager"/>
             <tag name="kernel.event_subscriber"/>
-        </service>
+        </service>-->
 
         <!--Trash-->
         <service id="sulu_event.event_trash_item_handler" class="Manuxi\SuluEventBundle\Trash\EventTrashItemHandler">

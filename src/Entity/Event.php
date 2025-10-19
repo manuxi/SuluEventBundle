@@ -11,6 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation as Serializer;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
 use Manuxi\SuluSharedToolsBundle\Entity\Interfaces\AuditableTranslatableInterface;
+use Manuxi\SuluSharedToolsBundle\Entity\Interfaces\SearchableInterface;
 use Manuxi\SuluSharedToolsBundle\Entity\Traits\AuditableTranslatableTrait;
 use Manuxi\SuluSharedToolsBundle\Entity\Traits\ImageTranslatableTrait;
 use Manuxi\SuluSharedToolsBundle\Entity\Traits\LinkTranslatableTrait;
@@ -22,7 +23,7 @@ use Manuxi\SuluSharedToolsBundle\Entity\Traits\ShowDateTranslatableTrait;
 
 #[ORM\Entity(repositoryClass: EventRepository::class)]
 #[ORM\Table(name: 'app_event')]
-class Event implements AuditableTranslatableInterface
+class Event implements AuditableTranslatableInterface, SearchableInterface
 {
     use AuditableTranslatableTrait;
     use ImageTranslatableTrait;
@@ -100,12 +101,6 @@ class Event implements AuditableTranslatableInterface
         $this->propagateLocale($locale);
 
         return $this;
-    }
-
-    public function getIdentifier(): string
-    {
-        // return hash('sha256', $this->id.'|'.$this->locale);
-        return $this->id.'-'.$this->locale;
     }
 
     public function getStartDate(): ?\DateTimeImmutable
