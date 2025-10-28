@@ -76,7 +76,13 @@ sulu_event:
         title:
             navi: "Settings"
             general: "Settings for Single View"
-            breadcrumbs: "Intermediate Pages for Breadcrumbs"
+            xbreadcrumbs: "Intermediate Pages for Breadcrumbs"
+
+            general_display: "General Display Settings"
+            calendar: "Calendar View"
+            breadcrumbs: "Breadcrumbs"
+            list_view: "List View"
+            filters: "Filter Options"
         properties:
             toggle_header: "Display Header"
             toggle_hero: "Display Default Hero"
@@ -84,6 +90,41 @@ sulu_event:
             page_events: "Overview All Events"
             page_events_pending: "Overview pending Events"
             page_events_expired: "Overview expired Events"
+
+            # Calendar
+            enable_calendar: "Enable Calendar View"
+            enable_calendar_info: "Enables calendar view for website visitors"
+            calendar_view: "Default Calendar View"
+            calendar_start_day: "First Day of Week"
+            show_calendar_event_time: "Show Event Time in Calendar"
+            show_calendar_event_location: "Show Event Location in Calendar"
+
+            # List View
+            events_per_page: "Events per Page"
+            default_sort_order: "Default Sort Order"
+            show_event_images: "Show Images in List View"
+            show_event_summary: "Show Summary in List View"
+
+            # Filters
+            enable_category_filter: "Enable Category Filter"
+            enable_location_filter: "Enable Location Filter"
+            enable_date_filter: "Enable Date Filter"
+            enable_search_filter: "Enable Search Filter"
+
+        calendar_view:
+            month: "Month View"
+            week: "Week View"
+            list: "List View"
+
+            weekday:
+                sunday: "Sunday"
+                monday: "Monday"
+
+            sort_order:
+                start_date_asc: "Start Date (Ascending)"
+                start_date_desc: "Start Date (Descending)"
+                title_asc: "Title (A-Z)"
+                title_desc: "Title (Z-A)"
     search:
         index:
             events: "Events (Draft)"

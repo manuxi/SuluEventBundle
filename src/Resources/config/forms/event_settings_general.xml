@@ -1,0 +1,97 @@
+<?xml version="1.0" ?>
+<form xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns="http://schemas.sulu.io/template/template"
+      xsi:schemaLocation="http://schemas.sulu.io/template/template http://schemas.sulu.io/template/form-1.0.xsd"
+>
+    <key>event_settings_general</key>
+
+    <properties>
+        <!-- General Display Settings -->
+        <section name="general-display">
+            <meta>
+                <title>sulu_event.config.title.general_display</title>
+                <info_text>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.</info_text>
+            </meta>
+            <properties>
+                <property name="toggleHeader" type="checkbox" colspan="4">
+                    <meta>
+                        <title>sulu_event.config.properties.toggle_header</title>
+                    </meta>
+                    <params>
+                        <param name="type" value="toggler"/>
+                        <param name="default_value" value="true"/>
+                    </params>
+                </property>
+
+                <property name="toggleHero" type="checkbox" colspan="4">
+                    <meta>
+                        <title>sulu_event.config.properties.toggle_hero</title>
+                    </meta>
+                    <params>
+                        <param name="type" value="toggler"/>
+                        <param name="default_value" value="true"/>
+                    </params>
+                </property>
+
+                <property name="toggleBreadcrumbs" type="checkbox" colspan="4">
+                    <meta>
+                        <title>sulu_event.config.properties.toggle_breadcrumbs</title>
+                    </meta>
+                    <params>
+                        <param name="type" value="toggler"/>
+                        <param name="default_value" value="true"/>
+                    </params>
+                </property>
+            </properties>
+        </section>
+
+        <!-- Filter Settings -->
+        <section name="filter-settings">
+            <meta>
+                <title>sulu_event.config.title.filters</title>
+            </meta>
+            <properties>
+                <property name="enableCategoryFilter" type="checkbox" colspan="6">
+                    <meta>
+                        <title>sulu_event.config.properties.enable_category_filter</title>
+                    </meta>
+                    <params>
+                        <param name="type" value="toggler"/>
+                        <param name="default_value" value="true"/>
+                    </params>
+                </property>
+
+                <property name="enableLocationFilter" type="checkbox" colspan="6">
+                    <meta>
+                        <title>sulu_event.config.properties.enable_location_filter</title>
+                    </meta>
+                    <params>
+                        <param name="type" value="toggler"/>
+                        <param name="default_value" value="true"/>
+                    </params>
+                </property>
+
+                <property name="enableDateFilter" type="checkbox" colspan="6">
+                    <meta>
+                        <title>sulu_event.config.properties.enable_date_filter</title>
+                    </meta>
+                    <params>
+                        <param name="type" value="toggler"/>
+                        <param name="default_value" value="true"/>
+                    </params>
+                </property>
+
+                <property name="enableSearchFilter" type="checkbox" colspan="6">
+                    <meta>
+                        <title>sulu_event.config.properties.enable_search_filter</title>
+                    </meta>
+                    <params>
+                        <param name="type" value="toggler"/>
+                        <param name="default_value" value="true"/>
+                    </params>
+                </property>
+            </properties>
+        </section>
+
+    </properties>
+</form>

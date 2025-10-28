@@ -1,0 +1,97 @@
+<?xml version="1.0" ?>
+<form xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns="http://schemas.sulu.io/template/template"
+      xsi:schemaLocation="http://schemas.sulu.io/template/template http://schemas.sulu.io/template/form-1.0.xsd"
+>
+    <key>event_settings_calendar</key>
+
+    <properties>
+
+        <!-- Calendar Settings -->
+        <section name="calendar-settings">
+            <meta>
+                <title>sulu_event.config.title.calendar</title>
+            </meta>
+            <properties>
+                <property name="enableCalendar" type="checkbox" colspan="12">
+                    <meta>
+                        <title>sulu_event.config.properties.enable_calendar</title>
+                        <info_text>sulu_event.config.properties.enable_calendar_info</info_text>
+                    </meta>
+                    <params>
+                        <param name="type" value="toggler"/>
+                        <param name="default_value" value="false"/>
+                    </params>
+                </property>
+
+                <property name="calendarView" type="single_select" colspan="6" visibleCondition="enableCalendar == true">
+                    <meta>
+                        <title>sulu_event.config.properties.calendar_view</title>
+                    </meta>
+                    <params>
+                        <param name="default_value" value="month"/>
+                        <param name="values" type="collection">
+                            <param name="month">
+                                <meta>
+                                    <title>sulu_event.config.calendar_view.month</title>
+                                </meta>
+                            </param>
+                            <param name="week">
+                                <meta>
+                                    <title>sulu_event.config.calendar_view.week</title>
+                                </meta>
+                            </param>
+                            <param name="list">
+                                <meta>
+                                    <title>sulu_event.config.calendar_view.list</title>
+                                </meta>
+                            </param>
+                        </param>
+                    </params>
+                </property>
+
+                <property name="calendarStartDay" type="single_select" colspan="6" visibleCondition="enableCalendar == true">
+                    <meta>
+                        <title>sulu_event.config.properties.calendar_start_day</title>
+                    </meta>
+                    <params>
+                        <param name="default_value" value="1"/>
+                        <param name="values" type="collection">
+                            <param name="0">
+                                <meta>
+                                    <title>sulu_event.config.weekday.sunday</title>
+                                </meta>
+                            </param>
+                            <param name="1">
+                                <meta>
+                                    <title>sulu_event.config.weekday.monday</title>
+                                </meta>
+                            </param>
+                        </param>
+                    </params>
+                </property>
+
+                <property name="showCalendarEventTime" type="checkbox" colspan="6" visibleCondition="enableCalendar == true">
+                    <meta>
+                        <title>sulu_event.config.properties.show_calendar_event_time</title>
+                    </meta>
+                    <params>
+                        <param name="type" value="toggler"/>
+                        <param name="default_value" value="true"/>
+                    </params>
+                </property>
+
+                <property name="showCalendarEventLocation" type="checkbox" colspan="6" visibleCondition="enableCalendar == true">
+                    <meta>
+                        <title>sulu_event.config.properties.show_calendar_event_location</title>
+                    </meta>
+                    <params>
+                        <param name="type" value="toggler"/>
+                        <param name="default_value" value="true"/>
+                    </params>
+                </property>
+            </properties>
+        </section>
+
+    </properties>
+</form>

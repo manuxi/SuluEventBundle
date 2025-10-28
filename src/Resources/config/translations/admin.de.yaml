@@ -73,22 +73,70 @@ sulu_event:
         expired: "Beendete Veranstaltungen"
 
     config:
-        tab: "Einstellungen"
+        tab:
+            settings: "Einstellungen"
+            general: "Allgemein"
+            calendar: "Kalender"
+            breadcrumbs: "Breadcrumbs"
+            lists: "Listen"
         title:
             navi: "Einstellungen"
             general: "Einstellungen für Einzelansicht"
-            breadcrumbs: "Zwischenseiten für Breadcrumbs"
+            xbreadcrumbs: "Zwischenseiten für Breadcrumbs"
+
+            general_display: "Allgemeine Anzeigeeinstellungen"
+            calendar: "Kalenderansicht"
+            breadcrumbs: "Breadcrumbs"
+            list_view: "Listenansicht"
+            filters: "Filter-Optionen"
         properties:
             toggle_header: "Header anzeigen"
             toggle_hero: "Standard Hero anzeigen"
             toggle_breadcrumbs: "Breadcrumbs anzeigen"
+            # Calendar
+            enable_calendar: "Kalenderansicht aktivieren"
+            enable_calendar_info: "Aktiviert die Kalenderansicht für Besucher der Webseite"
+            calendar_view: "Standard-Kalenderansicht"
+            calendar_start_day: "Erster Wochentag"
+            show_calendar_event_time: "Uhrzeit im Kalender anzeigen"
+            show_calendar_event_location: "Veranstaltungsort im Kalender anzeigen"
+
+            # Breadcrumbs
             page_events: "Übersichtsseite Alle Veranstaltungen"
             page_events_pending: "Übersichtsseite bevorstehende Veranstaltungen"
             page_events_expired: "Übersichtsseite vergangene Veranstaltungen"
-    search:
-        index:
-            events: "Veranstaltungen (Entwurf)"
-            events_published: "Veranstaltungen"
+
+            # List View
+            events_per_page: "Veranstaltungen pro Seite"
+            default_sort_order: "Standard-Sortierung"
+            show_event_images: "Bilder in Listenansicht anzeigen"
+            show_event_summary: "Zusammenfassung in Listenansicht anzeigen"
+
+            # Filters
+            enable_category_filter: "Kategorien-Filter aktivieren"
+            enable_location_filter: "Orts-Filter aktivieren"
+            enable_date_filter: "Datums-Filter aktivieren"
+            enable_search_filter: "Such-Filter aktivieren"
+
+        calendar_view:
+            month: "Monatsansicht"
+            week: "Wochenansicht"
+            list: "Listenansicht"
+
+        weekday:
+            sunday: "Sonntag"
+            monday: "Montag"
+
+        sort_order:
+            start_date_asc: "Startdatum (aufsteigend)"
+            start_date_desc: "Startdatum (absteigend)"
+            title_asc: "Titel (A-Z)"
+            title_desc: "Titel (Z-A)"
+
+        search:
+            index:
+                events: "Veranstaltungen (Entwurf)"
+                events_published: "Veranstaltungen"
 sulu_activity:
     resource:
         events: "Veranstaltungen"

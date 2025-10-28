@@ -24,7 +24,7 @@ use Sulu\Component\SmartContent\Orm\DataProviderRepositoryTrait;
 class EventRepository extends ServiceEntityRepository implements DataProviderRepositoryInterface
 {
     use DataProviderRepositoryTrait {
-        findByFilters as protected parentFindByFilters;
+        DataProviderRepositoryTrait::findByFilters as protected parentFindByFilters;
     }
 
     public function __construct(ManagerRegistry $registry)
@@ -85,6 +85,45 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
         $event->setLocale($locale);
 
         return $event;
+    }
+
+    public function findByDateRange(
+        string $locale,
+        \DateTimeInterface $startDate,
+        \DateTimeInterface $endDate,
+        bool $publishedOnly = true,
+    ): array {
+        $queryBuilder = $this->createQueryBuilder('event')
+            ->leftJoin('event.translations', 'translation')
+            ->andWhere('translation.locale = :locale')
+            ->setParameter('locale', $locale);
+
+        if ($publishedOnly) {
+            $queryBuilder
+                ->andWhere('translation.published = :published')
+                ->setParameter('published', true);
+        }
+
+        // Events that start OR end within the range
+        $queryBuilder
+            ->andWhere(
+                $queryBuilder->expr()->orX(
+                    // Event starts within range
+                    $queryBuilder->expr()->between('event.startDate', ':startDate', ':endDate'),
+                    // Event ends within range
+                    $queryBuilder->expr()->between('event.endDate', ':startDate', ':endDate'),
+                    // Event spans the entire range
+                    $queryBuilder->expr()->andX(
+                        $queryBuilder->expr()->lte('event.startDate', ':startDate'),
+                        $queryBuilder->expr()->gte('event.endDate', ':endDate')
+                    )
+                )
+            )
+            ->setParameter('startDate', $startDate)
+            ->setParameter('endDate', $endDate)
+            ->orderBy('event.startDate', 'ASC');
+
+        return $queryBuilder->getQuery()->getResult();
     }
 
     public function findAllForSitemapOld(int $page, int $limit): array
