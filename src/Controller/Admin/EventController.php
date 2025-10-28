@@ -6,8 +6,6 @@ namespace Manuxi\SuluEventBundle\Controller\Admin;
 
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
-use FOS\RestBundle\Controller\Annotations as Rest;
-use FOS\RestBundle\Controller\Annotations\RouteResource;
 use FOS\RestBundle\Routing\ClassResourceInterface;
 use FOS\RestBundle\View\ViewHandlerInterface;
 use Manuxi\SuluEventBundle\Common\DoctrineListRepresentationFactory;
@@ -28,11 +26,10 @@ use Sulu\Component\Security\SecuredControllerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
-/**
- * @RouteResource("event")
- */
+#[Route('/admin/api')]
 class EventController extends AbstractRestController implements ClassResourceInterface, SecuredControllerInterface
 {
     use RequestParametersTrait;
@@ -50,6 +47,19 @@ class EventController extends AbstractRestController implements ClassResourceInt
         parent::__construct($viewHandler, $tokenStorage);
     }
 
+    #[Route(
+        '/events.{_format}',
+        name: 'sulu_event.get_events',
+        requirements: [
+            'id' => '\d+',
+            '_format' => 'json|csv'
+        ],
+        options: ['expose' => true],
+        defaults: [
+            '_format' => 'json'
+        ],
+        methods: ['GET']
+    )]
     public function cgetAction(Request $request): Response
     {
         $locale = $request->query->get('locale');
@@ -65,6 +75,19 @@ class EventController extends AbstractRestController implements ClassResourceInt
     /**
      * @throws EntityNotFoundException
      */
+    #[Route(
+        '/events/{id}.{_format}',
+        name: 'sulu_event.get_event',
+        requirements: [
+            'id' => '\d+',
+            '_format' => 'json|csv'
+        ],
+        options: ['expose' => true],
+        defaults: [
+            '_format' => 'json'
+        ],
+        methods: ['GET']
+    )]
     public function getAction(int $id, Request $request): Response
     {
         $event = $this->eventModel->getEvent($id, $request);
@@ -74,9 +97,15 @@ class EventController extends AbstractRestController implements ClassResourceInt
 
     /**
      * @throws EntityNotFoundException
-     * @throws ORMException
-     * @throws OptimisticLockException
      */
+    #[Route(
+        '/events.{_format}',
+        name: 'sulu_event.post_event',
+        requirements: ['_format' => 'json'],
+        options: ['expose' => true],
+        defaults: ['_format' => 'json'],
+        methods: ['POST']
+    )]
     public function postAction(Request $request): Response
     {
         $entity = $this->eventModel->createEvent($request);
@@ -85,12 +114,87 @@ class EventController extends AbstractRestController implements ClassResourceInt
     }
 
     /**
-     * @Rest\Post("/events/{id}")
-     *
+     * @throws EntityNotFoundException
      * @throws ORMException
      * @throws OptimisticLockException
+     */
+    #[Route(
+        '/events/{id}.{_format}',
+        name: 'sulu_event.put_event',
+        requirements: [
+            'id' => '\d+',
+            '_format' => 'json'
+        ],
+        options: ['expose' => true],
+        defaults: ['_format' => 'json'],
+        methods: ['PUT']
+    )]
+    public function putAction(int $id, Request $request): Response
+    {
+        try {
+            $action = $this->getRequestParameter($request, 'action', true);
+            try {
+                $entity = match ($action) {
+                    'publish' => $this->eventModel->publish($id, $request),
+                    'draft', 'unpublish' => $this->eventModel->unpublish($id, $request),
+                    default => throw new BadRequestHttpException(sprintf('Unknown action "%s".', $action)),
+                };
+            } catch (RestException $exc) {
+                $view = $this->view($exc->toArray(), 400);
+
+                return $this->handleView($view);
+            }
+        } catch (MissingParameterException $e) {
+            $entity = $this->eventModel->updateEvent($id, $request);
+
+            $this->eventSeoModel->updateEventSeo($entity->getEventSeo(), $request);
+            $this->eventExcerptModel->updateEventExcerpt($entity->getEventExcerpt(), $request);
+        }
+
+        return $this->handleView($this->view($entity));
+    }
+
+    /**
      * @throws EntityNotFoundException
      */
+    #[Route(
+        '/events/{id}.{_format}',
+        name: 'sulu_event.delete_event',
+        requirements: [
+            'id' => '\d+',
+            '_format' => 'json'
+        ],
+        options: ['expose' => true],
+        defaults: ['_format' => 'json'],
+        methods: ['DELETE']
+    )]
+    public function deleteAction(int $id, Request $request): Response
+    {
+        $entity = $this->eventModel->getEvent($id, $request);
+
+        $this->trashManager->store(Event::RESOURCE_KEY, $entity);
+
+        $this->eventModel->deleteEvent($entity);
+
+        return $this->handleView($this->view(null, 204));
+    }
+
+    /**
+     * @throws ORMException|OptimisticLockException|EntityNotFoundException|MissingParameterException
+     */
+    #[Route(
+        '/events/{id}.{_format}',
+        name: 'sulu_event.post_event_trigger',
+        requirements: [
+            'id' => '\d+',
+            '_format' => 'json|csv'
+        ],
+        options: ['expose' => true],
+        defaults: [
+            '_format' => 'json'
+        ],
+        methods: ['POST']
+    )]
     public function postTriggerAction(int $id, Request $request): Response
     {
         $action = $this->getRequestParameter($request, 'action', true);
@@ -132,50 +236,6 @@ class EventController extends AbstractRestController implements ClassResourceInt
         }
 
         return $this->handleView($this->view($entity));
-    }
-
-    /**
-     * @throws EntityNotFoundException
-     * @throws ORMException
-     * @throws OptimisticLockException
-     */
-    public function putAction(int $id, Request $request): Response
-    {
-        try {
-            $action = $this->getRequestParameter($request, 'action', true);
-            try {
-                $entity = match ($action) {
-                    'publish' => $this->eventModel->publish($id, $request),
-                    'draft', 'unpublish' => $this->eventModel->unpublish($id, $request),
-                    default => throw new BadRequestHttpException(sprintf('Unknown action "%s".', $action)),
-                };
-            } catch (RestException $exc) {
-                $view = $this->view($exc->toArray(), 400);
-
-                return $this->handleView($view);
-            }
-        } catch (MissingParameterException $e) {
-            $entity = $this->eventModel->updateEvent($id, $request);
-
-            $this->eventSeoModel->updateEventSeo($entity->getEventSeo(), $request);
-            $this->eventExcerptModel->updateEventExcerpt($entity->getEventExcerpt(), $request);
-        }
-
-        return $this->handleView($this->view($entity));
-    }
-
-    /**
-     * @throws EntityNotFoundException
-     */
-    public function deleteAction(int $id, Request $request): Response
-    {
-        $entity = $this->eventModel->getEvent($id, $request);
-
-        $this->trashManager->store(Event::RESOURCE_KEY, $entity);
-
-        $this->eventModel->deleteEvent($entity);
-
-        return $this->handleView($this->view(null, 204));
     }
 
     public function getSecurityContext(): string

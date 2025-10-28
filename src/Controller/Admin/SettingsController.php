@@ -15,12 +15,13 @@ use Sulu\Component\Rest\AbstractRestController;
 use Sulu\Component\Security\SecuredControllerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-
 
 /**
  * @RouteResource("event-settings")
  */
+#[Route('/admin/api')]
 class SettingsController extends AbstractRestController implements ClassResourceInterface, SecuredControllerInterface
 {
     public function __construct(
@@ -32,6 +33,19 @@ class SettingsController extends AbstractRestController implements ClassResource
         parent::__construct($viewHandler, $tokenStorage);
     }
 
+    #[Route(
+        '/event-settings/{id}.{_format}',
+        name: 'sulu_event.get_event-settings',
+        requirements: [
+            'id' => '\d+',
+            '_format' => 'json|csv'
+        ],
+        options: ['expose' => true],
+        defaults: [
+            '_format' => 'json'
+        ],
+        methods: ['GET']
+    )]
     public function getAction(): Response
     {
         $entity = $this->entityManager->getRepository(EventSettings::class)->findOneBy([]);
@@ -39,6 +53,17 @@ class SettingsController extends AbstractRestController implements ClassResource
         return $this->handleView($this->view($this->getDataForEntity($entity ?: new EventSettings())));
     }
 
+    #[Route(
+        '/event-settings/{id}.{_format}',
+        name: 'sulu_event.put_event-settings',
+        requirements: [
+            'id' => '\d+',
+            '_format' => 'json'
+        ],
+        options: ['expose' => true],
+        defaults: ['_format' => 'json'],
+        methods: ['PUT']
+    )]
     public function putAction(Request $request): Response
     {
         $entity = $this->entityManager->getRepository(EventSettings::class)->findOneBy([]);
@@ -61,23 +86,67 @@ class SettingsController extends AbstractRestController implements ClassResource
     protected function getDataForEntity(EventSettings $entity): array
     {
         return [
+            // General Display
             'toggleHeader' => $entity->getToggleHeader(),
             'toggleHero' => $entity->getToggleHero(),
             'toggleBreadcrumbs' => $entity->getToggleBreadcrumbs(),
+
+            // Calendar Settings
+            'enableCalendar' => $entity->getEnableCalendar(),
+            'calendarView' => $entity->getCalendarView(),
+            'calendarStartDay' => $entity->getCalendarStartDay(),
+            'showCalendarEventTime' => $entity->getShowCalendarEventTime(),
+            'showCalendarEventLocation' => $entity->getShowCalendarEventLocation(),
+
+            // Breadcrumbs
             'pageEvents' => $entity->getPageEvents(),
             'pageEventsPending' => $entity->getPageEventsPending(),
             'pageEventsExpired' => $entity->getPageEventsExpired(),
+
+            // List View
+            'eventsPerPage' => $entity->getEventsPerPage(),
+            'defaultSortOrder' => $entity->getDefaultSortOrder(),
+            'showEventImages' => $entity->getShowEventImages(),
+            'showEventSummary' => $entity->getShowEventSummary(),
+
+            // Filters
+            'enableCategoryFilter' => $entity->getEnableCategoryFilter(),
+            'enableLocationFilter' => $entity->getEnableLocationFilter(),
+            'enableDateFilter' => $entity->getEnableDateFilter(),
+            'enableSearchFilter' => $entity->getEnableSearchFilter(),
         ];
     }
 
     protected function mapDataToEntity(array $data, EventSettings $entity): void
     {
-        $entity->setToggleHeader($data['toggleHeader']);
-        $entity->setToggleHero($data['toggleHero']);
-        $entity->setToggleBreadcrumbs($data['toggleBreadcrumbs']);
-        $entity->setPageEvents($data['pageEvents']);
-        $entity->setPageEventsPending($data['pageEventsPending']);
-        $entity->setPageEventsExpired($data['pageEventsExpired']);
+        // General Display
+        $entity->setToggleHeader($data['toggleHeader'] ?? null);
+        $entity->setToggleHero($data['toggleHero'] ?? null);
+        $entity->setToggleBreadcrumbs($data['toggleBreadcrumbs'] ?? null);
+
+        // Calendar Settings
+        $entity->setEnableCalendar($data['enableCalendar'] ?? false);
+        $entity->setCalendarView($data['calendarView'] ?? 'month');
+        $entity->setCalendarStartDay($data['calendarStartDay'] ?? 1);
+        $entity->setShowCalendarEventTime($data['showCalendarEventTime'] ?? true);
+        $entity->setShowCalendarEventLocation($data['showCalendarEventLocation'] ?? true);
+
+        // Breadcrumbs
+        $entity->setPageEvents($data['pageEvents'] ?? null);
+        $entity->setPageEventsPending($data['pageEventsPending'] ?? null);
+        $entity->setPageEventsExpired($data['pageEventsExpired'] ?? null);
+
+        // List View
+        $entity->setEventsPerPage($data['eventsPerPage'] ?? 12);
+        $entity->setDefaultSortOrder($data['defaultSortOrder'] ?? 'start_date_asc');
+        $entity->setShowEventImages($data['showEventImages'] ?? true);
+        $entity->setShowEventSummary($data['showEventSummary'] ?? true);
+
+        // Filters
+        $entity->setEnableCategoryFilter($data['enableCategoryFilter'] ?? true);
+        $entity->setEnableLocationFilter($data['enableLocationFilter'] ?? true);
+        $entity->setEnableDateFilter($data['enableDateFilter'] ?? true);
+        $entity->setEnableSearchFilter($data['enableSearchFilter'] ?? true);
     }
 
     public function getSecurityContext(): string
