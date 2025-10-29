@@ -1,0 +1,117 @@
+<?xml version="1.0" ?>
+<form xmlns="http://schemas.sulu.io/template/template"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://schemas.sulu.io/template/template http://schemas.sulu.io/template/form-1.0.xsd">
+    
+    <key>event_recurrence</key>
+
+    <properties>
+        <property name="isRecurring" type="checkbox">
+            <meta>
+                <title>sulu_event.recurrence.enable</title>
+            </meta>
+            <params>
+                <param name="type" value="toggler"/>
+            </params>
+        </property>
+
+        <property name="frequency" type="single_select" visibleCondition="isRecurring == true">
+            <meta>
+                <title>sulu_event.recurrence.frequency</title>
+            </meta>
+            <params>
+                <param name="values" type="collection">
+                    <param name="daily">
+                        <meta>
+                            <title>sulu_event.recurrence.daily</title>
+                        </meta>
+                    </param>
+                    <param name="weekly">
+                        <meta>
+                            <title>sulu_event.recurrence.weekly</title>
+                        </meta>
+                    </param>
+                    <param name="monthly">
+                        <meta>
+                            <title>sulu_event.recurrence.monthly</title>
+                        </meta>
+                    </param>
+                    <param name="yearly">
+                        <meta>
+                            <title>sulu_event.recurrence.yearly</title>
+                        </meta>
+                    </param>
+                </param>
+            </params>
+        </property>
+
+        <property name="interval" type="number" visibleCondition="isRecurring == true">
+            <meta>
+                <title>sulu_event.recurrence.interval</title>
+            </meta>
+            <params>
+                <param name="min" value="1"/>
+                <param name="defaultValue" value="1"/>
+            </params>
+        </property>
+
+        <property name="byWeekday" type="select" visibleCondition="isRecurring == true and frequency == 'weekly'">
+            <meta>
+                <title>sulu_event.recurrence.weekdays</title>
+            </meta>
+            <params>
+                <param name="values" type="collection">
+                    <param name="1"><meta><title>sulu_event.recurrence.monday</title></meta></param>
+                    <param name="2"><meta><title>sulu_event.recurrence.tuesday</title></meta></param>
+                    <param name="3"><meta><title>sulu_event.recurrence.wednesday</title></meta></param>
+                    <param name="4"><meta><title>sulu_event.recurrence.thursday</title></meta></param>
+                    <param name="5"><meta><title>sulu_event.recurrence.friday</title></meta></param>
+                    <param name="6"><meta><title>sulu_event.recurrence.saturday</title></meta></param>
+                    <param name="7"><meta><title>sulu_event.recurrence.sunday</title></meta></param>
+                </param>
+                <param name="multiple" value="true"/>
+            </params>
+        </property>
+
+        <property name="endType" type="single_select" visibleCondition="isRecurring == true">
+            <meta>
+                <title>sulu_event.recurrence.end_type</title>
+            </meta>
+            <params>
+                <param name="defaultValue" value="never"/>
+                <param name="values" type="collection">
+                    <param name="never">
+                        <meta>
+                            <title>sulu_event.recurrence.never</title>
+                        </meta>
+                    </param>
+                    <param name="count">
+                        <meta>
+                            <title>sulu_event.recurrence.after_occurrences</title>
+                        </meta>
+                    </param>
+                    <param name="until">
+                        <meta>
+                            <title>sulu_event.recurrence.until_date</title>
+                        </meta>
+                    </param>
+                </param>
+            </params>
+        </property>
+
+        <property name="count" type="number" visibleCondition="isRecurring == true and endType == 'count'">
+            <meta>
+                <title>sulu_event.recurrence.occurrences</title>
+            </meta>
+            <params>
+                <param name="min" value="1"/>
+            </params>
+        </property>
+
+        <property name="until" type="date" visibleCondition="isRecurring == true and endType == 'until'">
+            <meta>
+                <title>sulu_event.recurrence.until</title>
+            </meta>
+        </property>
+    </properties>
+</form>

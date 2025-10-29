@@ -75,6 +75,9 @@ class Event implements AuditableTranslatableInterface, SearchableInterface
     #[ORM\OneToMany(mappedBy: 'event', targetEntity: EventTranslation::class, cascade: ['all'], fetch: 'EXTRA_LAZY', indexBy: 'locale')]
     private Collection $translations;
 
+    #[ORM\OneToOne(mappedBy: 'event', targetEntity: EventSocialSettings::class, cascade: ['persist', 'remove'])]
+    private ?EventSocialSettings $socialSettings = null;
+
     private string $locale = 'de';
 
     private array $ext = [];
@@ -369,6 +372,15 @@ class Event implements AuditableTranslatableInterface, SearchableInterface
         }
 
         return $this;
+    }
+
+    public function getSocialSettings(): EventSocialSettings
+    {
+        if (!$this->socialSettings instanceof EventSocialSettings) {
+            $this->socialSettings = new EventSocialSettings();
+            $this->socialSettings->setEvent($this);
+        }
+        return $this->socialSettings;
     }
 
     #[Serializer\VirtualProperty(name: 'availableLocales')]

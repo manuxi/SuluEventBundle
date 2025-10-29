@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services https://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <!-- iCal Generator Service -->
+        <service id="sulu_event.ical_generator" class="Manuxi\SuluEventBundle\Service\ICalGenerator">
+            <argument type="service" id="sulu_event.repository.event"/>
+        </service>
+
+        <!-- iCal Controller -->
+        <service id="Manuxi\SuluEventBundle\Controller\Website\ICalController" public="true">
+            <argument type="service" id="sulu_event.ical_generator"/>
+            <argument type="service" id="sulu_event.repository.event"/>
+            <tag name="controller.service_arguments"/>
+            <tag name="sulu.context" context="website"/>
+        </service>
+    </services>
+</container>

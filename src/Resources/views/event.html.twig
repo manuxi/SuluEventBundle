@@ -44,6 +44,41 @@
                         {{ event.footer|raw }}
                     {% endif %}
 
+                    {% if event.socialSettings.enableSocialShare %}
+                        <div class="social-share">
+                            <h3>{{ 'sulu_event.feed.share_event'|trans }}</h3>
+
+                            {% set shareLinks = event_social_shares(event, app.request.locale) %}
+
+                            <div class="share-buttons">
+                                {% if 'facebook' in event.socialSettings.socialPlatforms %}
+                                    <a href="{{ shareLinks.facebook }}" target="_blank" class="btn btn-facebook">
+                                        <i class="fab fa-facebook"></i> Share
+                                    </a>
+                                {% endif %}
+
+                                {% if 'twitter' in event.socialSettings.socialPlatforms %}
+                                    <a href="{{ shareLinks.twitter }}" target="_blank" class="btn btn-twitter">
+                                        <i class="fab fa-twitter"></i> Tweet
+                                    </a>
+                                {% endif %}
+
+                                {# ... weitere Plattformen #}
+                            </div>
+                        </div>
+
+                        {# Social Media Profile Links (Follow us) #}
+                        <div class="social-profiles">
+                            <h4>{{ 'Follow us'|trans }}</h4>
+                            {% if event.socialSettings.facebookUrl %}
+                                <a href="{{ event.socialSettings.facebookUrl }}" target="_blank">
+                                    <i class="fab fa-facebook"></i>
+                                </a>
+                            {% endif %}
+                            {# ... weitere Profile #}
+                        </div>
+                    {% endif %}
+
                 </div>
 
             </div>

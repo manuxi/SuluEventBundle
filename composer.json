@@ -1,6 +1,6 @@
 {
     "name": "manuxi/sulu-event-bundle",
-    "description": "Events for Sulu CMS!",
+    "description": "Event management bundle for Sulu CMS with calendar, recurrence, and social features",
     "type": "symfony-bundle",
     "keywords": [
         "sulu",
@@ -30,6 +30,7 @@
         "symfony/http-foundation": "^6.2 | ^7.0",
         "symfony/http-kernel": "^6.2 | ^7.0",
         "symfony/intl": "^6.2 | ^7.0",
+        "symfony/rate-limiter": "^6.2 | ^7.0",
         "symfony/translation": "^6.2 | ^7.0",
         "symfony/security-core": "^6.2 | ^7.0",
         "twig/intl-extra": "^3.12",

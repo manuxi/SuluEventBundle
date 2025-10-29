@@ -90,6 +90,7 @@ sulu_event:
             list_view: "Listenansicht"
             filters: "Filter-Optionen"
         properties:
+            # General
             toggle_header: "Header anzeigen"
             toggle_hero: "Standard Hero anzeigen"
             toggle_breadcrumbs: "Breadcrumbs anzeigen"
@@ -137,6 +138,58 @@ sulu_event:
             index:
                 events: "Veranstaltungen (Entwurf)"
                 events_published: "Veranstaltungen"
+
+    # Calendar
+    calendar:
+        title: "Titel"
+        subtitle: "Untertitel"
+        text: "Beschreibungstext"
+        settings: "Kalender-Einstellungen"
+        initial_view: "Standardansicht"
+        date_range: "Zeitraum"
+        show_filters: "Filter anzeigen"
+        view:
+            month: "Monatsansicht"
+            week: "Wochenansicht"
+            list: "Listenansicht"
+
+    # Recurrence
+    recurrence:
+        enable: "Wiederkehrende Veranstaltung"
+        frequency: "Wiederholungsrhythmus"
+        daily: "Täglich"
+        weekly: "Wöchentlich"
+        monthly: "Monatlich"
+        yearly: "Jährlich"
+        interval: "Alle X (Tage/Wochen/Monate)"
+        weekdays: "An Wochentagen"
+        monday: "Montag"
+        tuesday: "Dienstag"
+        wednesday: "Mittwoch"
+        thursday: "Donnerstag"
+        friday: "Freitag"
+        saturday: "Samstag"
+        sunday: "Sonntag"
+        end_type: "Endet"
+        never: "Nie"
+        after_occurrences: "Nach Anzahl"
+        until_date: "Bis Datum"
+        occurrences: "Anzahl Wiederholungen"
+        until: "Enddatum"
+
+    # Social Media
+    social_media: "Social Media"
+    enable_social_share: "Social Sharing aktivieren"
+    social_platforms: "Plattformen"
+    custom_share_text: "Benutzerdefinierter Share-Text"
+    add_to_calendar: "Zum Kalender hinzufügen"
+    share_event: "Veranstaltung teilen"
+
+    # Feed
+    subscribe_calendar: "Kalender abonnieren"
+    rss_feed: "RSS-Feed"
+    atom_feed: "Atom-Feed"
+
 sulu_activity:
     resource:
         events: "Veranstaltungen"

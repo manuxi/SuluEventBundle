@@ -1,0 +1,6 @@
+framework:
+    rate_limiter:
+        sulu_event_calendar_api:
+            policy: 'sliding_window'
+            limit: 100
+            interval: '1 minute'

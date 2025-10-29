@@ -84,9 +84,12 @@ sulu_event:
             list_view: "List View"
             filters: "Filter Options"
         properties:
+            # General
             toggle_header: "Display Header"
             toggle_hero: "Display Default Hero"
             toggle_breadcrumbs: "Display Breadcrumbs"
+
+            # Breadcrumbs
             page_events: "Overview All Events"
             page_events_pending: "Overview pending Events"
             page_events_expired: "Overview expired Events"
@@ -129,6 +132,58 @@ sulu_event:
         index:
             events: "Events (Draft)"
             events_published: "Events"
+
+    # Calendar
+    calendar:
+        title: "Title"
+        subtitle: "Subtitle"
+        text: "Description text"
+        settings: "Calendar Settings"
+        initial_view: "Default View"
+        date_range: "Date Range"
+        show_filters: "Show Filters"
+        view:
+            month: "Month View"
+            week: "Week View"
+            list: "List View"
+
+    # Recurrence
+    recurrence:
+        enable: "Recurring Event"
+        frequency: "Repeat Pattern"
+        daily: "Daily"
+        weekly: "Weekly"
+        monthly: "Monthly"
+        yearly: "Yearly"
+        interval: "Every X (days/weeks/months)"
+        weekdays: "On Weekdays"
+        monday: "Monday"
+        tuesday: "Tuesday"
+        wednesday: "Wednesday"
+        thursday: "Thursday"
+        friday: "Friday"
+        saturday: "Saturday"
+        sunday: "Sunday"
+        end_type: "Ends"
+        never: "Never"
+        after_occurrences: "After Count"
+        until_date: "Until Date"
+        occurrences: "Number of Occurrences"
+        until: "End Date"
+
+    # Social Media
+    social_media: "Social Media"
+    enable_social_share: "Enable Social Sharing"
+    social_platforms: "Platforms"
+    custom_share_text: "Custom Share Text"
+    add_to_calendar: "Add to Calendar"
+    share_event: "Share Event"
+
+    # Feed
+    subscribe_calendar: "Subscribe to Calendar"
+    rss_feed: "RSS Feed"
+    atom_feed: "Atom Feed"
+
 sulu_activity:
     resource:
         events: "Event"

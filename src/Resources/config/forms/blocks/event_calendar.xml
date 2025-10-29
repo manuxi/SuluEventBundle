@@ -1,0 +1,82 @@
+<?xml version="1.0" ?>
+<form xmlns="http://schemas.sulu.io/template/template"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://schemas.sulu.io/template/template http://schemas.sulu.io/template/block-1.0.xsd">
+    
+    <key>event_calendar</key>
+
+    <properties>
+        <property name="title" type="text_line">
+            <meta>
+                <title>sulu_event.calendar.title</title>
+            </meta>
+        </property>
+
+        <property name="subtitle" type="text_line">
+            <meta>
+                <title>sulu_event.calendar.subtitle</title>
+            </meta>
+        </property>
+
+        <property name="text" type="text_editor">
+            <meta>
+                <title>sulu_event.calendar.text</title>
+            </meta>
+        </property>
+
+        <section name="calendar_settings">
+            <meta>
+                <title>sulu_event.calendar.settings</title>
+            </meta>
+
+            <properties>
+                <property name="initialView" type="single_select">
+                    <meta>
+                        <title>sulu_event.calendar.initial_view</title>
+                    </meta>
+                    <params>
+                        <param name="defaultValue" value="dayGridMonth"/>
+                        <param name="values" type="collection">
+                            <param name="dayGridMonth">
+                                <meta>
+                                    <title>sulu_event.calendar.view.month</title>
+                                </meta>
+                            </param>
+                            <param name="timeGridWeek">
+                                <meta>
+                                    <title>sulu_event.calendar.view.week</title>
+                                </meta>
+                            </param>
+                            <param name="listMonth">
+                                <meta>
+                                    <title>sulu_event.calendar.view.list</title>
+                                </meta>
+                            </param>
+                        </param>
+                    </params>
+                </property>
+
+                <property name="categories" type="category_selection">
+                    <meta>
+                        <title>sulu_admin.categories</title>
+                    </meta>
+                </property>
+
+                <property name="tags" type="tag_selection">
+                    <meta>
+                        <title>sulu_admin.tags</title>
+                    </meta>
+                </property>
+
+                <property name="showFilters" type="checkbox">
+                    <meta>
+                        <title>sulu_event.calendar.show_filters</title>
+                    </meta>
+                    <params>
+                        <param name="type" value="toggler"/>
+                    </params>
+                </property>
+            </properties>
+        </section>
+    </properties>
+</form>

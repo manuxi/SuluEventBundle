@@ -1,0 +1,42 @@
+{# Resources/views/blocks/event_calendar.html.twig #}
+<div class="event-calendar-block">
+    {% if content.title %}
+        <h2>{{ content.title }}</h2>
+    {% endif %}
+    
+    {% if content.subtitle %}
+        <h3>{{ content.subtitle }}</h3>
+    {% endif %}
+    
+    {% if content.text %}
+        <div class="calendar-intro">
+            {{ content.text|raw }}
+        </div>
+    {% endif %}
+    
+    {% if content.showFilters %}
+        <div class="calendar-filters mb-3">
+            {# Add your filter UI here - categories, tags, etc. #}
+        </div>
+    {% endif %}
+    
+    <div id="event-calendar-{{ block.id }}" 
+         data-event-calendar
+         data-initial-view="{{ content.initialView }}"
+         data-events-url="{{ path('sulu_event.api.calendar', {'_locale': app.request.locale}) }}"
+         data-locale="{{ app.request.locale }}">
+    </div>
+</div>
+
+<script type="module">
+    import EventCalendar from '/bundles/suluevent/build/calendar.js';
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        const calendarEl = document.getElementById('event-calendar-{{ block.id }}');
+        const calendar = new EventCalendar(calendarEl, {
+            initialView: calendarEl.dataset.initialView,
+            eventsUrl: calendarEl.dataset.eventsUrl,
+            locale: calendarEl.dataset.locale
+        });
+    });
+</script>

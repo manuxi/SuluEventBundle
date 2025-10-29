@@ -55,15 +55,15 @@ class SettingsAdmin extends Admin
                     ->setResourceKey(EventSettings::RESOURCE_KEY)
                     ->setAttributeDefault('id', '-')
             );
-/*
-            $viewCollection->add(
-                $this->viewBuilderFactory->createFormViewBuilder(static::FORM_VIEW, '/config')
-                    ->setResourceKey(EventSettings::RESOURCE_KEY)
-                    ->setFormKey(EventSettings::FORM_KEY)
-                    ->setTabTitle('sulu_event.config.tab.settings')
-                    ->addToolbarActions([new ToolbarAction('sulu_admin.save')])
-                    ->setParent(static::TAB_VIEW)
-            );*/
+            /*
+                        $viewCollection->add(
+                            $this->viewBuilderFactory->createFormViewBuilder(static::FORM_VIEW, '/config')
+                                ->setResourceKey(EventSettings::RESOURCE_KEY)
+                                ->setFormKey(EventSettings::FORM_KEY)
+                                ->setTabTitle('sulu_event.config.tab.settings')
+                                ->addToolbarActions([new ToolbarAction('sulu_admin.save')])
+                                ->setParent(static::TAB_VIEW)
+                        );*/
 
             $viewCollection->add(
                 $this->viewBuilderFactory->createFormViewBuilder(static::FORM_VIEW_SETTINGS_GENERAL, '/'.static::FORM_KEY_SETTINGS_GENERAL)

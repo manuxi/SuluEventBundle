@@ -30,6 +30,9 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
         $loader->load('services.xml');
         $loader->load('controller.xml');
         $loader->load('automation.xml');
+        $loader->load('services-feed.xml');
+        $loader->load('services-ical.xml');
+        $loader->load('services-calendar.xml');
 
         $this->configurePersistence($config['objects'], $container);
     }
@@ -198,6 +201,21 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
                                     ],
                                 ],
                             ],
+                        ],
+                    ],
+                ]
+            );
+        }
+
+        if ($container->hasExtension('framework')) {
+            $container->prependExtensionConfig(
+                'framework',
+                [
+                    'rate_limiter' => [
+                        'sulu_event_calendar_api' => [
+                            'policy' => 'sliding_window',
+                            'limit' => 100,
+                            'interval' => '1 minute',
                         ],
                     ],
                 ]

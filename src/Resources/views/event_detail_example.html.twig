@@ -1,0 +1,91 @@
+{# Resources/views/event_detail_example.html.twig #}
+{% extends "base.html.twig" %}
+
+{% block meta %}
+    {# Open Graph Tags for Social Media #}
+    {% set ogTags = event_og_tags(event) %}
+    {% for property, content in ogTags %}
+        <meta property="{{ property }}" content="{{ content }}" />
+    {% endfor %}
+    
+    {# Twitter Card Tags #}
+    {% set twitterTags = event_twitter_tags(event) %}
+    {% for name, content in twitterTags %}
+        <meta name="{{ name }}" content="{{ content }}" />
+    {% endfor %}
+{% endblock %}
+
+{% block content %}
+    <article class="event-detail">
+        <h1>{{ event.title }}</h1>
+        
+        {% if event.subtitle %}
+            <h2>{{ event.subtitle }}</h2>
+        {% endif %}
+        
+        <div class="event-meta">
+            <time datetime="{{ event.startDate|date('c') }}">
+                {{ event.startDate|format_datetime('full', 'short', locale=app.request.locale) }}
+            </time>
+            
+            {% if event.location %}
+                <span class="location">@ {{ event.location.name }}</span>
+            {% endif %}
+        </div>
+        
+        <div class="event-actions">
+            {# iCal Download #}
+            <a href="{{ path('sulu_event.ical_single', {id: event.id, _locale: app.request.locale}) }}" 
+               class="btn btn-secondary"
+               download="event-{{ event.id }}.ics">
+                <i class="fa fa-calendar-plus"></i> {{ 'sulu_event.add_to_calendar'|trans }}
+            </a>
+        </div>
+        
+        {% if event.text %}
+            <div class="event-content">
+                {{ event.text|raw }}
+            </div>
+        {% endif %}
+        
+        {# Social Media Share Buttons #}
+        {% if event.enableSocialShare %}
+            <div class="social-share mt-4">
+                <h3>{{ 'sulu_event.share_event'|trans }}</h3>
+                <div class="share-buttons">
+                    {% set shareLinks = event_social_shares(event, app.request.locale) %}
+                    
+                    {% if shareLinks.facebook is defined %}
+                        <a href="{{ shareLinks.facebook }}" target="_blank" class="btn btn-facebook">
+                            <i class="fab fa-facebook"></i> Facebook
+                        </a>
+                    {% endif %}
+                    
+                    {% if shareLinks.twitter is defined %}
+                        <a href="{{ shareLinks.twitter }}" target="_blank" class="btn btn-twitter">
+                            <i class="fab fa-twitter"></i> Twitter
+                        </a>
+                    {% endif %}
+                    
+                    {% if shareLinks.linkedin is defined %}
+                        <a href="{{ shareLinks.linkedin }}" target="_blank" class="btn btn-linkedin">
+                            <i class="fab fa-linkedin"></i> LinkedIn
+                        </a>
+                    {% endif %}
+                    
+                    {% if shareLinks.whatsapp is defined %}
+                        <a href="{{ shareLinks.whatsapp }}" target="_blank" class="btn btn-whatsapp">
+                            <i class="fab fa-whatsapp"></i> WhatsApp
+                        </a>
+                    {% endif %}
+                    
+                    {% if shareLinks.email is defined %}
+                        <a href="{{ shareLinks.email }}" class="btn btn-email">
+                            <i class="fas fa-envelope"></i> Email
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    </article>
+{% endblock %}

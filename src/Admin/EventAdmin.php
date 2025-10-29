@@ -35,7 +35,11 @@ class EventAdmin extends Admin
     public const EDIT_FORM_VIEW_EXCERPT = 'sulu_event.edit_form.excerpt';
 
     public const EDIT_FORM_VIEW_SETTINGS = 'sulu_event.event.edit_form.settings';
+
+    public const EDIT_FORM_VIEW_RECURRENCE = 'sulu_event.event.edit_form.recurrence';
     public const EDIT_FORM_VIEW_AUTOMATION = 'sulu_event.event.edit_form.automation';
+
+    public const EDIT_FORM_VIEW_SOCIAL = 'sulu_event.event.edit_form.social';
 
     public function __construct(
         private ViewBuilderFactoryInterface $viewBuilderFactory,
@@ -251,6 +255,28 @@ class EventAdmin extends Admin
                     ->setPreviewCondition($previewCondition)
                     ->setTitleVisible(true)
                     ->setTabOrder(4096)
+                    ->setParent(static::EDIT_FORM_VIEW)
+            );
+
+            $viewCollection->add(
+                $this->viewBuilderFactory
+                    ->createFormViewBuilder(static::EDIT_FORM_VIEW_RECURRENCE, '/recurrence')
+                    ->setResourceKey(Event::RESOURCE_KEY)
+                    ->setFormKey('event_recurrence')
+                    ->setTabTitle('sulu_event.recurrence.title')
+                    ->setTabOrder(1536)
+                    ->addToolbarActions($formToolbarActions)
+                    ->setParent(static::EDIT_FORM_VIEW)
+            );
+
+            $viewCollection->add(
+                $this->viewBuilderFactory
+                    ->createFormViewBuilder(static::EDIT_FORM_VIEW_SOCIAL, '/social')
+                    ->setResourceKey(Event::RESOURCE_KEY)
+                    ->setFormKey('event_social_settings')
+                    ->setTabTitle('sulu_event.social_media.title')
+                    ->setTabOrder(3000)
+                    ->addToolbarActions($formToolbarActions)
                     ->setParent(static::EDIT_FORM_VIEW)
             );
 

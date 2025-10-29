@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services https://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <!-- Calendar API Controller -->
+        <service id="Manuxi\SuluEventBundle\Controller\Website\CalendarApiController" public="true">
+            <argument type="service" id="sulu_event.repository.event"/>
+            <argument type="service" id="router"/>
+            <tag name="controller.service_arguments"/>
+            <tag name="sulu.context" context="website"/>
+        </service>
+
+        <!-- Recurrence Generator Service -->
+        <service id="sulu_event.recurrence_generator" class="Manuxi\SuluEventBundle\Service\RecurrenceGenerator"/>
+
+        <!-- Recurrence Command -->
+        <service id="sulu_event.command.generate_recurring" 
+                 class="Manuxi\SuluEventBundle\Command\GenerateRecurringEventsCommand">
+            <argument type="service" id="sulu_event.repository.event"/>
+            <argument type="service" id="sulu_event.recurrence_generator"/>
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <tag name="console.command"/>
+        </service>
+
+        <!-- Social Share Generator Service -->
+        <service id="sulu_event.social_share_generator" class="Manuxi\SuluEventBundle\Service\SocialShareGenerator">
+            <argument type="service" id="router"/>
+        </service>
+
+        <!-- Social Share Twig Extension -->
+        <service id="sulu_event.social_share_extension" class="Manuxi\SuluEventBundle\Twig\SocialShareExtension">
+            <argument type="service" id="sulu_event.social_share_generator"/>
+            <tag name="twig.extension"/>
+        </service>
+
+        <!-- Event Calendar Content Type -->
+        <service id="sulu_event.content.type.calendar" 
+                 class="Manuxi\SuluEventBundle\Content\Type\EventCalendarContentType">
+            <argument type="service" id="sulu_event.repository.event"/>
+            <tag name="sulu.content.type" alias="event_calendar"/>
+        </service>
+    </services>
+</container>
