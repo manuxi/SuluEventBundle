@@ -1,78 +1,133 @@
-<?xml version="1.0" ?>
+<?xml version="1.0" encoding="utf-8"?>
 <form xmlns="http://schemas.sulu.io/template/template"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:schemaLocation="http://schemas.sulu.io/template/template http://schemas.sulu.io/template/form-1.0.xsd">
 
-    <key>event_social_settings</key>
+    <key>event_social_media</key>
 
     <properties>
-        <section name="social_sharing">
+        <!-- Social Sharing Section -->
+        <section name="sharing">
             <meta>
                 <title>sulu_event.social_media.sharing_title</title>
             </meta>
+
             <properties>
-                <property name="enableSocialShare" type="checkbox">
+                <property name="enableSharing" type="checkbox">
                     <meta>
                         <title>sulu_event.social_media.enable</title>
+                        <info_text>sulu_event.social_media.enable_info</info_text>
                     </meta>
                     <params>
                         <param name="type" value="toggler"/>
                     </params>
                 </property>
 
-                <property name="socialPlatforms" type="select" visibleCondition="enableSocialShare == true">
+                <property name="platforms" type="select" visibleCondition="enableSharing == true">
                     <meta>
                         <title>sulu_event.social_media.platforms</title>
+                        <info_text>sulu_event.social_media.platforms_info</info_text>
                     </meta>
                     <params>
-                        <param name="values" type="collection">
-                            <param name="facebook"><meta><title>Facebook</title></meta></param>
-                            <param name="twitter"><meta><title>Twitter/X</title></meta></param>
-                            <param name="linkedin"><meta><title>LinkedIn</title></meta></param>
-                            <param name="whatsapp"><meta><title>WhatsApp</title></meta></param>
-                            <param name="email"><meta><title>Email</title></meta></param>
-                        </param>
                         <param name="multiple" value="true"/>
+                        <param name="values" type="collection">
+                            <param name="facebook">
+                                <meta>
+                                    <title>sulu_event.social_media.platforms_options.facebook</title>
+                                </meta>
+                            </param>
+                            <param name="twitter">
+                                <meta>
+                                    <title>sulu_event.social_media.platforms_options.twitter</title>
+                                </meta>
+                            </param>
+                            <param name="linkedin">
+                                <meta>
+                                    <title>sulu_event.social_media.platforms_options.linkedin</title>
+                                </meta>
+                            </param>
+                            <param name="instagram">
+                                <meta>
+                                    <title>sulu_event.social_media.platforms_options.instagram</title>
+                                </meta>
+                            </param>
+                            <param name="whatsapp">
+                                <meta>
+                                    <title>sulu_event.social_media.platforms_options.whatsapp</title>
+                                </meta>
+                            </param>
+                            <param name="email">
+                                <meta>
+                                    <title>sulu_event.social_media.platforms_options.email</title>
+                                </meta>
+                            </param>
+                        </param>
                     </params>
-                </property>
-
-                <property name="customShareText" type="text_area" visibleCondition="enableSocialShare == true">
-                    <meta>
-                        <title>sulu_event.social_media.custom_text</title>
-                    </meta>
                 </property>
             </properties>
         </section>
 
-        <section name="social_profiles">
+        <!-- Social Media Profiles Section -->
+        <section name="profiles" visibleCondition="enableSharing == true">
             <meta>
                 <title>sulu_event.social_media.profiles_title</title>
+                <info_text>sulu_event.social_media.profiles_info</info_text>
             </meta>
+
             <properties>
                 <property name="facebookUrl" type="url">
                     <meta>
                         <title>sulu_event.social_media.facebook_url</title>
+                        <placeholder>sulu_event.social_media.facebook_url_placeholder</placeholder>
                     </meta>
                 </property>
 
                 <property name="twitterHandle" type="text_line">
                     <meta>
                         <title>sulu_event.social_media.twitter_handle</title>
+                        <placeholder>sulu_event.social_media.twitter_handle_placeholder</placeholder>
                     </meta>
-                    <params>
-                        <param name="headline" value="true"/>
-                    </params>
                 </property>
 
                 <property name="instagramUrl" type="url">
                     <meta>
                         <title>sulu_event.social_media.instagram_url</title>
+                        <placeholder>sulu_event.social_media.instagram_url_placeholder</placeholder>
                     </meta>
                 </property>
 
                 <property name="linkedinUrl" type="url">
                     <meta>
                         <title>sulu_event.social_media.linkedin_url</title>
+                        <placeholder>sulu_event.social_media.linkedin_url_placeholder</placeholder>
+                    </meta>
+                </property>
+            </properties>
+        </section>
+
+        <!-- Custom Share Text Section -->
+        <section name="custom" visibleCondition="enableSharing == true">
+            <meta>
+                <title>sulu_event.social_media.custom_title</title>
+            </meta>
+
+            <properties>
+                <property name="customShareText" type="text_area">
+                    <meta>
+                        <title>sulu_event.social_media.custom_share_text</title>
+                        <info_text>sulu_event.social_media.custom_share_text_info</info_text>
+                        <placeholder>sulu_event.social_media.custom_share_text_placeholder</placeholder>
+                    </meta>
+                    <params>
+                        <param name="rows" value="3"/>
+                    </params>
+                </property>
+
+                <property name="targetGroups" type="text_line">
+                    <meta>
+                        <title>sulu_event.social_media.target_groups</title>
+                        <info_text>sulu_event.social_media.target_groups_info</info_text>
+                        <placeholder>sulu_event.social_media.target_groups_placeholder</placeholder>
                     </meta>
                 </property>
             </properties>

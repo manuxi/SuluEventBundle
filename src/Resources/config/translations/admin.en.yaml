@@ -149,13 +149,16 @@ sulu_event:
 
     # Recurrence
     recurrence:
+        title: "Recurrence"
         enable: "Recurring Event"
+        enable_info: "Enable this option to make the event repeat"
         frequency: "Repeat Pattern"
         daily: "Daily"
         weekly: "Weekly"
         monthly: "Monthly"
         yearly: "Yearly"
         interval: "Every X (days/weeks/months)"
+        interval_info: "Repeat every X days/weeks/months/years"
         weekdays: "On Weekdays"
         monday: "Monday"
         tuesday: "Tuesday"
@@ -172,12 +175,48 @@ sulu_event:
         until: "End Date"
 
     # Social Media
-    social_media: "Social Media"
     enable_social_share: "Enable Social Sharing"
     social_platforms: "Platforms"
     custom_share_text: "Custom Share Text"
     add_to_calendar: "Add to Calendar"
     share_event: "Share Event"
+
+    social_media:
+        title: "Social Media"
+        sharing_title: "Social Sharing"
+        enable: "Enable Social Media Sharing"
+        enable_info: "Allows sharing this event on social media platforms"
+        platforms: "Platforms"
+        platforms_info: "Select the platforms where this event can be shared"
+
+        platforms_options:
+            facebook: "Facebook"
+            twitter: "Twitter / X"
+            linkedin: "LinkedIn"
+            whatsapp: "WhatsApp"
+            instagram: "Instagram"
+            email: "Email"
+
+        profiles_title: "Social Media Profiles"
+        profiles_info: "Link your social media profiles for this event"
+
+        facebook_url: "Facebook Profile URL"
+        facebook_url_placeholder: "https://facebook.com/your-profile"
+        twitter_handle: "Twitter / X Handle"
+        twitter_handle_placeholder: "@yourhandle"
+        instagram_url: "Instagram Profile URL"
+        instagram_url_placeholder: "https://instagram.com/your-profile"
+        linkedin_url: "LinkedIn Profile URL"
+        linkedin_url_placeholder: "https://linkedin.com/company/your-profile"
+
+        custom_title: "Custom"
+        custom_share_text: "Custom Share Text"
+        custom_share_text_info: "Overrides the default share text (e.g., title + description)"
+        custom_share_text_placeholder: "Don't miss our event on..."
+
+        target_groups: "Target Groups"
+        target_groups_info: "Define target groups for targeted social media campaigns"
+        target_groups_placeholder: "e.g., Students, Families, Seniors"
 
     # Feed
     subscribe_calendar: "Subscribe to Calendar"

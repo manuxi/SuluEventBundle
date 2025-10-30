@@ -37,7 +37,6 @@ class SettingsController extends AbstractRestController implements ClassResource
         '/event-settings/{id}.{_format}',
         name: 'sulu_event.get_event-settings',
         requirements: [
-            'id' => '\d+',
             '_format' => 'json|csv'
         ],
         options: ['expose' => true],

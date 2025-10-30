@@ -72,11 +72,32 @@ class Event implements AuditableTranslatableInterface, SearchableInterface
     private ?Location $location = null;
 
     #[Serializer\Exclude]
-    #[ORM\OneToMany(mappedBy: 'event', targetEntity: EventTranslation::class, cascade: ['all'], fetch: 'EXTRA_LAZY', indexBy: 'locale')]
+    #[ORM\OneToMany(
+        mappedBy: 'event',
+        targetEntity: EventTranslation::class,
+        cascade: ['all'],
+        fetch: 'EXTRA_LAZY',
+        indexBy: 'locale'
+    )]
     private Collection $translations;
 
-    #[ORM\OneToOne(mappedBy: 'event', targetEntity: EventSocialSettings::class, cascade: ['persist', 'remove'])]
+    #[Serializer\Exclude]
+    #[ORM\OneToOne(
+        mappedBy: 'event',
+        targetEntity: EventSocialSettings::class,
+        cascade: ['persist', 'remove'],
+        fetch: 'EXTRA_LAZY'
+    )]
     private ?EventSocialSettings $socialSettings = null;
+
+    #[Serializer\Exclude]
+    #[ORM\OneToOne(
+        mappedBy: 'event',
+        targetEntity: EventRecurrence::class,
+        cascade: ['persist', 'remove'],
+        fetch: 'EXTRA_LAZY'
+    )]
+    private ?EventRecurrence $recurrence = null;
 
     private string $locale = 'de';
 
@@ -374,15 +395,6 @@ class Event implements AuditableTranslatableInterface, SearchableInterface
         return $this;
     }
 
-    public function getSocialSettings(): EventSocialSettings
-    {
-        if (!$this->socialSettings instanceof EventSocialSettings) {
-            $this->socialSettings = new EventSocialSettings();
-            $this->socialSettings->setEvent($this);
-        }
-        return $this->socialSettings;
-    }
-
     #[Serializer\VirtualProperty(name: 'availableLocales')]
     public function getAvailableLocales(): array
     {
@@ -435,5 +447,37 @@ class Event implements AuditableTranslatableInterface, SearchableInterface
     public function setImages(?array $images): void
     {
         $this->images = $images;
+    }
+
+    public function getSocialSettings(): ?EventSocialSettings
+    {
+        return $this->socialSettings;
+    }
+
+    public function setSocialSettings(?EventSocialSettings $socialSettings): self
+    {
+        $this->socialSettings = $socialSettings;
+
+        if ($socialSettings && $socialSettings->getEvent() !== $this) {
+            $socialSettings->setEvent($this);
+        }
+
+        return $this;
+    }
+
+    public function getRecurrence(): ?EventRecurrence
+    {
+        return $this->recurrence;
+    }
+
+    public function setRecurrence(?EventRecurrence $recurrence): self
+    {
+        $this->recurrence = $recurrence;
+
+        if ($recurrence && $recurrence->getEvent() !== $this) {
+            $recurrence->setEvent($this);
+        }
+
+        return $this;
     }
 }

@@ -4,92 +4,90 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Entity;
 
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation as Serializer;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'app_event_social_settings')]
+#[ORM\Index(columns: ['event_id'], name: 'idx_event_social')]
 class EventSocialSettings
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(type: Types::INTEGER)]
+    #[Serializer\Ignore]
     private ?int $id = null;
 
-    #[ORM\OneToOne(targetEntity: Event::class)]
-    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
-    private Event $event;
+    #[ORM\OneToOne(inversedBy: 'socialSettings', targetEntity: Event::class)]
+    #[ORM\JoinColumn(name: 'event_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
+    private ?Event $event = null;
 
     // Social Media Sharing
-    #[ORM\Column(type: 'boolean', options: ['default' => true])]
-    private bool $enableSocialShare = true;
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => true])]
+    private bool $enableSharing = true;
 
-    #[ORM\Column(type: 'json', nullable: true)]
-    private ?array $socialPlatforms = ['facebook', 'twitter', 'linkedin', 'whatsapp', 'email'];
-
-    #[ORM\Column(type: 'text', nullable: true)]
-    private ?string $customShareText = null;
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $platforms = null;
 
     // Social Media Profile Links (fÃ¼r "Follow us")
-    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
     private ?string $facebookUrl = null;
 
-    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[ORM\Column(type: Types::STRING, length: 100, nullable: true)]
     private ?string $twitterHandle = null;
 
-    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
     private ?string $instagramUrl = null;
 
-    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
     private ?string $linkedinUrl = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $customShareText = null;
+
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    private ?string $targetGroups = null;
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function setId(?int $id): void
-    {
-        $this->id = $id;
-    }
-
-    public function getEvent(): Event
+    public function getEvent(): ?Event
     {
         return $this->event;
     }
 
-    public function setEvent(Event $event): void
+    public function setEvent(?Event $event): self
     {
         $this->event = $event;
+
+        return $this;
     }
 
-    public function isEnableSocialShare(): bool
+    public function getEnableSharing(): bool
     {
-        return $this->enableSocialShare;
+        return $this->enableSharing;
     }
 
-    public function setEnableSocialShare(bool $enableSocialShare): void
+    public function setEnableSharing(bool $enableSharing): self
     {
-        $this->enableSocialShare = $enableSocialShare;
+        $this->enableSharing = $enableSharing;
+
+        return $this;
     }
 
-    public function getSocialPlatforms(): ?array
+    public function getPlatforms(): ?array
     {
-        return $this->socialPlatforms;
+        return $this->platforms;
     }
 
-    public function setSocialPlatforms(?array $socialPlatforms): void
+    public function setPlatforms(?array $platforms): self
     {
-        $this->socialPlatforms = $socialPlatforms;
-    }
+        $this->platforms = $platforms;
 
-    public function getCustomShareText(): ?string
-    {
-        return $this->customShareText;
-    }
-
-    public function setCustomShareText(?string $customShareText): void
-    {
-        $this->customShareText = $customShareText;
+        return $this;
     }
 
     public function getFacebookUrl(): ?string
@@ -97,9 +95,11 @@ class EventSocialSettings
         return $this->facebookUrl;
     }
 
-    public function setFacebookUrl(?string $facebookUrl): void
+    public function setFacebookUrl(?string $facebookUrl): self
     {
         $this->facebookUrl = $facebookUrl;
+
+        return $this;
     }
 
     public function getTwitterHandle(): ?string
@@ -107,9 +107,11 @@ class EventSocialSettings
         return $this->twitterHandle;
     }
 
-    public function setTwitterHandle(?string $twitterHandle): void
+    public function setTwitterHandle(?string $twitterHandle): self
     {
         $this->twitterHandle = $twitterHandle;
+
+        return $this;
     }
 
     public function getInstagramUrl(): ?string
@@ -117,9 +119,11 @@ class EventSocialSettings
         return $this->instagramUrl;
     }
 
-    public function setInstagramUrl(?string $instagramUrl): void
+    public function setInstagramUrl(?string $instagramUrl): self
     {
         $this->instagramUrl = $instagramUrl;
+
+        return $this;
     }
 
     public function getLinkedinUrl(): ?string
@@ -127,10 +131,65 @@ class EventSocialSettings
         return $this->linkedinUrl;
     }
 
-    public function setLinkedinUrl(?string $linkedinUrl): void
+    public function setLinkedinUrl(?string $linkedinUrl): self
     {
         $this->linkedinUrl = $linkedinUrl;
+
+        return $this;
     }
 
+    public function getCustomShareText(): ?string
+    {
+        return $this->customShareText;
+    }
 
+    public function setCustomShareText(?string $customShareText): self
+    {
+        $this->customShareText = $customShareText;
+
+        return $this;
+    }
+
+    public function getTargetGroups(): ?string
+    {
+        return $this->targetGroups;
+    }
+
+    public function setTargetGroups(?string $targetGroups): self
+    {
+        $this->targetGroups = $targetGroups;
+
+        return $this;
+    }
+
+    /**
+     * Check if a specific platform is enabled.
+     */
+    public function isPlatformEnabled(string $platform): bool
+    {
+        return $this->enableSharing
+            && $this->platforms
+            && in_array($platform, $this->platforms, true);
+    }
+
+    /**
+     * Get share URL for a specific platform.
+     */
+    public function getProfileUrl(string $platform): ?string
+    {
+        return match ($platform) {
+            'facebook' => $this->facebookUrl,
+            'instagram' => $this->instagramUrl,
+            'linkedin' => $this->linkedinUrl,
+            default => null,
+        };
+    }
+
+    /**
+     * Get share text (custom or default from event).
+     */
+    public function getShareText(?string $default = null): ?string
+    {
+        return $this->customShareText ?? $default;
+    }
 }

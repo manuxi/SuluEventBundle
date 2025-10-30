@@ -126,157 +126,6 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
         return $queryBuilder->getQuery()->getResult();
     }
 
-    /**
-     * Find all recurring events (with EventRecurrence relationship).
-     *
-     * @return Event[]
-     */
-    public function findRecurringEvents(): array
-    {
-        return $this->createQueryBuilder('e')
-            ->innerJoin('e.eventRecurrence', 'r')
-            ->where('r.isRecurring = :recurring')
-            ->setParameter('recurring', true)
-            ->getQuery()
-            ->getResult();
-    }
-
-    /**
-     * Find events for calendar display with optional filters
-     * Supports date range, locale, categories, tags, and location filters.
-     *
-     * @param array $filters {
-     *
-     * @var string|null $locale       Filter by locale (e.g., 'de', 'en')
-     * @var string|null $start        Start date (ISO format)
-     * @var string|null $end          End date (ISO format)
-     * @var array|null  $categories   Category IDs to filter
-     * @var array|null  $tags         Tag IDs to filter
-     * @var string|null $location     Location name filter
-     * @var int|null    $dataId       Folder/page ID filter
-     * @var bool        $includeSubFolders Include subfolders in dataId filter
-     * @var string      $sortBy       Sort field (default: 'startDate')
-     * @var string      $sortMethod   Sort direction (default: 'asc')
-     *                  }
-     *
-     * @return Event[]
-     */
-    public function findForCalendar(array $filters): array
-    {
-        $qb = $this->createQueryBuilder('e')
-            ->leftJoin('e.location', 'loc')
-            ->where('e.published = :published')
-            ->setParameter('published', true);
-
-        // Date range filters
-        if (!empty($filters['start'])) {
-            try {
-                $startDate = new \Datetime($filters['start']);
-                $qb->andWhere('e.endDate >= :start OR (e.endDate IS NULL AND e.startDate >= :start)')
-                    ->setParameter('start', $startDate);
-            } catch (\Exception $e) {
-                // Invalid date format - skip filter
-            }
-        }
-
-        if (!empty($filters['end'])) {
-            try {
-                $endDate = new \Datetime($filters['end']);
-                $qb->andWhere('e.startDate <= :end')
-                    ->setParameter('end', $endDate);
-            } catch (\Exception $e) {
-                // Invalid date format - skip filter
-            }
-        }
-
-        // Locale filter
-        if (!empty($filters['locale'])) {
-            $qb->andWhere('e.locale = :locale')
-                ->setParameter('locale', $filters['locale']);
-        }
-
-        // Category filter
-        if (!empty($filters['categories']) && is_array($filters['categories'])) {
-            $qb->innerJoin('e.categories', 'c')
-                ->andWhere('c.id IN (:categories)')
-                ->setParameter('categories', $filters['categories']);
-        }
-
-        // Tag filter
-        if (!empty($filters['tags']) && is_array($filters['tags'])) {
-            $qb->innerJoin('e.tags', 't')
-                ->andWhere('t.id IN (:tags)')
-                ->setParameter('tags', $filters['tags']);
-        }
-
-        // Location filter
-        if (!empty($filters['location'])) {
-            $qb->andWhere('loc.name LIKE :location')
-                ->setParameter('location', '%'.$filters['location'].'%');
-        }
-
-        // Folder/dataId filter (from content block)
-        if (!empty($filters['dataId'])) {
-            if (!empty($filters['includeSubFolders'])) {
-                // Include subfolders - use LIKE for path matching
-                $qb->andWhere('e.route LIKE :dataPath')
-                    ->setParameter('dataPath', '%/'.$filters['dataId'].'/%');
-            } else {
-                // Exact folder only
-                $qb->andWhere('e.parent = :dataId')
-                    ->setParameter('dataId', $filters['dataId']);
-            }
-        }
-
-        // Sorting
-        $sortBy = $filters['sortBy'] ?? 'startDate';
-        $sortMethod = strtoupper($filters['sortMethod'] ?? 'ASC');
-
-        // Map sort fields to actual entity properties
-        $sortFieldMap = [
-            'startDate' => 'e.startDate',
-            'title' => 'e.title',
-            'created' => 'e.created',
-            'changed' => 'e.changed',
-        ];
-
-        $sortField = $sortFieldMap[$sortBy] ?? 'e.startDate';
-        $qb->orderBy($sortField, 'DESC' === $sortMethod ? 'DESC' : 'ASC');
-
-        return $qb->getQuery()->getResult();
-    }
-
-    /**
-     * Find events for iCal export
-     * Uses same filtering as calendar view.
-     *
-     * @param array $filters Same as findForCalendar()
-     *
-     * @return Event[]
-     */
-    public function findForIcal(array $filters): array
-    {
-        return $this->findForCalendar($filters);
-    }
-
-    /**
-     * Find published events for RSS/Atom feeds.
-     *
-     * @param int $limit Maximum number of events to return
-     *
-     * @return Event[]
-     */
-    public function findForFeed(int $limit = 50): array
-    {
-        return $this->createQueryBuilder('e')
-            ->where('e.published = :published')
-            ->setParameter('published', true)
-            ->orderBy('e.startDate', 'DESC')
-            ->setMaxResults($limit)
-            ->getQuery()
-            ->getResult();
-    }
-
     public function findAllForSitemapOld(int $page, int $limit): array
     {
         $offset = ($page * $limit) - $limit;
@@ -572,5 +421,157 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
                 ->andWhere($queryBuilder->expr()->in('categories.id', ':categories'))
                 ->setParameter('categories', $filters['categories']);
         }
+    }
+
+    /**
+     * Find all recurring events (with EventRecurrence relationship).
+     *
+     * @return Event[]
+     */
+    public function findRecurringEvents(): array
+    {
+        return $this->createQueryBuilder('e')
+            ->innerJoin('e.eventRecurrence', 'r')
+            ->where('r.isRecurring = :recurring')
+            ->setParameter('recurring', true)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Find events for calendar display with optional filters
+     * Supports date range, locale, categories, tags, and location filters.
+     *
+     * @param array $filters {
+     *
+     * @var string|null $locale       Filter by locale (e.g., 'de', 'en')
+     * @var string|null $start        Start date (ISO format)
+     * @var string|null $end          End date (ISO format)
+     * @var array|null  $categories   Category IDs to filter
+     * @var array|null  $tags         Tag IDs to filter
+     * @var string|null $location     Location name filter
+     * @var int|null    $dataId       Folder/page ID filter
+     * @var bool        $includeSubFolders Include subfolders in dataId filter
+     * @var string      $sortBy       Sort field (default: 'startDate')
+     * @var string      $sortMethod   Sort direction (default: 'asc')
+     *                  }
+     *
+     * @return Event[]
+     */
+    public function findForCalendar(array $filters): array
+    {
+        $qb = $this->createQueryBuilder('e')
+            ->leftJoin('e.location', 'loc')
+            ->leftJoin('e.translations', 'translation')
+            ->where('translation.published = :published')
+            ->setParameter('published', true);
+
+        // Date range filters
+        if (!empty($filters['start'])) {
+            try {
+                $startDate = new \Datetime($filters['start']);
+                $qb->andWhere('e.endDate >= :start OR (e.endDate IS NULL AND e.startDate >= :start)')
+                    ->setParameter('start', $startDate);
+            } catch (\Exception $e) {
+                // Invalid date format - skip filter
+            }
+        }
+
+        if (!empty($filters['end'])) {
+            try {
+                $endDate = new \Datetime($filters['end']);
+                $qb->andWhere('e.startDate <= :end')
+                    ->setParameter('end', $endDate);
+            } catch (\Exception $e) {
+                // Invalid date format - skip filter
+            }
+        }
+
+        // Locale filter
+        if (!empty($filters['locale'])) {
+            $qb->andWhere('translation.locale = :locale')
+                ->setParameter('locale', $filters['locale']);
+        }
+
+        // Category filter
+        if (!empty($filters['categories']) && is_array($filters['categories'])) {
+            $qb->innerJoin('translation.categories', 'c')
+                ->andWhere('c.id IN (:categories)')
+                ->setParameter('categories', $filters['categories']);
+        }
+
+        // Tag filter
+        if (!empty($filters['tags']) && is_array($filters['tags'])) {
+            $qb->innerJoin('translation.tags', 't')
+                ->andWhere('t.id IN (:tags)')
+                ->setParameter('tags', $filters['tags']);
+        }
+
+        // Location filter
+        if (!empty($filters['location'])) {
+            $qb->andWhere('loc.name LIKE :location')
+                ->setParameter('location', '%'.$filters['location'].'%');
+        }
+
+        // Folder/dataId filter (from content block)
+        if (!empty($filters['dataId'])) {
+            if (!empty($filters['includeSubFolders'])) {
+                // Include subfolders - use LIKE for path matching
+                $qb->andWhere('translation.route LIKE :dataPath')
+                    ->setParameter('dataPath', '%/'.$filters['dataId'].'/%');
+            } else {
+                // Exact folder only
+                $qb->andWhere('e.parent = :dataId')
+                    ->setParameter('dataId', $filters['dataId']);
+            }
+        }
+
+        // Sorting
+        $sortBy = $filters['sortBy'] ?? 'startDate';
+        $sortMethod = strtoupper($filters['sortMethod'] ?? 'ASC');
+
+        // Map sort fields to actual entity properties
+        $sortFieldMap = [
+            'startDate' => 'e.startDate',
+            'title' => 'e.title',
+            'created' => 'e.created',
+            'changed' => 'e.changed',
+        ];
+
+        $sortField = $sortFieldMap[$sortBy] ?? 'e.startDate';
+        $qb->orderBy($sortField, 'DESC' === $sortMethod ? 'DESC' : 'ASC');
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * Find events for iCal export
+     * Uses same filtering as calendar view.
+     *
+     * @param array $filters Same as findForCalendar()
+     *
+     * @return Event[]
+     */
+    public function findForIcal(array $filters): array
+    {
+        return $this->findForCalendar($filters);
+    }
+
+    /**
+     * Find published events for RSS/Atom feeds.
+     *
+     * @param int $limit Maximum number of events to return
+     *
+     * @return Event[]
+     */
+    public function findForFeed(int $limit = 50): array
+    {
+        return $this->createQueryBuilder('e')
+            ->where('e.published = :published')
+            ->setParameter('published', true)
+            ->orderBy('e.startDate', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
     }
 }

@@ -155,8 +155,20 @@ sulu_event:
 
     # Recurrence
     recurrence:
+        title: "Wiederholung"
         enable: "Wiederkehrende Veranstaltung"
+        enable_info: "Aktivieren Sie diese Option, um die Veranstaltung zu wiederholen"
         frequency: "Wiederholungsrhythmus"
+        interval_info: "Alle X Tage/Wochen/Monate/Jahre wiederholen"
+        end_date: "Enddatum"
+        weekly_days: "Wochentage"
+        monthly_type: "Monatlicher Typ"
+        monthly_day: "Tag des Monats"
+        monthly_week: "Woche des Monats"
+        monthly_weekday: "Wochentag"
+        yearly_month: "Monat"
+        exceptions: "Ausnahmen"
+        exceptions_info: "Daten, an denen die Veranstaltung nicht stattfindet"
         daily: "Täglich"
         weekly: "Wöchentlich"
         monthly: "Monatlich"
@@ -178,12 +190,48 @@ sulu_event:
         until: "Enddatum"
 
     # Social Media
-    social_media: "Social Media"
     enable_social_share: "Social Sharing aktivieren"
     social_platforms: "Plattformen"
     custom_share_text: "Benutzerdefinierter Share-Text"
     add_to_calendar: "Zum Kalender hinzufügen"
     share_event: "Veranstaltung teilen"
+
+    social_media:
+        title: "Social Media"
+        sharing_title: "Social Sharing"
+        enable: "Social Media Sharing aktivieren"
+        enable_info: "Ermöglicht das Teilen dieser Veranstaltung auf Social Media Plattformen"
+        platforms: "Plattformen"
+        platforms_info: "Wählen Sie die Plattformen aus, auf denen diese Veranstaltung geteilt werden kann"
+
+        platforms_options:
+            facebook: "Facebook"
+            twitter: "Twitter / X"
+            linkedin: "LinkedIn"
+            whatsapp: "WhatsApp"
+            instagram: "Instagram"
+            email: "E-Mail"
+
+        profiles_title: "Social Media Profile"
+        profiles_info: "Verlinken Sie Ihre Social Media Profile für diese Veranstaltung"
+
+        facebook_url: "Facebook Profil-URL"
+        facebook_url_placeholder: "https://facebook.com/dein-profil"
+        twitter_handle: "Twitter / X Handle"
+        twitter_handle_placeholder: "@deinhandle"
+        instagram_url: "Instagram Profil-URL"
+        instagram_url_placeholder: "https://instagram.com/dein-profil"
+        linkedin_url: "LinkedIn Profil-URL"
+        linkedin_url_placeholder: "https://linkedin.com/company/dein-profil"
+
+        custom_title: "Benutzerdefiniert"
+        custom_share_text: "Individueller Share-Text"
+        custom_share_text_info: "Überschreibt den Standard-Share-Text (z.B. Titel + Beschreibung)"
+        custom_share_text_placeholder: "Verpasse nicht unsere Veranstaltung am..."
+
+        target_groups: "Zielgruppen"
+        target_groups_info: "Definieren Sie Zielgruppen für gezielte Social Media Kampagnen"
+        target_groups_placeholder: "z.B. Studierende, Familien, Senioren"
 
     # Feed
     subscribe_calendar: "Kalender abonnieren"
