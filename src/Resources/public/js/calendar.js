@@ -1,5 +1,6 @@
 /**
  * FullCalendar Integration for SuluEventBundle
+ * FullCalendar v6 compatible
  *
  * Features:
  * - Bootstrap 5 Theme
@@ -13,6 +14,19 @@
  * - Event type colors
  * - Improved title display with line breaks
  */
+
+// Import FullCalendar core
+import { Calendar } from '@fullcalendar/core';
+import dayGridPlugin from '@fullcalendar/daygrid';
+import timeGridPlugin from '@fullcalendar/timegrid';
+import listPlugin from '@fullcalendar/list';
+import multiMonthPlugin from '@fullcalendar/multimonth';
+import bootstrap5Plugin from '@fullcalendar/bootstrap5';
+
+// Import FullCalendar locales
+import deLocale from '@fullcalendar/core/locales/de';
+import enLocale from '@fullcalendar/core/locales/en-gb';
+
 document.addEventListener('DOMContentLoaded', function() {
     const calendarEl = document.getElementById('event-calendar');
 
@@ -69,13 +83,29 @@ document.addEventListener('DOMContentLoaded', function() {
                 multiMonthYear: 'Year'
             };
 
+            const buttonIcons = {
+                prev: 'arrow-left-square-fill',
+                next: 'arrow-right-square-fill',
+                prevYear: 'chevrons-left', // double chevron
+                nextYear: 'chevrons-right' // double chevron
+            };
+
             // Initialize calendar
-            const calendar = new FullCalendar.Calendar(calendarEl, {
+            const calendar = new Calendar(calendarEl, {
+                // Plugins
+                plugins: [
+                    dayGridPlugin,
+                    timeGridPlugin,
+                    listPlugin,
+                    multiMonthPlugin,
+                    bootstrap5Plugin
+                ],
+
                 // Theme
                 themeSystem: 'bootstrap5',
 
                 // Locale
-                locale: locale,
+                locale: locale === 'de' ? deLocale : enLocale,
                 firstDay: 1,  // Monday
 
                 // Initial view - use data attribute
@@ -91,6 +121,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // Button text
                 buttonText: buttonText,
+                buttonIcons: false,
 
                 // Display options
                 weekNumbers: weekNumbers,
