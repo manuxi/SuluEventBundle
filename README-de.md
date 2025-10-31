@@ -76,7 +76,7 @@ sulu_search:
     website:
         indexes:
             - events_published  # Veröffentlichte Events (Website)
-            - events            # Alle Events (Admin)
+            - events            # Entwürfe Events (Admin)
 ```
 
 ### Schritt 4: Datenbank aktualisieren

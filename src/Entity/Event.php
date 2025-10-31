@@ -44,6 +44,9 @@ class Event implements AuditableTranslatableInterface, SearchableInterface
     #[ORM\Column(type: Types::INTEGER)]
     private ?int $id = null;
 
+    #[ORM\Column(type: Types::STRING, length: 50, nullable: true)]
+    private ?string $type = 'default';
+
     #[Serializer\Exclude]
     #[ORM\OneToOne(mappedBy: 'event', targetEntity: EventSeo::class, cascade: ['persist', 'remove'])]
     private ?EventSeo $eventSeo = null;
@@ -125,6 +128,16 @@ class Event implements AuditableTranslatableInterface, SearchableInterface
         $this->propagateLocale($locale);
 
         return $this;
+    }
+
+    public function getType(): ?string
+    {
+        return $this->type;
+    }
+
+    public function setType(?string $type): void
+    {
+        $this->type = $type;
     }
 
     public function getStartDate(): ?\DateTimeImmutable

@@ -19,7 +19,9 @@ export default class EventCalendar {
             'de': deLocale,
             'en': enLocale
         };
-        
+
+        console.log(options.locale);
+
         this.options = {
             plugins: [dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin],
             initialView: options.initialView || 'dayGridMonth',

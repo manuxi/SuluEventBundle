@@ -1,4 +1,6 @@
+# Main namespace for event-related translations
 sulu_event:
+    # General event properties
     id: "Id"
     name: "Name"
     title: "Name of the Event"
@@ -17,6 +19,8 @@ sulu_event:
     email: "E-Mail"
     phone: "Phone"
     gallery: "Image-Gallery"
+
+    # Publishing and state management
     publish: "publish"
     unpublish: "unpublish"
     published: "published"
@@ -26,14 +30,20 @@ sulu_event:
     published_at: "Published at"
     show_author: "Show Author"
     show_date: "Show Creation Date"
+
+    # Creator and author information
     created_date: "Created at"
     creator: "Created by"
     changed_date: "Last Change at"
     changer: "Last change by"
     author: "Author"
     authored: "authored"
+
+    # Hero section specific translations
     hero:
         image: "Hero-Image"
+
+    # Section headers in the event form
     header:
         main: "Date, Time & Place"
         text: "Invitation"
@@ -43,6 +53,8 @@ sulu_event:
         optional: "Optional Fields"
         change_author: "Modify Author Information"
         created_changed: "Created and Modify Information"
+
+    # General terms for events
     event: "Event"
     events: "Events"
     event_selection_label: "{count} {count, plural, =1 {event} other {events}} selected"
@@ -50,90 +62,137 @@ sulu_event:
     select_events: "Select events"
     no_event_selected: "No event selected"
     enable_event: "Enable event"
+
+    # Location related translations
     location: "Location"
     locations: "Locations"
     no_location_selected: "No location selected"
+
+    # Webspace and shadow event settings
     webspace_settings: "Webspace settings"
     customize_webspace_settings: "Customize webspace settings"
     main_webspace: "Main webspace"
     additional_webspace: "Additional webspaces"
     shadow_event: "Shadow event"
     enable_shadow_event: "Enable shadow event"
+
+    # Helper and info texts
     enddate_eq_startdate: "If the time of start and end are set to 00:00, the time will not be displayed."
     add_location_first: "Please make sure that at least one location is added and therefore selectable."
+
+    # List and search translations
     search_name: "Events"
     empty_list: "Please select event..."
+
+    # List sorting options
     sorting:
         title: "Title of the event"
         start_date: "Start of the event"
         end_date: "Ende of the event"
-    filter:
-        pending: "Pending Events"
-        expired: "Expired Events"
 
+    # List filter options
+    filter:
+        pending: "Pending"
+        expired: "Expired"
+
+    # Event Type translations
+    event_type: "Event Type"
+    type:
+        default: "Default"
+        conference: "Conference"
+        workshop: "Workshop"
+        meeting: "Meeting"
+        seminar: "Seminar"
+        webinar: "Webinar"
+        training: "Training"
+        networking: "Networking"
+        presentation: "Presentation"
+        celebration: "Celebration"
+
+    # Configuration settings for events
     config:
         tab: "Settings"
+        # Titles for setting sections
         title:
             navi: "Settings"
             general: "Settings for Single View"
             xbreadcrumbs: "Intermediate Pages for Breadcrumbs"
-
             general_display: "General Display Settings"
-            calendar: "Calendar View"
+            calendar: "Calendar"
+            calendar_basic: "Basic Settings"
+            calendar_view: "View Options"
+            calendar_display: "Display Options"
+            calendar_styling: "Styling"
             breadcrumbs: "Breadcrumbs"
             list_view: "List View"
             filters: "Filter Options"
+        # Properties within the settings
         properties:
             # General
             toggle_header: "Display Header"
             toggle_hero: "Display Default Hero"
             toggle_breadcrumbs: "Display Breadcrumbs"
-
+            # Calendar
+            enable_calendar: "Enable Calendar"
+            enable_calendar_info: "Enables the calendar view for events"
+            calendar_view: "Default View"
+            calendar_view_info: "Choose the default view when loading the calendar"
+            calendar_start_day: "Week Start"
+            calendar_start_day_info: "On which day does the week start?"
+            show_calendar_weekends: "Show Weekends"
+            show_calendar_weekends_info: "Zeigt Wochenenden an oder blendet diese Tage aus"
+            show_calendar_week_numbers: "Wochennummern"
+            show_calendar_week_numbers_info: "Zeigt Wochennummern an"
+            show_calendar_event_time: "Show Time"
+            show_calendar_event_time_info: "Shows the time for events (when not 00:00-00:00)"
+            show_calendar_event_location: "Show Location"
+            show_week_numbers: "Show Week Numbers"
+            show_weekends: "Show Weekends"
+            event_limit_per_day: "Max Events per Day"
+            event_limit_per_day_info: "Number of events shown per day (then \"+X more\")"
+            limit_to_event_range: "Limit to Event Range"
+            limit_to_event_range_info: "Only show calendar for weeks/months with events"
+            event_color: "Event Color"
+            event_color_info: "Default color for events (overridden by event types)"
             # Breadcrumbs
             page_events: "Overview All Events"
             page_events_pending: "Overview pending Events"
             page_events_expired: "Overview expired Events"
-
-            # Calendar
-            enable_calendar: "Enable Calendar View"
-            enable_calendar_info: "Enables calendar view for website visitors"
-            calendar_view: "Default Calendar View"
-            calendar_start_day: "First Day of Week"
-            show_calendar_event_time: "Show Event Time in Calendar"
-            show_calendar_event_location: "Show Event Location in Calendar"
-
             # List View
             events_per_page: "Events per Page"
             default_sort_order: "Default Sort Order"
             show_event_images: "Show Images in List View"
             show_event_summary: "Show Summary in List View"
-
             # Filters
             enable_category_filter: "Enable Category Filter"
             enable_location_filter: "Enable Location Filter"
             enable_date_filter: "Enable Date Filter"
             enable_search_filter: "Enable Search Filter"
-
+        # Calendar view options
         calendar_view:
-            month: "Month View"
-            week: "Week View"
-            list: "List View"
-
-            weekday:
-                sunday: "Sunday"
-                monday: "Monday"
-
-            sort_order:
-                start_date_asc: "Start Date (Ascending)"
-                start_date_desc: "Start Date (Descending)"
-                title_asc: "Title (A-Z)"
-                title_desc: "Title (Z-A)"
+            day_grid_month: "Month Grid"
+            time_grid_week: "Week Grid with Times"
+            list_week: "Week List"
+            list_month: "Month List"
+            multi_month_year: "Year Overview (4 Months)"
+        # Weekday options
+        weekday:
+            sunday: "Sunday"
+            monday: "Monday"
+        # Sort order options
+        sort_order:
+            start_date_asc: "Start Date (Ascending)"
+            start_date_desc: "Start Date (Descending)"
+            title_asc: "Title (A-Z)"
+            title_desc: "Title (Z-A)"
+    
+    # Search index names
     search:
         index:
             events: "Events (Draft)"
             events_published: "Events"
 
-    # Calendar
+    # Calendar block specific translations
     calendar:
         title: "Title"
         subtitle: "Subtitle"
@@ -147,18 +206,26 @@ sulu_event:
             week: "Week View"
             list: "List View"
 
-    # Recurrence
+    # Recurrence settings
     recurrence:
         title: "Recurrence"
         enable: "Recurring Event"
         enable_info: "Enable this option to make the event repeat"
         frequency: "Repeat Pattern"
+        interval: "Every X (days/weeks/months)"
+        interval_info: "Repeat every X days/weeks/months/years"
+        end_type: "Ends"
+        never: "Never"
+        after_occurrences: "After Count"
+        until_date: "Until Date"
+        occurrences: "Number of Occurrences"
+        until: "End Date"
+        # Recurrence types
         daily: "Daily"
         weekly: "Weekly"
         monthly: "Monthly"
         yearly: "Yearly"
-        interval: "Every X (days/weeks/months)"
-        interval_info: "Repeat every X days/weeks/months/years"
+        # Weekday options for recurrence
         weekdays: "On Weekdays"
         monday: "Monday"
         tuesday: "Tuesday"
@@ -167,20 +234,15 @@ sulu_event:
         friday: "Friday"
         saturday: "Saturday"
         sunday: "Sunday"
-        end_type: "Ends"
-        never: "Never"
-        after_occurrences: "After Count"
-        until_date: "Until Date"
-        occurrences: "Number of Occurrences"
-        until: "End Date"
 
-    # Social Media
+    # Social media sharing
     enable_social_share: "Enable Social Sharing"
     social_platforms: "Platforms"
     custom_share_text: "Custom Share Text"
     add_to_calendar: "Add to Calendar"
     share_event: "Share Event"
 
+    # Detailed Social Media section
     social_media:
         title: "Social Media"
         sharing_title: "Social Sharing"
@@ -188,7 +250,7 @@ sulu_event:
         enable_info: "Allows sharing this event on social media platforms"
         platforms: "Platforms"
         platforms_info: "Select the platforms where this event can be shared"
-
+        # Platform options
         platforms_options:
             facebook: "Facebook"
             twitter: "Twitter / X"
@@ -196,10 +258,9 @@ sulu_event:
             whatsapp: "WhatsApp"
             instagram: "Instagram"
             email: "Email"
-
+        # Social media profiles
         profiles_title: "Social Media Profiles"
         profiles_info: "Link your social media profiles for this event"
-
         facebook_url: "Facebook Profile URL"
         facebook_url_placeholder: "https://facebook.com/your-profile"
         twitter_handle: "Twitter / X Handle"
@@ -208,26 +269,30 @@ sulu_event:
         instagram_url_placeholder: "https://instagram.com/your-profile"
         linkedin_url: "LinkedIn Profile URL"
         linkedin_url_placeholder: "https://linkedin.com/company/your-profile"
-
+        # Custom sharing text
         custom_title: "Custom"
         custom_share_text: "Custom Share Text"
         custom_share_text_info: "Overrides the default share text (e.g., title + description)"
         custom_share_text_placeholder: "Don't miss our event on..."
-
+        # Targeting
         target_groups: "Target Groups"
         target_groups_info: "Define target groups for targeted social media campaigns"
         target_groups_placeholder: "e.g., Students, Families, Seniors"
 
-    # Feed
+    # Feed-related translations
     subscribe_calendar: "Subscribe to Calendar"
     rss_feed: "RSS Feed"
     atom_feed: "Atom Feed"
 
+# Namespace for activity log translations
 sulu_activity:
+    # Resource types
     resource:
         events: "Event"
         locations: "Locations"
+    # Activity descriptions
     description:
+        # Event activities
         events:
             created: "{userFullName} created the event \"{resourceTitle}\"."
             modified: "{userFullName} modified the event \"{resourceTitle}\"."
@@ -235,10 +300,12 @@ sulu_activity:
             restored: "{userFullName} restored the event \"{resourceTitle}\"."
             published: "{userFullName} published the event \"{resourceTitle}\"."
             unpublished: "{userFullName} unpublished the event \"{resourceTitle}\"."
+        # Location activities
         locations:
             created: "{userFullName} created the location \"{resourceTitle}\"."
             modified: "{userFullName} modified the location \"{resourceTitle}\"."
             removed: "{userFullName} deleted the location \"{resourceTitle}\"."
             restored: "{userFullName} restored the location \"{resourceTitle}\"."
+        # Settings activities
         event_settings:
             modified: "{userFullName} modified the settings for events."

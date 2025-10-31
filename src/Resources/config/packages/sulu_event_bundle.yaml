@@ -1,0 +1,39 @@
+# Resources/config/packages/sulu_event_bundle.yaml
+# Default configuration for SuluEventBundle
+
+sulu_event:
+    # Default event types with Bootstrap 5 colors
+    # Will be replaced completely if user defines their own types
+    types:
+        default:
+            name: 'sulu_event.type.default'
+            color: '#0d6efd'
+        conference:
+            name: 'sulu_event.type.conference'
+            color: '#6610f2'
+        workshop:
+            name: 'sulu_event.type.workshop'
+            color: '#6f42c1'
+        meeting:
+            name: 'sulu_event.type.meeting'
+            color: '#20c997'
+        seminar:
+            name: 'sulu_event.type.seminar'
+            color: '#0dcaf0'
+        webinar:
+            name: 'sulu_event.type.webinar'
+            color: '#198754'
+        training:
+            name: 'sulu_event.type.training'
+            color: '#fd7e14'
+        networking:
+            name: 'sulu_event.type.networking'
+            color: '#d63384'
+        presentation:
+            name: 'sulu_event.type.presentation'
+            color: '#ffc107'
+        celebration:
+            name: 'sulu_event.type.celebration'
+            color: '#dc3545'
+
+    default_type: 'default'

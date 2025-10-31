@@ -13,46 +13,11 @@
                 <title>sulu_event.config.title.calendar</title>
             </meta>
             <properties>
-                <property name="enableCalendar" type="checkbox" colspan="12">
-                    <meta>
-                        <title>sulu_event.config.properties.enable_calendar</title>
-                        <info_text>sulu_event.config.properties.enable_calendar_info</info_text>
-                    </meta>
-                    <params>
-                        <param name="type" value="toggler"/>
-                        <param name="default_value" value="false"/>
-                    </params>
-                </property>
 
-                <property name="calendarView" type="single_select" colspan="6" visibleCondition="enableCalendar == true">
-                    <meta>
-                        <title>sulu_event.config.properties.calendar_view</title>
-                    </meta>
-                    <params>
-                        <param name="default_value" value="month"/>
-                        <param name="values" type="collection">
-                            <param name="month">
-                                <meta>
-                                    <title>sulu_event.config.calendar_view.month</title>
-                                </meta>
-                            </param>
-                            <param name="week">
-                                <meta>
-                                    <title>sulu_event.config.calendar_view.week</title>
-                                </meta>
-                            </param>
-                            <param name="list">
-                                <meta>
-                                    <title>sulu_event.config.calendar_view.list</title>
-                                </meta>
-                            </param>
-                        </param>
-                    </params>
-                </property>
-
-                <property name="calendarStartDay" type="single_select" colspan="6" visibleCondition="enableCalendar == true">
+                <property name="calendarStartDay" type="single_select" colspan="4">
                     <meta>
                         <title>sulu_event.config.properties.calendar_start_day</title>
+                        <info_text>sulu_event.config.properties.calendar_start_day_info</info_text>
                     </meta>
                     <params>
                         <param name="default_value" value="1"/>
@@ -71,9 +36,10 @@
                     </params>
                 </property>
 
-                <property name="showCalendarEventTime" type="checkbox" colspan="6" visibleCondition="enableCalendar == true">
+                <property name="showCalendarEventTime" type="checkbox" colspan="4">
                     <meta>
                         <title>sulu_event.config.properties.show_calendar_event_time</title>
+                        <info_text>sulu_event.config.properties.show_calendar_event_time_info</info_text>
                     </meta>
                     <params>
                         <param name="type" value="toggler"/>
@@ -81,15 +47,55 @@
                     </params>
                 </property>
 
-                <property name="showCalendarEventLocation" type="checkbox" colspan="6" visibleCondition="enableCalendar == true">
+                <property name="showCalendarEventLocation" type="checkbox" colspan="4">
                     <meta>
                         <title>sulu_event.config.properties.show_calendar_event_location</title>
+                        <info_text>sulu_event.config.properties.show_calendar_event_location_info</info_text>
+                    </meta>
+                    <params>
+                        <param name="type" value="toggler"/>
+                    </params>
+                </property>
+
+                <property name="eventLimitPerDay" type="number" colspan="4">
+                    <meta>
+                        <title>sulu_event.config.properties.event_limit_per_day</title>
+                        <info_text>sulu_event.config.properties.event_limit_per_day_info</info_text>
+                    </meta>
+                </property>
+
+                <property name="limitToEventRange" type="checkbox" colspan="4">
+                    <meta>
+                        <title>sulu_event.config.properties.limit_to_event_range</title>
+                        <info_text>sulu_event.config.properties.limit_to_event_range_info</info_text>
                     </meta>
                     <params>
                         <param name="type" value="toggler"/>
                         <param name="default_value" value="true"/>
                     </params>
                 </property>
+
+                <property name="showCalendarWeekNumbers" type="checkbox" colspan="4">
+                    <meta>
+                        <title>sulu_event.config.properties.show_calendar_week_numbers</title>
+                        <info_text>sulu_event.config.properties.show_calendar_week_numbers_info</info_text>
+                    </meta>
+                    <params>
+                        <param name="type" value="toggler"/>
+                    </params>
+                </property>
+
+                <property name="showCalendarWeekends" type="checkbox" colspan="4">
+                    <meta>
+                        <title>sulu_event.config.properties.show_calendar_weekends</title>
+                        <info_text>sulu_event.config.properties.show_calendar_weekends_info</info_text>
+                    </meta>
+                    <params>
+                        <param name="type" value="toggler"/>
+                        <param name="default_value" value="true"/>
+                    </params>
+                </property>
+
             </properties>
         </section>
 

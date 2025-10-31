@@ -43,5 +43,6 @@
             <argument type="service" id="sulu_event.repository.event"/>
             <tag name="sulu.content.type" alias="event_calendar"/>
         </service>
+
     </services>
 </container>

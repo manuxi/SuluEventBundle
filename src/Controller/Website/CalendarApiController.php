@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Controller\Website;
 
+use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
+use Manuxi\SuluEventBundle\Service\EventTypeSelect;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -26,7 +28,7 @@ class CalendarApiController extends AbstractController
      * Rate limited to 100 requests per hour per IP
      */
     #[Route(
-        path: '/{_locale}/api/events/calendar',
+        path: '/api/events/calendar/{_locale}',
         name: 'sulu_event.api.calendar',
         defaults: ['_locale' => 'en'],
         methods: ['GET']
@@ -118,26 +120,66 @@ class CalendarApiController extends AbstractController
      */
     private function transformEventsForFullCalendar(array $events, string $locale): array
     {
-        return array_map(function ($event) {
+        return array_map(function (Event $event) use ($locale) {
+            $event->setLocale($locale);
+
+            // Determine if all-day event
+            $isAllDay = $this->isAllDayEvent($event);
+
+            // Get type color and name
+/*            $typeColor = $this->eventTypeSelect->getColor($event->getType() ?? 'default');
+            $typeName = $this->eventTypeSelect->getTypeName($event->getType() ?? 'default');*/
+
             $data = [
                 'id' => $event->getId(),
                 'title' => $event->getTitle(),
-                'start' => $event->getStartDate()->format('c'),
+                'start' => $event->getStartDate()?->format('c'), // ISO 8601
+                'allDay' => $isAllDay,
                 'url' => $event->getRoutePath(),
                 'extendedProps' => [
                     'summary' => $event->getSummary(),
+/*                    'type' => $typeName,
+                    'typeColor' => $typeColor,*/
                 ],
             ];
 
-            if ($event->getEndDate()) {
+            // Add end date if exists and not all-day
+            if ($event->getEndDate() && !$isAllDay) {
                 $data['end'] = $event->getEndDate()->format('c');
             }
 
+            // Add location if exists
             if ($event->getLocation()) {
                 $data['extendedProps']['location'] = $event->getLocation()->getName();
             }
 
             return $data;
         }, $events);
+    }
+
+    /**
+     * Check if event is all-day (00:00-00:00 or no end date with 00:00 start).
+     */
+    private function isAllDayEvent(Event $event): bool
+    {
+        $start = $event->getStartDate();
+        $end = $event->getEndDate();
+
+        if (!$start) {
+            return true;
+        }
+
+        // Check if start time is 00:00
+        $startIsMidnight = '00:00' === $start->format('H:i');
+
+        // No end date with midnight start means all-day
+        if (!$end) {
+            return $startIsMidnight;
+        }
+
+        // Both start and end are midnight
+        $endIsMidnight = '00:00' === $end->format('H:i');
+
+        return $startIsMidnight && $endIsMidnight;
     }
 }

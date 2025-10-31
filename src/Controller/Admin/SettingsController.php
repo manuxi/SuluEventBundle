@@ -56,7 +56,6 @@ class SettingsController extends AbstractRestController implements ClassResource
         '/event-settings/{id}.{_format}',
         name: 'sulu_event.put_event-settings',
         requirements: [
-            'id' => '\d+',
             '_format' => 'json'
         ],
         options: ['expose' => true],
@@ -91,11 +90,13 @@ class SettingsController extends AbstractRestController implements ClassResource
             'toggleBreadcrumbs' => $entity->getToggleBreadcrumbs(),
 
             // Calendar Settings
-            'enableCalendar' => $entity->getEnableCalendar(),
-            'calendarView' => $entity->getCalendarView(),
             'calendarStartDay' => $entity->getCalendarStartDay(),
             'showCalendarEventTime' => $entity->getShowCalendarEventTime(),
             'showCalendarEventLocation' => $entity->getShowCalendarEventLocation(),
+            'eventLimitPerDay' => $entity->getEventLimitPerDay(),
+            'showWeekNumbers' => $entity->getShowWeekNumbers(),
+            'showWeekends' => $entity->getShowWeekends(),
+            'limitToEventRange' => $entity->getLimitToEventRange(),
 
             // Breadcrumbs
             'pageEvents' => $entity->getPageEvents(),
@@ -124,11 +125,13 @@ class SettingsController extends AbstractRestController implements ClassResource
         $entity->setToggleBreadcrumbs($data['toggleBreadcrumbs'] ?? null);
 
         // Calendar Settings
-        $entity->setEnableCalendar($data['enableCalendar'] ?? false);
-        $entity->setCalendarView($data['calendarView'] ?? 'month');
         $entity->setCalendarStartDay($data['calendarStartDay'] ?? 1);
         $entity->setShowCalendarEventTime($data['showCalendarEventTime'] ?? true);
         $entity->setShowCalendarEventLocation($data['showCalendarEventLocation'] ?? true);
+        $entity->setEventLimitPerDay($data['eventLimitPerDay'] ?? 3);
+        $entity->setShowWeekNumbers($data['showWeekNumbers'] ?? true);
+        $entity->setShowWeekends($data['showWeekends'] ?? true);
+        $entity->setLimitToEventRange($data['limitToEventRange'] ?? true);
 
         // Breadcrumbs
         $entity->setPageEvents($data['pageEvents'] ?? null);

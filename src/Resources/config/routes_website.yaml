@@ -1,6 +1,6 @@
 # Calendar API for FullCalendar
 sulu_event.api.calendar:
-    path: /{_locale}/api/events/calendar
+    path: /api/events/calendar/{_locale}
     controller: Manuxi\SuluEventBundle\Controller\Website\CalendarApiController::calendarAction
     methods: [GET]
     defaults:
@@ -8,7 +8,7 @@ sulu_event.api.calendar:
 
 # RSS Feed
 sulu_event.feed:
-    path: /{_locale}/events/feed.{_format}
+    path: /events/feed.{_locale}.{_format}
     controller: Manuxi\SuluEventBundle\Controller\Website\FeedController::feedAction
     methods: [GET]
     defaults:
@@ -19,7 +19,7 @@ sulu_event.feed:
 
 # iCal Single Event
 sulu_event.ical_single:
-    path: /{_locale}/events/{id}/download.ics
+    path: /events/{id}/download.{_locale}.ics
     controller: Manuxi\SuluEventBundle\Controller\Website\ICalController::singleAction
     methods: [GET]
     defaults:
@@ -29,7 +29,7 @@ sulu_event.ical_single:
 
 # iCal Calendar-Feed
 sulu_event.ical_feed:
-    path: /{_locale}/events/calendar.ics
+    path: /events/calendar.{_locale}.ics
     controller: Manuxi\SuluEventBundle\Controller\Website\ICalController::feedAction
     methods: [GET]
     defaults:

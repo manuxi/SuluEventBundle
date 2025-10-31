@@ -1,4 +1,6 @@
+# Main namespace for event-related translations
 sulu_event:
+    # General event properties
     id: "Id"
     name: "Name"
     title: "Name der Veranstaltung"
@@ -17,6 +19,8 @@ sulu_event:
     email: "E-Mail"
     phone: "Telefonnummer"
     gallery: "Bilder-Galerie"
+
+    # Publishing and state management
     publish: "veröffentlichen"
     unpublish: "Veröffentlichen beenden"
     published: "veröffentlicht"
@@ -26,14 +30,20 @@ sulu_event:
     published_at: "Veröffentlicht am"
     show_author: "Autor anzeigen"
     show_date: "Veröffentlichungsdatum anzeigen"
+
+    # Creator and author information
     created_date: "Erstellt am"
     creator: "Erstellt von"
     changed_date: "Letzte Änderung am"
     changer: "Letzte Änderung von"
     author: "Verfasser"
     authored: "verfasst"
+
+    # Hero section specific translations
     hero:
         image: "Hero-Bild"
+
+    # Section headers in the event form
     header:
         main: "Datum, Uhrzeit & Ort"
         text: "Einladung"
@@ -43,6 +53,8 @@ sulu_event:
         optional: "Optionale Felder"
         change_author: "Autor-Information anpassen"
         created_changed: "Erstellungs- und Änderungsinformationen"
+
+    # General terms for events
     event: "Veranstaltung"
     events: "Veranstaltungen"
     event_selection_label: "{count} {count, plural, =1 {Veranstaltung} other {Veranstaltungen}} ausgewählt"
@@ -50,96 +62,144 @@ sulu_event:
     select_events: "Veranstaltungen auswählen"
     no_event_selected: "Keine Veranstaltung ausgewählt"
     enable_event: "Veranstaltung aktivieren"
+
+    # Location related translations
     location: "Veranstaltungsort"
     locations: "Veranstaltungsorte"
     select_location: "Veranstaltungsort wählen"
     no_location_selected: "Kein Veranstaltungsort gewählt"
+
+    # Webspace and shadow event settings
     webspace_settings: "Webspace Einstellungen"
     customize_webspace_settings: "Webspace Einstellungen anpassen"
     main_webspace: "Haupt Webspace"
     additional_webspace: "Zusätzliche Webspaces"
     shadow_event: "Shadow Veranstaltung"
     enable_shadow_event: "Shadow Veranstaltung aktivieren"
+
+    # Helper and info texts
     enddate_eq_startdate: "Wenn die Uhrzeit von Beginn und Ende auf 00:00 Uhr gesetzt sind, wird die Uhrzeit nicht angezeigt."
     add_location_first: "Bitte stellen Sie sicher, dass mindestens ein Veranstaltungsort hinzugefügt und somit wählbar ist."
+
+    # List and search translations
     search_name: "Veranstaltungen"
     empty_list: "Bitte Veranstaltung wählen..."
+
+    # List sorting options
     sorting:
         title: "Titel der Veranstaltung"
         start_date: "Start der Veranstaltung"
         end_date: "Ende der Veranstaltung"
-    filter:
-        pending: "Bevorstehende Veranstaltungen"
-        expired: "Beendete Veranstaltungen"
 
+    # List filter options
+    filter:
+        pending: "Anstehend"
+        expired: "Vergangen"
+
+    # Event Type translations
+    event_type: "Event-Typ"
+    type:
+        default: "Standard"
+        conference: "Konferenz"
+        workshop: "Workshop"
+        meeting: "Meeting"
+        seminar: "Seminar"
+        webinar: "Webinar"
+        training: "Schulung"
+        networking: "Networking"
+        presentation: "Präsentation"
+        celebration: "Feier"
+
+    # Configuration settings for events
     config:
+        # Tab titles in settings
         tab:
             settings: "Einstellungen"
             general: "Allgemein"
             calendar: "Kalender"
             breadcrumbs: "Breadcrumbs"
             lists: "Listen"
+        # Titles for setting sections
         title:
             navi: "Einstellungen"
             general: "Einstellungen für Einzelansicht"
             xbreadcrumbs: "Zwischenseiten für Breadcrumbs"
-
             general_display: "Allgemeine Anzeigeeinstellungen"
-            calendar: "Kalenderansicht"
+            calendar: "Kalender"
+            calendar_basic: "Grundeinstellungen"
+            calendar_view: "Ansichtsoptionen"
+            calendar_display: "Anzeigeoptionen"
+            calendar_styling: "Design"
             breadcrumbs: "Breadcrumbs"
             list_view: "Listenansicht"
             filters: "Filter-Optionen"
+        # Properties within the settings
         properties:
             # General
             toggle_header: "Header anzeigen"
             toggle_hero: "Standard Hero anzeigen"
             toggle_breadcrumbs: "Breadcrumbs anzeigen"
             # Calendar
-            enable_calendar: "Kalenderansicht aktivieren"
-            enable_calendar_info: "Aktiviert die Kalenderansicht für Besucher der Webseite"
-            calendar_view: "Standard-Kalenderansicht"
-            calendar_start_day: "Erster Wochentag"
-            show_calendar_event_time: "Uhrzeit im Kalender anzeigen"
-            show_calendar_event_location: "Veranstaltungsort im Kalender anzeigen"
-
+            enable_calendar: "Kalender aktivieren"
+            enable_calendar_info: "Aktiviert die Kalenderansicht für Events"
+            calendar_view: "Standard-Ansicht"
+            calendar_view_info: "Wählen Sie die Standard-Ansicht beim Laden des Kalenders"
+            calendar_start_day: "Wochenstart"
+            calendar_start_day_info: "An welchem Tag fängt die Woche an?"
+            show_calendar_event_time: "Uhrzeit anzeigen"
+            show_calendar_event_time_info: "Zeigt die Uhrzeit bei Events an (wenn nicht 00:00-00:00)"
+            show_calendar_weekends: "Wochenenden zeigen"
+            show_calendar_weekends_info: "Zeigt Wochenenden an oder blendet diese Tage aus"
+            show_calendar_week_numbers: "Wochennummern"
+            show_calendar_week_numbers_info: "Zeigt Wochennummern an"
+            show_calendar_event_location: "Ort anzeigen"
+            show_calendar_event_location_info: "Zeigt den Ort des Events"
+            show_week_numbers: "Kalenderwochen anzeigen"
+            show_weekends: "Wochenenden anzeigen"
+            event_limit_per_day: "Max. Events pro Tag"
+            event_limit_per_day_info: "Anzahl der Events, die pro Tag angezeigt werden (danach \"+X mehr\")"
+            limit_to_event_range: "Auf Event-Zeitraum begrenzen"
+            limit_to_event_range_info: "Kalender nur für Wochen/Monate mit Events anzeigen"
+            event_color: "Event-Farbe"
+            event_color_info: "Standard-Farbe für Events (wird von Event-Typen überschrieben)"
             # Breadcrumbs
             page_events: "Übersichtsseite Alle Veranstaltungen"
             page_events_pending: "Übersichtsseite bevorstehende Veranstaltungen"
             page_events_expired: "Übersichtsseite vergangene Veranstaltungen"
-
             # List View
             events_per_page: "Veranstaltungen pro Seite"
             default_sort_order: "Standard-Sortierung"
             show_event_images: "Bilder in Listenansicht anzeigen"
             show_event_summary: "Zusammenfassung in Listenansicht anzeigen"
-
             # Filters
             enable_category_filter: "Kategorien-Filter aktivieren"
             enable_location_filter: "Orts-Filter aktivieren"
             enable_date_filter: "Datums-Filter aktivieren"
             enable_search_filter: "Such-Filter aktivieren"
-
+        # Calendar view options
         calendar_view:
-            month: "Monatsansicht"
-            week: "Wochenansicht"
-            list: "Listenansicht"
-
+            day_grid_month: "Monatsraster"
+            time_grid_week: "Wochenraster mit Uhrzeiten"
+            list_week: "Wochenliste"
+            list_month: "Monatsliste"
+            multi_month_year: "Jahresübersicht (4 Monate)"
+        # Weekday options
         weekday:
             sunday: "Sonntag"
             monday: "Montag"
-
+        # Sort order options
         sort_order:
             start_date_asc: "Startdatum (aufsteigend)"
             start_date_desc: "Startdatum (absteigend)"
             title_asc: "Titel (A-Z)"
             title_desc: "Titel (Z-A)"
-
+        # Search index names
         search:
             index:
                 events: "Veranstaltungen (Entwurf)"
                 events_published: "Veranstaltungen"
 
-    # Calendar
+    # Calendar block specific translations
     calendar:
         title: "Titel"
         subtitle: "Untertitel"
@@ -153,28 +213,31 @@ sulu_event:
             week: "Wochenansicht"
             list: "Listenansicht"
 
-    # Recurrence
+    # Recurrence settings
     recurrence:
         title: "Wiederholung"
         enable: "Wiederkehrende Veranstaltung"
         enable_info: "Aktivieren Sie diese Option, um die Veranstaltung zu wiederholen"
         frequency: "Wiederholungsrhythmus"
+        interval: "Alle X (Tage/Wochen/Monate)"
         interval_info: "Alle X Tage/Wochen/Monate/Jahre wiederholen"
+        end_type: "Endet"
+        never: "Nie"
+        after_occurrences: "Nach Anzahl"
+        until_date: "Bis Datum"
+        occurrences: "Anzahl Wiederholungen"
+        until: "Enddatum"
         end_date: "Enddatum"
-        weekly_days: "Wochentage"
-        monthly_type: "Monatlicher Typ"
-        monthly_day: "Tag des Monats"
-        monthly_week: "Woche des Monats"
-        monthly_weekday: "Wochentag"
-        yearly_month: "Monat"
         exceptions: "Ausnahmen"
         exceptions_info: "Daten, an denen die Veranstaltung nicht stattfindet"
+        # Recurrence types
         daily: "Täglich"
         weekly: "Wöchentlich"
         monthly: "Monatlich"
         yearly: "Jährlich"
-        interval: "Alle X (Tage/Wochen/Monate)"
+        # Weekday options for recurrence
         weekdays: "An Wochentagen"
+        weekly_days: "Wochentage"
         monday: "Montag"
         tuesday: "Dienstag"
         wednesday: "Mittwoch"
@@ -182,20 +245,22 @@ sulu_event:
         friday: "Freitag"
         saturday: "Samstag"
         sunday: "Sonntag"
-        end_type: "Endet"
-        never: "Nie"
-        after_occurrences: "Nach Anzahl"
-        until_date: "Bis Datum"
-        occurrences: "Anzahl Wiederholungen"
-        until: "Enddatum"
+        # Monthly recurrence options
+        monthly_type: "Monatlicher Typ"
+        monthly_day: "Tag des Monats"
+        monthly_week: "Woche des Monats"
+        monthly_weekday: "Wochentag"
+        # Yearly recurrence options
+        yearly_month: "Monat"
 
-    # Social Media
+    # Social media sharing
     enable_social_share: "Social Sharing aktivieren"
     social_platforms: "Plattformen"
     custom_share_text: "Benutzerdefinierter Share-Text"
     add_to_calendar: "Zum Kalender hinzufügen"
     share_event: "Veranstaltung teilen"
 
+    # Detailed Social Media section
     social_media:
         title: "Social Media"
         sharing_title: "Social Sharing"
@@ -203,7 +268,7 @@ sulu_event:
         enable_info: "Ermöglicht das Teilen dieser Veranstaltung auf Social Media Plattformen"
         platforms: "Plattformen"
         platforms_info: "Wählen Sie die Plattformen aus, auf denen diese Veranstaltung geteilt werden kann"
-
+        # Platform options
         platforms_options:
             facebook: "Facebook"
             twitter: "Twitter / X"
@@ -211,10 +276,9 @@ sulu_event:
             whatsapp: "WhatsApp"
             instagram: "Instagram"
             email: "E-Mail"
-
+        # Social media profiles
         profiles_title: "Social Media Profile"
         profiles_info: "Verlinken Sie Ihre Social Media Profile für diese Veranstaltung"
-
         facebook_url: "Facebook Profil-URL"
         facebook_url_placeholder: "https://facebook.com/dein-profil"
         twitter_handle: "Twitter / X Handle"
@@ -223,26 +287,30 @@ sulu_event:
         instagram_url_placeholder: "https://instagram.com/dein-profil"
         linkedin_url: "LinkedIn Profil-URL"
         linkedin_url_placeholder: "https://linkedin.com/company/dein-profil"
-
+        # Custom sharing text
         custom_title: "Benutzerdefiniert"
         custom_share_text: "Individueller Share-Text"
         custom_share_text_info: "Überschreibt den Standard-Share-Text (z.B. Titel + Beschreibung)"
         custom_share_text_placeholder: "Verpasse nicht unsere Veranstaltung am..."
-
+        # Targeting
         target_groups: "Zielgruppen"
         target_groups_info: "Definieren Sie Zielgruppen für gezielte Social Media Kampagnen"
         target_groups_placeholder: "z.B. Studierende, Familien, Senioren"
 
-    # Feed
+    # Feed-related translations
     subscribe_calendar: "Kalender abonnieren"
     rss_feed: "RSS-Feed"
     atom_feed: "Atom-Feed"
 
+# Namespace for activity log translations
 sulu_activity:
+    # Resource types
     resource:
         events: "Veranstaltungen"
         locations: "Orte"
+    # Activity descriptions
     description:
+        # Event activities
         events:
             created: "{userFullName} hat die Veranstaltung \"{resourceTitle}\" erstellt."
             modified: "{userFullName} hat die Veranstaltung \"{resourceTitle}\" geändert."
@@ -250,10 +318,12 @@ sulu_activity:
             restored: "{userFullName} hat die Veranstaltung \"{resourceTitle}\" wieder hergestellt."
             published: "{userFullName} hat die Veranstaltung \"{resourceTitle}\" veröffentlicht."
             unpublished: "{userFullName} hat die Veröffentlichung der Veranstaltung \"{resourceTitle}\" beendet."
+        # Location activities
         locations:
             created: "{userFullName} hat den Ort \"{resourceTitle}\" erstellt."
             modified: "{userFullName} hat den Ort \"{resourceTitle}\" geändert."
             removed: "{userFullName} hat den Ort \"{resourceTitle}\" gelöscht."
             restored: "{userFullName} hat den Ort \"{resourceTitle}\" wieder hergestellt."
+        # Settings activities
         event_settings:
             modified: "{userFullName} hat die Einstellungen für Veranstaltungen geändert."

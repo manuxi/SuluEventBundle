@@ -20,11 +20,30 @@
                     </params>
                     <tag name="sulu.rlp.part"/>
                 </property>
-                <property name="subtitle" type="text_line">
+
+                <property name="subtitle" type="text_line" colspan="6">
                     <meta>
                         <title>sulu_event.subtitle</title>
                     </meta>
                 </property>
+
+                <!--
+                <property name="type" type="single_select" mandatory="true" colspan="6">
+                    <meta>
+                        <title>sulu_event.event_type</title>
+                    </meta>
+                    <params>
+                        <param name="default_value"
+                               type="expression"
+                               value="service('sulu_event.type_selection').getDefaultValue()"
+                        />
+                        <param name="values"
+                               type="expression"
+                               value="service('sulu_event.type_selection').getValues()"
+                        />
+                    </params>
+                </property>
+                -->
 
                 <property name="routePath" type="route" mandatory="true">
                     <meta>

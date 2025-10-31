@@ -13,6 +13,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
+use Symfony\Component\Yaml\Yaml;
 
 class SuluEventExtension extends Extension implements PrependExtensionInterface
 {
@@ -26,6 +27,9 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
+        $container->setParameter('sulu_event.types', $config['types'] ?? []);
+        $container->setParameter('sulu_event.default_type', $config['default_type'] ?? 'default');
+
         $loader = new XmlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.xml');
         $loader->load('controller.xml');
@@ -35,10 +39,22 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
         $loader->load('services-calendar.xml');
 
         $this->configurePersistence($config['objects'], $container);
+
     }
 
     public function prepend(ContainerBuilder $container)
     {
+
+        if ($container->hasExtension('sulu_event')) {
+            $defaultConfigFile = __DIR__.'/../Resources/config/packages/sulu_event_bundle.yaml';
+            $defaultConfig = Yaml::parseFile($defaultConfigFile);
+
+            if (isset($defaultConfig['sulu_event'])) {
+                $container->prependExtensionConfig('sulu_event', $defaultConfig['sulu_event']);
+            }
+        }
+
+
         if ($container->hasExtension('sulu_search')) {
             $container->prependExtensionConfig(
                 'sulu_search',
@@ -224,7 +240,7 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
 
         $container->loadFromExtension('framework', [
             'default_locale' => 'en',
-            'translator' => ['paths' => [__DIR__.'/../Resources/config/translations/']],
+            'translator' => ['paths' => [__DIR__.'/../Resources/translations/']],
         ]);
     }
 }

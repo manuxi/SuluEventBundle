@@ -31,6 +31,20 @@ class Configuration implements ConfigurationInterface
 
         $root
             ->children()
+
+            ->arrayNode('types')
+                ->useAttributeAsKey('key')
+                ->arrayPrototype()
+                    ->children()
+                        ->scalarNode('name')->isRequired()->end()
+                        ->scalarNode('color')->isRequired()->end()
+                    ->end()
+                ->end()
+            ->end()
+            ->scalarNode('default_type')
+                ->defaultValue('default')
+            ->end()
+
             ->arrayNode('objects')
                 ->addDefaultsIfNotSet()
                 ->children()

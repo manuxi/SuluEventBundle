@@ -33,12 +33,6 @@ class EventSettings implements AuditableInterface
     private ?bool $toggleBreadcrumbs = null;
 
     // Calendar Settings
-    #[ORM\Column(type: Types::BOOLEAN, nullable: true)]
-    private ?bool $enableCalendar = false;
-
-    #[ORM\Column(type: Types::STRING, length: 20, nullable: true)]
-    private ?string $calendarView = 'month';
-
     #[ORM\Column(type: Types::INTEGER, nullable: true)]
     private ?int $calendarStartDay = 1;
 
@@ -47,6 +41,18 @@ class EventSettings implements AuditableInterface
 
     #[ORM\Column(type: Types::BOOLEAN, nullable: true)]
     private ?bool $showCalendarEventLocation = true;
+
+    #[ORM\Column(type: Types::BOOLEAN, nullable: true)]
+    private ?bool $showWeekNumbers = false;
+
+    #[ORM\Column(type: Types::BOOLEAN, nullable: true)]
+    private ?bool $showWeekends = true;
+
+    #[ORM\Column(type: Types::INTEGER, nullable: true)]
+    private ?int $eventLimitPerDay = 3;
+
+    #[ORM\Column(type: Types::BOOLEAN, nullable: true)]
+    private ?bool $limitToEventRange = true;
 
     // Breadcrumbs
     #[ORM\Column(type: Types::STRING, nullable: true)]
@@ -120,26 +126,6 @@ class EventSettings implements AuditableInterface
         $this->toggleBreadcrumbs = $toggleBreadcrumbs;
     }
 
-    public function getEnableCalendar(): ?bool
-    {
-        return $this->enableCalendar;
-    }
-
-    public function setEnableCalendar(?bool $enableCalendar): void
-    {
-        $this->enableCalendar = $enableCalendar;
-    }
-
-    public function getCalendarView(): ?string
-    {
-        return $this->calendarView;
-    }
-
-    public function setCalendarView(?string $calendarView): void
-    {
-        $this->calendarView = $calendarView;
-    }
-
     public function getCalendarStartDay(): ?int
     {
         return $this->calendarStartDay;
@@ -168,6 +154,46 @@ class EventSettings implements AuditableInterface
     public function setShowCalendarEventLocation(?bool $showCalendarEventLocation): void
     {
         $this->showCalendarEventLocation = $showCalendarEventLocation;
+    }
+
+    public function getShowWeekNumbers(): ?bool
+    {
+        return $this->showWeekNumbers;
+    }
+
+    public function setShowWeekNumbers(?bool $showWeekNumbers): void
+    {
+        $this->showWeekNumbers = $showWeekNumbers;
+    }
+
+    public function getShowWeekends(): ?bool
+    {
+        return $this->showWeekends;
+    }
+
+    public function setShowWeekends(?bool $showWeekends): void
+    {
+        $this->showWeekends = $showWeekends;
+    }
+
+    public function getEventLimitPerDay(): ?int
+    {
+        return $this->eventLimitPerDay;
+    }
+
+    public function setEventLimitPerDay(?int $eventLimitPerDay): void
+    {
+        $this->eventLimitPerDay = $eventLimitPerDay;
+    }
+
+    public function getLimitToEventRange(): ?bool
+    {
+        return $this->limitToEventRange;
+    }
+
+    public function setLimitToEventRange(?bool $limitToEventRange): void
+    {
+        $this->limitToEventRange = $limitToEventRange;
     }
 
     public function getPageEvents(): ?string
