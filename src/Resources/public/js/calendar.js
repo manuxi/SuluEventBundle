@@ -48,6 +48,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const eventColor = calendarEl.dataset.eventColor || '#ccc';
     const limitToEvents = calendarEl.dataset.limitToEvents === 'true';
     const toggleView = calendarEl.dataset.toggleView === 'true';
+    const toggleLocation = calendarEl.dataset.toggleLocation === 'true';
     const allowedViews = calendarEl.dataset.allowedViews || 'dayGridMonth';
 
     // Fetch events to determine valid range
@@ -193,11 +194,33 @@ document.addEventListener('DOMContentLoaded', function() {
                     const event = info.event;
                     const extendedProps = event.extendedProps;
 
+                    // Determine type color FIRST
+                    let typeColor = eventColor;
+                    if (extendedProps.typeColor) {
+                        typeColor = extendedProps.typeColor;
+                    }
+
+                    // Helper function to escape HTML
+                    const escapeHtml = (text) => {
+                        const div = document.createElement('div');
+                        div.textContent = text;
+                        return div.innerHTML;
+                    };
+
                     // Build popover content with HTML
                     let popoverContent = '<div class="event-popover-content">';
 
                     // Title
-                    popoverContent += '<div class="event-popover-title">' + event.title + '</div>';
+                    popoverContent += '<div class="event-popover-title">' + escapeHtml(event.title) + '</div>';
+
+                    // Type with colored dot - use typeColor determined above
+                    if (extendedProps.type) {
+                        const typeLabel = locale === 'de' ? 'Typ' : 'Type';
+                        popoverContent += '<div class="event-popover-type">' +
+                            '<span class="event-type-dot event-type-' + extendedProps.type + '" style="background-color: ' + extendedProps.typeColor + ';" style="--dot-color: ' + extendedProps.typeColor + ';"></span>' +
+                            typeLabel + ': ' + escapeHtml(extendedProps.type) +
+                            '</div>';
+                    }
 
                     // Time if not all-day
                     if (event.start && event.start.getHours() !== 0) {
@@ -216,12 +239,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         } else {
                             timeDisplay = startTime;
                         }
-                        popoverContent += '<div class="event-popover-time"><i class="bi bi-clock"></i> ' + timeDisplay + '</div>';
+                        popoverContent += '<div class="event-popover-time"><i class="bi bi-clock"></i> ' + escapeHtml(timeDisplay) + '</div>';
                     }
 
                     // Summary (excerpt/teaser)
                     if (extendedProps.summary) {
-                        popoverContent += '<div class="event-popover-summary">' + extendedProps.summary + '</div>';
+                        popoverContent += '<div class="event-popover-summary">' + escapeHtml(extendedProps.summary) + '</div>';
                     }
 
                     // Full text/description if available
@@ -231,18 +254,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         if (textContent.length > maxLength) {
                             textContent = textContent.substring(0, maxLength) + '...';
                         }
-                        popoverContent += '<div class="event-popover-text">' + textContent + '</div>';
+                        popoverContent += '<div class="event-popover-text">' + escapeHtml(textContent) + '</div>';
                     }
 
                     // Location
-                    if (extendedProps.location) {
-                        popoverContent += '<div class="event-popover-location"><i class="bi bi-geo-alt-fill"></i> ' + extendedProps.location + '</div>';
-                    }
-
-                    // Type
-                    if (extendedProps.type) {
-                        const typeLabel = locale === 'de' ? 'Typ' : 'Type';
-                        popoverContent += '<div class="event-popover-type"><i class="bi bi-tag-fill"></i> ' + typeLabel + ': ' + extendedProps.type + '</div>';
+                    if (toggleLocation && extendedProps.location) {
+                        popoverContent += '<div class="event-popover-location"><i class="bi bi-geo-alt-fill"></i> ' + escapeHtml(extendedProps.location) + '</div>';
                     }
 
                     popoverContent += '</div>';
@@ -258,17 +275,25 @@ document.addEventListener('DOMContentLoaded', function() {
                         delay: { show: 300, hide: 100 }
                     });
 
-                    // Apply type color with subtle background
-                    let typeColor = eventColor;
-                    if (extendedProps.typeColor) {
-                        typeColor = extendedProps.typeColor;
-                    }
+                    info.el.addEventListener('shown.bs.popover', () => {
+                        const popoverEl = document.querySelector('.popover');
+                        if (popoverEl) {
+                            popoverEl.style.setProperty('--event-type-color', extendedProps.typeColor);
+                        }
+                    });
 
-                    // Light background with border
+                    // Apply type color with subtle background for month/week view
                     info.el.style.backgroundColor = typeColor + '1a';  // 10% opacity
                     info.el.style.borderColor = typeColor;
                     info.el.style.borderWidth = '2px';
                     info.el.style.borderLeftWidth = '4px';  // Stronger left border for type indication
+
+                    // Apply type color to list view dot
+                    const dot = info.el.querySelector('.fc-list-event-dot');
+                    if (dot) {
+                        dot.style.borderColor = typeColor;
+                        dot.style.backgroundColor = typeColor;
+                    }
 
                     // Hover effect
                     info.el.addEventListener('mouseenter', function() {

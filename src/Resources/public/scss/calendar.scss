@@ -319,14 +319,43 @@
             }
         }
 
+        // Center and style the dot in list view - force perfect circle
+        .fc-list-event-dot {
+            display: block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin: 0;
+            padding: 0;
+            box-shadow: none;
+            border: none;
+            transform: none;
+            position: relative;
+            top: auto;
+            left: auto;
+        }
+
+        .fc-list-event-graphic {
+            /*display: flex;*/
+            align-items: center;
+            justify-content: center;
+            /*padding: 0.5rem;
+            width: 30px;*/
+            height: 100%;
+            vertical-align: middle;
+        }
+
         .fc-list-event-time {
             font-weight: 400;
             color: $gray-600;
+            vertical-align: middle;
+            font-size: var(--font-size-m);
         }
 
         .fc-list-event-title {
             font-weight: 400;
             color: $dark;
+            vertical-align: middle;
 
             a {
                 color: inherit;
@@ -482,14 +511,78 @@
     border: 1px solid $gray-300;
     box-shadow: $box-shadow-lg;
     border-radius: $border-radius;
+    overflow: visible;
 
-    .popover-arrow {
-        &::before {
-            border-color: $gray-300;
-        }
-        &::after {
-            border-color: $white;
-        }
+    .popover-body {
+        overflow: visible;
+    }
+    // Fix arrow for all placements
+    /*.popover-arrow::before,*/
+    .popover-arrow::after {
+        border-width: 0.5rem;
+    }
+
+    .popover-arrow::before {
+        border-color: transparent;
+    }
+
+    .popover-arrow::after {
+        border-color: transparent;
+    }
+
+    // Top placement
+    &[data-popper-placement^="top"] .popover-arrow::before {
+        border-top-color: $gray-300;
+        bottom: 1px;
+    }
+    &[data-popper-placement^="top"] .popover-arrow::after {
+        border-top-color: $white;
+    }
+
+    // Bottom placement
+    &[data-popper-placement^="bottom"] .popover-arrow::before {
+        border-bottom-color: $gray-300;
+        top: 1px;
+    }
+    &[data-popper-placement^="bottom"] .popover-arrow::after {
+        border-bottom-color: $white;
+    }
+
+    // Left placement
+    &[data-popper-placement^="left"] .popover-arrow::before {
+        border-left-color: $gray-300;
+        right: 1px;
+    }
+    &[data-popper-placement^="left"] .popover-arrow::after {
+        border-left-color: $white;
+    }
+
+    // Right placement
+    &[data-popper-placement^="right"] .popover-arrow::before {
+        border-right-color: $gray-300;
+        left: 1px;
+    }
+    &[data-popper-placement^="right"] .popover-arrow::after {
+        border-right-color: $white;
+    }
+    &[data-popper-placement^="top"] {
+        margin-bottom: 0.5rem !important;
+    }
+
+    &[data-popper-placement^="bottom"] {
+        margin-top: 0.5rem !important;
+    }
+
+    &[data-popper-placement^="left"] {
+        margin-right: 0.5rem !important;
+    }
+
+    &[data-popper-placement^="right"] {
+        margin-left: 0.5rem !important;
+    }
+
+    .popover-arrow::after {
+        display: none !important;
     }
 
     .popover-body {
@@ -509,7 +602,6 @@
         margin-bottom: 0.5rem;
         line-height: 1.4;
         border-bottom: 1px solid $gray-200;
-        padding-bottom: 0.5rem;
     }
 
     // Time
@@ -520,10 +612,10 @@
         color: $primary;
         font-weight: 500;
         margin-bottom: 0.5rem;
-        font-size: 0.875rem;
+        font-size: 0.8125rem;
 
         i {
-            font-size: 1rem;
+            margin-left:.5rem;
         }
     }
 
@@ -557,8 +649,8 @@
 
         i {
             color: $danger;
-            font-size: 1rem;
-            margin-top: 0.125rem;
+            /*font-size: 1rem;
+            margin-top: 0.125rem;*/
             flex-shrink: 0;
         }
     }
@@ -570,12 +662,18 @@
         gap: 0.5rem;
         color: $gray-600;
         font-size: 0.8125rem;
-        padding-top: 0.5rem;
+        margin-bottom: 0.5rem;
         border-top: 1px solid $gray-200;
 
-        i {
-            color: $info;
-            font-size: 0.875rem;
+        .event-type-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+
+            background-color: var(--event-type-color, #ccc);
+            margin-left: .5rem;
         }
     }
 
