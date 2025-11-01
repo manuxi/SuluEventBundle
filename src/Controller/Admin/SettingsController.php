@@ -98,6 +98,10 @@ class SettingsController extends AbstractRestController implements ClassResource
             'showWeekends' => $entity->getShowWeekends(),
             'limitToEventRange' => $entity->getLimitToEventRange(),
 
+            'eventColor' => $entity->getEventColor(),
+            'toggleCalendarView' => $entity->getToggleCalendarView(),
+            'allowedCalenderViews' => $entity->getAllowedCalendarViews(),
+
             // Breadcrumbs
             'pageEvents' => $entity->getPageEvents(),
             'pageEventsPending' => $entity->getPageEventsPending(),
@@ -132,6 +136,10 @@ class SettingsController extends AbstractRestController implements ClassResource
         $entity->setShowWeekNumbers($data['showWeekNumbers'] ?? true);
         $entity->setShowWeekends($data['showWeekends'] ?? true);
         $entity->setLimitToEventRange($data['limitToEventRange'] ?? true);
+
+        $entity->setEventColor($data['eventColor'] ?? '');
+        $entity->setToggleCalendarView($data['toggleCalendarView'] ?? true);
+        $entity->setAllowedCalendarViews($data['allowedCalenderViews'] ?? '');
 
         // Breadcrumbs
         $entity->setPageEvents($data['pageEvents'] ?? null);

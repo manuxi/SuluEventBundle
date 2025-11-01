@@ -129,6 +129,7 @@ sulu_event:
             calendar_basic: "Grundeinstellungen"
             calendar_view: "Ansichtsoptionen"
             calendar_display: "Anzeigeoptionen"
+            calendar_events: "Events-Einstellungen"
             calendar_styling: "Design"
             breadcrumbs: "Breadcrumbs"
             list_view: "Listenansicht"
@@ -162,6 +163,10 @@ sulu_event:
             limit_to_event_range_info: "Kalender nur für Wochen/Monate mit Events anzeigen"
             event_color: "Event-Farbe"
             event_color_info: "Standard-Farbe für Events (wird von Event-Typen überschrieben)"
+            toggle_calendar_view: "Sicht-Wechsel erlaubt?"
+            toggle_calendar_view_info: "Erlaubt Wechsel der verschiedenen Kalendersichten"
+            allowed_calender_views: "Erlaubte Sichten"
+            allowed_calender_views_info: "Sichten wählen, die verfügbar sind"
             # Breadcrumbs
             page_events: "Übersichtsseite Alle Veranstaltungen"
             page_events_pending: "Übersichtsseite bevorstehende Veranstaltungen"

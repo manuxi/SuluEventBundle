@@ -10,7 +10,7 @@
         <!-- Calendar Settings -->
         <section name="calendar-settings">
             <meta>
-                <title>sulu_event.config.title.calendar</title>
+                <title>sulu_event.config.title.calendar_basic</title>
             </meta>
             <properties>
 
@@ -47,34 +47,6 @@
                     </params>
                 </property>
 
-                <property name="showCalendarEventLocation" type="checkbox" colspan="4">
-                    <meta>
-                        <title>sulu_event.config.properties.show_calendar_event_location</title>
-                        <info_text>sulu_event.config.properties.show_calendar_event_location_info</info_text>
-                    </meta>
-                    <params>
-                        <param name="type" value="toggler"/>
-                    </params>
-                </property>
-
-                <property name="eventLimitPerDay" type="number" colspan="4">
-                    <meta>
-                        <title>sulu_event.config.properties.event_limit_per_day</title>
-                        <info_text>sulu_event.config.properties.event_limit_per_day_info</info_text>
-                    </meta>
-                </property>
-
-                <property name="limitToEventRange" type="checkbox" colspan="4">
-                    <meta>
-                        <title>sulu_event.config.properties.limit_to_event_range</title>
-                        <info_text>sulu_event.config.properties.limit_to_event_range_info</info_text>
-                    </meta>
-                    <params>
-                        <param name="type" value="toggler"/>
-                        <param name="default_value" value="true"/>
-                    </params>
-                </property>
-
                 <property name="showCalendarWeekNumbers" type="checkbox" colspan="4">
                     <meta>
                         <title>sulu_event.config.properties.show_calendar_week_numbers</title>
@@ -93,6 +65,117 @@
                     <params>
                         <param name="type" value="toggler"/>
                         <param name="default_value" value="true"/>
+                    </params>
+                </property>
+
+            </properties>
+        </section>
+
+
+        <section name="calendar-events">
+            <meta>
+                <title>sulu_event.config.title.calendar_events</title>
+            </meta>
+            <properties>
+                <property name="eventLimitPerDay" type="number" colspan="4">
+                    <meta>
+                        <title>sulu_event.config.properties.event_limit_per_day</title>
+                        <info_text>sulu_event.config.properties.event_limit_per_day_info</info_text>
+                    </meta>
+                </property>
+
+                <property name="limitToEventRange" type="checkbox" colspan="4">
+                    <meta>
+                        <title>sulu_event.config.properties.limit_to_event_range</title>
+                        <info_text>sulu_event.config.properties.limit_to_event_range_info</info_text>
+                    </meta>
+                    <params>
+                        <param name="type" value="toggler"/>
+                        <param name="default_value" value="true"/>
+                    </params>
+                </property>
+
+                <property name="showCalendarEventLocation" type="checkbox" colspan="4">
+                    <meta>
+                        <title>sulu_event.config.properties.show_calendar_event_location</title>
+                        <info_text>sulu_event.config.properties.show_calendar_event_location_info</info_text>
+                    </meta>
+                    <params>
+                        <param name="type" value="toggler"/>
+                    </params>
+                </property>
+
+                <property name="eventColor" type="color" colspan="4">
+                    <meta>
+                        <title>sulu_event.config.properties.event_color</title>
+                        <info_text>sulu_event.config.properties.event_color_info</info_text>
+                    </meta>
+                </property>
+
+            </properties>
+        </section>
+
+
+        <section name="calendar-display">
+            <meta>
+                <title>sulu_event.config.title.calendar_display</title>
+            </meta>
+            <properties>
+
+                <property name="toggleCalendarView" type="checkbox" colspan="4">
+                    <meta>
+                        <title>sulu_event.config.properties.toggle_calendar_view</title>
+                        <info_text>sulu_event.config.properties.toggle_calendar_view_info</info_text>
+                    </meta>
+                    <params>
+                        <param name="type" value="toggler"/>
+                        <param name="default_value" value="true"/>
+                    </params>
+                </property>
+
+                <property name="allowedCalenderViews" type="select" colspan="4" visibleCondition="__parent.toggleCalendarView">
+                    <meta>
+                        <title>sulu_event.config.properties.allowed_calender_views</title>
+                        <info_text>sulu_event.config.properties.allowed_calendar_views_info</info_text>
+                    </meta>
+                    <params>
+                        <param name="default_values" type="collection">
+                            <param name="listWeek"/>
+                            <param name="listMonth"/>
+                        </param>
+
+                        <param name="values" type="collection">
+                            <param name="dayGridMonth">
+                                <meta>
+                                    <title lang="en">Month Grid</title>
+                                    <title lang="de">Monatsraster</title>
+                                </meta>
+                            </param>
+                            <param name="timeGridWeek">
+                                <meta>
+                                    <title lang="en">Week with Times</title>
+                                    <title lang="de">Woche mit Uhrzeiten</title>
+                                </meta>
+                            </param>
+                            <param name="listWeek">
+                                <meta>
+                                    <title lang="en">Week List</title>
+                                    <title lang="de">Wochenliste</title>
+                                </meta>
+                            </param>
+                            <param name="listMonth">
+                                <meta>
+                                    <title lang="en">Month List</title>
+                                    <title lang="de">Monatsliste</title>
+                                </meta>
+                            </param>
+                            <param name="multiMonthYear">
+                                <meta>
+                                    <title lang="en">Year Overview (4 Monate)</title>
+                                    <title lang="de">Jahresübersicht (4 Monate)</title>
+                                </meta>
+                            </param>
+                        </param>
                     </params>
                 </property>
 

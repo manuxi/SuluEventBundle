@@ -54,6 +54,15 @@ class EventSettings implements AuditableInterface
     #[ORM\Column(type: Types::BOOLEAN, nullable: true)]
     private ?bool $limitToEventRange = true;
 
+    #[ORM\Column(type: Types::STRING, nullable: true)]
+    private ?string $eventColor = '';
+
+    #[ORM\Column(type: Types::BOOLEAN, nullable: true)]
+    private ?bool $toggleCalendarView = true;
+
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $allowedCalendarViews = [];
+
     // Breadcrumbs
     #[ORM\Column(type: Types::STRING, nullable: true)]
     private ?string $pageEvents = null;
@@ -194,6 +203,36 @@ class EventSettings implements AuditableInterface
     public function setLimitToEventRange(?bool $limitToEventRange): void
     {
         $this->limitToEventRange = $limitToEventRange;
+    }
+
+    public function getEventColor(): ?string
+    {
+        return $this->eventColor;
+    }
+
+    public function setEventColor(?string $eventColor): void
+    {
+        $this->eventColor = $eventColor;
+    }
+
+    public function getToggleCalendarView(): ?bool
+    {
+        return $this->toggleCalendarView;
+    }
+
+    public function setToggleCalendarView(?bool $toggleCalendarView): void
+    {
+        $this->toggleCalendarView = $toggleCalendarView;
+    }
+
+    public function getAllowedCalendarViews(): ?array
+    {
+        return $this->allowedCalendarViews;
+    }
+
+    public function setAllowedCalendarViews(array $allowedCalendarViews): void
+    {
+        $this->allowedCalendarViews = $allowedCalendarViews;
     }
 
     public function getPageEvents(): ?string

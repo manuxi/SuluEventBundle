@@ -40,9 +40,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const initialView = calendarEl.dataset.initialView || 'dayGridMonth';
     const weekNumbers = calendarEl.dataset.weekNumbers === 'true';
     const eventLimit = parseInt(calendarEl.dataset.eventLimit) || 3;
+    const firstDay = parseInt(calendarEl.dataset.firstDay) || 1;
     const showWeekends = calendarEl.dataset.weekends !== 'false';
-    const eventColor = calendarEl.dataset.eventColor || '#0d6efd';
+    const eventColor = calendarEl.dataset.eventColor || '#ccc';
     const limitToEvents = calendarEl.dataset.limitToEvents === 'true';
+    const toggleView = calendarEl.dataset.toggleView === 'true';
+    const allowedViews = calendarEl.dataset.allowedViews || 'dayGridMonth';
 
     // Fetch events to determine valid range
     fetch(eventsUrl)
@@ -106,7 +109,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // Locale
                 locale: locale === 'de' ? deLocale : enLocale,
-                firstDay: 1,  // Monday
+                firstDay: firstDay,  // Monday
 
                 // Initial view - use data attribute
                 initialView: initialView,
@@ -116,7 +119,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 headerToolbar: {
                     left: 'prev,next today',
                     center: 'title',
-                    right: 'multiMonthYear,dayGridMonth,timeGridWeek,listMonth'
+                    right: toggleView ? allowedViews : ''
                 },
 
                 // Button text
