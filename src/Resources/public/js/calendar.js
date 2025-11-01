@@ -27,6 +27,9 @@ import bootstrap5Plugin from '@fullcalendar/bootstrap5';
 import deLocale from '@fullcalendar/core/locales/de';
 import enLocale from '@fullcalendar/core/locales/en-gb';
 
+// Import Bootstrap Popover for tooltips
+import { Popover } from 'bootstrap';
+
 document.addEventListener('DOMContentLoaded', function() {
     const calendarEl = document.getElementById('event-calendar');
 
@@ -185,47 +188,75 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
 
                 // Add tooltip with full information and apply type color
+                // Add Bootstrap Popover with full information and apply type color
                 eventDidMount: function(info) {
                     const event = info.event;
                     const extendedProps = event.extendedProps;
 
-                    // Build tooltip
-                    let tooltip = event.title;
+                    // Build popover content with HTML
+                    let popoverContent = '<div class="event-popover-content">';
 
-                    // Add time if not all-day
+                    // Title
+                    popoverContent += '<div class="event-popover-title">' + event.title + '</div>';
+
+                    // Time if not all-day
                     if (event.start && event.start.getHours() !== 0) {
                         const startTime = event.start.toLocaleTimeString(locale, {
                             hour: '2-digit',
                             minute: '2-digit'
                         });
 
+                        let timeDisplay = '';
                         if (event.end && event.end.getHours() !== 0) {
                             const endTime = event.end.toLocaleTimeString(locale, {
                                 hour: '2-digit',
                                 minute: '2-digit'
                             });
-                            tooltip = startTime + ' - ' + endTime + '\n' + tooltip;
+                            timeDisplay = startTime + ' - ' + endTime;
                         } else {
-                            tooltip = startTime + '\n' + tooltip;
+                            timeDisplay = startTime;
                         }
+                        popoverContent += '<div class="event-popover-time"><i class="bi bi-clock"></i> ' + timeDisplay + '</div>';
                     }
 
-                    // Add summary
+                    // Summary (excerpt/teaser)
                     if (extendedProps.summary) {
-                        tooltip += '\n\n' + extendedProps.summary;
+                        popoverContent += '<div class="event-popover-summary">' + extendedProps.summary + '</div>';
                     }
 
-                    // Add location
+                    // Full text/description if available
+                    if (extendedProps.text && extendedProps.text !== extendedProps.summary) {
+                        const maxLength = 200;
+                        let textContent = extendedProps.text;
+                        if (textContent.length > maxLength) {
+                            textContent = textContent.substring(0, maxLength) + '...';
+                        }
+                        popoverContent += '<div class="event-popover-text">' + textContent + '</div>';
+                    }
+
+                    // Location
                     if (extendedProps.location) {
-                        tooltip += '\n\n📍 ' + extendedProps.location;
+                        popoverContent += '<div class="event-popover-location"><i class="bi bi-geo-alt-fill"></i> ' + extendedProps.location + '</div>';
                     }
 
-                    // Add type if available
+                    // Type
                     if (extendedProps.type) {
-                        tooltip += '\n\nTyp: ' + extendedProps.type;
+                        const typeLabel = locale === 'de' ? 'Typ' : 'Type';
+                        popoverContent += '<div class="event-popover-type"><i class="bi bi-tag-fill"></i> ' + typeLabel + ': ' + extendedProps.type + '</div>';
                     }
 
-                    info.el.title = tooltip;
+                    popoverContent += '</div>';
+
+                    // Initialize Bootstrap Popover
+                    new Popover(info.el, {
+                        trigger: 'hover focus',
+                        placement: 'auto',
+                        html: true,
+                        content: popoverContent,
+                        container: 'body',
+                        customClass: 'event-popover',
+                        delay: { show: 300, hide: 100 }
+                    });
 
                     // Apply type color with subtle background
                     let typeColor = eventColor;

@@ -228,6 +228,9 @@ class EventModel implements EventModelInterface
             $entity->setRoutePath($routePath);
         }
 
+        $type = $this->getProperty($data, 'type');
+        $entity->setType($type ?: null);
+
         $showAuthor = $this->getProperty($data, 'showAuthor');
         $entity->setShowAuthor($showAuthor ? true : false);
 

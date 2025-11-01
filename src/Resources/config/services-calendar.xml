@@ -7,6 +7,7 @@
         <!-- Calendar API Controller -->
         <service id="Manuxi\SuluEventBundle\Controller\Website\CalendarApiController" public="true">
             <argument type="service" id="sulu_event.repository.event"/>
+            <argument type="service" id="sulu_event.type_selection"/>
             <tag name="controller.service_arguments"/>
             <tag name="sulu.context" context="website"/>
             <call method="setContainer">

@@ -57,88 +57,88 @@
     // Buttons - Bootstrap 5 Style
     // ========================================================================
 
-/*    .fc-button {
-        background-color: $primary;
-        border-color: $primary;
-        color: $white;
-        font-weight: 400;
-        padding: 0.375rem 0.75rem;
-        font-size: 0.875rem;
-        line-height: 1.5;
-        border-radius: $border-radius-sm;
-        transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out,
-        border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-        border: 1px solid transparent;
-        text-align: center;
-        vertical-align: middle;
-        user-select: none;
-
-        &:hover:not(:disabled) {
-            background-color: darken($primary, 7.5%);
-            border-color: darken($primary, 10%);
+    /*    .fc-button {
+            background-color: $primary;
+            border-color: $primary;
             color: $white;
-        }
-
-        &:focus {
-            box-shadow: 0 0 0 0.25rem rgba($primary, 0.5);
-            outline: 0;
-        }
-
-        &:active,
-        &.fc-button-active {
-            background-color: darken($primary, 10%);
-            border-color: darken($primary, 12.5%);
-            box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
-        }
-
-        &:disabled {
-            opacity: 0.65;
-            cursor: not-allowed;
-            pointer-events: none;
-        }
-
-        // Today button
-        &.fc-today-button {
-            background-color: $success;
-            border-color: $success;
+            font-weight: 400;
+            padding: 0.375rem 0.75rem;
+            font-size: 0.875rem;
+            line-height: 1.5;
+            border-radius: $border-radius-sm;
+            transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out,
+            border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+            border: 1px solid transparent;
+            text-align: center;
+            vertical-align: middle;
+            user-select: none;
 
             &:hover:not(:disabled) {
-                background-color: darken($success, 7.5%);
-                border-color: darken($success, 10%);
+                background-color: darken($primary, 7.5%);
+                border-color: darken($primary, 10%);
+                color: $white;
+            }
+
+            &:focus {
+                box-shadow: 0 0 0 0.25rem rgba($primary, 0.5);
+                outline: 0;
             }
 
             &:active,
             &.fc-button-active {
-                background-color: darken($success, 10%);
-                border-color: darken($success, 12.5%);
+                background-color: darken($primary, 10%);
+                border-color: darken($primary, 12.5%);
+                box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+            }
+
+            &:disabled {
+                opacity: 0.65;
+                cursor: not-allowed;
+                pointer-events: none;
+            }
+
+            // Today button
+            &.fc-today-button {
+                background-color: $success;
+                border-color: $success;
+
+                &:hover:not(:disabled) {
+                    background-color: darken($success, 7.5%);
+                    border-color: darken($success, 10%);
+                }
+
+                &:active,
+                &.fc-button-active {
+                    background-color: darken($success, 10%);
+                    border-color: darken($success, 12.5%);
+                }
             }
         }
-    }
 
-    // Button groups
-    .fc-button-group {
-        display: inline-flex;
-        border-radius: $border-radius-sm;
+        // Button groups
+        .fc-button-group {
+            display: inline-flex;
+            border-radius: $border-radius-sm;
 
-        > .fc-button {
-            border-radius: 0;
-            position: relative;
+            > .fc-button {
+                border-radius: 0;
+                position: relative;
 
-            &:first-child {
-                border-top-left-radius: $border-radius-sm;
-                border-bottom-left-radius: $border-radius-sm;
+                &:first-child {
+                    border-top-left-radius: $border-radius-sm;
+                    border-bottom-left-radius: $border-radius-sm;
+                }
+
+                &:last-child {
+                    border-top-right-radius: $border-radius-sm;
+                    border-bottom-right-radius: $border-radius-sm;
+                }
+
+                &:not(:last-child) {
+                    border-right: 0;
+                }
             }
-
-            &:last-child {
-                border-top-right-radius: $border-radius-sm;
-                border-bottom-right-radius: $border-radius-sm;
-            }
-
-            &:not(:last-child) {
-                border-right: 0;
-            }
-        }
-    }*/
+        }*/
 
     // ========================================================================
     // Day Grid
@@ -472,5 +472,122 @@
         .fc-event {
             page-break-inside: avoid;
         }
+    }
+}// ============================================================================
+// Bootstrap Popover Styling for Event Details
+// ============================================================================
+
+.popover.event-popover {
+    max-width: 350px;
+    border: 1px solid $gray-300;
+    box-shadow: $box-shadow-lg;
+    border-radius: $border-radius;
+
+    .popover-arrow {
+        &::before {
+            border-color: $gray-300;
+        }
+        &::after {
+            border-color: $white;
+        }
+    }
+
+    .popover-body {
+        padding: 0;
+    }
+}
+
+.event-popover-content {
+    padding: 0.75rem;
+    font-size: 0.875rem;
+
+    // Title
+    .event-popover-title {
+        font-weight: 600;
+        font-size: 1rem;
+        color: $dark;
+        margin-bottom: 0.5rem;
+        line-height: 1.4;
+        border-bottom: 1px solid $gray-200;
+        padding-bottom: 0.5rem;
+    }
+
+    // Time
+    .event-popover-time {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: $primary;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+
+        i {
+            font-size: 1rem;
+        }
+    }
+
+    // Summary (teaser/excerpt)
+    .event-popover-summary {
+        color: $gray-700;
+        margin-bottom: 0.5rem;
+        line-height: 1.5;
+        font-style: italic;
+    }
+
+    // Full text/description
+    .event-popover-text {
+        color: $gray-600;
+        margin-bottom: 0.5rem;
+        line-height: 1.5;
+        font-size: 0.8125rem;
+    }
+
+    // Location
+    .event-popover-location {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+        color: $gray-700;
+        margin-bottom: 0.5rem;
+        padding: 0.375rem 0.5rem;
+        background-color: $gray-100;
+        border-radius: $border-radius-sm;
+        font-size: 0.8125rem;
+
+        i {
+            color: $danger;
+            font-size: 1rem;
+            margin-top: 0.125rem;
+            flex-shrink: 0;
+        }
+    }
+
+    // Type
+    .event-popover-type {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: $gray-600;
+        font-size: 0.8125rem;
+        padding-top: 0.5rem;
+        border-top: 1px solid $gray-200;
+
+        i {
+            color: $info;
+            font-size: 0.875rem;
+        }
+    }
+
+    // Spacing adjustments
+    > div:last-child {
+        margin-bottom: 0;
+    }
+}
+
+// Hover effect for better visibility
+.fc-event {
+    &:hover {
+        z-index: 10 !important;
     }
 }

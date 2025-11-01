@@ -16,7 +16,8 @@ use Symfony\Component\Routing\Annotation\Route;
 class CalendarApiController extends AbstractController
 {
     public function __construct(
-        private EventRepository $eventRepository,
+        private readonly EventRepository $eventRepository,
+        private readonly EventTypeSelect $eventTypeSelect,
     ) {
     }
 
@@ -127,8 +128,8 @@ class CalendarApiController extends AbstractController
             $isAllDay = $this->isAllDayEvent($event);
 
             // Get type color and name
-/*            $typeColor = $this->eventTypeSelect->getColor($event->getType() ?? 'default');
-            $typeName = $this->eventTypeSelect->getTypeName($event->getType() ?? 'default');*/
+            $typeColor = $this->eventTypeSelect->getColor($event->getType() ?? 'default');
+            $typeName = $this->eventTypeSelect->getTypeName($event->getType() ?? 'default');
 
             $data = [
                 'id' => $event->getId(),
@@ -138,8 +139,8 @@ class CalendarApiController extends AbstractController
                 'url' => $event->getRoutePath(),
                 'extendedProps' => [
                     'summary' => $event->getSummary(),
-/*                    'type' => $typeName,
-                    'typeColor' => $typeColor,*/
+                    'type' => $typeName,
+                    'typeColor' => $typeColor,
                 ],
             ];
 
