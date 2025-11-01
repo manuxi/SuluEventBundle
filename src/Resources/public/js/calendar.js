@@ -117,7 +117,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // Initial view - use data attribute
                 initialView: initialView,
-                validRange: validRange,
+                //validRange: validRange,
 
                 // Header toolbar
                 headerToolbar: {
@@ -158,14 +158,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Events source
                 events: eventsUrl,
 
+/*                datesSet: function(info) {
+                    const isMultiMonth = info.view.type === 'multiMonthYear';
+                    if (isMultiMonth) {
+                        calendar.setOption('validRange', null);
+                    } else {
+                        calendar.setOption('validRange', validRange);
+                    }
+                },*/
+
                 // Custom event rendering with line break after time
                 eventContent: function(arg) {
                     const event = arg.event;
 
                     // Check if all-day (00:00 - 00:00 means no time display)
-                    const isAllDay = event.start.getHours() === 0 &&
-                        event.start.getMinutes() === 0 &&
-                        (!event.end || (event.end.getHours() === 0 && event.end.getMinutes() === 0));
+                    const isAllDay = !event.start ||
+                        (event.start.getHours() === 0 &&
+                            event.start.getMinutes() === 0 &&
+                            (!event.end || (event.end.getHours() === 0 && event.end.getMinutes() === 0)));
 
                     let html = '<div class="fc-event-main-frame">';
 
@@ -324,7 +334,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Multi-month view configuration
                 views: {
                     multiMonthYear: {
-                        type: 'multiMonth',
+                        type: 'multiMonthYear',
                         duration: { months: 4 },
                         buttonText: locale === 'de' ? 'Jahr' : 'Year'
                     }
@@ -339,6 +349,28 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
             });
+
+            /*
+            //try to update validRange with no luck. Deactivate the whole thing now.
+            function updateValidRange(viewName) {
+                if (viewName === 'multiMonthYear') {
+                    calendar.setOption('validRange', null);
+                } else {
+                    calendar.setOption('validRange', {
+                        start: validRange.start.toISOString?.().split('T')[0] || validRange.start,
+                        end: validRange.end.toISOString?.().split('T')[0] || validRange.end
+                    });
+                }
+            }
+
+            updateValidRange(initialView);
+
+            const originalChangeView = calendar.changeView.bind(calendar);
+            calendar.changeView = function(viewName, dateOrRange) {
+                updateValidRange(viewName);
+                return originalChangeView(viewName, dateOrRange);
+            };
+            */
 
             calendar.render();
 
