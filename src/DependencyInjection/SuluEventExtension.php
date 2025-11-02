@@ -46,13 +46,30 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
     {
 
         if ($container->hasExtension('sulu_event')) {
-            $defaultConfigFile = __DIR__.'/../Resources/config/packages/sulu_event_bundle.yaml';
-            $defaultConfig = Yaml::parseFile($defaultConfigFile);
+            // Load all existing configs to check if project has defined types
+            $configs = $container->getExtensionConfig('sulu_event');
 
-            if (isset($defaultConfig['sulu_event'])) {
-                $container->prependExtensionConfig('sulu_event', $defaultConfig['sulu_event']);
+            // Check if any config already defines types
+            $hasProjectTypes = false;
+            foreach ($configs as $config) {
+                if (isset($config['types'])) {
+                    $hasProjectTypes = true;
+                    break;
+                }
+            }
+
+            // Only prepend bundle defaults if project hasn't defined types
+            // This allows projects to completely replace default types
+            if (!$hasProjectTypes) {
+                $defaultConfigFile = __DIR__.'/../Resources/config/packages/sulu_event_bundle.yaml';
+                $defaultConfig = Yaml::parseFile($defaultConfigFile);
+
+                if (isset($defaultConfig['sulu_event'])) {
+                    $container->prependExtensionConfig('sulu_event', $defaultConfig['sulu_event']);
+                }
             }
         }
+
 
 
         if ($container->hasExtension('sulu_search')) {

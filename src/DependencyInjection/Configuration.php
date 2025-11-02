@@ -40,6 +40,7 @@ class Configuration implements ConfigurationInterface
                         ->scalarNode('color')->isRequired()->end()
                     ->end()
                 ->end()
+                ->defaultValue([])
             ->end()
             ->scalarNode('default_type')
                 ->defaultValue('default')

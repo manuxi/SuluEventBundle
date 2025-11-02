@@ -335,11 +335,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 views: {
                     multiMonthYear: {
                         type: 'multiMonthYear',
-                        duration: { months: 4 },
+                        duration: { months: 3 },
                         buttonText: locale === 'de' ? 'Jahr' : 'Year'
                     }
                 },
-
+                contentHeight: 'auto',
                 // Loading indicator
                 loading: function(isLoading) {
                     if (isLoading) {
