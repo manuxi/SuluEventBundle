@@ -10,6 +10,8 @@ Locations are managed in the Sulu admin panel under **Events > Locations**.
 
 ### Location Properties
 
+![img.png](img/locations.en.png)
+
 - **Name**: Display name of the location
 - **Street**: Street address
 - **Number**: House/building number
@@ -28,7 +30,7 @@ When creating or editing an event, you can select a location from the **Location
 
 ### Display Location Information
 
-```twig
+```html
 {% if event.location %}
     <div class="event-location">
         <h3>Location</h3>
@@ -51,7 +53,7 @@ When creating or editing an event, you can select a location from the **Location
 
 If latitude and longitude are set:
 
-```twig
+```html
 {% if event.location and event.location.latitude and event.location.longitude %}
     <div class="location-map">
         <div id="map" 
@@ -65,7 +67,7 @@ If latitude and longitude are set:
 
 ### Get Formatted Address
 
-```twig
+```html
 {% set address = [
     event.location.street ~ ' ' ~ event.location.number,
     event.location.postalCode ~ ' ' ~ event.location.city,
@@ -78,7 +80,7 @@ If latitude and longitude are set:
 ### Generate Map Links
 
 #### Google Maps
-```twig
+```html
 {% if event.location %}
     {% set query = [
         event.location.name,
@@ -96,7 +98,7 @@ If latitude and longitude are set:
 ```
 
 #### OpenStreetMap
-```twig
+```html
 {% if event.location.latitude and event.location.longitude %}
     <a href="https://www.openstreetmap.org/?mlat={{ event.location.latitude }}&mlon={{ event.location.longitude }}&zoom=15" 
        target="_blank">
@@ -105,25 +107,44 @@ If latitude and longitude are set:
 {% endif %}
 ```
 
-## Location-Based Filtering
+### Template usage
 
-### Calendar API
+```html
+{% if location.email %}
+    <a href="mailto:{{ location.email }}">{{ location.email }}</a>
+{% endif %}
 
-Filter events by location name:
+{% if location.phoneNumber %}
+    <a href="tel:{{ location.phoneNumber }}">{{ location.phoneNumber }}</a>
+{% endif %}
 
-```
-GET /api/events/calendar/en?location=Conference%20Center
-```
+{% if location.link %}
+    <a href="{{ location.link.href }}" 
+       {% if location.link.target %}target="{{ location.link.target }}"{% endif %}>
+        {{ location.link.title ?: 'Website' }}
+    </a>
+{% endif %}
 
-### List View
+{% if location.pdf %}
+    <a href="{{ location.pdf.url }}" target="_blank">
+        Download PDF
+    </a>
+{% endif %}
 
-Filter events by location in custom queries:
+{% if location.latitude and location.longitude %}
+    {# Map integration #}
+    <div data-lat="{{ location.latitude }}" 
+         data-lng="{{ location.longitude }}">
+    </div>
+{% endif %}
 
-```twig
-{% set events = sulu_event_query()
-    .locale(app.request.locale)
-    .location('Conference Center')
-    .execute() %}
+{% if location.images %}
+    <div class="location-gallery">
+        {% for image in location.images %}
+            <img src="{{ image.thumbnails['300x300'] }}" alt="{{ image.title }}">
+        {% endfor %}
+    </div>
+{% endif %}
 ```
 
 ## Geocoding
@@ -157,7 +178,7 @@ async function geocodeLocation(address) {
 
 For proper event markup, include location data:
 
-```twig
+```javascript
 <script type="application/ld+json">
 {
     "@context": "https://schema.org",
@@ -188,25 +209,3 @@ For proper event markup, include location data:
 </script>
 ```
 
-## Best Practices
-
-1. **Reuse locations** - Create location entries once and reuse them across events
-2. **Complete data** - Fill in as many fields as possible for better user experience
-3. **Consistent naming** - Use consistent location names for filtering and searching
-4. **Add coordinates** - Include latitude/longitude for map integration
-5. **Update centrally** - When a location changes, update the location entry (affects all events)
-6. **Use notes field** - Add parking information, accessibility details, or special instructions
-
-## Virtual Events
-
-For online events, you can either:
-
-1. **Leave location empty** - Suitable for purely virtual events
-2. **Create "Online" location** - Create a location named "Online" or "Virtual" for filtering
-3. **Use notes field** - Add meeting link or platform information in the notes field
-
-Example virtual location:
-```
-Name: Online
-Notes: Zoom meeting link will be sent via email
-```

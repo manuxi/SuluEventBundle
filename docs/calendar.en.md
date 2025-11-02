@@ -4,6 +4,67 @@
 
 The SuluEventBundle includes an integrated calendar system powered by FullCalendar. This feature allows you to display events in various calendar views on your website.
 
+![img.png](img/calendar-month.de.png)
+![img.png](img/calendar-year.de.png)
+
+## Installation
+
+The installation is not entirely straightforward. There are certainly other ways (which I would love to hear about!), but I will describe mine:
+
+Load the sources in the main project:
+
+```bash
+npm install --save @fullcalendar/core@^6.1.19 @fullcalendar/bootstrap5@^6.1.19 @fullcalendar/daygrid@^6.1.19 @fullcalendar/timegrid@^6.1.19 @fullcalendar/list@^6.1.19 @fullcalendar/multimonth@^6.1.19
+```
+
+Javascript and (optional) scss:
+assets/website/js/app.js:
+```javascript
+import '../../../vendor/manuxi/sulu-event-bundle/src/Resources/public/js/calendar.js';
+```
+assets/website/scss/app.scss:
+```scss
+@import '../../../vendor/manuxi/sulu-event-bundle/src/Resources/public/scss/calendar.scss';
+```
+
+To ensure that the project variables are also available in scss (webpack.config.js):
+```javascript
+Encore.enableSassLoader(options => {
+    options.sassOptions = {
+        includePaths: [
+            'assets/website/scss',
+        ],
+    };
+    options.additionalData = `
+        @import "config/variables"; 
+        @import "config/variables.components";
+    `;
+})
+```
+For JavaScripts, I made the following changes in webpack.config.js:
+```javascript
+// enables and configure @babel/preset-env polyfills
+Encore.configureBabelPresetEnv((config) => {
+    config.useBuiltIns = 'usage';
+    config.corejs = {
+        version: 3,
+        proposals: true
+    };
+})
+```
+and
+```javascript
+const config = Encore.getWebpackConfig();
+
+// Fix module resolution for core-js and node_modules in bundles
+config.resolve = config.resolve || {};
+config.resolve.modules = config.resolve.modules || [];
+config.resolve.modules.unshift(path.resolve(__dirname, 'node_modules'));
+config.resolve.symlinks = true;
+
+module.exports = config;
+```
+
 ## Configuration
 
 Calendar settings can be configured in the Sulu admin panel under **Settings > Events**.
@@ -48,7 +109,7 @@ Add the calendar to any page using the content type:
 
 ### Template Integration
 
-```twig
+```html
 {% if toggle_calendar %}
     {% if eventsSettings is not defined %}
         {% set eventsSettings = load_event_settings() %}
@@ -73,6 +134,7 @@ Add the calendar to any page using the content type:
          data-event-color="{{ eventsSettings.eventColor|default('#ccc') }}"
          data-toggle-view="{{ eventsSettings.toggleCalendarView ? 'true' : 'false' }}"
          data-toggle-location="{{ eventsSettings.showCalendarEventLocation ? 'true' : 'false' }}"
+         data-toggle-type="{{ eventsSettings.showCalendarEventType ? 'true' : 'false' }}"
          data-allowed-views="{{ eventsSettings.allowedCalendarViews|join(',') }}">
 
     </div>
@@ -81,7 +143,7 @@ Add the calendar to any page using the content type:
 
 ### Example of a View-Selector
 
-```
+```html
 <property name="calendarView" type="single_select" colspan="10" visibleCondition="__parent.toggle_calendar == true">
     <meta>
         <title lang="de">Kalenderansicht</title>

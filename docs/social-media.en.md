@@ -35,7 +35,7 @@ Link your social media profiles to be included in event promotions:
 
 ### Display Share Buttons
 
-```twig
+```html
 {% if event.socialSettings and event.socialSettings.enableSharing %}
     <div class="social-share">
         {% for platform in event.socialSettings.platforms %}
@@ -58,7 +58,7 @@ The bundle provides the following Twig functions:
 
 Generates a sharing URL for the specified platform.
 
-```twig
+```html
 {{ social_share_url(event, 'facebook') }}
 ```
 
@@ -73,7 +73,7 @@ Generates a sharing URL for the specified platform.
 
 Returns the social media profile URL for the event.
 
-```twig
+```html
 {% if social_profile_url(event, 'instagram') %}
     <a href="{{ social_profile_url(event, 'instagram') }}">
         Follow us on Instagram
@@ -83,7 +83,7 @@ Returns the social media profile URL for the event.
 
 ### Complete Example
 
-```twig
+```html
 <article class="event-detail">
     <h1>{{ event.title }}</h1>
     
@@ -168,7 +168,7 @@ If a custom share text is configured, it will be used instead of the event's def
 
 For optimal social media sharing, ensure your event detail template includes Open Graph and Twitter Card meta tags:
 
-```twig
+```html
 <meta property="og:title" content="{{ event.title }}" />
 <meta property="og:description" content="{{ event.summary }}" />
 <meta property="og:url" content="{{ app.request.schemeAndHttpHost ~ event.routePath }}" />

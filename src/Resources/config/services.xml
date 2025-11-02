@@ -218,6 +218,10 @@
             <argument type="service" id="doctrine.orm.default_entity_manager"/>
             <tag name="twig.extension"/>
         </service>
+        <service id="sulu_event.type.twig_extension" class="Manuxi\SuluEventBundle\Twig\EventTypeTwigExtension">
+            <argument type="service" id="sulu_event.type_selection"/>
+            <tag name="twig.extension"/>
+        </service>
 
         <service id="sulu_event.type_selection" class="Manuxi\SuluEventBundle\Service\EventTypeSelect" public="true" lazy="true">
             <argument type="service" id="translator"/>

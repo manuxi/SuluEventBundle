@@ -7,10 +7,9 @@
 
 [🇬🇧 English Version](README.md)
 
-Dieses Bundle basiert auf dem [Sulu Workshop](https://github.com/sulu/sulu-workshop).
-Ich habe es erstellt, um Veranstaltungen in meinen Projekten zu verwalten. Im Laufe der Zeit wurden immer mehr Features hinzugefügt.
+Dieses Bundle basiert auf dem [Sulu Workshop](https://github.com/sulu/sulu-workshop) und wurde im Laufe der Zeit mit immer mehr Features ausgestattet.
 
-![image](https://github.com/user-attachments/assets/72b11ff1-dd25-458c-952c-c27ff22c7abf)
+![img.png](docs/img/event-details.png)
 
 ## ✨ Features
 
@@ -27,7 +26,7 @@ Ich habe es erstellt, um Veranstaltungen in meinen Projekten zu verwalten. Im La
 ### 🔄 Erweiterte Features
 - **Wiederkehrende Events** - Tägliche, wöchentliche, monatliche, jährliche Muster mit Ausnahmen
 - **Social-Media-Integration** - Pro-Event-Sharing-Konfiguration (Facebook, Twitter, LinkedIn, Instagram, WhatsApp)
-- **Kalenderansichten** - FullCalendar.js Integration mit Monats-/Wochen-/Listenansicht
+- **Kalender** - FullCalendar.js Integration mit Monats-/Wochen-/Listenansicht
 - **iCal-Export** - Einzelne Events oder vollständige Kalender-Abonnements (webcal://)
 - **RSS/Atom-Feeds** - Halte Abonnenten über neue Events auf dem Laufenden
 - **Smart Content** - Als Content-Block in jeder Sulu-Seite verwendbar
@@ -118,9 +117,6 @@ Zugriff über Sulu Admin → Einstellungen → Events
 
 **Anzeigeoptionen:**
 - Header, Hero-Bild, Breadcrumbs umschalten
-- Events pro Seite (Pagination)
-- Standard-Sortierung
-- Bild-/Zusammenfassungsanzeige in Listen
 
 **Kalender-Optionen:**
 - Kalenderansicht aktivieren
@@ -129,11 +125,7 @@ Zugriff über Sulu Admin → Einstellungen → Events
 - Event-Zeit anzeigen
 - Event-Ort anzeigen
 
-**Filter-Optionen:**
-- Kategorien-Filter aktivieren
-- Orts-Filter aktivieren
-- Datums-Filter aktivieren
-- Such-Filter aktivieren
+- Weiteres
 
 ### Wiederkehrende Events
 
@@ -146,7 +138,7 @@ Richte einen Cron-Job ein:
 
 ## 📖 Dokumentation
 
-Detaillierte Dokumentation im [docs/](docs/) Verzeichnis (Englisch).
+Detaillierte Dokumentation im [docs/](docs/) Verzeichnis.
 
 ## 👩‍🍳 Mitwirken
 

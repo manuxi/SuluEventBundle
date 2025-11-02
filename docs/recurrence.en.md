@@ -163,25 +163,3 @@ class EventRecurrence
     private ?\DateTime $until;     // end date
 }
 ```
-
-## Performance Considerations
-
-1. **Use physical occurrences** for frequently queried date ranges
-2. **Limit lookahead period** to reasonable timeframes (90-180 days)
-3. **Run generation command** regularly but not too frequently (daily is sufficient)
-4. **Index generated occurrences** for optimal search performance
-
-## Limitations
-
-- Monthly recurrence uses the day of the month from the original event
-- Complex patterns (e.g., "third Tuesday of each month") are not supported
-- Timezone handling uses the server's timezone
-- Maximum practical lookahead is ~365 days for performance reasons
-
-## Best Practices
-
-1. **Define clear end conditions** - Avoid infinite recurrence rules
-2. **Test recurrence patterns** before publishing events
-3. **Monitor generated occurrences** - Check for duplicate or missing occurrences
-4. **Document exceptions** - Use separate events for dates that differ from the pattern
-5. **Communicate changes** - If modifying a recurring event, inform attendees about which occurrences are affected

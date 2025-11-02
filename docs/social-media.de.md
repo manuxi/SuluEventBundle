@@ -35,7 +35,7 @@ Verknüpfen Sie Ihre Social-Media-Profile für Event-Promotions:
 
 ### Share-Buttons anzeigen
 
-```twig
+```html
 {% if event.socialSettings and event.socialSettings.enableSharing %}
     <div class="social-share">
         {% for platform in event.socialSettings.platforms %}
@@ -58,7 +58,7 @@ Das Bundle stellt folgende Twig-Funktionen bereit:
 
 Generiert eine Sharing-URL für die angegebene Plattform.
 
-```twig
+```html
 {{ social_share_url(event, 'facebook') }}
 ```
 
@@ -73,7 +73,7 @@ Generiert eine Sharing-URL für die angegebene Plattform.
 
 Gibt die Social-Media-Profil-URL für das Event zurück.
 
-```twig
+```html
 {% if social_profile_url(event, 'instagram') %}
     <a href="{{ social_profile_url(event, 'instagram') }}">
         Folgen Sie uns auf Instagram
@@ -83,7 +83,7 @@ Gibt die Social-Media-Profil-URL für das Event zurück.
 
 ### Vollständiges Beispiel
 
-```twig
+```html
 <article class="event-detail">
     <h1>{{ event.title }}</h1>
     
@@ -166,9 +166,9 @@ Wenn ein individueller Share-Text konfiguriert ist, wird dieser anstelle des Sta
 
 ## Meta-Tags
 
-Für optimales Social-Media-Sharing sollte Ihr Event-Detail-Template Open-Graph- und Twitter-Card-Meta-Tags enthalten:
+Für optimales Social-Media-Sharing sollte das Event-Detail-Template Open-Graph- und Twitter-Card-Meta-Tags enthalten:
 
-```twig
+```html
 <meta property="og:title" content="{{ event.title }}" />
 <meta property="og:description" content="{{ event.summary }}" />
 <meta property="og:url" content="{{ app.request.schemeAndHttpHost ~ event.routePath }}" />

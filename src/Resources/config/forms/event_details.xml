@@ -106,12 +106,6 @@
                     </params>
                 </property>
 
-                <property name="footer" type="text_editor">
-                    <meta>
-                        <title>sulu_event.footer</title>
-                    </meta>
-                </property>
-
                 <property name="link" type="link" colspan="6">
                     <meta>
                         <title>sulu_event.link</title>
@@ -150,6 +144,12 @@
                 <property name="showDate" type="checkbox" colspan="3">
                     <meta>
                         <title>sulu_event.show_date</title>
+                    </meta>
+                </property>
+
+                <property name="footer" type="text_editor">
+                    <meta>
+                        <title>sulu_event.footer</title>
                     </meta>
                 </property>
             </properties>

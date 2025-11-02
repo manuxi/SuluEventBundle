@@ -10,6 +10,8 @@ Wiederholungseinstellungen können für jedes Event im Tab **Wiederholung** des 
 
 ### Wiederholungsoptionen
 
+![img.png](img/recurrence.de.png)
+
 #### Basiseinstellungen
 - **Wiederholung aktivieren**: Wiederkehrenden Zeitplan für dieses Event aktivieren
 - **Wiederholungsmuster**: Häufigkeit der Wiederholung
@@ -163,25 +165,3 @@ class EventRecurrence
     private ?\DateTime $until;     // Enddatum
 }
 ```
-
-## Performance-Überlegungen
-
-1. **Physische Vorkommen verwenden** für häufig abgefragte Datumsbereiche
-2. **Lookahead-Zeitraum begrenzen** auf vernünftige Zeiträume (90-180 Tage)
-3. **Generierungs-Kommando ausführen** regelmäßig, aber nicht zu häufig (täglich ist ausreichend)
-4. **Generierte Vorkommen indizieren** für optimale Such-Performance
-
-## Einschränkungen
-
-- Monatliche Wiederholung verwendet den Tag des Monats vom Original-Event
-- Komplexe Muster (z.B. "dritter Dienstag jeden Monats") werden nicht unterstützt
-- Zeitzonen-Behandlung verwendet die Server-Zeitzone
-- Maximaler praktischer Lookahead ist ~365 Tage aus Performance-Gründen
-
-## Best Practices
-
-1. **Klare Endbedingungen definieren** - Vermeiden Sie unbegrenzte Wiederholungsregeln
-2. **Wiederholungsmuster testen** vor Veröffentlichung von Events
-3. **Generierte Vorkommen überwachen** - Auf doppelte oder fehlende Vorkommen prüfen
-4. **Ausnahmen dokumentieren** - Separate Events für Termine verwenden, die vom Muster abweichen
-5. **Änderungen kommunizieren** - Bei Änderung eines wiederkehrenden Events Teilnehmer informieren, welche Vorkommen betroffen sind
