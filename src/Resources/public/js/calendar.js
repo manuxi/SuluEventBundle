@@ -333,6 +333,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // Multi-month view configuration
                 views: {
+                    dayGridMonth: {
+                        validRange: validRange
+                    },
+                    timeGridWeek: {
+                        validRange: validRange,
+                        /*slotMinTime: '08:00:00',
+                        slotMaxTime: '23:00:00'*/
+                    },
+                    timeGridDay: {
+                        validRange: validRange
+                    },
                     multiMonthYear: {
                         type: 'multiMonthYear',
                         duration: { months: 3 },
@@ -349,28 +360,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
             });
-
-            /*
-            //try to update validRange with no luck. Deactivate the whole thing now.
-            function updateValidRange(viewName) {
-                if (viewName === 'multiMonthYear') {
-                    calendar.setOption('validRange', null);
-                } else {
-                    calendar.setOption('validRange', {
-                        start: validRange.start.toISOString?.().split('T')[0] || validRange.start,
-                        end: validRange.end.toISOString?.().split('T')[0] || validRange.end
-                    });
-                }
-            }
-
-            updateValidRange(initialView);
-
-            const originalChangeView = calendar.changeView.bind(calendar);
-            calendar.changeView = function(viewName, dateOrRange) {
-                updateValidRange(viewName);
-                return originalChangeView(viewName, dateOrRange);
-            };
-            */
 
             calendar.render();
 

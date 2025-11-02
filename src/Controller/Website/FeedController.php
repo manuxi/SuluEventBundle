@@ -19,9 +19,10 @@ class FeedController extends AbstractController
     }
 
     #[Route('/events/feed.{_format}', name: 'sulu_event.feed', requirements: ['_format' => 'rss|atom'])]
-    public function feedAction(string $_format): Response
+    public function feedAction(string $_locale, string $_format): Response
     {
-        $events = $this->eventRepository->findPublishedEvents(50);
+        // Use the correct repository method name with locale
+        $events = $this->eventRepository->findForFeed($_locale, 50);
 
         $feed = match ($_format) {
             'rss' => $this->generateRss($events),
@@ -79,7 +80,7 @@ class FeedController extends AbstractController
         $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><feed xmlns="http://www.w3.org/2005/Atom"/>');
 
         $xml->addChild('title', 'Events Feed');
-        $xml->addChild('updated', (new \DateTime())->format(\DateTime::ATOM));
+        $xml->addChild('updated', gmdate(\DATE_ATOM));
 
         $link = $xml->addChild('link');
         $link->addAttribute('href', $this->urlGenerator->generate('sulu_event.feed', ['_format' => 'atom'], UrlGeneratorInterface::ABSOLUTE_URL));
@@ -95,12 +96,14 @@ class FeedController extends AbstractController
             $entryLink = $entry->addChild('link');
             $entryLink->addAttribute('href', htmlspecialchars($event->getRoutePath(), ENT_XML1));
 
-            if ($event->getPublished()) {
-                $entry->addChild('updated', $event->getPublishedAt()?->format(\DateTime::ATOM) ?? '');
+            if ($event->getSummary()) {
+                $entry->addChild('summary', htmlspecialchars($event->getSummary(), ENT_XML1));
             }
 
-            $summary = $entry->addChild('summary', htmlspecialchars($event->getSummary() ?? '', ENT_XML1));
-            $summary->addAttribute('type', 'text');
+            if ($event->getPublished() && $event->getPublishedAt()) {
+                $entry->addChild('published', $event->getPublishedAt()->format(\DATE_ATOM));
+                $entry->addChild('updated', $event->getPublishedAt()->format(\DATE_ATOM));
+            }
         }
 
         return $xml->asXML();

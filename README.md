@@ -49,6 +49,13 @@ Please add the following to your `routes_admin.yaml`:
 SuluEventBundle:
     resource: '@SuluEventBundle/Resources/config/routes_admin.yaml'
 ```
+For FullCalendar-Integration/iCal/Feeds add the following to `routes_website.yaml`:
+
+```yaml
+SuluEventBundle:
+    resource: '@SuluEventBundle/Resources/config/routes_website.yaml'
+```
+
 Don't forget fo add the index to your sulu_search.yaml:
 
 add "events_published"!

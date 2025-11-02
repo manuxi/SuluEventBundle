@@ -59,11 +59,17 @@ return [
 
 ### Schritt 2: Routen konfigurieren
 
-Füge zu `routes_admin.yaml` hinzu:
+Zu `routes_admin.yaml` hinzufügen:
 
 ```yaml
 SuluEventBundle:
     resource: '@SuluEventBundle/Resources/config/routes_admin.yaml'
+```
+Für FullCalendar-Integration/iCal/Feeds muss Folgendes zu `routes_website.yaml` hinzugefügt werden:
+
+```yaml
+SuluEventBundle:
+    resource: '@SuluEventBundle/Resources/config/routes_website.yaml'
 ```
 
 ### Schritt 3: Suche konfigurieren
@@ -139,6 +145,13 @@ Richte einen Cron-Job ein:
 ## 📖 Dokumentation
 
 Detaillierte Dokumentation im [docs/](docs/) Verzeichnis.
+
+- [Kalender-Integration](docs/calendar.de.md) - FullCalendar.js-Integration
+- [Social Media](docs/social-media.de.md) - Social-Sharing-Konfiguration
+- [Wiederkehrende Events](docs/recurring.de.md) - Wiederholende Event-Muster
+- [Dynamic Event Types](docs/event_types.de.md) - Konfiguration der Event-Types
+- [Feeds/iCal](docs/feeds-ical.de.md) - Feeds und iCal Handling
+- [Locations](docs/locations.de.md) - Locations Handling
 
 ## 👩‍🍳 Mitwirken
 

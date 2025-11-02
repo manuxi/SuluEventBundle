@@ -564,12 +564,18 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
      *
      * @return Event[]
      */
-    public function findForFeed(int $limit = 50): array
+    public function findForFeed(string $locale, int $limit = 50): array
     {
-        return $this->createQueryBuilder('e')
-            ->where('e.published = :published')
+        return $this->createQueryBuilder('event')
+
+            ->leftJoin('event.translations', 'translation')
+            ->andWhere('translation.locale = :locale')
+            ->setParameter('locale', $locale)
+
+            ->andWhere('translation.published = :published')
             ->setParameter('published', true)
-            ->orderBy('e.startDate', 'DESC')
+
+            ->orderBy('event.startDate', 'DESC')
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();

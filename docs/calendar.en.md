@@ -109,6 +109,8 @@ Add the calendar to any page using the content type:
 
 ### Template Integration
 
+An element with the id="event-calendar" is expected. Specify parameters as follows:
+
 ```html
 {% if toggle_calendar %}
     {% if eventsSettings is not defined %}
@@ -140,6 +142,8 @@ Add the calendar to any page using the content type:
     </div>
 {% endif %}
 ```
+
+'calendarView' controls the initial view. See next section.
 
 ### Example of a View-Selector
 
@@ -187,14 +191,6 @@ Add the calendar to any page using the content type:
 </property>
 ```
 
-
-### API Endpoint
-
-The calendar fetches events via:
-```
-GET /api/events/calendar/{locale}
-```
-
 #### Query Parameters
 
 - `start` - Start date (ISO 8601 format)
@@ -233,24 +229,6 @@ The calendar API is rate-limited to 100 requests per hour per IP address. Config
 ## Frontend Implementation
 
 The bundle provides a basic calendar implementation. For advanced customization, refer to the FullCalendar documentation at https://fullcalendar.io/
-
-### Basic JavaScript Setup
-
-```javascript
-import { Calendar } from '@fullcalendar/core';
-import dayGridPlugin from '@fullcalendar/daygrid';
-import timeGridPlugin from '@fullcalendar/timegrid';
-import listPlugin from '@fullcalendar/list';
-
-const calendar = new Calendar(calendarEl, {
-    plugins: [dayGridPlugin, timeGridPlugin, listPlugin],
-    initialView: 'dayGridMonth',
-    locale: 'en',
-    events: '/api/events/calendar/en'
-});
-
-calendar.render();
-```
 
 ## All-Day Events
 

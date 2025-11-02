@@ -109,6 +109,8 @@ Kalender zu einer Seite hinzufügen über den Content Type:
 
 ### Template-Integration
 
+Es wird ein Element mit der id="event-calendar" erwartet. Parameter wie folgt angeben:
+
 ```html
 {% if toggle_calendar %}
     {% if eventsSettings is not defined %}
@@ -140,6 +142,9 @@ Kalender zu einer Seite hinzufügen über den Content Type:
     </div>
 {% endif %}
 ```
+
+'calendarView' steuert die inititale View. Siehe nächsten Abschnitt.
+
 ### Beispiel für Auswahl einer View
 
 ```html
@@ -205,25 +210,6 @@ GET /api/events/calendar/{locale}
 - `sortBy` - Sortierfeld (startDate, title, created, changed)
 - `sortMethod` - Sortierrichtung (asc, desc)
 
-#### Response-Format
-
-```json
-[
-  {
-    "id": 123,
-    "title": "Event-Titel",
-    "start": "2025-11-15T14:00:00+00:00",
-    "end": "2025-11-15T16:00:00+00:00",
-    "allDay": false,
-    "url": "/events/event-slug",
-    "extendedProps": {
-      "summary": "Event-Beschreibung",
-      "location": "Ortsname"
-    }
-  }
-]
-```
-
 ## Rate Limiting
 
 Die Kalender-API ist auf 100 Anfragen pro Stunde pro IP-Adresse limitiert. Der Rate Limiter kann bei Bedarf in der Symfony-Konfiguration angepasst werden.
@@ -231,24 +217,6 @@ Die Kalender-API ist auf 100 Anfragen pro Stunde pro IP-Adresse limitiert. Der R
 ## Frontend-Implementierung
 
 Das Bundle bietet eine grundlegende Kalenderimplementierung. Für erweiterte Anpassungen siehe die FullCalendar-Dokumentation unter https://fullcalendar.io/
-
-### Grundlegendes JavaScript-Setup
-
-```javascript
-import { Calendar } from '@fullcalendar/core';
-import dayGridPlugin from '@fullcalendar/daygrid';
-import timeGridPlugin from '@fullcalendar/timegrid';
-import listPlugin from '@fullcalendar/list';
-
-const calendar = new Calendar(calendarEl, {
-    plugins: [dayGridPlugin, timeGridPlugin, listPlugin],
-    initialView: 'dayGridMonth',
-    locale: 'de',
-    events: '/api/events/calendar/de'
-});
-
-calendar.render();
-```
 
 ## Ganztägige Events
 
