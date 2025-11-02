@@ -27,7 +27,6 @@
                     </meta>
                 </property>
 
-                <!--
                 <property name="type" type="single_select" mandatory="true" colspan="6">
                     <meta>
                         <title>sulu_event.event_type</title>
@@ -43,7 +42,6 @@
                         />
                     </params>
                 </property>
-                -->
 
                 <property name="routePath" type="route" mandatory="true">
                     <meta>
@@ -107,6 +105,7 @@
                         <param name="types" value="image"/>
                     </params>
                 </property>
+
                 <property name="footer" type="text_editor">
                     <meta>
                         <title>sulu_event.footer</title>
@@ -122,6 +121,7 @@
                         <param name="enable_attributes" value="true"/>
                     </params>
                 </property>
+
                 <property name="pdf" type="single_media_selection" colspan="6">
                     <meta>
                         <title>sulu_event.pdf</title>

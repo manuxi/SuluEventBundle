@@ -91,38 +91,73 @@ class LocationModel implements LocationModelInterface
      */
     private function mapDataToEntity(Location $entity, array $data): Location
     {
+        // Name
         $name = $this->getProperty($data, 'name');
         if ($name) {
             $entity->setName($name);
         }
+
+        // Address fields
         $street = $this->getProperty($data, 'street');
-        if ($street) {
+        if ($street !== null) {
             $entity->setStreet($street);
         }
+
         $number = $this->getProperty($data, 'number');
-        if ($number) {
+        if ($number !== null) {
             $entity->setNumber($number);
         }
+
         $city = $this->getProperty($data, 'city');
-        if ($city) {
+        if ($city !== null) {
             $entity->setCity($city);
         }
+
         $postalCode = $this->getProperty($data, 'postalCode');
-        if ($postalCode) {
+        if ($postalCode !== null) {
             $entity->setPostalCode($postalCode);
         }
+
         $state = $this->getProperty($data, 'state');
-        if ($state) {
+        if ($state !== null) {
             $entity->setState($state);
         }
+
         $countryCode = $this->getProperty($data, 'countryCode');
-        if ($countryCode) {
+        if ($countryCode !== null) {
             $entity->setCountryCode($countryCode);
         }
+
+        // Contact info
+        $email = $this->getProperty($data, 'email');
+        if ($email !== null) {
+            $entity->setEmail($email);
+        }
+
+        $phoneNumber = $this->getProperty($data, 'phoneNumber');
+        if ($phoneNumber !== null) {
+            $entity->setPhoneNumber($phoneNumber);
+        }
+
+        // Link field
+        $link = $this->getProperty($data, 'link');
+        if ($link !== null) {
+            $entity->setLink($link);
+        }
+
+        // Location field (coordinates)
+        $location = $this->getProperty($data, 'location');
+        if ($location !== null) {
+            $entity->setLocation($location);
+        }
+
+        // Notes
         $notes = $this->getProperty($data, 'notes');
-        if ($notes) {
+        if ($notes !== null) {
             $entity->setNotes($notes);
         }
+
+        // Image (single)
         $imageId = $this->getPropertyMulti($data, ['image', 'id']);
         if ($imageId) {
             $image = $this->mediaRepository->findMediaById((int) $imageId);
@@ -130,6 +165,22 @@ class LocationModel implements LocationModelInterface
                 throw new EntityNotFoundException($this->mediaRepository->getClassName(), $imageId);
             }
             $entity->setImage($image);
+        }
+
+        // PDF
+        $pdfId = $this->getPropertyMulti($data, ['pdf', 'id']);
+        if ($pdfId) {
+            $pdf = $this->mediaRepository->findMediaById((int) $pdfId);
+            if (!$pdf) {
+                throw new EntityNotFoundException($this->mediaRepository->getClassName(), $pdfId);
+            }
+            $entity->setPdf($pdf);
+        }
+
+        // Images (gallery)
+        $images = $this->getProperty($data, 'images');
+        if ($images !== null) {
+            $entity->setImages($images);
         }
 
         return $entity;

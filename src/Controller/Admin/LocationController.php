@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Controller\Admin;
 
-use Manuxi\SuluEventBundle\Common\DoctrineListRepresentationFactory;
-use Manuxi\SuluEventBundle\Entity\Location;
-use Manuxi\SuluEventBundle\Entity\Models\LocationModel;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use FOS\RestBundle\Routing\ClassResourceInterface;
 use FOS\RestBundle\View\ViewHandlerInterface;
+use Manuxi\SuluEventBundle\Common\DoctrineListRepresentationFactory;
+use Manuxi\SuluEventBundle\Entity\Location;
+use Manuxi\SuluEventBundle\Entity\Models\LocationModel;
 use Sulu\Bundle\TrashBundle\Application\TrashManager\TrashManagerInterface;
 use Sulu\Component\Rest\AbstractRestController;
 use Sulu\Component\Rest\Exception\EntityNotFoundException;
@@ -27,7 +27,7 @@ class LocationController extends AbstractRestController implements ClassResource
         private readonly DoctrineListRepresentationFactory $doctrineListRepresentationFactory,
         private readonly TrashManagerInterface $trashManager,
         ViewHandlerInterface $viewHandler,
-        ?TokenStorageInterface $tokenStorage = null
+        ?TokenStorageInterface $tokenStorage = null,
     ) {
         parent::__construct($viewHandler, $tokenStorage);
     }
@@ -37,11 +37,11 @@ class LocationController extends AbstractRestController implements ClassResource
         name: 'sulu_event.get_locations',
         requirements: [
             'id' => '\d+',
-            '_format' => 'json|csv'
+            '_format' => 'json|csv',
         ],
         options: ['expose' => true],
         defaults: [
-            '_format' => 'json'
+            '_format' => 'json',
         ],
         methods: ['GET']
     )]
@@ -55,10 +55,8 @@ class LocationController extends AbstractRestController implements ClassResource
     }
 
     /**
-     * @param int $id
-     * @param Request $request
-     * @return Response
      * @throws EntityNotFoundException
+     *
      * @noinspection PhpUnusedParameterInspection
      */
     #[Route(
@@ -66,23 +64,22 @@ class LocationController extends AbstractRestController implements ClassResource
         name: 'sulu_event.get_location',
         requirements: [
             'id' => '\d+',
-            '_format' => 'json|csv'
+            '_format' => 'json|csv',
         ],
         options: ['expose' => true],
         defaults: [
-            '_format' => 'json'
+            '_format' => 'json',
         ],
         methods: ['GET']
     )]
     public function getAction(int $id, Request $request): Response
     {
         $entity = $this->locationModel->getLocation($id);
+
         return $this->handleView($this->view($entity));
     }
 
     /**
-     * @param Request $request
-     * @return Response
      * @throws EntityNotFoundException
      * @throws ORMException
      * @throws OptimisticLockException
@@ -98,13 +95,11 @@ class LocationController extends AbstractRestController implements ClassResource
     public function postAction(Request $request): Response
     {
         $entity = $this->locationModel->createLocation($request);
+
         return $this->handleView($this->view($entity));
     }
 
     /**
-     * @param int $id
-     * @param Request $request
-     * @return Response
      * @throws EntityNotFoundException
      * @throws ORMException
      * @throws OptimisticLockException
@@ -114,7 +109,7 @@ class LocationController extends AbstractRestController implements ClassResource
         name: 'sulu_event.put_location',
         requirements: [
             'id' => '\d+',
-            '_format' => 'json'
+            '_format' => 'json',
         ],
         options: ['expose' => true],
         defaults: ['_format' => 'json'],
@@ -123,12 +118,11 @@ class LocationController extends AbstractRestController implements ClassResource
     public function putAction(int $id, Request $request): Response
     {
         $entity = $this->locationModel->updateLocation($id, $request);
+
         return $this->handleView($this->view($entity));
     }
 
     /**
-     * @param int $id
-     * @return Response
      * @throws EntityNotFoundException
      * @throws ORMException
      * @throws OptimisticLockException
@@ -138,7 +132,7 @@ class LocationController extends AbstractRestController implements ClassResource
         name: 'sulu_event.delete_location',
         requirements: [
             'id' => '\d+',
-            '_format' => 'json'
+            '_format' => 'json',
         ],
         options: ['expose' => true],
         defaults: ['_format' => 'json'],
@@ -151,7 +145,7 @@ class LocationController extends AbstractRestController implements ClassResource
 
         $title = $entity->getName() ?? 'n.a.';
         $this->locationModel->deleteLocation($id, $title);
+
         return $this->handleView($this->view(null, 204));
     }
-
 }

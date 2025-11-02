@@ -6,72 +6,134 @@
     <key>location_details</key>
 
     <properties>
-        <property name="name" type="text_line" colspan="9" mandatory="true">
+        <section name="mandatory">
             <meta>
-                <title>sulu_admin.name</title>
+                <title>sulu_event.header.address</title>
             </meta>
-        </property>
+            <properties>
 
-        <property name="image" type="single_media_selection" colspan="4">
+                <property name="name" type="text_line" colspan="8" mandatory="true">
+                    <meta>
+                        <title>sulu_admin.name</title>
+                    </meta>
+                </property>
+
+                <property name="image" type="single_media_selection" colspan="4">
+                    <meta>
+                        <title>sulu_event.image</title>
+                    </meta>
+                    <params>
+                        <param name="types" value="image"/>
+                    </params>
+                </property>
+
+
+                <property name="street" type="text_line" colspan="8">
+                    <meta>
+                        <title>sulu_contact.street</title>
+                    </meta>
+                </property>
+
+                <property name="number" type="text_line" colspan="4">
+                    <meta>
+                        <title>sulu_contact.number</title>
+                    </meta>
+                </property>
+
+
+                <property name="postalCode" type="text_line" colspan="4">
+                    <meta>
+                        <title>sulu_contact.zip</title>
+                    </meta>
+                </property>
+
+                <property name="city" type="text_line" colspan="8" >
+                    <meta>
+                        <title>sulu_contact.city</title>
+                    </meta>
+                </property>
+
+
+                <property name="state" type="text_line" colspan="4">
+                    <meta>
+                        <title>sulu_contact.state</title>
+                    </meta>
+                </property>
+
+                <property name="countryCode" type="single_select" colspan="8">
+                    <meta>
+                        <title>sulu_contact.country</title>
+                    </meta>
+
+                    <params>
+                        <param name="values"
+                               type="expression"
+                               value="service('sulu_shared_tools.country_code_select').getValues()"
+                        />
+                    </params>
+                </property>
+            </properties>
+        </section>
+
+        <section name="additional">
             <meta>
-                <title>sulu_event.image</title>
+                <title>sulu_event.header.additional</title>
             </meta>
-            <params>
-                <param name="types" value="image"/>
-            </params>
-        </property>
+            <properties>
 
+                <property name="email" type="text_line" colspan="6">
+                    <meta>
+                        <title>sulu_event.email</title>
+                    </meta>
+                </property>
 
-        <property name="street" type="text_line" colspan="9">
-            <meta>
-                <title>sulu_contact.street</title>
-            </meta>
-        </property>
+                <property name="phoneNumber" type="text_line" colspan="6">
+                    <meta>
+                        <title>sulu_event.phone</title>
+                    </meta>
+                </property>
 
-        <property name="number" type="text_line" colspan="4">
-            <meta>
-                <title>sulu_contact.number</title>
-            </meta>
-        </property>
+                <property name="link" type="link" colspan="6">
+                    <meta>
+                        <title>sulu_event.link</title>
+                    </meta>
+                    <params>
+                        <param name="enable_anchor" value="true"/>
+                        <param name="enable_attributes" value="true"/>
+                    </params>
+                </property>
 
+                <property name="pdf" type="single_media_selection" colspan="6">
+                    <meta>
+                        <title>sulu_event.pdf</title>
+                    </meta>
+                    <params>
+                        <param name="types" value="document"/>
+                    </params>
+                </property>
 
-        <property name="postalCode" type="text_line" colspan="4">
-            <meta>
-                <title>sulu_contact.zip</title>
-            </meta>
-        </property>
+                <property name="location" type="location">
+                    <meta>
+                        <title>sulu_event.location</title>
+                    </meta>
+                </property>
 
-        <property name="city" type="text_line" colspan="9" >
-            <meta>
-                <title>sulu_contact.city</title>
-            </meta>
-        </property>
+                <property name="images" type="media_selection">
+                    <meta>
+                        <title>sulu_event.gallery</title>
+                    </meta>
+                    <params>
+                        <param name="types" value="image"/>
+                    </params>
+                </property>
 
-
-        <property name="state" type="text_line" colspan="4">
-            <meta>
-                <title>sulu_contact.state</title>
-            </meta>
-        </property>
-
-        <property name="countryCode" type="single_select" colspan="9">
-            <meta>
-                <title>sulu_contact.country</title>
-            </meta>
-
-            <params>
-                <param name="values"
-                       type="expression"
-                       value="service('sulu_shared_tools.country_code_select').getValues()"
-                />
-            </params>
-        </property>
-
-        <property name="notes" type="text_editor">
-            <meta>
-                <title>sulu_event.notes</title>
-            </meta>
-        </property>
+                <property name="notes" type="text_editor">
+                    <meta>
+                        <title>sulu_event.notes</title>
+                    </meta>
+                </property>
+            </properties>
+        </section>
 
     </properties>
 </form>

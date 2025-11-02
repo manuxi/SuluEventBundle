@@ -45,6 +45,7 @@ sulu_event:
 
     # Section headers in the event form
     header:
+        address: "Address"
         main: "Date, Time & Place"
         text: "Invitation"
         content: "Content"

@@ -8,12 +8,16 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Manuxi\SuluEventBundle\Repository\LocationRepository;
 use Manuxi\SuluSharedToolsBundle\Entity\Traits\ImageTrait;
+use Manuxi\SuluSharedToolsBundle\Entity\Traits\LinkTrait;
+use Sulu\Bundle\MediaBundle\Entity\MediaInterface;
 
 #[ORM\Entity(repositoryClass: LocationRepository::class)]
 #[ORM\Table(name: 'app_location')]
 class Location
 {
     use ImageTrait;
+    use LinkTrait;
+
     public const RESOURCE_KEY = 'locations';
     public const FORM_KEY = 'location_details';
     public const LIST_KEY = 'locations';
@@ -46,6 +50,22 @@ class Location
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $notes = null;
+
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    private ?string $email = null;
+
+    #[ORM\Column(type: Types::STRING, length: 50, nullable: true)]
+    private ?string $phoneNumber = null;
+
+    #[ORM\ManyToOne(targetEntity: MediaInterface::class)]
+    #[ORM\JoinColumn(onDelete: 'SET NULL')]
+    private ?MediaInterface $pdf = null;
+
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $location = null;
+
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $images = null;
 
     public function getId(): ?int
     {
@@ -146,5 +166,70 @@ class Location
         $this->notes = $notes;
 
         return $this;
+    }
+
+    public function getEmail(): ?string
+    {
+        return $this->email;
+    }
+
+    public function setEmail(?string $email): self
+    {
+        $this->email = $email;
+        return $this;
+    }
+
+    public function getPhoneNumber(): ?string
+    {
+        return $this->phoneNumber;
+    }
+
+    public function setPhoneNumber(?string $phoneNumber): self
+    {
+        $this->phoneNumber = $phoneNumber;
+        return $this;
+    }
+
+    public function getPdf(): ?MediaInterface
+    {
+        return $this->pdf;
+    }
+
+    public function setPdf(?MediaInterface $pdf): self
+    {
+        $this->pdf = $pdf;
+        return $this;
+    }
+
+    public function getLocation(): ?array
+    {
+        return $this->location;
+    }
+
+    public function setLocation(?array $location): self
+    {
+        $this->location = $location;
+        return $this;
+    }
+
+    public function getImages(): ?array
+    {
+        return $this->images ?? [];
+    }
+
+    public function setImages(?array $images): self
+    {
+        $this->images = $images;
+        return $this;
+    }
+
+    public function getLatitude(): ?float
+    {
+        return $this->location['lat'] ?? null;
+    }
+
+    public function getLongitude(): ?float
+    {
+        return $this->location['long'] ?? null;
     }
 }
