@@ -111,7 +111,12 @@ sulu_event:
 
     # Configuration settings for events
     config:
-        tab: "Settings"
+        tab:
+            settings: "Settings"
+            general: "General"
+            calendar: "Calendar"
+            breadcrumbs: "Breadcrumbs"
+            lists: "Listen"
         # Titles for setting sections
         title:
             navi: "Settings"
@@ -141,24 +146,27 @@ sulu_event:
             calendar_start_day: "Week Start"
             calendar_start_day_info: "On which day does the week start?"
             show_calendar_weekends: "Show Weekends"
-            show_calendar_weekends_info: "Zeigt Wochenenden an oder blendet diese Tage aus"
-            show_calendar_week_numbers: "Wochennummern"
-            show_calendar_week_numbers_info: "Zeigt Wochennummern an"
+            show_calendar_weekends_info: "Shows Weekends"
+            show_calendar_week_numbers: "Week Numbers"
+            show_calendar_week_numbers_info: "Shows Week Numbers"
             show_calendar_event_time: "Show Time"
             show_calendar_event_time_info: "Shows the time for events (when not 00:00-00:00)"
+            show_calendar_event_type: "Show Type"
+            show_calendar_event_type_info: "Shows Type of the event"
             show_calendar_event_location: "Show Location"
+            show_calendar_event_location_info: "Shows Location of the event"
             show_week_numbers: "Show Week Numbers"
             show_weekends: "Show Weekends"
             event_limit_per_day: "Max Events per Day"
             event_limit_per_day_info: "Number of events shown per day (then \"+X more\")"
             limit_to_event_range: "Limit to Event Range"
             limit_to_event_range_info: "Only show calendar for weeks/months with events"
-            event_color: "Event Color"
+            event_color: "Default Event Color"
             event_color_info: "Default color for events (overridden by event types)"
             toggle_calendar_view: "Change View"
             toggle_calendar_view_info: "Allows change of view"
-            allowed_calender_views: "Allowed Views"
-            allowed_calender_views_info: "Those views are available"
+            allowed_calendar_views: "Allowed Views"
+            allowed_calendar_views_info: "Selected views are available to change"
             # Breadcrumbs
             page_events: "Overview All Events"
             page_events_pending: "Overview pending Events"
@@ -179,7 +187,7 @@ sulu_event:
             time_grid_week: "Week Grid with Times"
             list_week: "Week List"
             list_month: "Month List"
-            multi_month_year: "Year Overview (4 Months)"
+            multi_month_year: "Year Overview (3 Months)"
         # Weekday options
         weekday:
             sunday: "Sunday"

@@ -6,7 +6,7 @@
     <key>location_details</key>
 
     <properties>
-        <property name="name" type="text_line" colspan="8" mandatory="true">
+        <property name="name" type="text_line" colspan="9" mandatory="true">
             <meta>
                 <title>sulu_admin.name</title>
             </meta>
@@ -21,37 +21,40 @@
             </params>
         </property>
 
+
         <property name="street" type="text_line" colspan="9">
             <meta>
                 <title>sulu_contact.street</title>
             </meta>
         </property>
 
-        <property name="number" type="text_line" colspan="3">
+        <property name="number" type="text_line" colspan="4">
             <meta>
                 <title>sulu_contact.number</title>
             </meta>
         </property>
 
-        <property name="postalCode" type="text_line" colspan="3">
+
+        <property name="postalCode" type="text_line" colspan="4">
             <meta>
                 <title>sulu_contact.zip</title>
             </meta>
         </property>
 
-        <property name="city" type="text_line" colspan="9">
+        <property name="city" type="text_line" colspan="9" >
             <meta>
                 <title>sulu_contact.city</title>
             </meta>
         </property>
 
-        <property name="state" type="text_line" colspan="6">
+
+        <property name="state" type="text_line" colspan="4">
             <meta>
                 <title>sulu_contact.state</title>
             </meta>
         </property>
 
-        <property name="countryCode" type="single_select" colspan="6">
+        <property name="countryCode" type="single_select" colspan="9">
             <meta>
                 <title>sulu_contact.country</title>
             </meta>

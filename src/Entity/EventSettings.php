@@ -37,12 +37,6 @@ class EventSettings implements AuditableInterface
     private ?int $calendarStartDay = 1;
 
     #[ORM\Column(type: Types::BOOLEAN, nullable: true)]
-    private ?bool $showCalendarEventTime = true;
-
-    #[ORM\Column(type: Types::BOOLEAN, nullable: true)]
-    private ?bool $showCalendarEventLocation = true;
-
-    #[ORM\Column(type: Types::BOOLEAN, nullable: true)]
     private ?bool $showWeekNumbers = false;
 
     #[ORM\Column(type: Types::BOOLEAN, nullable: true)]
@@ -50,6 +44,15 @@ class EventSettings implements AuditableInterface
 
     #[ORM\Column(type: Types::INTEGER, nullable: true)]
     private ?int $eventLimitPerDay = 3;
+
+    #[ORM\Column(type: Types::BOOLEAN, nullable: true)]
+    private ?bool $showCalendarEventTime = true;
+
+    #[ORM\Column(type: Types::BOOLEAN, nullable: true)]
+    private ?bool $showCalendarEventLocation = true;
+
+    #[ORM\Column(type: Types::BOOLEAN, nullable: true)]
+    private ?bool $showCalendarEventType = true;
 
     #[ORM\Column(type: Types::BOOLEAN, nullable: true)]
     private ?bool $limitToEventRange = true;
@@ -163,6 +166,16 @@ class EventSettings implements AuditableInterface
     public function setShowCalendarEventLocation(?bool $showCalendarEventLocation): void
     {
         $this->showCalendarEventLocation = $showCalendarEventLocation;
+    }
+
+    public function getShowCalendarEventType(): ?bool
+    {
+        return $this->showCalendarEventType;
+    }
+
+    public function setShowCalendarEventType(?bool $showCalendarEventType): void
+    {
+        $this->showCalendarEventType = $showCalendarEventType;
     }
 
     public function getShowWeekNumbers(): ?bool

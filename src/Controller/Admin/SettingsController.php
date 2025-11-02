@@ -92,6 +92,7 @@ class SettingsController extends AbstractRestController implements ClassResource
             // Calendar Settings
             'calendarStartDay' => $entity->getCalendarStartDay(),
             'showCalendarEventTime' => $entity->getShowCalendarEventTime(),
+            'showCalendarEventType' => $entity->getShowCalendarEventType(),
             'showCalendarEventLocation' => $entity->getShowCalendarEventLocation(),
             'eventLimitPerDay' => $entity->getEventLimitPerDay(),
             'showWeekNumbers' => $entity->getShowWeekNumbers(),
@@ -131,6 +132,7 @@ class SettingsController extends AbstractRestController implements ClassResource
         // Calendar Settings
         $entity->setCalendarStartDay($data['calendarStartDay'] ?? 1);
         $entity->setShowCalendarEventTime($data['showCalendarEventTime'] ?? true);
+        $entity->setShowCalendarEventType($data['showCalendarEventType'] ?? true);
         $entity->setShowCalendarEventLocation($data['showCalendarEventLocation'] ?? true);
         $entity->setEventLimitPerDay($data['eventLimitPerDay'] ?? 3);
         $entity->setShowWeekNumbers($data['showWeekNumbers'] ?? true);

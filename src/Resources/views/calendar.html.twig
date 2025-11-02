@@ -3,257 +3,34 @@
 {% block content %}
     {% set settings = load_event_settings() %}
     
-    {% if settings.enableCalendar %}
-        {# Get current month or use URL parameters #}
-        {% set currentYear = app.request.get('year', 'now'|date('Y')) %}
-        {% set currentMonth = app.request.get('month', 'now'|date('m')) %}
-        
-        {# Load events for calendar #}
-        {% set calendarEvents = sulu_events_by_month(currentYear, currentMonth, app.request.locale) %}
-        
-        <div class="container my-5">
-            <div class="calendar-wrapper">
-                {# Calendar Navigation #}
-                <div class="calendar-header d-flex justify-content-between align-items-center mb-4">
-                    {% set prevMonth = currentMonth - 1 %}
-                    {% set prevYear = currentYear %}
-                    {% if prevMonth < 1 %}
-                        {% set prevMonth = 12 %}
-                        {% set prevYear = prevYear - 1 %}
-                    {% endif %}
-                    
-                    {% set nextMonth = currentMonth + 1 %}
-                    {% set nextYear = currentYear %}
-                    {% if nextMonth > 12 %}
-                        {% set nextMonth = 1 %}
-                        {% set nextYear = nextYear + 1 %}
-                    {% endif %}
-                    
-                    <a href="?year={{ prevYear }}&month={{ prevMonth }}" class="btn btn-outline-primary">
-                        &laquo; {{ 'sulu_event.calendar.previous_month'|trans }}
-                    </a>
-                    
-                    <h2>{{ currentMonth|date('F Y') }}</h2>
-                    
-                    <a href="?year={{ nextYear }}&month={{ nextMonth }}" class="btn btn-outline-primary">
-                        {{ 'sulu_event.calendar.next_month'|trans }} &raquo;
-                    </a>
-                </div>
-                
-                {# Calendar Grid #}
-                {% if settings.calendarView == 'month' %}
-                    <div class="calendar-grid">
-                        {# Weekday Headers #}
-                        <div class="calendar-weekdays">
-                            {% set weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] %}
-                            {% if settings.calendarStartDay == 0 %}
-                                {% set weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] %}
-                            {% endif %}
-                            
-                            {% for day in weekdays %}
-                                <div class="calendar-weekday">
-                                    {{ ('sulu_event.weekday.' ~ day|lower)|trans }}
-                                </div>
-                            {% endfor %}
-                        </div>
-                        
-                        {# Calendar Days #}
-                        {% set firstDay = (currentYear ~ '-' ~ currentMonth ~ '-01')|date('N') %}
-                        {% set daysInMonth = (currentYear ~ '-' ~ currentMonth ~ '-01')|date('t') %}
-                        
-                        {# Adjust first day based on start day setting #}
-                        {% if settings.calendarStartDay == 0 %}
-                            {% set firstDay = firstDay == 7 ? 0 : firstDay %}
-                        {% else %}
-                            {% set firstDay = firstDay - 1 %}
-                        {% endif %}
-                        
-                        <div class="calendar-days">
-                            {# Empty cells before first day #}
-                            {% for i in 0..firstDay-1 %}
-                                <div class="calendar-day empty"></div>
-                            {% endfor %}
-                            
-                            {# Days with events #}
-                            {% for day in 1..daysInMonth %}
-                                {% set dateKey = '%04d-%02d-%02d'|format(currentYear, currentMonth, day) %}
-                                {% set dayEvents = calendarEvents[dateKey]|default([]) %}
-                                
-                                <div class="calendar-day {% if dayEvents|length > 0 %}has-events{% endif %}">
-                                    <div class="day-number">{{ day }}</div>
-                                    
-                                    {% if dayEvents|length > 0 %}
-                                        <div class="day-events">
-                                            {% for event in dayEvents %}
-                                                <div class="event-item">
-                                                    <a href="{{ sulu_content_path(event.routePath) }}" 
-                                                       class="event-link"
-                                                       title="{{ event.title }}">
-                                                        {% if settings.showCalendarEventTime %}
-                                                            <span class="event-time">
-                                                                {{ event.startDate|date('H:i') }}
-                                                            </span>
-                                                        {% endif %}
-                                                        <span class="event-title">
-                                                            {{ event.title|truncate(30) }}
-                                                        </span>
-                                                        {% if settings.showCalendarEventLocation and event.location %}
-                                                            <span class="event-location">
-                                                                <i class="fa fa-map-marker"></i>
-                                                                {{ event.location.name }}
-                                                            </span>
-                                                        {% endif %}
-                                                    </a>
-                                                </div>
-                                            {% endfor %}
-                                        </div>
-                                    {% endif %}
-                                </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    
-                {% elseif settings.calendarView == 'list' %}
-                    {# List View #}
-                    <div class="calendar-list">
-                        {% for dateKey, events in calendarEvents %}
-                            <div class="calendar-list-day mb-4">
-                                <h3 class="day-header">
-                                    {{ dateKey|date('l, F j, Y') }}
-                                </h3>
-                                
-                                {% for event in events %}
-                                    <div class="event-card card mb-2">
-                                        <div class="card-body">
-                                            <div class="row align-items-center">
-                                                {% if settings.showEventImages and event.image %}
-                                                    <div class="col-md-3">
-                                                        <img src="{{ event.image }}" 
-                                                             alt="{{ event.title }}" 
-                                                             class="img-fluid">
-                                                    </div>
-                                                {% endif %}
-                                                
-                                                <div class="{% if settings.showEventImages and event.image %}col-md-9{% else %}col-12{% endif %}">
-                                                    <h4>
-                                                        <a href="{{ sulu_content_path(event.routePath) }}">
-                                                            {{ event.title }}
-                                                        </a>
-                                                    </h4>
-                                                    
-                                                    <div class="event-meta">
-                                                        {% if settings.showCalendarEventTime %}
-                                                            <span class="me-3">
-                                                                <i class="fa fa-clock"></i>
-                                                                {{ event.startDate|date('H:i') }}
-                                                                {% if event.endDate %}
-                                                                    - {{ event.endDate|date('H:i') }}
-                                                                {% endif %}
-                                                            </span>
-                                                        {% endif %}
-                                                        
-                                                        {% if settings.showCalendarEventLocation and event.location %}
-                                                            <span>
-                                                                <i class="fa fa-map-marker"></i>
-                                                                {{ event.location.name }}
-                                                            </span>
-                                                        {% endif %}
-                                                    </div>
-                                                    
-                                                    {% if settings.showEventSummary and event.summary %}
-                                                        <p class="mt-2">{{ event.summary }}</p>
-                                                    {% endif %}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-            </div>
+    {% if toggle_calendar %}
+        {% if eventsSettings is not defined %}
+            {% set eventsSettings = load_event_settings() %}
+        {% endif %}
+
+        <div class="col-12 event-calendar justify-content-{{ alignment_content }}" id="event-calendar"
+             data-events-url="{{ path('sulu_event.api.calendar', {
+                 '_locale': app.request.locale,
+                 'dataId': events.dataId|default(0),
+                 'includeSubFolders': events.includeSubFolders|default(0),
+                 'categories': events.categories|default([]),
+                 'tags': events.tags|default([])
+             }) }}"
+
+             data-initial-view="{{ calendarView|default('dayGridMonth') }}"
+             data-locale="{{ app.request.locale }}"
+             data-week-numbers="{{ eventsSettings.showWeekNumbers ? 'true' : 'false' }}"
+             data-weekends="{{ eventsSettings.showWeekends ? 'true' : 'false' }}"
+             data-event-limit="{{ eventsSettings.eventLimitPerDay|default(3) }}"
+             data-limit-to-events="{{ eventsSettings.limitToEventRange ? 'true' : 'false' }}"
+             data-first-day="{{ eventsSettings.calendarStartDay|default(1) }}"
+             data-event-color="{{ eventsSettings.eventColor|default('#ccc') }}"
+             data-toggle-view="{{ eventsSettings.toggleCalendarView ? 'true' : 'false' }}"
+             data-toggle-location="{{ eventsSettings.showCalendarEventLocation ? 'true' : 'false' }}"
+             data-toggle-type="{{ eventsSettings.showCalendarEventType ? 'true' : 'false' }}"
+             data-allowed-views="{{ eventsSettings.allowedCalendarViews|join(',') }}">
+
         </div>
-        
-        <style>
-            .calendar-grid {
-                background: white;
-                border-radius: 8px;
-                overflow: hidden;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            }
-            
-            .calendar-weekdays {
-                display: grid;
-                grid-template-columns: repeat(7, 1fr);
-                background: #f8f9fa;
-                border-bottom: 2px solid #dee2e6;
-            }
-            
-            .calendar-weekday {
-                padding: 12px;
-                text-align: center;
-                font-weight: bold;
-                text-transform: uppercase;
-                font-size: 0.875rem;
-            }
-            
-            .calendar-days {
-                display: grid;
-                grid-template-columns: repeat(7, 1fr);
-                gap: 1px;
-                background: #dee2e6;
-            }
-            
-            .calendar-day {
-                background: white;
-                min-height: 120px;
-                padding: 8px;
-                position: relative;
-            }
-            
-            .calendar-day.empty {
-                background: #f8f9fa;
-            }
-            
-            .calendar-day.has-events {
-                background: #f0f8ff;
-            }
-            
-            .day-number {
-                font-weight: bold;
-                margin-bottom: 4px;
-            }
-            
-            .event-item {
-                font-size: 0.75rem;
-                margin-bottom: 4px;
-                padding: 4px;
-                background: #007bff;
-                color: white;
-                border-radius: 3px;
-            }
-            
-            .event-item a {
-                color: white;
-                text-decoration: none;
-            }
-            
-            .event-time {
-                display: block;
-                font-weight: bold;
-            }
-            
-            .event-title {
-                display: block;
-            }
-            
-            .event-location {
-                display: block;
-                opacity: 0.8;
-                font-size: 0.7rem;
-            }
-        </style>
     {% else %}
         {# Fallback to standard list view if calendar is disabled #}
         <div class="container my-5">

@@ -10,6 +10,8 @@ use FOS\RestBundle\Routing\ClassResourceInterface;
 use FOS\RestBundle\View\ViewHandlerInterface;
 use Manuxi\SuluEventBundle\Common\DoctrineListRepresentationFactory;
 use Manuxi\SuluEventBundle\Entity\Event;
+use Manuxi\SuluEventBundle\Entity\EventRecurrence;
+use Manuxi\SuluEventBundle\Entity\EventSocialSettings;
 use Manuxi\SuluEventBundle\Entity\Models\EventExcerptModel;
 use Manuxi\SuluEventBundle\Entity\Models\EventModel;
 use Manuxi\SuluEventBundle\Entity\Models\EventSeoModel;
@@ -52,11 +54,11 @@ class EventController extends AbstractRestController implements ClassResourceInt
         name: 'sulu_event.get_events',
         requirements: [
             'id' => '\d+',
-            '_format' => 'json|csv'
+            '_format' => 'json|csv',
         ],
         options: ['expose' => true],
         defaults: [
-            '_format' => 'json'
+            '_format' => 'json',
         ],
         methods: ['GET']
     )]
@@ -80,11 +82,11 @@ class EventController extends AbstractRestController implements ClassResourceInt
         name: 'sulu_event.get_event',
         requirements: [
             'id' => '\d+',
-            '_format' => 'json|csv'
+            '_format' => 'json|csv',
         ],
         options: ['expose' => true],
         defaults: [
-            '_format' => 'json'
+            '_format' => 'json',
         ],
         methods: ['GET']
     )]
@@ -123,7 +125,7 @@ class EventController extends AbstractRestController implements ClassResourceInt
         name: 'sulu_event.put_event',
         requirements: [
             'id' => '\d+',
-            '_format' => 'json'
+            '_format' => 'json',
         ],
         options: ['expose' => true],
         defaults: ['_format' => 'json'],
@@ -162,7 +164,7 @@ class EventController extends AbstractRestController implements ClassResourceInt
         name: 'sulu_event.delete_event',
         requirements: [
             'id' => '\d+',
-            '_format' => 'json'
+            '_format' => 'json',
         ],
         options: ['expose' => true],
         defaults: ['_format' => 'json'],
@@ -187,11 +189,11 @@ class EventController extends AbstractRestController implements ClassResourceInt
         name: 'sulu_event.post_event_trigger',
         requirements: [
             'id' => '\d+',
-            '_format' => 'json|csv'
+            '_format' => 'json|csv',
         ],
         options: ['expose' => true],
         defaults: [
-            '_format' => 'json'
+            '_format' => 'json',
         ],
         methods: ['POST']
     )]
@@ -236,6 +238,192 @@ class EventController extends AbstractRestController implements ClassResourceInt
         }
 
         return $this->handleView($this->view($entity));
+    }
+
+    /**
+     * Get social settings for an event.
+     */
+    #[Route(
+        '/events/{id}/social.{_format}',
+        name: 'sulu_event.get_event_social',
+        requirements: [
+            'id' => '\d+',
+            '_format' => 'json',
+        ],
+        options: ['expose' => true],
+        defaults: ['_format' => 'json'],
+        methods: ['GET']
+    )]
+    public function getSocialAction(int $id, Request $request): Response
+    {
+        $entity = $this->eventModel->getEvent($id, $request);
+
+        if (!$entity) {
+            throw new EntityNotFoundException(Event::class, $id);
+        }
+
+        $socialSettings = $entity->getSocialSettings();
+
+        return $this->handleView($this->view([
+            'id' => $entity->getId(),
+            'enableSharing' => $socialSettings?->getEnableSharing() ?? false,
+            'platforms' => $socialSettings?->getPlatforms() ?? [],
+            'facebookUrl' => $socialSettings?->getFacebookUrl(),
+            'twitterHandle' => $socialSettings?->getTwitterHandle(),
+            'instagramUrl' => $socialSettings?->getInstagramUrl(),
+            'linkedinUrl' => $socialSettings?->getLinkedinUrl(),
+            'customShareText' => $socialSettings?->getCustomShareText(),
+            'targetGroups' => $socialSettings?->getTargetGroups(),
+        ]));
+    }
+
+    /**
+     * Update social settings for an event.
+     */
+    #[Route(
+        '/events/{id}/social.{_format}',
+        name: 'sulu_event.put_event_social',
+        requirements: [
+            'id' => '\d+',
+            '_format' => 'json',
+        ],
+        options: ['expose' => true],
+        defaults: ['_format' => 'json'],
+        methods: ['PUT']
+    )]
+    public function putSocialAction(int $id, Request $request): Response
+    {
+        $data = $request->toArray();
+
+        $entity = $this->eventModel->getEvent($id, $request);
+
+        if (!$entity) {
+            throw new EntityNotFoundException(Event::class, $id);
+        }
+
+        $socialSettings = $entity->getSocialSettings();
+        if (!$socialSettings) {
+            $socialSettings = new EventSocialSettings();
+            $entity->setSocialSettings($socialSettings);
+        }
+
+        // Map data to entity
+        $socialSettings->setEnableSharing($data['enableSharing'] ?? false);
+        $socialSettings->setPlatforms($data['platforms'] ?? []);
+        $socialSettings->setFacebookUrl($data['facebookUrl'] ?? null);
+        $socialSettings->setTwitterHandle($data['twitterHandle'] ?? null);
+        $socialSettings->setInstagramUrl($data['instagramUrl'] ?? null);
+        $socialSettings->setLinkedinUrl($data['linkedinUrl'] ?? null);
+        $socialSettings->setCustomShareText($data['customShareText'] ?? null);
+        $socialSettings->setTargetGroups($data['targetGroups'] ?? null);
+
+        //$this->entityManager->flush();
+
+        return $this->handleView($this->view([
+            'id' => $entity->getId(),
+            'enableSharing' => $socialSettings->getEnableSharing(),
+            'platforms' => $socialSettings->getPlatforms(),
+            'facebookUrl' => $socialSettings->getFacebookUrl(),
+            'twitterHandle' => $socialSettings->getTwitterHandle(),
+            'instagramUrl' => $socialSettings->getInstagramUrl(),
+            'linkedinUrl' => $socialSettings->getLinkedinUrl(),
+            'customShareText' => $socialSettings->getCustomShareText(),
+            'targetGroups' => $socialSettings->getTargetGroups(),
+        ]));
+    }
+
+    /**
+     * Get recurrence settings for an event
+     */
+    #[Route(
+        '/events/{id}/recurrence.{_format}',
+        name: 'sulu_event.get_event_recurrence',
+        requirements: [
+            'id' => '\d+',
+            '_format' => 'json'
+        ],
+        options: ['expose' => true],
+        defaults: ['_format' => 'json'],
+        methods: ['GET']
+    )]
+    public function getRecurrenceAction(int $id, Request $request): Response
+    {
+        $entity = $this->eventModel->getEvent($id, $request);
+
+        if (!$entity) {
+            throw new EntityNotFoundException(Event::class, $id);
+        }
+
+        $recurrence = $entity->getRecurrence();
+
+        return $this->handleView($this->view([
+            'id' => $entity->getId(),
+            'isRecurring' => $recurrence?->getIsRecurring() ?? false,
+            'frequency' => $recurrence?->getFrequency(),
+            'interval' => $recurrence?->getInterval() ?? 1,
+            'byWeekday' => $recurrence?->getByWeekday() ?? [],
+            'endType' => $recurrence?->getEndType() ?? 'never',
+            'count' => $recurrence?->getCount(),
+            'until' => $recurrence?->getUntil()?->format('Y-m-d'),
+        ]));
+    }
+
+    /**
+     * Update recurrence settings for an event
+     */
+    #[Route(
+        '/events/{id}/recurrence.{_format}',
+        name: 'sulu_event.put_event_recurrence',
+        requirements: [
+            'id' => '\d+',
+            '_format' => 'json'
+        ],
+        options: ['expose' => true],
+        defaults: ['_format' => 'json'],
+        methods: ['PUT']
+    )]
+    public function putRecurrenceAction(int $id, Request $request): Response
+    {
+        $data = $request->toArray();
+
+        $entity = $this->eventModel->getEvent($id, $request);
+
+        if (!$entity) {
+            throw new EntityNotFoundException(Event::class, $id);
+        }
+
+        $recurrence = $entity->getRecurrence();
+        if (!$recurrence) {
+            $recurrence = new EventRecurrence();
+            $entity->setRecurrence($recurrence);
+        }
+
+        // Map data to entity
+        $recurrence->setIsRecurring($data['isRecurring'] ?? false);
+        $recurrence->setFrequency($data['frequency'] ?? null);
+        $recurrence->setInterval($data['interval'] ?? 1);
+        $recurrence->setByWeekday($data['byWeekday'] ?? []);
+        $recurrence->setEndType($data['endType'] ?? 'never');
+        $recurrence->setCount($data['count'] ?? null);
+
+        if (!empty($data['until'])) {
+            $recurrence->setUntil(new \DateTime($data['until']));
+        } else {
+            $recurrence->setUntil(null);
+        }
+
+        //$this->entityManager->flush();
+
+        return $this->handleView($this->view([
+            'id' => $entity->getId(),
+            'isRecurring' => $recurrence->getIsRecurring(),
+            'frequency' => $recurrence->getFrequency(),
+            'interval' => $recurrence->getInterval(),
+            'byWeekday' => $recurrence->getByWeekday(),
+            'endType' => $recurrence->getEndType(),
+            'count' => $recurrence->getCount(),
+            'until' => $recurrence->getUntil()?->format('Y-m-d'),
+        ]));
     }
 
     public function getSecurityContext(): string

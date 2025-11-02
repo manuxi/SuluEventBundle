@@ -49,6 +49,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const limitToEvents = calendarEl.dataset.limitToEvents === 'true';
     const toggleView = calendarEl.dataset.toggleView === 'true';
     const toggleLocation = calendarEl.dataset.toggleLocation === 'true';
+    const toggleType = calendarEl.dataset.toggleType === 'true';
     const allowedViews = calendarEl.dataset.allowedViews || 'dayGridMonth';
 
     // Fetch events to determine valid range
@@ -224,11 +225,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     popoverContent += '<div class="event-popover-title">' + escapeHtml(event.title) + '</div>';
 
                     // Type with colored dot - use typeColor determined above
-                    if (extendedProps.type) {
-                        const typeLabel = locale === 'de' ? 'Typ' : 'Type';
+                    if (toggleType && extendedProps.type) {
                         popoverContent += '<div class="event-popover-type">' +
                             '<span class="event-type-dot event-type-' + extendedProps.type + '" style="background-color: ' + extendedProps.typeColor + ';" style="--dot-color: ' + extendedProps.typeColor + ';"></span>' +
-                            typeLabel + ': ' + escapeHtml(extendedProps.type) +
+                            escapeHtml(extendedProps.type) +
                             '</div>';
                     }
 
