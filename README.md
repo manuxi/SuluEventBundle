@@ -1,5 +1,3 @@
-Of course, here is the English translation:
-
 # SuluEventBundle!
 ![php workflow](https://github.com/manuxi/SuluEventBundle/actions/workflows/php.yml/badge.svg)![symfony workflow](https://github.com/manuxi/SuluEventBundle/actions/workflows/symfony.yml/badge.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/manuxi/SuluEventBundle/LICENSE)
