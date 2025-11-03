@@ -42,6 +42,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const locale = calendarEl.dataset.locale || 'de';
     const initialView = calendarEl.dataset.initialView || 'dayGridMonth';
     const weekNumbers = calendarEl.dataset.weekNumbers === 'true';
+    const weekDayStart = calendarEl.dataset.weekDayStart || '00:00';
+    const weekDayEnd = calendarEl.dataset.weekDayEnd || '23:59';
+    const yearMonths = parseInt(calendarEl.dataset.yearMonths) || 3;
     const eventLimit = parseInt(calendarEl.dataset.eventLimit) || 3;
     const firstDay = parseInt(calendarEl.dataset.firstDay) || 1;
     const showWeekends = calendarEl.dataset.weekends !== 'false';
@@ -159,15 +162,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Events source
                 events: eventsUrl,
 
-/*                datesSet: function(info) {
-                    const isMultiMonth = info.view.type === 'multiMonthYear';
-                    if (isMultiMonth) {
-                        calendar.setOption('validRange', null);
-                    } else {
-                        calendar.setOption('validRange', validRange);
-                    }
-                },*/
-
                 // Custom event rendering with line break after time
                 eventContent: function(arg) {
                     const event = arg.event;
@@ -205,10 +199,30 @@ document.addEventListener('DOMContentLoaded', function() {
                     const event = info.event;
                     const extendedProps = event.extendedProps;
 
+                    if (info.view.type.startsWith('list')) {
+                        const url = info.event.extendedProps?.url || info.event.url;
+                        if (url) {
+                            const td = info.el.querySelector('.fc-list-event-title');
+                            if (td) {
+                                const innerHTML = td.innerHTML;
+                                td.innerHTML = `<a href="${url}" class="fc-list-event-link">${innerHTML}</a>`;
+                            }
+                        }
+                    }
+
                     // Determine type color FIRST
                     let typeColor = eventColor;
                     if (extendedProps.typeColor) {
                         typeColor = extendedProps.typeColor;
+                    }
+
+                    // set color for style
+                    const styleId = 'event-type-style-' + extendedProps.type;
+                    if (!document.getElementById(styleId)) {
+                        const style = document.createElement('style');
+                        style.id = styleId;
+                        style.textContent = `.event-type-${extendedProps.type} { --event-type-color: ${typeColor}; }`;
+                        document.head.appendChild(style);
                     }
 
                     // Helper function to escape HTML
@@ -227,8 +241,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Type with colored dot - use typeColor determined above
                     if (toggleType && extendedProps.type) {
                         popoverContent += '<div class="event-popover-type">' +
-                            '<span class="event-type-dot event-type-' + extendedProps.type + '" style="background-color: ' + extendedProps.typeColor + ';" style="--dot-color: ' + extendedProps.typeColor + ';"></span>' +
-                            escapeHtml(extendedProps.type) +
+                            '<span class="event-type-dot event-type-' + extendedProps.type + '" style="background-color: ' + typeColor + ';" style="--event-type-color: ' + typeColor + ';"></span>' +
+                            escapeHtml(extendedProps.type_translation) +
                             '</div>';
                     }
 
@@ -325,8 +339,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Responsive behavior
                 windowResize: function(view) {
                     if (window.innerWidth < 576) {
-                        calendar.changeView('listWeek');
-                    } else if (window.innerWidth < 992 && calendar.view.type === 'listWeek') {
+                        calendar.changeView('listMonth');
+                    } else if (window.innerWidth < 992 && calendar.view.type === 'listMonth') {
                         calendar.changeView(initialView);
                     }
                 },
@@ -338,15 +352,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     },
                     timeGridWeek: {
                         validRange: validRange,
-                        /*slotMinTime: '08:00:00',
-                        slotMaxTime: '23:00:00'*/
+                        slotMinTime: weekDayStart,
+                        slotMaxTime: weekDayEnd
                     },
                     timeGridDay: {
                         validRange: validRange
                     },
                     multiMonthYear: {
                         type: 'multiMonthYear',
-                        duration: { months: 3 },
+                        duration: { months: yearMonths },
                         buttonText: locale === 'de' ? 'Jahr' : 'Year'
                     }
                 },
@@ -365,7 +379,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Initial responsive check
             if (window.innerWidth < 576) {
-                calendar.changeView('listWeek');
+                calendar.changeView('listMonth');
             }
         })
         .catch(error => {

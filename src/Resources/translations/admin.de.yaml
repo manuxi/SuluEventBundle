@@ -99,7 +99,8 @@ sulu_event:
 
     # Event Type translations
     event_type: "Event-Typ"
-    type:
+    type: "Typ"
+    types:
         default: "Standard"
         conference: "Konferenz"
         workshop: "Workshop"
@@ -135,12 +136,32 @@ sulu_event:
             breadcrumbs: "Breadcrumbs"
             list_view: "Listenansicht"
             filters: "Filter-Optionen"
+            calendar_week: "Anzeigeoptionen Wochensicht"
+            calendar_year: "Anzeigeoptionen Jahressicht"
         # Properties within the settings
         properties:
             # General
             toggle_header: "Header anzeigen"
+            toggle_header_info: "Seitenkopf in Einzelanzeige anzeigen"
             toggle_hero: "Standard Hero anzeigen"
+            toggle_hero_info: "Aktiviert durch Standard-Schnipsel"
             toggle_breadcrumbs: "Breadcrumbs anzeigen"
+            toggle_breadcrumbs_info: "Breadcrumbs werden anhand der gleichnamigen Einstellung gebildet"
+            toggle_tags: "Tags anzeigen"
+            toggle_tags_info: "Schaltet Tags-Anzeige in Einzelansicht an/aus"
+            toggle_categories: "Kategorien anzeigen"
+            toggle_categories_info: "Schaltet Kategorien-Anzeige in Einzelansicht an/aus"
+            toggle_tags_color: "Farbe Tags"
+            toggle_tags_color_info: "Hintergrundfarbe der Tags"
+            toggle_categories_color: "Farbe Kategorien"
+            toggle_categories_color_info: "Hintergrundfarbe der Kategorien"
+            toggle_feed_rss: "Rss-Feed verlinken"
+            toggle_feed_rss_info: "Verlinkung von Rss-Feed"
+            toggle_feed_atom: "Atom-Feed verlinken"
+            toggle_feed_atom_info: "Verlinkung von Atom-Feed"
+            toggle_ical: "iCal-Datei anbieten"
+            toggle_ical_info: "iCal-Datei wird zum Download angeboten"
+
             # Calendar
             enable_calendar: "Kalender aktivieren"
             enable_calendar_info: "Aktiviert die Kalenderansicht für Events"
@@ -153,7 +174,7 @@ sulu_event:
             show_calendar_weekends: "Wochenenden zeigen"
             show_calendar_weekends_info: "Zeigt Wochenenden an oder blendet diese Tage aus"
             show_calendar_week_numbers: "Wochennummern"
-            show_calendar_week_numbers_info: "Zeigt Wochennummern an"
+            show_calendar_week_numbers_info: "Zeigt Nummer der Kalenderwoche an"
             show_calendar_event_type: "Typ anzeigen"
             show_calendar_event_type_info: "Zeigt den Typ des Events"
             show_calendar_event_location: "Ort anzeigen"
@@ -167,9 +188,18 @@ sulu_event:
             event_color: "Standard-Event-Farbe"
             event_color_info: "Standard-Farbe für Events (wird von Event-Typen überschrieben)"
             toggle_calendar_view: "Sicht-Wechsel erlaubt?"
-            toggle_calendar_view_info: "Erlaubt Wechsel der verschiedenen Kalendersichten"
+            toggle_calendar_view_info: "Erlaubt Besuchern den Wechsel von Kalendersichten"
             allowed_calendar_views: "Erlaubte Sichten"
             allowed_calendar_views_info: "Sichten wählen, die verfügbar sind"
+
+            calendar_week_time_start: "Start-Zeit?"
+            calendar_week_time_start_info: "Eingrenzen der Startzeit (Standard: 00:00 Uhr)"
+            calendar_week_time_end: "End-Zeit?"
+            calendar_week_time_end_info: "Eingrenzen der Endzeit (Standard: 23:59 Uhr)"
+
+            calendar_year_months: "Anzuzeigende Monate?"
+            calendar_year_months_info: "Zeigt x Monate in der Jahressicht an"
+
             # Breadcrumbs
             page_events: "Übersichtsseite Alle Veranstaltungen"
             page_events_pending: "Übersichtsseite bevorstehende Veranstaltungen"

@@ -67,7 +67,7 @@ php bin/console sulu:event:generate-recurring --lookahead=180
 
 ### Zeitplanung
 
-Es wird empfohlen, dieses Kommando regelmäßig per Cron auszuführen:
+Führe dieses Kommando regelmäßig per Cron aus:
 
 ```bash
 # Täglich um 2:00 Uhr ausführen
@@ -148,20 +148,3 @@ Wiederholt sich am gleichen Tag des Monats alle X Monate.
 Wiederholt sich am gleichen Datum alle X Jahre.
 
 **Beispiel**: Jährliches Event → `frequency: yearly, interval: 1`
-
-## Datenstruktur
-
-### EventRecurrence Entity
-
-```php
-class EventRecurrence
-{
-    private bool $isRecurring;
-    private ?string $frequency;    // daily, weekly, monthly, yearly
-    private int $interval;         // 1, 2, 3, ...
-    private array $byWeekday;      // [1,2,3,4,5,6,7] (Montag-Sonntag)
-    private string $endType;       // never, count, until
-    private ?int $count;           // Anzahl der Vorkommen
-    private ?\DateTime $until;     // Enddatum
-}
-```

@@ -38,6 +38,7 @@
             <argument type="service" id="sulu_core.webspace.webspace_manager"/>
             <argument type="service" id="sulu_event.repository.event_translation"/>
             <argument type="service" id="sulu_media.media_manager"/>
+            <argument type="service" id="sulu_event.type_selection"/>
 
             <tag name="sulu.context" context="admin"/>
         </service>

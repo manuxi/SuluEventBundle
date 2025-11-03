@@ -8,7 +8,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * Service for managing event types with colors
- * Types are loaded from bundle/app configuration (sulu_event.types)
+ * Types are loaded from bundle/app configuration (sulu_event.types).
  */
 class EventTypeSelect
 {
@@ -16,14 +16,13 @@ class EventTypeSelect
     private string $defaultType;
 
     /**
-     * @param TranslatorInterface $translator
-     * @param array $types Event types from configuration (injected via %sulu_event.types%)
+     * @param array  $types       Event types from configuration (injected via %sulu_event.types%)
      * @param string $defaultType Default type key (injected via %sulu_event.default_type%)
      */
     public function __construct(
         private TranslatorInterface $translator,
         array $types = [],
-        string $defaultType = 'default'
+        string $defaultType = 'default',
     ) {
         // Types come from configuration:
         // 1. Bundle default: Resources/config/packages/sulu_event_bundle.yaml
@@ -57,7 +56,7 @@ class EventTypeSelect
     }
 
     /**
-     * Get default value for new events
+     * Get default value for new events.
      */
     public function getDefaultValue(): string
     {
@@ -66,7 +65,7 @@ class EventTypeSelect
 
     /**
      * Get color for a specific type
-     * Falls back to default type color if type not found
+     * Falls back to default type color if type not found.
      */
     public function getColor(string $type): string
     {
@@ -84,7 +83,7 @@ class EventTypeSelect
     }
 
     /**
-     * Get all configured types with their properties
+     * Get all configured types with their properties.
      */
     public function getTypes(): array
     {
@@ -93,7 +92,7 @@ class EventTypeSelect
 
     /**
      * Get translated name for a type
-     * Falls back to default type if type not found
+     * Falls back to default type if type not found.
      */
     public function getTypeName(string $type): string
     {
@@ -109,7 +108,7 @@ class EventTypeSelect
     }
 
     /**
-     * Check if a type exists in configuration
+     * Check if a type exists in configuration.
      */
     public function hasType(string $type): bool
     {

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Manuxi\SuluEventBundle\Common;
 
 use Manuxi\SuluEventBundle\Repository\EventTranslationRepository;
+use Manuxi\SuluEventBundle\Service\EventTypeSelect;
 use Sulu\Bundle\MediaBundle\Media\Manager\MediaManagerInterface;
 use Sulu\Component\Rest\ListBuilder\Doctrine\DoctrineListBuilderFactory;
 use Sulu\Component\Rest\ListBuilder\Doctrine\FieldDescriptor\DoctrineFieldDescriptor;
@@ -24,6 +25,7 @@ class DoctrineListRepresentationFactory
         private WebspaceManagerInterface $webspaceManager,
         private EventTranslationRepository $eventTranslationRepository,
         private MediaManagerInterface $mediaManager,
+        private EventTypeSelect $eventTypeSelect,
     ) {
     }
 
@@ -60,6 +62,7 @@ class DoctrineListRepresentationFactory
 
         $list = $this->addGhostLocaleToListElements($list, $parameters['locale'] ?? null);
         $list = $this->addImagesToListElements($list, $parameters['locale'] ?? null);
+        $list = $this->addColorsToListElements($list, $parameters['locale'] ?? null);
 
         return new PaginatedRepresentation(
             $list,
@@ -102,15 +105,26 @@ class DoctrineListRepresentationFactory
                 foreach ($listeElements as $key => $element) {
                     if ($element['id'] === (int) $missingLocale['event'] && !array_key_exists('ghostLocale', $element)) {
                         $listeElements[$key]['ghostLocale'] = $locale;
-//                        $listeElements[$key]['localizationState'] = [
-//                            'state' => 'ghost',
-//                            'locale' => $locale
-//                        ];
+                        /*
+                        $listeElements[$key]['localizationState'] = [
+                            'state' => 'ghost',
+                            'locale' => $locale
+                        ];
+                        */
                     }
                 }
             }
         }
 
+        return $listeElements;
+    }
+
+    private function addColorsToListElements(array $listeElements)
+    {
+        foreach ($listeElements as $key => $element) {
+            $listeElements[$key]['typeColor'] = $this->eventTypeSelect->getColor($element['type']);
+            $listeElements[$key]['typeName'] = $this->eventTypeSelect->getTypeName($element['type']);
+        }
         return $listeElements;
     }
 }

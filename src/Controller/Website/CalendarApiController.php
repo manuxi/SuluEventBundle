@@ -139,7 +139,8 @@ class CalendarApiController extends AbstractController
                 'url' => $event->getRoutePath(),
                 'extendedProps' => [
                     'summary' => $event->getSummary(),
-                    'type' => $typeName,
+                    'type' => $event->getType(),
+                    'type_translation' => $typeName,
                     'typeColor' => $typeColor,
                 ],
             ];

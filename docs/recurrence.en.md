@@ -146,20 +146,3 @@ Repeats on the same day of the month every X months.
 Repeats on the same date every X years.
 
 **Example**: Annual event → `frequency: yearly, interval: 1`
-
-## Data Structure
-
-### EventRecurrence Entity
-
-```php
-class EventRecurrence
-{
-    private bool $isRecurring;
-    private ?string $frequency;    // daily, weekly, monthly, yearly
-    private int $interval;         // 1, 2, 3, ...
-    private array $byWeekday;      // [1,2,3,4,5,6,7] (Monday-Sunday)
-    private string $endType;       // never, count, until
-    private ?int $count;           // number of occurrences
-    private ?\DateTime $until;     // end date
-}
-```

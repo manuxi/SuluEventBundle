@@ -9,13 +9,13 @@
         <!-- General Display Settings -->
         <section name="general-display">
             <meta>
-                <title>sulu_event.config.title.general_display</title>
-                <info_text>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.</info_text>
+                <title>sulu_event.config.title.general</title>
             </meta>
             <properties>
-                <property name="toggleHeader" type="checkbox" colspan="4">
+                <property name="toggleHeader" type="checkbox" colspan="3">
                     <meta>
                         <title>sulu_event.config.properties.toggle_header</title>
+                        <info_text>sulu_event.config.properties.toggle_header_info</info_text>
                     </meta>
                     <params>
                         <param name="type" value="toggler"/>
@@ -23,9 +23,10 @@
                     </params>
                 </property>
 
-                <property name="toggleHero" type="checkbox" colspan="4">
+                <property name="toggleHero" type="checkbox" colspan="3">
                     <meta>
                         <title>sulu_event.config.properties.toggle_hero</title>
+                        <info_text>sulu_event.config.properties.toggle_hero_info</info_text>
                     </meta>
                     <params>
                         <param name="type" value="toggler"/>
@@ -33,61 +34,107 @@
                     </params>
                 </property>
 
-                <property name="toggleBreadcrumbs" type="checkbox" colspan="4">
+                <property name="toggleBreadcrumbs" type="checkbox" colspan="3" spaceAfter="3">
                     <meta>
                         <title>sulu_event.config.properties.toggle_breadcrumbs</title>
+                        <info_text>sulu_event.config.properties.toggle_breadcrumbs_info</info_text>
                     </meta>
                     <params>
                         <param name="type" value="toggler"/>
                         <param name="default_value" value="true"/>
+                    </params>
+                </property>
+
+                <property name="toggleTags" type="checkbox" colspan="3">
+                    <meta>
+                        <title>sulu_event.config.properties.toggle_tags</title>
+                        <info_text>sulu_event.config.properties.toggle_tags_info</info_text>
+                    </meta>
+                    <params>
+                        <param name="type" value="toggler"/>
+                        <param name="default_value" value="false"/>
+                    </params>
+                </property>
+
+                <property name="tagsColor" type="color_select" colspan="3" visibleCondition="__parent.toggleTags == true">
+                    <meta>
+                        <title>sulu_event.config.properties.toggle_tags_color</title>
+                        <info_text>sulu_event.config.properties.toggle_tags_color_info</info_text>
+                    </meta>
+                    <params>
+                        <param name="default_value"
+                               type="expression"
+                               value="service('sulu_content_types.color_palette_provider').getDefaultValue('bootstrap_emphasis')"
+                        />
+                        <param name="values"
+                               type="expression"
+                               value="service('sulu_content_types.color_palette_provider').getValues('bootstrap_emphasis')"
+                        />
+                    </params>
+                </property>
+
+                <property name="toggleCategories" type="checkbox" colspan="3">
+                    <meta>
+                        <title>sulu_event.config.properties.toggle_categories</title>
+                        <info_text>sulu_event.config.properties.toggle_categories_info</info_text>
+                    </meta>
+                    <params>
+                        <param name="type" value="toggler"/>
+                        <param name="default_value" value="false"/>
+                    </params>
+                </property>
+
+                <property name="categoriesColor" type="color_select" colspan="3" visibleCondition="__parent.toggleCategories == true">
+                    <meta>
+                        <title>sulu_event.config.properties.toggle_categories_color</title>
+                        <info_text>sulu_event.config.properties.toggle_categories_color_info</info_text>
+                    </meta>
+                    <params>
+                        <param name="default_value"
+                               type="expression"
+                               value="service('sulu_content_types.color_palette_provider').getDefaultValue('bootstrap_emphasis')"
+                        />
+                        <param name="values"
+                               type="expression"
+                               value="service('sulu_content_types.color_palette_provider').getValues('bootstrap_emphasis')"
+                        />
                     </params>
                 </property>
             </properties>
         </section>
-
-        <!-- Filter Settings -->
-        <section name="filter-settings">
+        <section name="general-list">
             <meta>
-                <title>sulu_event.config.title.filters</title>
+                <title>sulu_event.config.title.list_view</title>
             </meta>
             <properties>
-                <property name="enableCategoryFilter" type="checkbox" colspan="6">
+                <property name="toggleFeedRss" type="checkbox" colspan="3">
                     <meta>
-                        <title>sulu_event.config.properties.enable_category_filter</title>
+                        <title>sulu_event.config.properties.toggle_feed_rss</title>
+                        <info_text>sulu_event.config.properties.toggle_feed_rss_info</info_text>
                     </meta>
                     <params>
                         <param name="type" value="toggler"/>
-                        <param name="default_value" value="true"/>
+                        <param name="default_value" value="false"/>
                     </params>
                 </property>
-
-                <property name="enableLocationFilter" type="checkbox" colspan="6">
+                <property name="toggleFeedAtom" type="checkbox" colspan="3">
                     <meta>
-                        <title>sulu_event.config.properties.enable_location_filter</title>
+                        <title>sulu_event.config.properties.toggle_feed_atom</title>
+                        <info_text>sulu_event.config.properties.toggle_feed_atom_info</info_text>
                     </meta>
                     <params>
                         <param name="type" value="toggler"/>
-                        <param name="default_value" value="true"/>
+                        <param name="default_value" value="false"/>
                     </params>
                 </property>
-
-                <property name="enableDateFilter" type="checkbox" colspan="6">
+                <property name="toggleIcal" type="checkbox" colspan="3">
                     <meta>
-                        <title>sulu_event.config.properties.enable_date_filter</title>
+                        <title>sulu_event.config.properties.toggle_ical</title>
+                        <info_text>sulu_event.config.properties.toggle_ical_info</info_text>
                     </meta>
                     <params>
                         <param name="type" value="toggler"/>
-                        <param name="default_value" value="true"/>
-                    </params>
-                </property>
-
-                <property name="enableSearchFilter" type="checkbox" colspan="6">
-                    <meta>
-                        <title>sulu_event.config.properties.enable_search_filter</title>
-                    </meta>
-                    <params>
-                        <param name="type" value="toggler"/>
-                        <param name="default_value" value="true"/>
+                        <param name="default_value" value="false"/>
                     </params>
                 </property>
             </properties>

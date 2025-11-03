@@ -1,10 +1,10 @@
 # Event Types - Configuration Flow
 
-Die Event-Types-Konfiguration beinhaltet den Namen und die Farbe des Types.
+The event type configuration includes the name and colour of the type.
 
 ### 1. Bundle
 
-**Datei:** `Resources/config/packages/sulu_event_bundle.yaml`
+**File:** `Resources/config/packages/sulu_event_bundle.yaml`
 
 ```yaml
 sulu_event:
@@ -19,9 +19,9 @@ sulu_event:
     default_type: 'default'
 ```
 
-### 2. Types können überschrieben werden
+### 2. Types can be overwritten
 
-**Datei:** `config/packages/sulu_event.yaml` (User erstellt)
+**File:** `config/packages/sulu_event.yaml` (Created in project)
 
 ```yaml
 sulu_event:
@@ -29,16 +29,16 @@ sulu_event:
         vip:
             name: 'app.event_type.vip'
             color: '#ffd700'
-        standard:
-            name: 'app.event_type.standard'
+        default:
+            name: 'app.event_type.default'
             color: '#0d6efd'
-    default_type: 'standard'
+    default_type: 'default'
 ```
 
-**WICHTIG:** Eigene Types überschreiben Bundle-Defaults!
-- **Kein Merge!** (by design)
+**IMPORTANT:** Your own types override bundle defaults!
+- **No merging!** (by design)
 
-## Verwendung im Code
+## Usage
 
 ### Admin Form (event_details.xml)
 
@@ -69,19 +69,19 @@ sulu_event:
 
 ## Translations
 
-Bundle liefert Übersetzungen für Standard-Types:
+Bundle provides translations for default types:
 
 ```yaml
 # Resources/translations/admin.de.yaml
 sulu_event:
     type:
-        default: Standard
-        conference: Konferenz
+        default: Default
+        conference: Conference
         workshop: Workshop
         # ...
 ```
 
-User muss eigene Types übersetzen:
+Custom types must be translated:
 
 ```yaml
 # translations/admin.de.yaml
@@ -89,17 +89,4 @@ app:
     event_type:
         vip: VIP Event
         intern: Internes Event
-```
-
-## Debug-Commands
-
-```bash
-# Parameter anzeigen
-php bin/console debug:container --parameters | grep sulu_event
-
-# Service-Definition anzeigen
-php bin/console debug:container sulu_event.type_selection
-
-# Config-Tree anzeigen
-php bin/console config:dump-reference sulu_event
 ```

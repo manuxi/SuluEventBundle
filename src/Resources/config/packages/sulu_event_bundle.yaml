@@ -6,34 +6,34 @@ sulu_event:
     # Will be replaced completely if user defines their own types
     types:
         default:
-            name: 'sulu_event.type.default'
+            name: 'sulu_event.types.default'
             color: '#0d6efd'
         conference:
-            name: 'sulu_event.type.conference'
+            name: 'sulu_event.types.conference'
             color: '#6610f2'
         workshop:
-            name: 'sulu_event.type.workshop'
+            name: 'sulu_event.types.workshop'
             color: '#6f42c1'
         meeting:
-            name: 'sulu_event.type.meeting'
+            name: 'sulu_event.types.meeting'
             color: '#20c997'
         seminar:
-            name: 'sulu_event.type.seminar'
+            name: 'sulu_event.types.seminar'
             color: '#0dcaf0'
         webinar:
-            name: 'sulu_event.type.webinar'
+            name: 'sulu_event.types.webinar'
             color: '#198754'
         training:
-            name: 'sulu_event.type.training'
+            name: 'sulu_event.types.training'
             color: '#fd7e14'
         networking:
-            name: 'sulu_event.type.networking'
+            name: 'sulu_event.types.networking'
             color: '#d63384'
         presentation:
-            name: 'sulu_event.type.presentation'
+            name: 'sulu_event.types.presentation'
             color: '#ffc107'
         celebration:
-            name: 'sulu_event.type.celebration'
+            name: 'sulu_event.types.celebration'
             color: '#dc3545'
 
     default_type: 'default'

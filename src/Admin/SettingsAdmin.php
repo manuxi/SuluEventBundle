@@ -83,14 +83,14 @@ class SettingsAdmin extends Admin
                     ->setParent(static::TAB_VIEW)
             );
 
-            $viewCollection->add(
+/*            $viewCollection->add(
                 $this->viewBuilderFactory->createFormViewBuilder(static::FORM_VIEW_SETTINGS_LISTS, '/'.static::FORM_KEY_SETTINGS_LISTS)
                     ->setResourceKey(EventSettings::RESOURCE_KEY)
                     ->setFormKey(static::FORM_KEY_SETTINGS_LISTS)
                     ->setTabTitle('sulu_event.config.tab.lists')
                     ->addToolbarActions([new ToolbarAction('sulu_admin.save')])
                     ->setParent(static::TAB_VIEW)
-            );
+            );*/
             $viewCollection->add(
                 $this->viewBuilderFactory->createFormViewBuilder(static::FORM_VIEW_SETTINGS_BREADCRUMBS, '/'.static::FORM_KEY_SETTINGS_BREADCRUMBS)
                     ->setResourceKey(EventSettings::RESOURCE_KEY)

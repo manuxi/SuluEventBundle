@@ -1,8 +1,7 @@
 {
   "name": "@manuxi/sulu-event-bundle",
   "version": "1.0.0",
-  "description": "FullCalendar integration for SuluEventBundle",
-  "main": "js/calendar.js",
+  "main": "js/index.js",
   "peerDependencies": {
     "@fullcalendar/core": "^6.1.15",
     "@fullcalendar/bootstrap5": "^6.1.15",

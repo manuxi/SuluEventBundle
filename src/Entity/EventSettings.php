@@ -32,6 +32,27 @@ class EventSettings implements AuditableInterface
     #[ORM\Column(type: Types::BOOLEAN, nullable: true)]
     private ?bool $toggleBreadcrumbs = null;
 
+    #[ORM\Column(type: Types::BOOLEAN, nullable: true)]
+    private ?bool $toggleTags = null;
+
+    #[ORM\Column(type: Types::STRING, nullable: true)]
+    private ?string $tagsColor = null;
+
+    #[ORM\Column(type: Types::BOOLEAN, nullable: true)]
+    private ?bool $toggleCategories = null;
+
+    #[ORM\Column(type: Types::STRING, nullable: true)]
+    private ?string $categoriesColor = null;
+
+    #[ORM\Column(type: Types::BOOLEAN, nullable: true)]
+    private ?bool $toggleFeedRss = null;
+
+    #[ORM\Column(type: Types::BOOLEAN, nullable: true)]
+    private ?bool $toggleFeedAtom = null;
+
+    #[ORM\Column(type: Types::BOOLEAN, nullable: true)]
+    private ?bool $toggleIcal = null;
+
     // Calendar Settings
     #[ORM\Column(type: Types::INTEGER, nullable: true)]
     private ?int $calendarStartDay = 1;
@@ -65,6 +86,15 @@ class EventSettings implements AuditableInterface
 
     #[ORM\Column(type: Types::JSON, nullable: true)]
     private ?array $allowedCalendarViews = [];
+
+    #[ORM\Column(type: Types::STRING, nullable: true)]
+    private ?string $calendarWeekTimeStart = null;
+
+    #[ORM\Column(type: Types::STRING, nullable: true)]
+    private ?string $calendarWeekTimeEnd = null;
+
+    #[ORM\Column(type: Types::INTEGER, nullable: true)]
+    private ?int $calendarYearMonths = 3;
 
     // Breadcrumbs
     #[ORM\Column(type: Types::STRING, nullable: true)]
@@ -136,6 +166,76 @@ class EventSettings implements AuditableInterface
     public function setToggleBreadcrumbs(?bool $toggleBreadcrumbs): void
     {
         $this->toggleBreadcrumbs = $toggleBreadcrumbs;
+    }
+
+    public function getToggleTags(): ?bool
+    {
+        return $this->toggleTags;
+    }
+
+    public function setToggleTags(?bool $toggleTags): void
+    {
+        $this->toggleTags = $toggleTags;
+    }
+
+    public function getTagsColor(): ?string
+    {
+        return $this->tagsColor;
+    }
+
+    public function setTagsColor(?string $tagsColor): void
+    {
+        $this->tagsColor = $tagsColor;
+    }
+
+    public function getToggleCategories(): ?bool
+    {
+        return $this->toggleCategories;
+    }
+
+    public function setToggleCategories(?bool $toggleCategories): void
+    {
+        $this->toggleCategories = $toggleCategories;
+    }
+
+    public function getCategoriesColor(): ?string
+    {
+        return $this->categoriesColor;
+    }
+
+    public function setCategoriesColor(?string $categoriesColor): void
+    {
+        $this->categoriesColor = $categoriesColor;
+    }
+
+    public function getToggleFeedRss(): ?bool
+    {
+        return $this->toggleFeedRss;
+    }
+
+    public function setToggleFeedRss(?bool $toggleFeedRss): void
+    {
+        $this->toggleFeedRss = $toggleFeedRss;
+    }
+
+    public function getToggleFeedAtom(): ?bool
+    {
+        return $this->toggleFeedAtom;
+    }
+
+    public function setToggleFeedAtom(?bool $toggleFeedAtom): void
+    {
+        $this->toggleFeedAtom = $toggleFeedAtom;
+    }
+
+    public function getToggleIcal(): ?bool
+    {
+        return $this->toggleIcal;
+    }
+
+    public function setToggleIcal(?bool $toggleIcal): void
+    {
+        $this->toggleIcal = $toggleIcal;
     }
 
     public function getCalendarStartDay(): ?int
@@ -246,6 +346,36 @@ class EventSettings implements AuditableInterface
     public function setAllowedCalendarViews(array $allowedCalendarViews): void
     {
         $this->allowedCalendarViews = $allowedCalendarViews;
+    }
+
+    public function getCalendarWeekTimeStart(): ?string
+    {
+        return $this->calendarWeekTimeStart;
+    }
+
+    public function setCalendarWeekTimeStart(?string $calendarWeekTimeStart): void
+    {
+        $this->calendarWeekTimeStart = $calendarWeekTimeStart;
+    }
+
+    public function getCalendarWeekTimeEnd(): ?string
+    {
+        return $this->calendarWeekTimeEnd;
+    }
+
+    public function setCalendarWeekTimeEnd(?string $calendarWeekTimeEnd): void
+    {
+        $this->calendarWeekTimeEnd = $calendarWeekTimeEnd;
+    }
+
+    public function getCalendarYearMonths(): ?int
+    {
+        return $this->calendarYearMonths;
+    }
+
+    public function setCalendarYearMonths(?int $calendarYearMonths): void
+    {
+        $this->calendarYearMonths = $calendarYearMonths;
     }
 
     public function getPageEvents(): ?string

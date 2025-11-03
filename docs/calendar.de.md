@@ -73,27 +73,37 @@ Die Kalendereinstellungen können im Sulu-Admin-Panel unter **Einstellungen > Ev
 
 ![settings-calendar.de.png](img/settings-calendar.de.png)
 
+Siehe auch [Einstellungen](docs/settings.de.md)
+
 #### Kalenderdarstellung
 - **Wochenstart**: Erster Tag der Woche (0 = Sonntag, 1 = Montag, etc.)
-- **Event-Zeit anzeigen**: Start-/Endzeiten in der Kalenderansicht anzeigen
-- **Wochennummern anzeigen**: Wochennummern in Kalenderansicht anzeigen
+- **Wochennummern anzeigen**: Nummern der Kalenderwochen anzeigen
 - **Wochenenden anzeigen**: Samstag und Sonntag in Kalenderansicht einbeziehen
 
 #### Events
 - **Event-Limit pro Tag**: Maximale Anzahl Events pro Tag, bevor "mehr anzeigen"-Link erscheint
-- **Auf Event-Zeitraum begrenzen**: Nur Daten innerhalb des Bereichs geplanter Events anzeigen (momentan außer Funktion)
-- **Event-Ort anzeigen**: Ortsinformationen in der Kalenderansicht anzeigen
+- **Event-Zeit anzeigen**: Start-/Endzeiten in der Kalenderansicht anzeigen
+- **Auf Event-Zeitraum begrenzen**: Nur Daten innerhalb des Bereichs geplanter Events anzeigen
+- **Event-Typ anzeigen**: Typ in der Einzelansicht (Popover) anzeigen
+- **Event-Ort anzeigen**: Standort in der Einzelansicht (Popover) anzeigen
 - **Event-Farbe**: Standardfarbe für Events in der Kalenderansicht
 
 #### Kalenderansichten
-- **Kalenderansicht aktivieren**: Kalenderansicht komplett aktivieren/deaktivieren
-- **Erlaubte Kalenderansichten**: Auswahl verfügbarer Ansichten (Monat, Woche, Tag, Liste)
+- **Sicht-Wechsel erlaubt**: Sichten sind für Besucher änderbar
+- **Erlaubte Kalendersichten**: Auswahl verfügbarer Ansichten (Monat, Woche, Tag, Liste)
+
+#### Anzeigeoptionen Wochensicht
+- **Start-Zeit**: Tag fängt um diese Zeit an
+- **End-Zeit**: Tag hört um diese Zeit auf
+
+#### Anzeigeoptionen Jahressicht
+- **Anzuzeigende Monate**: Anzahl an Monaten, die angezeigt werden
 
 ## Verwendung
 
 ### Content Type
 
-Kalender zu einer Seite hinzufügen über den Content Type:
+Einfacher Schalter:
 
 ```xml
 <property name="toggle_calendar" type="checkbox" colspan="2">
@@ -109,7 +119,7 @@ Kalender zu einer Seite hinzufügen über den Content Type:
 
 ### Template-Integration
 
-Es wird ein Element mit der id="event-calendar" erwartet. Parameter wie folgt angeben:
+Es wird ein Element mit id="event-calendar" erwartet. Parameter wie folgt angeben:
 
 ```html
 {% if toggle_calendar %}
@@ -129,6 +139,9 @@ Es wird ein Element mit der id="event-calendar" erwartet. Parameter wie folgt an
          data-initial-view="{{ calendarView|default('dayGridMonth') }}"
          data-locale="{{ app.request.locale }}"
          data-week-numbers="{{ eventsSettings.showWeekNumbers ? 'true' : 'false' }}"
+         data-week-day-start="{{ eventsSettings.calendarWeekTimeStart|default('00:00') }}"
+         data-week-day-end="{{ eventsSettings.calendarWeekTimeEnd|default('24:00') }}"
+         data-year-months="{{ eventsSettings.calendarYearMonths|default(3) }}"
          data-weekends="{{ eventsSettings.showWeekends ? 'true' : 'false' }}"
          data-event-limit="{{ eventsSettings.eventLimitPerDay|default(3) }}"
          data-limit-to-events="{{ eventsSettings.limitToEventRange ? 'true' : 'false' }}"

@@ -1,141 +1,150 @@
+Of course, here is the English translation:
+
 # SuluEventBundle!
-![php workflow](https://github.com/manuxi/SuluEventBundle/actions/workflows/php.yml/badge.svg)
-![symfony workflow](https://github.com/manuxi/SuluEventBundle/actions/workflows/symfony.yml/badge.svg)
+![php workflow](https://github.com/manuxi/SuluEventBundle/actions/workflows/php.yml/badge.svg)![symfony workflow](https://github.com/manuxi/SuluEventBundle/actions/workflows/symfony.yml/badge.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/manuxi/SuluEventBundle/LICENSE)
-![GitHub Tag](https://img.shields.io/github/v/tag/manuxi/SuluEventBundle)
-![Supports Sulu 2.6 or later](https://img.shields.io/badge/%20Sulu->=2.6-0088cc?color=00b2df)
+![GitHub Tag](https://img.shields.io/github/v/tag/manuxi/SuluEventBundle)![Supports Sulu 2.6 or later](https://img.shields.io/badge/%20Sulu->=2.6-0088cc?color=00b2df)
 
-This bundle was made based on [Sulu workshop](https://github.com/sulu/sulu-workshop). 
-I made it to have the possibility to manage events in my projects. Over time, more and more features have been added.
+[🇩🇪 German Version](README.de.md)
 
-This bundle contains
-- Several filters for Event Content Type
-- Link Provider
-- Sitemap Provider
-- Handler for Trash Items
-- Handler for Automation
-- Possibility to assign a contact as author
-- Twig Extension for resolving events / get a list of events
-- Events for displaying Activities
-- Search indexes
-  - refresh whenever entity is changed
-  - distinct between published and draft
-and more...
+This bundle is based on the [Sulu Workshop](https://github.com/sulu/sulu-workshop) and has been equipped with more and more features over time.
 
-The events and their meta information is translatable.
+![img.png](docs/img/event-details.png)
 
-It contains an example twig template.
+## ✨ Features
 
-Please feel comfortable submitting feature requests. 
-This bundle is still in development. Use at own risk 🤞🏻
+### 📅 Event Management
+- **Complete Event Lifecycle** - Create, publish, and archive events
+- **Extensive Event Details** - Title, subtitle, summary, text, footer
+- **Date & Time** - Flexible start/end dates with timezone support
+- **Locations** - Separate location management with address details
+- **Media Integration** - Hero images, image galleries, PDF attachments
+- **SEO & Excerpt** - Full SEO and excerpt management
+- **Multilingual** - Full translation support
+- **Author Management** - Assign contacts as event authors
+- **Settings** - Extensive configuration options
+- **More** - Trash, automations, etc.
 
-![image](https://github.com/user-attachments/assets/72b11ff1-dd25-458c-952c-c27ff22c7abf)
+### 🔄 Advanced Features
+- **Recurring Events** - Daily, weekly, monthly, yearly patterns with exceptions
+- **Social Media Integration** - Per-event sharing configuration (Facebook, Twitter, LinkedIn, Instagram, WhatsApp)
+- **Calendar** - FullCalendar.js integration with month/week/list view
+- **iCal Export** - Single events or full calendar subscriptions (webcal://)
+- **RSS/Atom Feeds** - Keep subscribers updated on new events
+- **Smart Content** - Usable as a content block in any Sulu page
+
+## 📋 Prerequisites
+
+- PHP 8.1 or higher
+- Sulu CMS 2.6 or higher
+- Symfony 6.2 or higher
+- MySQL 5.7+ / MariaDB 10.2+ / PostgreSQL 11+
 
 ## 👩🏻‍🏭 Installation
-Install the package with:
-```console
+
+### Step 1: Install the package
+
+```bash
 composer require manuxi/sulu-event-bundle
 ```
-If you're *not* using Symfony Flex, you'll also
-need to add the bundle in your `config/bundles.php` file:
+
+If you are *not* using Symfony Flex, add the bundle to `config/bundles.php`:
+
 ```php
 return [
     //...
     Manuxi\SuluEventBundle\SuluEventBundle::class => ['all' => true],
 ];
 ```
-Please add the following to your `routes_admin.yaml`:
+
+### Step 2: Configure routes
+
+Add to `routes_admin.yaml`:
+
 ```yaml
 SuluEventBundle:
     resource: '@SuluEventBundle/Resources/config/routes_admin.yaml'
 ```
-For FullCalendar-Integration/iCal/Feeds add the following to `routes_website.yaml`:
+For FullCalendar integration/iCal/Feeds, the following must be added to `routes_website.yaml`:
 
 ```yaml
 SuluEventBundle:
     resource: '@SuluEventBundle/Resources/config/routes_website.yaml'
 ```
 
-Don't forget fo add the index to your sulu_search.yaml:
+### Step 3: Configure search
 
-add "events_published"!
+Add to `sulu_search.yaml`:
 
-"events_published" is the index of published, "events" the index of unpublished elements. Both indexes are searchable in admin.
 ```yaml
 sulu_search:
     website:
         indexes:
-            - events_published
-            - ...
-``` 
-Last but not least the schema of the database needs to be updated.  
+            - events_published  # Published Events (Website)
+            - events            # Draft Events (Admin)
+```
 
-Some tables will be created (prefixed with app_):  
-location, event, event_translation, event_seo, event_excerpt
-(plus some ManyToMany relation tables).  
+### Step 4: Update the database
 
-See the needed queries with `php bin/console doctrine:schema:update --dump-sql`.  
-Update the schema by executing `php bin/console doctrine:schema:update --force`.  
+```bash
+# Check what will be created
+php bin/console doctrine:schema:update --dump-sql
 
-Make sure you only process the bundles schema updates!
+# Execute migration
+php bin/console doctrine:schema:update --force
+```
+
+### Step 5: Grant permissions
+
+1. Go to Sulu Admin → Settings → User Roles
+2. Find the appropriate role
+3. Enable permissions for "Events" and "Locations"
+4. Reload the page
 
 ## 🎣 Usage
-First: Grant permissions for events. 
-After page reload you should see the event item in the navigation. 
-Start to create locations, then events.
-Use smart_content property type to show a list of events, e.g.:
-```xml
-<property name="events" type="smart_content">
-    <meta>
-        <title lang="en">Events</title>
-        <title lang="de">Veranstaltungen</title>
-    </meta>
-    <params>
-        <param name="provider" value="events"/>
-        <param name="max_per_page" value="5"/>
-        <param name="page_parameter" value="page"/>
-    </params>
-</property>
-```
-Example of the corresponding twig template for the event list:
-```html
-{% for event in events %}
-    <div class="col">
-        <h2>
-            {{ event.title }}
-        </h2>
-        <p>
-            {{ event.startDate|format_datetime('full', 'none', locale=app.request.getLocale()) }}
-            {% if endDate and startDate != endDate %}
-                 - {{ event.endDate|format_datetime('full', 'none', locale=app.request.getLocale()) }}
-            {% endif %}
-        </p>
-        <p>
-            {{ event.summary|raw }}
-        </p>
-        <p>
-            {{ event.text|raw }}
-        </p>
-        <p>
-            {{ event.footer|raw }}
-        </p>
-        <p>
-            <a class="btn btn-primary" href="{{ event.routePath }}" role="button">
-                {{ "Read more..."|trans }} <i class="fa fa-angle-double-right"></i>
-            </a>
-        </p>
-    </div>
-{% endfor %}
-```
 
-Since the seo and excerpt tabs are available in the event editor, 
-meta information can be provided like it's done as usual when rendering your pages. 
+### Create your first event
+
+1. Navigate to **Events** in the Sulu admin navigation
+2. Click on **Add event**
+3. First, create at least one **Location**
+4. Then create your event with all the details
+5. Configure social media settings (optional)
+6. Set up recurrence patterns (optional)
+7. Publish your event
 
 ## 🧶 Configuration
-This bundle contains settings for controlling the following tasks:
-- Settings for single view - Toggle for header, default hero snippet and breadcrumbs
-- Intermediate pages for breadcrumbs: this can be used to configure the intermediate pages for the breadcrumbs
+
+You can find the extensive configuration here: [Settings](docs/settings.en.md)
+
+## 📖 Documentation
+
+Detailed documentation in the [docs/](docs/) directory.
+
+- [Calendar Integration](docs/calendar.en.md) - FullCalendar.js integration
+- [Social Media](docs/social-media.en.md) - Social sharing configuration
+- [Recurring Events](docs/recurring.en.md) - Recurring event patterns
+- [Dynamic Event Types](docs/event-types.en.md) - Configuration of event types
+- [Feeds/iCal](docs/feeds-ical.en.md) - Feeds and iCal handling
+- [Locations](docs/locations.en.md) - Locations that are assigned to events
+- [Custom Event Types](docs/event-types.en.md) - Event types can be configured yourself
+- [List Transformer](docs/list-transformer.en.md) - Type transformer for lists
+- [Settings](docs/settings.en.md) - Settings
 
 ## 👩‍🍳 Contributing
-For the sake of simplicity this extension was kept small.
-Please feel comfortable submitting issues or pull requests. As always I'd be glad to get your feedback to improve the extension :).
+
+Contributions are welcome! Please create issues or pull requests.
+
+## 📝 License
+
+This bundle is licensed under the MIT License. See [LICENSE](LICENSE).
+
+## 🎉 Credits
+
+Created and maintained by [manuxi](https://github.com/manuxi).
+
+Thanks to the Sulu team for the great CMS and fantastic support!
+
+Thanks to FullCalendar for the calendar.
+
+And thank *you* for your support and testing!

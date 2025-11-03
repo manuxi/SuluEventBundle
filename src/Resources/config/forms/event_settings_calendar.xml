@@ -183,12 +183,50 @@
                             </param>
                             <param name="multiMonthYear">
                                 <meta>
-                                    <title lang="en">Year Overview (4 Monate)</title>
-                                    <title lang="de">Jahresübersicht (4 Monate)</title>
+                                    <title lang="en">Year Overview</title>
+                                    <title lang="de">Jahresübersicht</title>
                                 </meta>
                             </param>
                         </param>
                     </params>
+                </property>
+
+            </properties>
+        </section>
+
+        <section name="calendar-week">
+            <meta>
+                <title>sulu_event.config.title.calendar_week</title>
+            </meta>
+            <properties>
+
+                <property name="calendarWeekTimeStart" type="time" colspan="4">
+                    <meta>
+                        <title>sulu_event.config.properties.calendar_week_time_start</title>
+                        <info_text>sulu_event.config.properties.calendar_week_time_start_info</info_text>
+                    </meta>
+                </property>
+                <property name="calendarWeekTimeEnd" type="time" colspan="4">
+                    <meta>
+                        <title>sulu_event.config.properties.calendar_week_time_end</title>
+                        <info_text>sulu_event.config.properties.calendar_week_time_end_info</info_text>
+                    </meta>
+                </property>
+
+            </properties>
+        </section>
+
+        <section name="calendar-year">
+            <meta>
+                <title>sulu_event.config.title.calendar_year</title>
+            </meta>
+            <properties>
+
+                <property name="calendarYearMonths" type="number" colspan="4">
+                    <meta>
+                        <title>sulu_event.config.properties.calendar_year_months</title>
+                        <info_text>sulu_event.config.properties.calendar_year_months_info</info_text>
+                    </meta>
                 </property>
 
             </properties>

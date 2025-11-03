@@ -88,6 +88,13 @@ class SettingsController extends AbstractRestController implements ClassResource
             'toggleHeader' => $entity->getToggleHeader(),
             'toggleHero' => $entity->getToggleHero(),
             'toggleBreadcrumbs' => $entity->getToggleBreadcrumbs(),
+            'toggleTags' => $entity->getToggleTags(),
+            'tagsColor' => $entity->getTagsColor(),
+            'toggleCategories' => $entity->getToggleCategories(),
+            'categoriesColor' => $entity->getCategoriesColor(),
+            'toggleFeedRss' => $entity->getToggleFeedRss(),
+            'toggleFeedAtom' => $entity->getToggleFeedAtom(),
+            'toggleIcal' => $entity->getToggleIcal(),
 
             // Calendar Settings
             'calendarStartDay' => $entity->getCalendarStartDay(),
@@ -95,13 +102,17 @@ class SettingsController extends AbstractRestController implements ClassResource
             'showCalendarEventType' => $entity->getShowCalendarEventType(),
             'showCalendarEventLocation' => $entity->getShowCalendarEventLocation(),
             'eventLimitPerDay' => $entity->getEventLimitPerDay(),
-            'showWeekNumbers' => $entity->getShowWeekNumbers(),
-            'showWeekends' => $entity->getShowWeekends(),
+            'showCalendarWeekNumbers' => $entity->getShowWeekNumbers(),
+            'showCalendarWeekends' => $entity->getShowWeekends(),
             'limitToEventRange' => $entity->getLimitToEventRange(),
 
             'eventColor' => $entity->getEventColor(),
             'toggleCalendarView' => $entity->getToggleCalendarView(),
             'allowedCalenderViews' => $entity->getAllowedCalendarViews(),
+
+            'calendarWeekTimeStart' => $entity->getCalendarWeekTimeStart(),
+            'calendarWeekTimeEnd' => $entity->getCalendarWeekTimeEnd(),
+            'calendarYearMonths' => $entity->getCalendarYearMonths(),
 
             // Breadcrumbs
             'pageEvents' => $entity->getPageEvents(),
@@ -129,19 +140,32 @@ class SettingsController extends AbstractRestController implements ClassResource
         $entity->setToggleHero($data['toggleHero'] ?? null);
         $entity->setToggleBreadcrumbs($data['toggleBreadcrumbs'] ?? null);
 
+        $entity->setToggleTags($data['toggleTags'] ?? null);
+        $entity->setTagsColor($data['tagsColor'] ?? null);
+        $entity->setToggleCategories($data['toggleCategories'] ?? null);
+        $entity->setCategoriesColor($data['categoriesColor'] ?? null);
+
+        $entity->setToggleFeedRss($data['toggleFeedRss'] ?? null);
+        $entity->setToggleFeedAtom($data['toggleFeedAtom'] ?? null);
+        $entity->setToggleIcal($data['toggleIcal'] ?? null);
+
         // Calendar Settings
         $entity->setCalendarStartDay($data['calendarStartDay'] ?? 1);
-        $entity->setShowCalendarEventTime($data['showCalendarEventTime'] ?? true);
-        $entity->setShowCalendarEventType($data['showCalendarEventType'] ?? true);
-        $entity->setShowCalendarEventLocation($data['showCalendarEventLocation'] ?? true);
+        $entity->setShowCalendarEventTime($data['showCalendarEventTime'] ?? false);
+        $entity->setShowCalendarEventType($data['showCalendarEventType'] ?? false);
+        $entity->setShowCalendarEventLocation($data['showCalendarEventLocation'] ?? false);
         $entity->setEventLimitPerDay($data['eventLimitPerDay'] ?? 3);
-        $entity->setShowWeekNumbers($data['showWeekNumbers'] ?? true);
-        $entity->setShowWeekends($data['showWeekends'] ?? true);
-        $entity->setLimitToEventRange($data['limitToEventRange'] ?? true);
+        $entity->setShowWeekNumbers($data['showCalendarWeekNumbers'] ?? false);
+        $entity->setShowWeekends($data['showCalendarWeekends'] ?? false);
+        $entity->setLimitToEventRange($data['limitToEventRange'] ?? false);
 
         $entity->setEventColor($data['eventColor'] ?? '');
-        $entity->setToggleCalendarView($data['toggleCalendarView'] ?? true);
+        $entity->setToggleCalendarView($data['toggleCalendarView'] ?? false);
         $entity->setAllowedCalendarViews($data['allowedCalenderViews'] ?? '');
+
+        $entity->setCalendarWeekTimeStart($data['calendarWeekTimeStart'] ?? '00:00');
+        $entity->setCalendarWeekTimeEnd($data['calendarWeekTimeEnd'] ?? '23:59');
+        $entity->setCalendarYearMonths($data['calendarYearMonths'] ?? 3);
 
         // Breadcrumbs
         $entity->setPageEvents($data['pageEvents'] ?? null);
@@ -151,14 +175,14 @@ class SettingsController extends AbstractRestController implements ClassResource
         // List View
         $entity->setEventsPerPage($data['eventsPerPage'] ?? 12);
         $entity->setDefaultSortOrder($data['defaultSortOrder'] ?? 'start_date_asc');
-        $entity->setShowEventImages($data['showEventImages'] ?? true);
-        $entity->setShowEventSummary($data['showEventSummary'] ?? true);
+        $entity->setShowEventImages($data['showEventImages'] ?? false);
+        $entity->setShowEventSummary($data['showEventSummary'] ?? false);
 
         // Filters
-        $entity->setEnableCategoryFilter($data['enableCategoryFilter'] ?? true);
-        $entity->setEnableLocationFilter($data['enableLocationFilter'] ?? true);
-        $entity->setEnableDateFilter($data['enableDateFilter'] ?? true);
-        $entity->setEnableSearchFilter($data['enableSearchFilter'] ?? true);
+        $entity->setEnableCategoryFilter($data['enableCategoryFilter'] ?? false);
+        $entity->setEnableLocationFilter($data['enableLocationFilter'] ?? false);
+        $entity->setEnableDateFilter($data['enableDateFilter'] ?? false);
+        $entity->setEnableSearchFilter($data['enableSearchFilter'] ?? false);
     }
 
     public function getSecurityContext(): string

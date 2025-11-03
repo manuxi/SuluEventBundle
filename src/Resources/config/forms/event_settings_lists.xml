@@ -75,5 +75,53 @@
             </properties>
         </section>
 
+        <!-- Filter Settings -->
+        <section name="filter-settings">
+            <meta>
+                <title>sulu_event.config.title.filters</title>
+            </meta>
+            <properties>
+                <property name="enableCategoryFilter" type="checkbox" colspan="6">
+                    <meta>
+                        <title>sulu_event.config.properties.enable_category_filter</title>
+                    </meta>
+                    <params>
+                        <param name="type" value="toggler"/>
+                        <param name="default_value" value="true"/>
+                    </params>
+                </property>
+
+                <property name="enableLocationFilter" type="checkbox" colspan="6">
+                    <meta>
+                        <title>sulu_event.config.properties.enable_location_filter</title>
+                    </meta>
+                    <params>
+                        <param name="type" value="toggler"/>
+                        <param name="default_value" value="true"/>
+                    </params>
+                </property>
+
+                <property name="enableDateFilter" type="checkbox" colspan="6">
+                    <meta>
+                        <title>sulu_event.config.properties.enable_date_filter</title>
+                    </meta>
+                    <params>
+                        <param name="type" value="toggler"/>
+                        <param name="default_value" value="true"/>
+                    </params>
+                </property>
+
+                <property name="enableSearchFilter" type="checkbox" colspan="6">
+                    <meta>
+                        <title>sulu_event.config.properties.enable_search_filter</title>
+                    </meta>
+                    <params>
+                        <param name="type" value="toggler"/>
+                        <param name="default_value" value="true"/>
+                    </params>
+                </property>
+            </properties>
+        </section>
+
     </properties>
 </form>

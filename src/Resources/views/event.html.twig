@@ -1,6 +1,9 @@
 {% extends "body.html.twig" %}
 
 {% block content %}
+    {% if eventsSettings is not defined %}
+        {% set eventsSettings = load_event_settings() %}
+    {% endif %}
     <div class="container">
         <div class="row">
             <div class="col-12 pb-3">
@@ -27,6 +30,21 @@
                     {% if event.subtitle %}
                         <h2 class="h3 mb-4">{{ event.subtitle }}</h2>
                     {% endif %}
+
+                    {% if eventsSettings.toggleTags and event.eventExcerpt.tags %}
+                        {% set summaryMargin = "my-4" %}
+                        {% for tag in event.eventExcerpt.tags %}
+                            <span class="badge text-bg-{{ eventsSettings.tagsColor|default('light') }} shadow">{{ tag }}</span>
+                        {% endfor %}
+                    {% endif %}
+
+                    {% if eventsSettings.toggleCategories and event.eventExcerpt.categories %}
+                        {% set summaryMargin = "my-4" %}
+                        {% for category in extension.excerpt.categories_named %}
+                            <span class="badge text-bg-{{ eventsSettings.categoriesColor|default('light') }} shadow" {% if eventsSettings.categoriesColor|default %}style="background-color:{{ eventsSettings.categoriesColor }}!important{% endif %}">{{ category.translation }}</span>
+                        {% endfor %}
+                    {% endif %}
+
                     <h3 class="h4 mb-4">{{ timeframe }}</h3>
                     {% if event.summary %}
                         <p class="mb-4 fw-bold fst-italic">{{ event.summary }}</p>
@@ -63,7 +81,7 @@
                                     </a>
                                 {% endif %}
 
-                                {# ... weitere Plattformen #}
+                                {# ... other platforms #}
                             </div>
                         </div>
 
@@ -75,7 +93,7 @@
                                     <i class="fab fa-facebook"></i>
                                 </a>
                             {% endif %}
-                            {# ... weitere Profile #}
+                            {# ... other profiles #}
                         </div>
                     {% endif %}
 

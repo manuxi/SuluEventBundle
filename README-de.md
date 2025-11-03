@@ -19,10 +19,12 @@ Dieses Bundle basiert auf dem [Sulu Workshop](https://github.com/sulu/sulu-works
 - **Datum & Uhrzeit** - Flexible Start-/Enddaten mit Zeitzonenunterstützung
 - **Veranstaltungsorte** - Separate Ortsverwaltung mit Adressdetails
 - **Medien-Integration** - Hero-Bilder, Bildergalerien, PDF-Anhänge
-- **SEO & Excerpt** - Vollständiger SEO-Tab und Excerpt-Verwaltung
+- **SEO & Excerpt** - Vollständige SEO- und Excerpt-Verwaltung
 - **Mehrsprachig** - Vollständige Übersetzungsunterstützung
 - **Autoren-Verwaltung** - Weise Kontakte als Event-Autoren zu
-
+- **Einstellungen** - Umfangreiche Einstellungsmöglichkeiten
+- **Weiteres** - Papierkorb, Automationen, usw.
+- 
 ### 🔄 Erweiterte Features
 - **Wiederkehrende Events** - Tägliche, wöchentliche, monatliche, jährliche Muster mit Ausnahmen
 - **Social-Media-Integration** - Pro-Event-Sharing-Konfiguration (Facebook, Twitter, LinkedIn, Instagram, WhatsApp)
@@ -31,13 +33,11 @@ Dieses Bundle basiert auf dem [Sulu Workshop](https://github.com/sulu/sulu-works
 - **RSS/Atom-Feeds** - Halte Abonnenten über neue Events auf dem Laufenden
 - **Smart Content** - Als Content-Block in jeder Sulu-Seite verwendbar
 
-Siehe [README.md](README.md) für vollständige Feature-Liste und Entwickler-Features.
-
 ## 📋 Voraussetzungen
 
 - PHP 8.1 oder höher
 - Sulu CMS 2.6 oder höher
-- Symfony 6.x oder höher
+- Symfony 6.2 oder höher
 - MySQL 5.7+ / MariaDB 10.2+ / PostgreSQL 11+
 
 ## 👩🏻‍🏭 Installation
@@ -113,34 +113,10 @@ php bin/console doctrine:schema:update --force
 6. Richte Wiederholungsmuster ein (optional)
 7. Veröffentliche dein Event
 
-Weitere Details siehe [README.md](README.md).
-
 ## 🧶 Konfiguration
 
-### Event-Einstellungen
+Die umfangreiche Konfiguration findest Du hier: [Einstellungen](docs/settings.de.md)
 
-Zugriff über Sulu Admin → Einstellungen → Events
-
-**Anzeigeoptionen:**
-- Header, Hero-Bild, Breadcrumbs umschalten
-
-**Kalender-Optionen:**
-- Kalenderansicht aktivieren
-- Standard-Ansicht (Monat/Woche/Liste)
-- Erster Wochentag
-- Event-Zeit anzeigen
-- Event-Ort anzeigen
-
-- Weiteres
-
-### Wiederkehrende Events
-
-Richte einen Cron-Job ein:
-
-```bash
-# Täglich um 2 Uhr ausführen
-0 2 * * * cd /pfad/zum/projekt && php bin/console sulu:events:generate-recurring --lookahead=90
-```
 
 ## 📖 Dokumentation
 
@@ -149,9 +125,12 @@ Detaillierte Dokumentation im [docs/](docs/) Verzeichnis.
 - [Kalender-Integration](docs/calendar.de.md) - FullCalendar.js-Integration
 - [Social Media](docs/social-media.de.md) - Social-Sharing-Konfiguration
 - [Wiederkehrende Events](docs/recurring.de.md) - Wiederholende Event-Muster
-- [Dynamic Event Types](docs/event_types.de.md) - Konfiguration der Event-Types
+- [Dynamic Event Types](docs/event-types.de.md) - Konfiguration der Event-Types
 - [Feeds/iCal](docs/feeds-ical.de.md) - Feeds und iCal Handling
-- [Locations](docs/locations.de.md) - Locations Handling
+- [Standorte](docs/locations.de.md) - Standorte, die Events zugeordnet werden
+- [Eigene Event-Types](docs/event-types.de.md) - Event-Types können selber konfiguriert werden
+- [List-Transformer](docs/list-transformer.de.md) - Typ-Transformer für Listen
+- [Settings](docs/settings.de.md) - Einstellungen
 
 ## 👩‍🍳 Mitwirken
 
@@ -165,4 +144,8 @@ Dieses Bundle ist unter der MIT-Lizenz lizenziert. Siehe [LICENSE](LICENSE).
 
 Erstellt und gewartet von [manuxi](https://github.com/manuxi).
 
-Basierend auf dem [Sulu Workshop](https://github.com/sulu/sulu-workshop).
+Danke an das Sulu-Team für das tolle CMS und den fantastischen Support!
+
+Danke an FullCalendar für den Kalender!
+
+Und danke an *Dich* für Deine Mithilfe, Tests und Bugsuche!

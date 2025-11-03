@@ -117,7 +117,7 @@ sulu_event:
             general: "General"
             calendar: "Calendar"
             breadcrumbs: "Breadcrumbs"
-            lists: "Listen"
+            lists: "Lists"
         # Titles for setting sections
         title:
             navi: "Settings"
@@ -133,12 +133,32 @@ sulu_event:
             breadcrumbs: "Breadcrumbs"
             list_view: "List View"
             filters: "Filter Options"
+            calendar_week: "Week View Options"
+            calendar_year: "Year View Options"
         # Properties within the settings
         properties:
             # General
-            toggle_header: "Display Header"
-            toggle_hero: "Display Default Hero"
-            toggle_breadcrumbs: "Display Breadcrumbs"
+            toggle_header: "Show Header"
+            toggle_header_info: "Display page header in single view"
+            toggle_hero: "Show Default Hero"
+            toggle_hero_info: "Activated by default snippet"
+            toggle_breadcrumbs: "Show Breadcrumbs"
+            toggle_breadcrumbs_info: "Breadcrumbs are formed based on the setting of the same name"
+            toggle_tags: "Show Tags"
+            toggle_tags_info: "Turns tag display on/off in single view"
+            toggle_categories: "Show categories"
+            toggle_categories_info: "Turns category display on/off in single view"
+            toggle_tags_colour: "Tag colour"
+            toggle_tags_colour_info: "Background colour of tags"
+            toggle_categories_colour: "Colour categories"
+            toggle_categories_colour_info: "Background colour of categories"
+            toggle_feed_rss: "Link RSS feed"
+            toggle_feed_rss_info: "Link RSS feed"
+            toggle_feed_atom: "Link Atom feed"
+            toggle_feed_atom_info: "Link to Atom feed"
+            toggle_ical: "Offer iCal file"
+            toggle_ical_info: "iCal file is available for download"
+
             # Calendar
             enable_calendar: "Enable Calendar"
             enable_calendar_info: "Enables the calendar view for events"
@@ -168,6 +188,14 @@ sulu_event:
             toggle_calendar_view_info: "Allows change of view"
             allowed_calendar_views: "Allowed Views"
             allowed_calendar_views_info: "Selected views are available to change"
+
+            calendar_week_time_start: "Start time?"
+            calendar_week_time_start_info: "Limit start time (default: 00:00)"
+            calendar_week_time_end: "End time?"
+            calendar_week_time_end_info: "Limit end time (default: 23:59)"
+            calendar_year_months: "Months to display?"
+            calendar_year_months_info: "Display x months in the year view"
+
             # Breadcrumbs
             page_events: "Overview All Events"
             page_events_pending: "Overview pending Events"
@@ -234,6 +262,9 @@ sulu_event:
         until_date: "Until Date"
         occurrences: "Number of Occurrences"
         until: "End Date"
+        end_date: "Enddate"
+        exceptions: "Exceptions"
+        exceptions_info: "Data, where no event takes place"
         # Recurrence types
         daily: "Daily"
         weekly: "Weekly"
@@ -241,6 +272,7 @@ sulu_event:
         yearly: "Yearly"
         # Weekday options for recurrence
         weekdays: "On Weekdays"
+        weekly_days: "Weekdays"
         monday: "Monday"
         tuesday: "Tuesday"
         wednesday: "Wednesday"
@@ -248,6 +280,13 @@ sulu_event:
         friday: "Friday"
         saturday: "Saturday"
         sunday: "Sunday"
+        # Monthly recurrence options
+        monthly_type: "Monthly Typ"
+        monthly_day: "Day of the Month"
+        monthly_week: "Week of the Month"
+        monthly_weekday: "Weekday"
+        # Yearly recurrence options
+        yearly_month: "Month"
 
     # Social media sharing
     enable_social_share: "Enable Social Sharing"
