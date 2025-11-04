@@ -48,11 +48,11 @@ class Event implements AuditableTranslatableInterface, SearchableInterface
     private ?string $type = 'default';
 
     #[Serializer\Exclude]
-    #[ORM\OneToOne(mappedBy: 'event', targetEntity: EventSeo::class, cascade: ['persist', 'remove'])]
+    #[ORM\OneToOne(mappedBy: 'event', targetEntity: EventSeo::class, cascade: ['persist', 'remove'], fetch: 'EAGER')]
     private ?EventSeo $eventSeo = null;
 
     #[Serializer\Exclude]
-    #[ORM\OneToOne(mappedBy: 'event', targetEntity: EventExcerpt::class, cascade: ['persist', 'remove'])]
+    #[ORM\OneToOne(mappedBy: 'event', targetEntity: EventExcerpt::class, cascade: ['persist', 'remove'], fetch: 'EAGER')]
     private ?EventExcerpt $eventExcerpt = null;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
@@ -79,7 +79,7 @@ class Event implements AuditableTranslatableInterface, SearchableInterface
         mappedBy: 'event',
         targetEntity: EventTranslation::class,
         cascade: ['all'],
-        fetch: 'EXTRA_LAZY',
+        fetch: 'LAZY',
         indexBy: 'locale'
     )]
     private Collection $translations;
@@ -89,7 +89,7 @@ class Event implements AuditableTranslatableInterface, SearchableInterface
         mappedBy: 'event',
         targetEntity: EventSocialSettings::class,
         cascade: ['persist', 'remove'],
-        fetch: 'EXTRA_LAZY'
+        fetch: 'EAGER'
     )]
     private ?EventSocialSettings $socialSettings = null;
 
@@ -98,7 +98,7 @@ class Event implements AuditableTranslatableInterface, SearchableInterface
         mappedBy: 'event',
         targetEntity: EventRecurrence::class,
         cascade: ['persist', 'remove'],
-        fetch: 'EXTRA_LAZY'
+        fetch: 'EAGER'
     )]
     private ?EventRecurrence $recurrence = null;
 

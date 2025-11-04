@@ -87,6 +87,23 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
         return $event;
     }
 
+    public function findWithRelationsById(int $id, string $locale): ?Event
+    {
+        $qb = $this->createQueryBuilder('e')
+            ->leftJoin('e.translations', 't')->addSelect('t')
+            ->leftJoin('e.location', 'loc')->addSelect('loc')
+            ->leftJoin('e.socialSettings', 'ss')->addSelect('ss')
+            ->leftJoin('e.recurrence', 'r')->addSelect('r')
+            ->leftJoin('e.eventSeo', 'seo')->addSelect('seo')
+            ->leftJoin('e.eventExcerpt', 'ex')->addSelect('ex')
+            ->where('e.id = :id')
+            ->andWhere('t.locale = :locale')
+            ->setParameter('id', $id)
+            ->setParameter('locale', $locale);
+
+        return $qb->getQuery()->getOneOrNullResult();
+    }
+
     public function findByDateRange(
         string $locale,
         \DateTimeInterface $startDate,
