@@ -73,7 +73,7 @@ Die Kalendereinstellungen können im Sulu-Admin-Panel unter **Einstellungen > Ev
 
 ![settings-calendar.de.png](img/settings-calendar.de.png)
 
-Siehe auch [Einstellungen](docs/settings.de.md)
+Siehe auch [Einstellungen](settings.de.md)
 
 #### Kalenderdarstellung
 - **Wochenstart**: Erster Tag der Woche (0 = Sonntag, 1 = Montag, etc.)
