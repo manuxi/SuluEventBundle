@@ -121,7 +121,7 @@ Detailed documentation in the [docs/](docs/) directory.
 
 - [Calendar Integration](docs/calendar.en.md) - FullCalendar.js integration
 - [Social Media](docs/social-media.en.md) - Social sharing configuration
-- [Recurring Events](docs/recurring.en.md) - Recurring event patterns
+- [Recurring Events](docs/recurrence.en.md) - Recurring event patterns
 - [Dynamic Event Types](docs/event-types.en.md) - Configuration of event types
 - [Feeds/iCal](docs/feeds-ical.en.md) - Feeds and iCal handling
 - [Locations](docs/locations.en.md) - Locations that are assigned to events
