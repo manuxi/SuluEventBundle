@@ -179,7 +179,7 @@ class EventModel implements EventModelInterface
      */
     private function findEventByIdAndLocale(int $id, Request $request): Event
     {
-        $entity = $this->eventRepository->findWithRelationsById($id, (string) $this->getLocaleFromRequest($request));
+        $entity = $this->eventRepository->findById($id, (string) $this->getLocaleFromRequest($request));
         if (!$entity) {
             throw new EntityNotFoundException($this->eventRepository->getClassName(), $id);
         }

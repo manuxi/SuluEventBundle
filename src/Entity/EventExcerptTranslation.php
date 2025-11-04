@@ -13,7 +13,7 @@ use Doctrine\ORM\Mapping\ManyToMany;
 use Manuxi\SuluEventBundle\Repository\EventExcerptTranslationRepository;
 use Manuxi\SuluSharedToolsBundle\Entity\Abstracts\Entity\AbstractExcerptTranslation;
 use Manuxi\SuluSharedToolsBundle\Entity\Interfaces\ExcerptTranslationInterface;
-use Sulu\Bundle\CategoryBundle\Entity\Category;
+use Sulu\Bundle\CategoryBundle\Entity\CategoryInterface;
 use Sulu\Bundle\MediaBundle\Entity\MediaInterface;
 use Sulu\Bundle\TagBundle\Tag\TagInterface;
 
@@ -21,7 +21,7 @@ use Sulu\Bundle\TagBundle\Tag\TagInterface;
 #[ORM\Table(name: 'app_event_excerpt_translation')]
 class EventExcerptTranslation extends AbstractExcerptTranslation implements ExcerptTranslationInterface
 {
-    #[ManyToMany(targetEntity: Category::class)]
+    #[ManyToMany(targetEntity: CategoryInterface::class)]
     #[JoinTable(name: 'app_event_excerpt_categories')]
     #[JoinColumn(name: 'excerpt_id', referencedColumnName: 'id')]
     #[InverseJoinColumn(name: 'category_id', referencedColumnName: 'id')]

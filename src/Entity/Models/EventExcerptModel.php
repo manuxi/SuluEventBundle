@@ -31,9 +31,16 @@ class EventExcerptModel implements EventExcerptModelInterface
      */
     public function updateEventExcerpt(EventExcerpt $eventExcerpt, Request $request): EventExcerpt
     {
-        $eventExcerpt = $this->mapDataToEventExcerpt($eventExcerpt, $request->request->all()['ext']['excerpt']);
+        $data = $request->request->all();
+        $seoData = $data['ext']['excerpt'] ?? null;
 
-        return $this->eventExcerptRepository->save($eventExcerpt);
+        if ($seoData) {
+            $eventExcerpt = $this->mapDataToEventSeo($eventExcerpt, $seoData);
+            $this->eventExcerptRepository->save($eventExcerpt);
+        }
+
+        return $eventExcerpt;
+
     }
 
     /**

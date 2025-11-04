@@ -22,8 +22,15 @@ class EventSeoModel implements EventSeoModelInterface
 
     public function updateEventSeo(EventSeo $eventSeo, Request $request): EventSeo
     {
-        $eventSeo = $this->mapDataToEventSeo($eventSeo, $request->request->all()['ext']['seo']);
-        return $this->eventSeoRepository->save($eventSeo);
+        $data = $request->request->all();
+        $seoData = $data['ext']['seo'] ?? null;
+
+        if ($seoData) {
+            $eventSeo = $this->mapDataToEventSeo($eventSeo, $seoData);
+            $this->eventSeoRepository->save($eventSeo);
+        }
+
+        return $eventSeo;
     }
 
     private function mapDataToEventSeo(EventSeo $eventSeo, array $data): EventSeo
