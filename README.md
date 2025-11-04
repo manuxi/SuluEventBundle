@@ -122,10 +122,9 @@ Detailed documentation in the [docs/](docs/) directory.
 - [Calendar Integration](docs/calendar.en.md) - FullCalendar.js integration
 - [Social Media](docs/social-media.en.md) - Social sharing configuration
 - [Recurring Events](docs/recurrence.en.md) - Recurring event patterns
-- [Dynamic Event Types](docs/event-types.en.md) - Configuration of event types
 - [Feeds/iCal](docs/feeds-ical.en.md) - Feeds and iCal handling
 - [Locations](docs/locations.en.md) - Locations that are assigned to events
-- [Custom Event Types](docs/event-types.en.md) - Event types can be configured yourself
+- [Custom Event Types](docs/event-types.en.md) - Event types can be set by yourself
 - [List Transformer](docs/list-transformer.en.md) - Type transformer for lists
 - [Settings](docs/settings.en.md) - Settings
 

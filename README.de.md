@@ -125,7 +125,6 @@ Detaillierte Dokumentation im [docs/](docs/) Verzeichnis.
 - [Kalender-Integration](docs/calendar.de.md) - FullCalendar.js-Integration
 - [Social Media](docs/social-media.de.md) - Social-Sharing-Konfiguration
 - [Wiederkehrende Events](docs/recurrence.de.md) - Wiederholende Event-Muster
-- [Dynamic Event Types](docs/event-types.de.md) - Konfiguration der Event-Types
 - [Feeds/iCal](docs/feeds-ical.de.md) - Feeds und iCal Handling
 - [Standorte](docs/locations.de.md) - Standorte, die Events zugeordnet werden
 - [Eigene Event-Types](docs/event-types.de.md) - Event-Types können selber konfiguriert werden
