@@ -41,7 +41,7 @@ Encore.enableSassLoader(options => {
     `;
 })
 ```
-Für Javascripts habe ich folgende Änderungen in der webpack.config.js durchgeführt:
+Für das Javascript habe ich folgende Änderungen in der webpack.config.js durchgeführt:
 ```javascript
 // enables and configure @babel/preset-env polyfills
 Encore.configureBabelPresetEnv((config) => {
@@ -64,6 +64,10 @@ config.resolve.symlinks = true;
 
 module.exports = config;
 ```
+
+Für die Calendar-Overlays werden [Bootstrap-Icons](https://icons.getbootstrap.com/) verwendet. 
+
+Ich hoffe, ich habe nichts vergessen 😊
 
 ## Konfiguration
 

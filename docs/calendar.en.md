@@ -65,6 +65,10 @@ config.resolve.symlinks = true;
 module.exports = config;
 ```
 
+[Bootstrap-Icons](https://icons.getbootstrap.com/) are used for the calendar overlays.
+
+I hope I haven't forgotten anything 😊
+
 ## Configuration
 
 Calendar settings can be configured in the Sulu admin panel under **Settings > Events**.
