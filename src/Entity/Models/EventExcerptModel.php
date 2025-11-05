@@ -35,7 +35,7 @@ class EventExcerptModel implements EventExcerptModelInterface
         $seoData = $data['ext']['excerpt'] ?? null;
 
         if ($seoData) {
-            $eventExcerpt = $this->mapDataToEventSeo($eventExcerpt, $seoData);
+            $eventExcerpt = $this->mapDataToEventExcerpt($eventExcerpt, $seoData);
             $this->eventExcerptRepository->save($eventExcerpt);
         }
 

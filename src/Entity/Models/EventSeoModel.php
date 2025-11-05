@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Entity\Models;
 
-use Doctrine\ORM\OptimisticLockException;
-use Doctrine\ORM\ORMException;
 use Manuxi\SuluEventBundle\Entity\EventSeo;
 use Manuxi\SuluEventBundle\Entity\Interfaces\EventSeoModelInterface;
 use Manuxi\SuluEventBundle\Repository\EventSeoRepository;
@@ -17,8 +15,9 @@ class EventSeoModel implements EventSeoModelInterface
     use ArrayPropertyTrait;
 
     public function __construct(
-        private EventSeoRepository $eventSeoRepository
-    ) {}
+        private EventSeoRepository $eventSeoRepository,
+    ) {
+    }
 
     public function updateEventSeo(EventSeo $eventSeo, Request $request): EventSeo
     {
@@ -55,18 +54,20 @@ class EventSeoModel implements EventSeoModelInterface
         if ($canonicalUrl) {
             $eventSeo->setCanonicalUrl($canonicalUrl);
         }
-        $noIndex = $this->getProperty($data, 'noIndex');
-        if ($noIndex) {
-            $eventSeo->setNoIndex($noIndex);
+
+        // Booleans - explicit true/false
+        if (array_key_exists('noIndex', $data)) {
+            $eventSeo->setNoIndex((bool) $data['noIndex']);
         }
-        $noFollow = $this->getProperty($data, 'noFollow');
-        if ($noFollow) {
-            $eventSeo->setNoFollow($noFollow);
+
+        if (array_key_exists('noFollow', $data)) {
+            $eventSeo->setNoFollow((bool) $data['noFollow']);
         }
-        $hideInSitemap = $this->getProperty($data, 'hideInSitemap');
-        if ($hideInSitemap) {
-            $eventSeo->setHideInSitemap($hideInSitemap);
+
+        if (array_key_exists('hideInSitemap', $data)) {
+            $eventSeo->setHideInSitemap((bool) $data['hideInSitemap']);
         }
+
         return $eventSeo;
     }
 }
