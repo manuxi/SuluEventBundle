@@ -4,16 +4,19 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Tests\Unit\Content\Type;
 
-use Manuxi\SuluEventBundle\Content\Type\SingleEventSelection;
-use Manuxi\SuluEventBundle\Entity\Event;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ObjectRepository;
+use Manuxi\SuluEventBundle\Content\Type\SingleEventSelection;
+use Manuxi\SuluEventBundle\Entity\Event;
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 use Sulu\Component\Content\Compat\PropertyInterface;
 
 class SingleEventSelectionTest extends TestCase
 {
+    use ProphecyTrait;
+
     private $singleEventSelection;
 
     /**
@@ -24,7 +27,7 @@ class SingleEventSelectionTest extends TestCase
     protected function setUp(): void
     {
         $this->eventRepository = $this->prophesize(ObjectRepository::class);
-        $entityManager         = $this->prophesize(EntityManagerInterface::class);
+        $entityManager = $this->prophesize(EntityManagerInterface::class);
         $entityManager->getRepository(Event::class)->willReturn($this->eventRepository->reveal());
 
         $this->singleEventSelection = new SingleEventSelection($entityManager->reveal());

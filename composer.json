@@ -43,7 +43,7 @@
         "symfony/phpunit-bridge": "^6.2 | ^7.0",
         "symfony/console": "^6.2 | ^7.0",
         "phpspec/prophecy": "^1.17",
-        "phpspec/prophecy-phpunit": "2.2"
+        "phpspec/prophecy-phpunit": "^2.4"
     },
     "autoload": {
         "psr-4": {

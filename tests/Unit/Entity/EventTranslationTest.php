@@ -6,11 +6,14 @@ namespace Manuxi\SuluEventBundle\Tests\Unit\Entity;
 
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\EventTranslation;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 use Sulu\Bundle\TestBundle\Testing\SuluTestCase;
 
 class EventTranslationTest extends SuluTestCase
 {
+    use ProphecyTrait;
+
     private ObjectProphecy $event;
     private EventTranslation $translation;
     private string $testString = 'Lorem ipsum dolor sit amet, ...';

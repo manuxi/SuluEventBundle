@@ -9,12 +9,15 @@ use Manuxi\SuluEventBundle\Entity\EventExcerpt;
 use Manuxi\SuluEventBundle\Entity\EventSeo;
 use Manuxi\SuluEventBundle\Entity\EventTranslation;
 use Manuxi\SuluEventBundle\Entity\Location;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 use Sulu\Bundle\MediaBundle\Entity\MediaInterface;
 use Sulu\Bundle\TestBundle\Testing\SuluTestCase;
 
 class EventTest extends SuluTestCase
 {
+    use ProphecyTrait;
+
     private ObjectProphecy $location;
     private Event $entity;
     private string $testString = 'Lorem ipsum dolor sit amet, ...';

@@ -6,10 +6,13 @@ namespace Manuxi\SuluEventBundle\Tests\Unit\Entity;
 
 use Manuxi\SuluEventBundle\Entity\Location;
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Sulu\Bundle\MediaBundle\Entity\MediaInterface;
 
 class LocationTest extends TestCase
 {
+    use ProphecyTrait;
+
     private ?Location $location = null;
 
     protected function setUp(): void
