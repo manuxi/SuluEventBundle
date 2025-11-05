@@ -122,8 +122,8 @@ class DoctrineListRepresentationFactory
     private function addColorsToListElements(array $listeElements)
     {
         foreach ($listeElements as $key => $element) {
-            $listeElements[$key]['typeColor'] = $this->eventTypeSelect->getColor($element['type']);
-            $listeElements[$key]['typeName'] = $this->eventTypeSelect->getTypeName($element['type']);
+            $listeElements[$key]['typeColor'] = $this->eventTypeSelect->getColor($element['type'] ?? 'default');
+            $listeElements[$key]['typeName'] = $this->eventTypeSelect->getTypeName($element['type'] ?? 'default');
         }
         return $listeElements;
     }
