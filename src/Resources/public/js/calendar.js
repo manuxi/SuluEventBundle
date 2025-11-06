@@ -66,6 +66,42 @@ function initializeCalendar(calendarEl) {
     const toggleLocation = calendarEl.dataset.toggleLocation === 'true';
     const toggleType = calendarEl.dataset.toggleType === 'true';
 
+    // ============================================================================
+    // TRANSLATIONS - Centralized for easy customization
+    // ============================================================================
+    const translations = {
+        de: {
+            // Button texts
+            today: 'Heute',
+            month: 'Monat',
+            week: 'Woche',
+            day: 'Tag',
+            list: 'Liste',
+            multiMonthYear: 'Jahr',
+            listWeek: 'Wochenliste',
+            listMonth: 'Monatsliste',
+            view: 'Sicht',
+            // Error messages
+            errorLoadingEvents: 'Fehler beim Laden der Events'
+        },
+        en: {
+            // Button texts
+            today: 'Today',
+            month: 'Month',
+            week: 'Week',
+            day: 'Day',
+            list: 'List',
+            multiMonthYear: 'Year',
+            listWeek: 'List Week',
+            listMonth: 'List Month',
+            view: 'View',
+            // Error messages
+            errorLoadingEvents: 'Error loading events'
+        }
+    };
+
+    const t = translations[locale] || translations.en;
+
     // Handle allowedViews - can be comma-separated string or already parsed
     let allowedViews = calendarEl.dataset.allowedViews || 'dayGridMonth';
     if (allowedViews && typeof allowedViews === 'string' && allowedViews.includes(',')) {
@@ -111,21 +147,14 @@ function initializeCalendar(calendarEl) {
                 };
             }
 
-            // Locale-specific button text
-            const buttonText = locale === 'de' ? {
-                today: 'Heute',
-                month: 'Monat',
-                week: 'Woche',
-                day: 'Tag',
-                list: 'Liste',
-                multiMonthYear: 'Jahr'
-            } : {
-                today: 'Today',
-                month: 'Month',
-                week: 'Week',
-                day: 'Day',
-                list: 'List',
-                multiMonthYear: 'Year'
+            // Locale-specific button text (from centralized translations)
+            const buttonText = {
+                today: t.today,
+                month: t.month,
+                week: t.week,
+                day: t.day,
+                list: t.list,
+                multiMonthYear: t.multiMonthYear
             };
 
             const buttonIcons = {
@@ -166,13 +195,13 @@ function initializeCalendar(calendarEl) {
 
                 // Button text
                 buttonText: {
-                    listWeek: locale === 'de' ? 'Wochenliste' : 'List Week',
-                    listMonth: locale === 'de' ? 'Monatsliste' : 'List Month',
+                    listWeek: t.listWeek,
+                    listMonth: t.listMonth,
                 },
                 buttonIcons: false,
 
                 viewHint: function(hint) {
-                    return (locale === 'de' ? 'Sicht' : 'View') +' '+ hint;
+                    return t.view + ' ' + hint;
                 },
 
                 // Display options
@@ -400,7 +429,7 @@ function initializeCalendar(calendarEl) {
                     multiMonthYear: {
                         type: 'multiMonthYear',
                         duration: { months: yearMonths },
-                        buttonText: locale === 'de' ? 'Jahr' : 'Year'
+                        buttonText: t.multiMonthYear
                     }
                 },
                 contentHeight: 'auto',
@@ -423,9 +452,6 @@ function initializeCalendar(calendarEl) {
         })
         .catch(error => {
             console.error('Error loading calendar events:', error);
-            const errorMsg = locale === 'de'
-                ? 'Fehler beim Laden der Events'
-                : 'Error loading events';
-            calendarEl.innerHTML = '<div class="alert alert-danger">' + errorMsg + '</div>';
+            calendarEl.innerHTML = '<div class="alert alert-danger">' + t.errorLoadingEvents + '</div>';
         });
 }
