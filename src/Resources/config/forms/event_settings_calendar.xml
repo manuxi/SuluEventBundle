@@ -145,28 +145,33 @@
                     </params>
                 </property>
 
-                <property name="allowedCalenderViews" type="select" colspan="4" visibleCondition="__parent.toggleCalendarView">
+                <property name="allowedCalendarViews" type="select" colspan="4" visibleCondition="__parent.toggleCalendarView">
                     <meta>
                         <title>sulu_event.config.properties.allowed_calendar_views</title>
                         <info_text>sulu_event.config.properties.allowed_calendar_views_info</info_text>
                     </meta>
                     <params>
                         <param name="default_values" type="collection">
-                            <param name="listWeek"/>
-                            <param name="listMonth"/>
+                            <param name="dayGridMonth"/>
                         </param>
 
                         <param name="values" type="collection">
-                            <param name="dayGridMonth">
-                                <meta>
-                                    <title lang="en">Month Grid</title>
-                                    <title lang="de">Monatsraster</title>
-                                </meta>
-                            </param>
                             <param name="timeGridWeek">
                                 <meta>
                                     <title lang="en">Week with Times</title>
-                                    <title lang="de">Woche mit Uhrzeiten</title>
+                                    <title lang="de">Woche (mit Uhrzeiten)</title>
+                                </meta>
+                            </param>
+                            <param name="dayGridMonth">
+                                <meta>
+                                    <title lang="en">Month Grid</title>
+                                    <title lang="de">Monat (Raster)</title>
+                                </meta>
+                            </param>
+                            <param name="multiMonthYear">
+                                <meta>
+                                    <title lang="en">Year Overview</title>
+                                    <title lang="de">Jahresübersicht</title>
                                 </meta>
                             </param>
                             <param name="listWeek">
@@ -179,12 +184,6 @@
                                 <meta>
                                     <title lang="en">Month List</title>
                                     <title lang="de">Monatsliste</title>
-                                </meta>
-                            </param>
-                            <param name="multiMonthYear">
-                                <meta>
-                                    <title lang="en">Year Overview</title>
-                                    <title lang="de">Jahresübersicht</title>
                                 </meta>
                             </param>
                         </param>

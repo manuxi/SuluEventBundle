@@ -13,6 +13,7 @@
  * - Custom event rendering for better readability
  * - Event type colors
  * - Improved title display with line breaks
+ * - Multiple calendar instances support
  */
 
 // Import FullCalendar core
@@ -31,8 +32,19 @@ import enLocale from '@fullcalendar/core/locales/en-gb';
 import { Popover } from 'bootstrap';
 
 document.addEventListener('DOMContentLoaded', function() {
-    const calendarEl = document.getElementById('event-calendar');
+    const calendarElements = document.querySelectorAll('.event-calendar');
 
+    if (calendarElements.length === 0) {
+        return;
+    }
+
+    // Initialize each calendar instance
+    calendarElements.forEach(function(calendarEl) {
+        initializeCalendar(calendarEl);
+    });
+});
+
+function initializeCalendar(calendarEl) {
     if (!calendarEl) {
         return;
     }
@@ -53,7 +65,29 @@ document.addEventListener('DOMContentLoaded', function() {
     const toggleView = calendarEl.dataset.toggleView === 'true';
     const toggleLocation = calendarEl.dataset.toggleLocation === 'true';
     const toggleType = calendarEl.dataset.toggleType === 'true';
-    const allowedViews = calendarEl.dataset.allowedViews || 'dayGridMonth';
+
+    // Handle allowedViews - can be comma-separated string or already parsed
+    let allowedViews = calendarEl.dataset.allowedViews || 'dayGridMonth';
+    if (allowedViews && typeof allowedViews === 'string' && allowedViews.includes(',')) {
+        allowedViews = allowedViews.split(',').join(',');
+    }
+
+    const desiredOrder = [
+        'timeGridWeek',
+        'dayGridMonth',
+        'multiMonthYear',
+        'listWeek',
+        'listMonth'
+    ];
+
+    const allowedViewsArray = allowedViews.split(',').map(v => v.trim());
+
+    allowedViewsArray.sort((a, b) => {
+        return desiredOrder.indexOf(a) - desiredOrder.indexOf(b);
+    });
+
+    const sortedAllowedViewsString = allowedViewsArray.join(',');
+    const showViewToggle = allowedViewsArray.length > 1;
 
     // Fetch events to determine valid range
     fetch(eventsUrl)
@@ -127,12 +161,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 headerToolbar: {
                     left: 'prev,next today',
                     center: 'title',
-                    right: toggleView ? allowedViews : ''
+                    right: toggleView && showViewToggle ? sortedAllowedViewsString : ''
                 },
 
                 // Button text
-                buttonText: buttonText,
+                buttonText: {
+                    listWeek: locale === 'de' ? 'Wochenliste' : 'List Week',
+                    listMonth: locale === 'de' ? 'Monatsliste' : 'List Month',
+                },
                 buttonIcons: false,
+
+                viewHint: function(hint) {
+                    return (locale === 'de' ? 'Sicht' : 'View') +' '+ hint;
+                },
 
                 // Display options
                 weekNumbers: weekNumbers,
@@ -199,120 +240,53 @@ document.addEventListener('DOMContentLoaded', function() {
                     const event = info.event;
                     const extendedProps = event.extendedProps;
 
-                    if (info.view.type.startsWith('list')) {
-                        const url = info.event.extendedProps?.url || info.event.url;
-                        if (url) {
-                            const td = info.el.querySelector('.fc-list-event-title');
-                            if (td) {
-                                const innerHTML = td.innerHTML;
-                                td.innerHTML = `<a href="${url}" class="fc-list-event-link">${innerHTML}</a>`;
-                            }
-                        }
-                    }
+                    // Get type color or fallback to default
+                    const typeColor = (extendedProps.type && extendedProps.type.color)
+                        ? extendedProps.type.color
+                        : eventColor;
 
-                    // Determine type color FIRST
-                    let typeColor = eventColor;
-                    if (extendedProps.typeColor) {
-                        typeColor = extendedProps.typeColor;
-                    }
+                    // Apply color
+                    info.el.style.backgroundColor = typeColor + '1a';  // 10% opacity
+                    info.el.style.borderColor = typeColor;
+                    info.el.style.color = typeColor;
 
-                    // set color for style
-                    const styleId = 'event-type-style-' + extendedProps.type;
-                    if (!document.getElementById(styleId)) {
-                        const style = document.createElement('style');
-                        style.id = styleId;
-                        style.textContent = `.event-type-${extendedProps.type} { --event-type-color: ${typeColor}; }`;
-                        document.head.appendChild(style);
-                    }
+                    // Build tooltip content
+                    let tooltipContent = '<div class="event-popover">';
+                    tooltipContent += '<strong>' + event.title + '</strong><br>';
 
-                    // Helper function to escape HTML
-                    const escapeHtml = (text) => {
-                        const div = document.createElement('div');
-                        div.textContent = text;
-                        return div.innerHTML;
-                    };
-
-                    // Build popover content with HTML
-                    let popoverContent = '<div class="event-popover-content">';
-
-                    // Title
-                    popoverContent += '<div class="event-popover-title">' + escapeHtml(event.title) + '</div>';
-
-                    // Type with colored dot - use typeColor determined above
-                    if (toggleType && extendedProps.type) {
-                        popoverContent += '<div class="event-popover-type">' +
-                            '<span class="event-type-dot event-type-' + extendedProps.type + '" style="background-color: ' + typeColor + ';" style="--event-type-color: ' + typeColor + ';"></span>' +
-                            escapeHtml(extendedProps.type_translation) +
-                            '</div>';
-                    }
-
-                    // Time if not all-day
-                    if (event.start && event.start.getHours() !== 0) {
-                        const startTime = event.start.toLocaleTimeString(locale, {
+                    if (event.start) {
+                        const startStr = event.start.toLocaleString(locale === 'de' ? 'de-DE' : 'en-GB', {
+                            weekday: 'short',
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
                             hour: '2-digit',
                             minute: '2-digit'
                         });
-
-                        let timeDisplay = '';
-                        if (event.end && event.end.getHours() !== 0) {
-                            const endTime = event.end.toLocaleTimeString(locale, {
-                                hour: '2-digit',
-                                minute: '2-digit'
-                            });
-                            timeDisplay = startTime + ' - ' + endTime;
-                        } else {
-                            timeDisplay = startTime;
-                        }
-                        popoverContent += '<div class="event-popover-time"><i class="bi bi-clock"></i> ' + escapeHtml(timeDisplay) + '</div>';
+                        tooltipContent += '<small>' + startStr + '</small><br>';
                     }
 
-                    // Summary (excerpt/teaser)
-                    if (extendedProps.summary) {
-                        popoverContent += '<div class="event-popover-summary">' + escapeHtml(extendedProps.summary) + '</div>';
-                    }
-
-                    // Full text/description if available
-                    if (extendedProps.text && extendedProps.text !== extendedProps.summary) {
-                        const maxLength = 200;
-                        let textContent = extendedProps.text;
-                        if (textContent.length > maxLength) {
-                            textContent = textContent.substring(0, maxLength) + '...';
-                        }
-                        popoverContent += '<div class="event-popover-text">' + escapeHtml(textContent) + '</div>';
-                    }
-
-                    // Location
                     if (toggleLocation && extendedProps.location) {
-                        popoverContent += '<div class="event-popover-location"><i class="bi bi-geo-alt-fill"></i> ' + escapeHtml(extendedProps.location) + '</div>';
+                        tooltipContent += '<small><i class="bi bi-geo-alt"></i> ' + extendedProps.location + '</small><br>';
                     }
 
-                    popoverContent += '</div>';
+                    if (toggleType && extendedProps.type && extendedProps.type.name) {
+                        tooltipContent += '<small><i class="bi bi-tag"></i> ' + extendedProps.type.name + '</small>';
+                    }
+
+                    tooltipContent += '</div>';
 
                     // Initialize Bootstrap Popover
                     new Popover(info.el, {
-                        trigger: 'hover focus',
-                        placement: 'auto',
+                        title: '',
+                        content: tooltipContent,
                         html: true,
-                        content: popoverContent,
-                        container: 'body',
-                        customClass: 'event-popover',
-                        delay: { show: 300, hide: 100 }
+                        trigger: 'hover',
+                        placement: 'top',
+                        container: 'body'
                     });
 
-                    info.el.addEventListener('shown.bs.popover', () => {
-                        const popoverEl = document.querySelector('.popover');
-                        if (popoverEl) {
-                            popoverEl.style.setProperty('--event-type-color', extendedProps.typeColor);
-                        }
-                    });
-
-                    // Apply type color with subtle background for month/week view
-                    info.el.style.backgroundColor = typeColor + '1a';  // 10% opacity
-                    info.el.style.borderColor = typeColor;
-                    info.el.style.borderWidth = '2px';
-                    info.el.style.borderLeftWidth = '4px';  // Stronger left border for type indication
-
-                    // Apply type color to list view dot
+                    // Style the dot for list view
                     const dot = info.el.querySelector('.fc-list-event-dot');
                     if (dot) {
                         dot.style.borderColor = typeColor;
@@ -389,4 +363,4 @@ document.addEventListener('DOMContentLoaded', function() {
                 : 'Error loading events';
             calendarEl.innerHTML = '<div class="alert alert-danger">' + errorMsg + '</div>';
         });
-});
+}

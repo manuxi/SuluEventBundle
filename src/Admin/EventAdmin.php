@@ -174,7 +174,7 @@ class EventAdmin extends Admin
                 ->addLocales($locales);
             $viewCollection->add($addFormView);
 
-            $addDetailsFormView = $this->viewBuilderFactory
+/*            $addDetailsFormView = $this->viewBuilderFactory
                 ->createFormViewBuilder(static::ADD_FORM_DETAILS_VIEW, '/details')
                 ->setResourceKey(Event::RESOURCE_KEY)
                 ->setFormKey(Event::FORM_KEY)
@@ -182,7 +182,7 @@ class EventAdmin extends Admin
                 ->setEditView(static::EDIT_FORM_VIEW)
                 ->addToolbarActions($formToolbarActions)
                 ->setParent(static::ADD_FORM_VIEW);
-            $viewCollection->add($addDetailsFormView);
+            $viewCollection->add($addDetailsFormView);*/
 
             // Configure Event Edit View
             $editFormView = $this->viewBuilderFactory

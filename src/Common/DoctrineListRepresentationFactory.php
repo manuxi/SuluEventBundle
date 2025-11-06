@@ -119,6 +119,12 @@ class DoctrineListRepresentationFactory
         return $listeElements;
     }
 
+    /**
+     * Adds types for EventTypeColorFieldTransformer
+     * Modify your list/events.xml like described in the readme
+     * @param array $listeElements
+     * @return array
+     */
     private function addColorsToListElements(array $listeElements)
     {
         foreach ($listeElements as $key => $element) {

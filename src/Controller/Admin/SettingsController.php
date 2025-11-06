@@ -108,7 +108,7 @@ class SettingsController extends AbstractRestController implements ClassResource
 
             'eventColor' => $entity->getEventColor(),
             'toggleCalendarView' => $entity->getToggleCalendarView(),
-            'allowedCalenderViews' => $entity->getAllowedCalendarViews(),
+            'allowedCalendarViews' => $entity->getAllowedCalendarViews(),
 
             'calendarWeekTimeStart' => $entity->getCalendarWeekTimeStart(),
             'calendarWeekTimeEnd' => $entity->getCalendarWeekTimeEnd(),
@@ -161,7 +161,12 @@ class SettingsController extends AbstractRestController implements ClassResource
 
         $entity->setEventColor($data['eventColor'] ?? '');
         $entity->setToggleCalendarView($data['toggleCalendarView'] ?? false);
-        $entity->setAllowedCalendarViews($data['allowedCalenderViews'] ?? '');
+
+        $allowedViews = $data['allowedCalendarViews'] ?? [];
+        if (is_string($allowedViews)) {
+            $allowedViews = !empty($allowedViews) ? explode(',', $allowedViews) : [];
+        }
+        $entity->setAllowedCalendarViews($allowedViews);
 
         $entity->setCalendarWeekTimeStart($data['calendarWeekTimeStart'] ?? '00:00');
         $entity->setCalendarWeekTimeEnd($data['calendarWeekTimeEnd'] ?? '23:59');
