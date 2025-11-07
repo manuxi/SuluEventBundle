@@ -9,14 +9,13 @@
 
 This bundle is based on the [Sulu Workshop](https://github.com/sulu/sulu-workshop) and has been equipped with more and more features over time.
 
-![img.png](docs/img/event-details.png)
+![img.png](docs/img/event-details.en.png)
 
 ## ✨ Features
 
 ### 📅 Event Management
-- **Complete Event Lifecycle** - Create, publish, and archive events
-- **Extensive Event Details** - Title, subtitle, summary, text, footer
-- **Date & Time** - Flexible start/end dates with timezone support
+- **Extensive Event Details** - Title, subtitle, summary, text, more
+- **Date & Time** - Flexible start/end dates
 - **Locations** - Separate location management with address details
 - **Media Integration** - Hero images, image galleries, PDF attachments
 - **SEO & Excerpt** - Full SEO and excerpt management
@@ -28,14 +27,14 @@ This bundle is based on the [Sulu Workshop](https://github.com/sulu/sulu-worksho
 ### 🔄 Advanced Features
 - **Recurring Events** - Daily, weekly, monthly, yearly patterns with exceptions
 - **Social Media Integration** - Per-event sharing configuration (Facebook, Twitter, LinkedIn, Instagram, WhatsApp)
-- **Calendar** - FullCalendar.js integration with month/week/list view
+- **Calendar** - FullCalendar.js integration with year/month/week/list view
 - **iCal Export** - Single events or full calendar subscriptions (webcal://)
 - **RSS/Atom Feeds** - Keep subscribers updated on new events
 - **Smart Content** - Usable as a content block in any Sulu page
 
 ## 📋 Prerequisites
 
-- PHP 8.1 or higher
+- PHP 8.2 or higher
 - Sulu CMS 2.6 or higher
 - Symfony 6.2 or higher
 - MySQL 5.7+ / MariaDB 10.2+ / PostgreSQL 11+

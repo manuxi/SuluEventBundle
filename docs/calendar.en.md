@@ -9,19 +9,31 @@ The SuluEventBundle includes an integrated calendar system powered by FullCalend
 
 ## Installation
 
-The installation is not entirely straightforward. There are certainly other ways (which I would love to hear about!), but I will describe mine:
+The installation is not entirely straightforward. There are certainly other ways (which I would love to hear about!), but I will describe mine.
+
+[Bootstrap-Icons](https://icons.getbootstrap.com/) are used for the calendar overlays.
 
 Load the sources in the main project:
 
 ```bash
-npm install --save @fullcalendar/core@^6.1.19 @fullcalendar/bootstrap5@^6.1.19 @fullcalendar/daygrid@^6.1.19 @fullcalendar/timegrid@^6.1.19 @fullcalendar/list@^6.1.19 @fullcalendar/multimonth@^6.1.19
+npm install --save @fullcalendar/core@^6.1.19 @fullcalendar/bootstrap5@^6.1.19 @fullcalendar/daygrid@^6.1.19 @fullcalendar/timegrid@^6.1.19 @fullcalendar/list@^6.1.19 @fullcalendar/multimonth@^6.1.19 bootstrap-icons@^1.13.1 core-js@3 
+```
+or
+```bash
+yarn add @fullcalendar/core@^6.1.19 @fullcalendar/bootstrap5@^6.1.19 @fullcalendar/daygrid@^6.1.19 @fullcalendar/timegrid@^6.1.19 @fullcalendar/list@^6.1.19 @fullcalendar/multimonth@^6.1.19 bootstrap-icons@^1.13.1 core-js@3
 ```
 
-Javascript and (optional) scss:
+Javascript:
 assets/website/js/app.js:
 ```javascript
 import '../../../vendor/manuxi/sulu-event-bundle/src/Resources/public/js/calendar.js';
 ```
+Insert Bootstrap-Icons:
+```javascript
+import 'bootstrap-icons/font/bootstrap-icons.css';
+```
+
+(Optional) scss:
 assets/website/scss/app.scss:
 ```scss
 @import '../../../vendor/manuxi/sulu-event-bundle/src/Resources/public/scss/calendar.scss';
@@ -64,10 +76,6 @@ config.resolve.symlinks = true;
 
 module.exports = config;
 ```
-
-[Bootstrap-Icons](https://icons.getbootstrap.com/) are used for the calendar overlays.
-
-I hope I haven't forgotten anything 😊
 
 ## Configuration
 
@@ -113,7 +121,7 @@ Add the calendar to any page using the content type:
 
 ### Template Integration
 
-An element with the id="event-calendar" is expected. Specify parameters as follows:
+An element with the class="event-calendar" is expected. Multiple calendars on one page are possible. Specify parameters as follows:
 
 ```html
 {% if toggle_calendar %}
@@ -121,7 +129,7 @@ An element with the id="event-calendar" is expected. Specify parameters as follo
         {% set eventsSettings = load_event_settings() %}
     {% endif %}
 
-    <div class="col-12 event-calendar justify-content-{{ alignment_content }}" id="event-calendar"
+    <div class="col-12 event-calendar justify-content-{{ alignment_content }}"
          data-events-url="{{ path('sulu_event.api.calendar', {
              '_locale': app.request.locale,
              'dataId': events.dataId|default(0),
@@ -152,24 +160,33 @@ An element with the id="event-calendar" is expected. Specify parameters as follo
 ### Example of a View-Selector
 
 ```html
-<property name="calendarView" type="single_select" colspan="10" visibleCondition="__parent.toggle_calendar == true">
+<property name="allowedCalendarViews" type="select" colspan="4" visibleCondition="__parent.toggleCalendarView">
     <meta>
-        <title lang="de">Kalenderansicht</title>
-        <title lang="de">Calendar View</title>
+        <title>sulu_event.config.properties.allowed_calendar_views</title>
+        <info_text>sulu_event.config.properties.allowed_calendar_views_info</info_text>
     </meta>
     <params>
-        <param name="defaultValue" value="listMonth"/>
+        <param name="default_values" type="collection">
+            <param name="dayGridMonth"/>
+        </param>
+
         <param name="values" type="collection">
-            <param name="dayGridMonth">
-                <meta>
-                    <title lang="en">Month Grid</title>
-                    <title lang="de">Monatsraster</title>
-                </meta>
-            </param>
             <param name="timeGridWeek">
                 <meta>
                     <title lang="en">Week with Times</title>
-                    <title lang="de">Woche mit Uhrzeiten</title>
+                    <title lang="de">Woche (mit Uhrzeiten)</title>
+                </meta>
+            </param>
+            <param name="dayGridMonth">
+                <meta>
+                    <title lang="en">Month Grid</title>
+                    <title lang="de">Monat (Raster)</title>
+                </meta>
+            </param>
+            <param name="multiMonthYear">
+                <meta>
+                    <title lang="en">Year Overview</title>
+                    <title lang="de">Jahresübersicht</title>
                 </meta>
             </param>
             <param name="listWeek">
@@ -184,46 +201,9 @@ An element with the id="event-calendar" is expected. Specify parameters as follo
                     <title lang="de">Monatsliste</title>
                 </meta>
             </param>
-            <param name="multiMonthYear">
-                <meta>
-                    <title lang="en">Year Overview (4 Monate)</title>
-                    <title lang="de">Jahresübersicht (4 Monate)</title>
-                </meta>
-            </param>
         </param>
     </params>
 </property>
-```
-
-#### Query Parameters
-
-- `start` - Start date (ISO 8601 format)
-- `end` - End date (ISO 8601 format)
-- `dataId` - Filter by page ID
-- `includeSubFolders` - Include events from sub-pages
-- `categories[]` - Filter by category IDs
-- `tags[]` - Filter by tag IDs
-- `location` - Filter by location name
-- `sortBy` - Sort field (startDate, title, created, changed)
-- `sortMethod` - Sort direction (asc, desc)
-
-#### Response Format
-
-```json
-[
-  {
-    "id": 123,
-    "title": "Event Title",
-    "start": "2025-11-15T14:00:00+00:00",
-    "end": "2025-11-15T16:00:00+00:00",
-    "allDay": false,
-    "url": "/events/event-slug",
-    "extendedProps": {
-      "summary": "Event description",
-      "location": "Location Name"
-    }
-  }
-]
 ```
 
 ## Rate Limiting

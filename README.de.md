@@ -9,33 +9,32 @@
 
 Dieses Bundle basiert auf dem [Sulu Workshop](https://github.com/sulu/sulu-workshop) und wurde im Laufe der Zeit mit immer mehr Features ausgestattet.
 
-![img.png](docs/img/event-details.png)
+![img.png](docs/img/event-details.de.png)
 
 ## ✨ Features
 
 ### 📅 Event-Verwaltung
-- **Vollständiger Event-Lebenszyklus** - Erstelle, veröffentliche und archiviere Events
-- **Umfangreiche Event-Details** - Titel, Untertitel, Zusammenfassung, Text, Fußzeile
-- **Datum & Uhrzeit** - Flexible Start-/Enddaten mit Zeitzonenunterstützung
+- **Umfangreiche Event-Details** - Titel, Untertitel, Zusammenfassung, Text, Weiteres
+- **Datum & Uhrzeit** - Flexible Start-/Enddaten
 - **Veranstaltungsorte** - Separate Ortsverwaltung mit Adressdetails
 - **Medien-Integration** - Hero-Bilder, Bildergalerien, PDF-Anhänge
 - **SEO & Excerpt** - Vollständige SEO- und Excerpt-Verwaltung
 - **Mehrsprachig** - Vollständige Übersetzungsunterstützung
-- **Autoren-Verwaltung** - Weise Kontakte als Event-Autoren zu
+- **Autoren-Verwaltung** - Kontakte können als Event-Autoren zugewiesen werden
 - **Einstellungen** - Umfangreiche Einstellungsmöglichkeiten
 - **Weiteres** - Papierkorb, Automationen, usw.
 - 
 ### 🔄 Erweiterte Features
 - **Wiederkehrende Events** - Tägliche, wöchentliche, monatliche, jährliche Muster mit Ausnahmen
 - **Social-Media-Integration** - Pro-Event-Sharing-Konfiguration (Facebook, Twitter, LinkedIn, Instagram, WhatsApp)
-- **Kalender** - FullCalendar.js Integration mit Monats-/Wochen-/Listenansicht
+- **Kalender** - FullCalendar.js Integration mit Jahres-/Monats-/Wochen-/Listenansicht
 - **iCal-Export** - Einzelne Events oder vollständige Kalender-Abonnements (webcal://)
-- **RSS/Atom-Feeds** - Halte Abonnenten über neue Events auf dem Laufenden
+- **RSS/Atom-Feeds** - Abonnenten über neue Events auf dem Laufenden halten
 - **Smart Content** - Als Content-Block in jeder Sulu-Seite verwendbar
 
 ## 📋 Voraussetzungen
 
-- PHP 8.1 oder höher
+- PHP 8.2 oder höher
 - Sulu CMS 2.6 oder höher
 - Symfony 6.2 oder höher
 - MySQL 5.7+ / MariaDB 10.2+ / PostgreSQL 11+
@@ -115,8 +114,7 @@ php bin/console doctrine:schema:update --force
 
 ## 🧶 Konfiguration
 
-Die umfangreiche Konfiguration findest Du hier: [Einstellungen](docs/settings.de.md)
-
+Die Konfiguration findest Du hier: [Einstellungen](docs/settings.de.md)
 
 ## 📖 Dokumentation
 

@@ -2,26 +2,37 @@
 
 ## Übersicht
 
-Das SuluEventBundle enthält ein integriertes Kalendersystem auf Basis von FullCalendar. Mit diesem Feature können Events in verschiedenen Kalenderansichten auf der Website dargestellt werden.
+Das SuluEventBundle enthält ein integriertes Kalendersystem auf Basis von FullCalendar. Mit diesem Feature können Events in verschiedenen Kalendersichten auf der Website dargestellt werden.
 
 ![img.png](img/calendar-month.de.png)
 ![img.png](img/calendar-year.de.png)
 
 ## Installation
 
-Die Installation ist nicht ganz ohne. Sicher gibt es andere Wege (von denen ich gerne mehr erfahre!), ich beschreibe meinen:
+Die Installation ist nicht ganz ohne. Sicher gibt es andere Wege (von denen ich gerne mehr erfahre!), ich beschreibe meinen.
+
+Für die Calendar-Overlays werden [Bootstrap-Icons](https://icons.getbootstrap.com/) verwendet.
 
 Im Hauptprojekt HP die Sources laden:
 
 ```bash
-npm install --save @fullcalendar/core@^6.1.19 @fullcalendar/bootstrap5@^6.1.19 @fullcalendar/daygrid@^6.1.19 @fullcalendar/timegrid@^6.1.19 @fullcalendar/list@^6.1.19 @fullcalendar/multimonth@^6.1.19
+npm install --save @fullcalendar/core@^6.1.19 @fullcalendar/bootstrap5@^6.1.19 @fullcalendar/daygrid@^6.1.19 @fullcalendar/timegrid@^6.1.19 @fullcalendar/list@^6.1.19 @fullcalendar/multimonth@^6.1.19 bootstrap-icons@^1.13.1 core-js@3 
+```
+oder
+```bash
+yarn add @fullcalendar/core@^6.1.19 @fullcalendar/bootstrap5@^6.1.19 @fullcalendar/daygrid@^6.1.19 @fullcalendar/timegrid@^6.1.19 @fullcalendar/list@^6.1.19 @fullcalendar/multimonth@^6.1.19 bootstrap-icons@^1.13.1 core-js@3
 ```
 
-Javascript und (optional) scss einbunden:
+Javascript einbinden:
 assets/website/js/app.js:
 ```javascript
 import '../../../vendor/manuxi/sulu-event-bundle/src/Resources/public/js/calendar.js';
 ```
+Bootstrap-Icons einfügen:
+```javascript
+import 'bootstrap-icons/font/bootstrap-icons.css';
+```
+(Optional) scss einbinden:
 assets/website/scss/app.scss:
 ```scss
 @import '../../../vendor/manuxi/sulu-event-bundle/src/Resources/public/scss/calendar.scss';
@@ -64,10 +75,6 @@ config.resolve.symlinks = true;
 
 module.exports = config;
 ```
-
-Für die Calendar-Overlays werden [Bootstrap-Icons](https://icons.getbootstrap.com/) verwendet. 
-
-Ich hoffe, ich habe nichts vergessen 😊
 
 ## Konfiguration
 
@@ -123,7 +130,7 @@ Einfacher Schalter:
 
 ### Template-Integration
 
-Es wird ein Element mit id="event-calendar" erwartet. Parameter wie folgt angeben:
+Es wird ein Element mit class="event-calendar" erwartet. Mehrere Kalender auf einer Seite sind möglich. Parameter wie folgt angeben:
 
 ```html
 {% if toggle_calendar %}
@@ -131,7 +138,7 @@ Es wird ein Element mit id="event-calendar" erwartet. Parameter wie folgt angebe
         {% set eventsSettings = load_event_settings() %}
     {% endif %}
 
-    <div class="col-12 event-calendar justify-content-{{ alignment_content }}" id="event-calendar"
+    <div class="col-12 event-calendar justify-content-{{ alignment_content }}"
          data-events-url="{{ path('sulu_event.api.calendar', {
              '_locale': app.request.locale,
              'dataId': events.dataId|default(0),
@@ -165,24 +172,33 @@ Es wird ein Element mit id="event-calendar" erwartet. Parameter wie folgt angebe
 ### Beispiel für Auswahl einer View
 
 ```html
-<property name="calendarView" type="single_select" colspan="10" visibleCondition="__parent.toggle_calendar == true">
+<property name="allowedCalendarViews" type="select" colspan="4" visibleCondition="__parent.toggleCalendarView">
     <meta>
-        <title lang="de">Kalenderansicht</title>
-        <title lang="de">Calendar View</title>
+        <title>sulu_event.config.properties.allowed_calendar_views</title>
+        <info_text>sulu_event.config.properties.allowed_calendar_views_info</info_text>
     </meta>
     <params>
-        <param name="defaultValue" value="listMonth"/>
+        <param name="default_values" type="collection">
+            <param name="dayGridMonth"/>
+        </param>
+
         <param name="values" type="collection">
-            <param name="dayGridMonth">
-                <meta>
-                    <title lang="en">Month Grid</title>
-                    <title lang="de">Monatsraster</title>
-                </meta>
-            </param>
             <param name="timeGridWeek">
                 <meta>
                     <title lang="en">Week with Times</title>
-                    <title lang="de">Woche mit Uhrzeiten</title>
+                    <title lang="de">Woche (mit Uhrzeiten)</title>
+                </meta>
+            </param>
+            <param name="dayGridMonth">
+                <meta>
+                    <title lang="en">Month Grid</title>
+                    <title lang="de">Monat (Raster)</title>
+                </meta>
+            </param>
+            <param name="multiMonthYear">
+                <meta>
+                    <title lang="en">Year Overview</title>
+                    <title lang="de">Jahresübersicht</title>
                 </meta>
             </param>
             <param name="listWeek">
@@ -197,35 +213,10 @@ Es wird ein Element mit id="event-calendar" erwartet. Parameter wie folgt angebe
                     <title lang="de">Monatsliste</title>
                 </meta>
             </param>
-            <param name="multiMonthYear">
-                <meta>
-                    <title lang="en">Year Overview (4 Monate)</title>
-                    <title lang="de">Jahresübersicht (4 Monate)</title>
-                </meta>
-            </param>
         </param>
     </params>
 </property>
 ```
-
-### API-Endpunkt
-
-Der Kalender ruft Events über folgende URL ab:
-```
-GET /api/events/calendar/{locale}
-```
-
-#### Query-Parameter
-
-- `start` - Startdatum (ISO 8601 Format)
-- `end` - Enddatum (ISO 8601 Format)
-- `dataId` - Filterung nach Seiten-ID
-- `includeSubFolders` - Events von Unterseiten einbeziehen
-- `categories[]` - Filterung nach Kategorie-IDs
-- `tags[]` - Filterung nach Tag-IDs
-- `location` - Filterung nach Ortsname
-- `sortBy` - Sortierfeld (startDate, title, created, changed)
-- `sortMethod` - Sortierrichtung (asc, desc)
 
 ## Rate Limiting
 
