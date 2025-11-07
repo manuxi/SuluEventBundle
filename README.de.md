@@ -3,10 +3,15 @@
 ![symfony workflow](https://github.com/manuxi/SuluEventBundle/actions/workflows/symfony.yml/badge.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/manuxi/SuluEventBundle/LICENSE)
 ![GitHub Tag](https://img.shields.io/github/v/tag/manuxi/SuluEventBundle)
+![Github Release](https://img.shields.io/github/v/release/manuxi/SuluEventBundle?color=116ea3)
 ![Supports Sulu 2.6 or later](https://img.shields.io/badge/%20Sulu->=2.6-0088cc?color=00b2df)
+
 
 [🇬🇧 English Version](README.md)
 
+Das SuluEventBundle erweitert die Sulu CMF um eine umfassende Veranstaltungsverwaltung. 
+Es ermöglicht die Erstellung und Verwaltung von Events mit detaillierten Informationen, Orten, Medien und mehrsprachiger Unterstützung. 
+Erweiterte Funktionen wie wiederkehrende Termine, ein Kalender-Frontend, iCal-Export und Social-Media-Integration sind ebenfalls enthalten.
 Dieses Bundle basiert auf dem [Sulu Workshop](https://github.com/sulu/sulu-workshop) und wurde im Laufe der Zeit mit immer mehr Features ausgestattet.
 
 ![img.png](docs/img/event-details.de.png)
@@ -14,7 +19,7 @@ Dieses Bundle basiert auf dem [Sulu Workshop](https://github.com/sulu/sulu-works
 ## ✨ Features
 
 ### 📅 Event-Verwaltung
-- **Umfangreiche Event-Details** - Titel, Untertitel, Zusammenfassung, Text, Weiteres
+- **Umfangreiche Event-Details** - Titel, Untertitel, Zusammenfassung, Text und weiteres
 - **Datum & Uhrzeit** - Flexible Start-/Enddaten
 - **Veranstaltungsorte** - Separate Ortsverwaltung mit Adressdetails
 - **Medien-Integration** - Hero-Bilder, Bildergalerien, PDF-Anhänge
