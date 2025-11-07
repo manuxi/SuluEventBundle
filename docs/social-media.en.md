@@ -4,6 +4,8 @@
 
 The social media feature allows visitors to share events across various social platforms and provides event organizers with tools to configure social media settings per event.
 
+![img.png](img/social-media.en.png)
+
 ## Configuration
 
 Social settings can be configured for each event individually in the **Social Media** tab of the event editor.

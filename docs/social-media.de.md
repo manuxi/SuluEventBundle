@@ -4,6 +4,8 @@
 
 Das Social-Media-Feature ermöglicht es Besuchern, Events auf verschiedenen Social-Media-Plattformen zu teilen, und bietet Veranstaltern Tools zur Konfiguration von Social-Media-Einstellungen pro Event.
 
+![img.png](img/social-media.de.png)
+
 ## Konfiguration
 
 Social-Media-Einstellungen können für jedes Event individuell im Tab **Social Media** des Event-Editors konfiguriert werden.

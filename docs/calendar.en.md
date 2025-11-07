@@ -16,11 +16,13 @@ The installation is not entirely straightforward. There are certainly other ways
 Load the sources in the main project:
 
 ```bash
-npm install --save @fullcalendar/core@^6.1.19 @fullcalendar/bootstrap5@^6.1.19 @fullcalendar/daygrid@^6.1.19 @fullcalendar/timegrid@^6.1.19 @fullcalendar/list@^6.1.19 @fullcalendar/multimonth@^6.1.19 bootstrap-icons@^1.13.1 core-js@3 
+npm install --save @fullcalendar/core@^6.1.19 @fullcalendar/bootstrap5@^6.1.19 @fullcalendar/daygrid@^6.1.19 @fullcalendar/timegrid@^6.1.19 @fullcalendar/list@^6.1.19 @fullcalendar/multimonth@^6.1.19 bootstrap-icons@^1.13.1
+npm install --save-dev core-js@^3.38.1
 ```
 or
 ```bash
-yarn add @fullcalendar/core@^6.1.19 @fullcalendar/bootstrap5@^6.1.19 @fullcalendar/daygrid@^6.1.19 @fullcalendar/timegrid@^6.1.19 @fullcalendar/list@^6.1.19 @fullcalendar/multimonth@^6.1.19 bootstrap-icons@^1.13.1 core-js@3
+yarn add @fullcalendar/core@^6.1.19 @fullcalendar/bootstrap5@^6.1.19 @fullcalendar/daygrid@^6.1.19 @fullcalendar/timegrid@^6.1.19 @fullcalendar/list@^6.1.19 @fullcalendar/multimonth@^6.1.19 bootstrap-icons@^1.13.1
+yarn add --dev core-js@^3.38.1
 ```
 
 Javascript:

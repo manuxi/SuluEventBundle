@@ -16,11 +16,13 @@ Für die Calendar-Overlays werden [Bootstrap-Icons](https://icons.getbootstrap.c
 Im Hauptprojekt HP die Sources laden:
 
 ```bash
-npm install --save @fullcalendar/core@^6.1.19 @fullcalendar/bootstrap5@^6.1.19 @fullcalendar/daygrid@^6.1.19 @fullcalendar/timegrid@^6.1.19 @fullcalendar/list@^6.1.19 @fullcalendar/multimonth@^6.1.19 bootstrap-icons@^1.13.1 core-js@3 
+npm install --save @fullcalendar/core@^6.1.19 @fullcalendar/bootstrap5@^6.1.19 @fullcalendar/daygrid@^6.1.19 @fullcalendar/timegrid@^6.1.19 @fullcalendar/list@^6.1.19 @fullcalendar/multimonth@^6.1.19 bootstrap-icons@^1.13.1
+npm install --save-dev core-js@^3.38.1
 ```
 oder
 ```bash
-yarn add @fullcalendar/core@^6.1.19 @fullcalendar/bootstrap5@^6.1.19 @fullcalendar/daygrid@^6.1.19 @fullcalendar/timegrid@^6.1.19 @fullcalendar/list@^6.1.19 @fullcalendar/multimonth@^6.1.19 bootstrap-icons@^1.13.1 core-js@3
+yarn add @fullcalendar/core@^6.1.19 @fullcalendar/bootstrap5@^6.1.19 @fullcalendar/daygrid@^6.1.19 @fullcalendar/timegrid@^6.1.19 @fullcalendar/list@^6.1.19 @fullcalendar/multimonth@^6.1.19 bootstrap-icons@^1.13.1
+yarn add --dev core-js@^3.38.1
 ```
 
 Javascript einbinden:
