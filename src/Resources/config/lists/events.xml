@@ -52,15 +52,40 @@
             <joins ref="translation"/>
         </property>
 
-        <property name="startDate" visibility="always" translation="sulu_event.start_date" type="datetime">
+        <!-- normal date formatting -->
+        <!--
+        <property name="startDate" visibility="no" translation="sulu_event.start_date" type="datetime">
             <field-name>startDate</field-name>
             <entity-name>%sulu.model.event.class%</entity-name>
         </property>
 
-        <property name="endDate" visibility="always" translation="sulu_event.end_date" type="datetime">
+        <property name="endDate" visibility="no" translation="sulu_event.end_date" type="datetime">
             <field-name>endDate</field-name>
             <entity-name>%sulu.model.event.class%</entity-name>
         </property>
+        -->
+
+        <!-- new date formatting -->
+        <property name="startDateInternal" visibility="never">
+            <field-name>startDate</field-name>
+            <entity-name>%sulu.model.event.class%</entity-name>
+        </property>
+
+        <property name="endDateInternal" visibility="never">
+            <field-name>endDate</field-name>
+            <entity-name>%sulu.model.event.class%</entity-name>
+        </property>
+
+        <property name="startDate" visibility="no" translation="sulu_event.event_date">
+            <field-name>startDate</field-name>
+            <entity-name>%sulu.model.event.class%</entity-name>
+        </property>
+
+        <property name="endDate" visibility="no" translation="sulu_event.event_time">
+            <field-name>endDate</field-name>
+            <entity-name>%sulu.model.event.class%</entity-name>
+        </property>
+        <!-- end new date formatting -->
 
         <property name="subtitle" visibility="always" searchability="yes" translation="sulu_event.subtitle">
             <field-name>subtitle</field-name>

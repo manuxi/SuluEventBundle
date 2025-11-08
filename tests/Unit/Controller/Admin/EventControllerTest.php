@@ -6,7 +6,6 @@ namespace Manuxi\SuluEventBundle\Tests\Unit\Controller\Admin;
 
 use FOS\RestBundle\View\View;
 use FOS\RestBundle\View\ViewHandlerInterface;
-use Manuxi\SuluEventBundle\Common\DoctrineListRepresentationFactory;
 use Manuxi\SuluEventBundle\Controller\Admin\EventController;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\EventExcerpt;
@@ -14,6 +13,7 @@ use Manuxi\SuluEventBundle\Entity\EventSeo;
 use Manuxi\SuluEventBundle\Entity\Models\EventExcerptModel;
 use Manuxi\SuluEventBundle\Entity\Models\EventModel;
 use Manuxi\SuluEventBundle\Entity\Models\EventSeoModel;
+use Manuxi\SuluEventBundle\ListBuilder\DoctrineListRepresentationFactory;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Sulu\Bundle\TrashBundle\Application\TrashManager\TrashManagerInterface;

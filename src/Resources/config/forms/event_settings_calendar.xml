@@ -145,7 +145,7 @@
                     </params>
                 </property>
 
-                <property name="allowedCalendarViews" type="select" colspan="4" visibleCondition="__parent.toggleCalendarView">
+                <property name="allowedCalendarViews" type="select" colspan="4" mandatory="true" visibleCondition="__parent.toggleCalendarView">
                     <meta>
                         <title>sulu_event.config.properties.allowed_calendar_views</title>
                         <info_text>sulu_event.config.properties.allowed_calendar_views_info</info_text>

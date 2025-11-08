@@ -1,4 +1,4 @@
-# Resources/config/packages/sulu_event_bundle.yaml
+# Resources/config/packages/sulu_event.yaml
 # Default configuration for SuluEventBundle
 
 sulu_event:
@@ -37,3 +37,5 @@ sulu_event:
             color: '#dc3545'
 
     default_type: 'default'
+
+    list_date_format: 'time_labels'  # or 'clock_format', 'default'

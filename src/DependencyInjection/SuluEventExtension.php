@@ -30,6 +30,8 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
         $container->setParameter('sulu_event.types', $config['types'] ?? []);
         $container->setParameter('sulu_event.default_type', $config['default_type'] ?? 'default');
 
+        $container->setParameter('sulu_event.list_date_format', $config['list_date_format']);
+
         $loader = new XmlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.xml');
         $loader->load('controller.xml');
@@ -61,7 +63,7 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
             // Only prepend bundle defaults if project hasn't defined types
             // This allows projects to completely replace default types
             if (!$hasProjectTypes) {
-                $defaultConfigFile = __DIR__.'/../Resources/config/packages/sulu_event_bundle.yaml';
+                $defaultConfigFile = __DIR__.'/../Resources/config/packages/sulu_event.yaml';
                 $defaultConfig = Yaml::parseFile($defaultConfigFile);
 
                 if (isset($defaultConfig['sulu_event'])) {

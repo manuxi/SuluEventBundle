@@ -25,7 +25,7 @@ class EventTypeSelect
         string $defaultType = 'default',
     ) {
         // Types come from configuration:
-        // 1. Bundle default: Resources/config/packages/sulu_event_bundle.yaml
+        // 1. Bundle default: Resources/config/packages/sulu_event.yaml
         // 2. App override: config/packages/sulu_event.yaml
         // If app defines types, bundle defaults are completely replaced
         $this->types = $types;

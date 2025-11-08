@@ -30,7 +30,7 @@
             <tag name="sulu.context" context="admin"/>
         </service>
 
-        <service id="sulu_event.doctrine_list_representation_factory" class="Manuxi\SuluEventBundle\Common\DoctrineListRepresentationFactory">
+        <service id="sulu_event.doctrine_list_representation_factory" class="Manuxi\SuluEventBundle\ListBuilder\DoctrineListRepresentationFactory">
             <argument type="service" id="sulu_core.rest_helper"/>
             <argument type="service" id="sulu_core.list_rest_helper"/>
             <argument type="service" id="sulu_core.doctrine_list_builder_factory"/>
@@ -39,8 +39,14 @@
             <argument type="service" id="sulu_event.repository.event_translation"/>
             <argument type="service" id="sulu_media.media_manager"/>
             <argument type="service" id="sulu_event.type_selection"/>
-
+            <argument type="service" id="translator.default"/>
+            <argument>%sulu_event.list_date_format%</argument>
             <tag name="sulu.context" context="admin"/>
+        </service>
+
+        <service id="manuxi_sulu_event.list_builder.datetime_without_midnight_transformer"
+                 class="Manuxi\SuluEventBundle\ListBuilder\DateTimeWithoutMidnightTransformer">
+            <tag name="sulu.list.transformer" alias="datetime_without_midnight"/>
         </service>
 
         <!-- Repositories -->

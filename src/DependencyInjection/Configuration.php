@@ -46,6 +46,11 @@ class Configuration implements ConfigurationInterface
                 ->defaultValue('default')
             ->end()
 
+            ->scalarNode('list_date_format')
+                ->defaultValue('clock_format')
+                ->info('Format for date display in list view: "default", "clock_format", "time_labels"')
+            ->end()
+
             ->arrayNode('objects')
                 ->addDefaultsIfNotSet()
                 ->children()

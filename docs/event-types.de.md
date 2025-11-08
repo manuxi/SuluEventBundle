@@ -4,7 +4,7 @@ Die Event-Types-Konfiguration beinhaltet den Namen und die Farbe des Types.
 
 ### 1. Bundle
 
-**Datei:** `Resources/config/packages/sulu_event_bundle.yaml`
+**Datei:** `Resources/config/packages/sulu_event.yaml`
 
 ```yaml
 sulu_event:

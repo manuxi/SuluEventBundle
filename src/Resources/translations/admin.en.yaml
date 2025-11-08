@@ -1,5 +1,8 @@
 # Main namespace for event-related translations
 sulu_event:
+    # Formats
+    date_format: 'm/d/Y'
+    datetime_format: 'm/d/Y h:i A'
     # General event properties
     id: "Id"
     name: "Name"
@@ -95,6 +98,17 @@ sulu_event:
     filter:
         pending: "Pending"
         expired: "Expired"
+
+    # List eventDate/time
+    event_date: 'Date'
+    event_time: 'Time/End'
+    hour_label: ''
+    all_day: 'all day'
+    morning: 'morning'
+    noon: 'noon'
+    afternoon: 'afternoon'
+    evening: 'evening'
+    night: 'night'
 
     # Event Type translations
     event_type: "Event Type"

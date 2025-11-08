@@ -131,6 +131,7 @@ Detaillierte Dokumentation im [docs/](docs/) Verzeichnis.
 - [Feeds/iCal](docs/feeds-ical.de.md) - Feeds und iCal Handling
 - [Standorte](docs/locations.de.md) - Standorte, die Events zugeordnet werden
 - [Eigene Event-Types](docs/event-types.de.md) - Event-Types können selber konfiguriert werden
+- [Listenansicht](docs/list-view.de.md) - Listen-Ansicht-Tweaks
 - [List-Transformer](docs/list-transformer.de.md) - Typ-Transformer für Listen
 - [Settings](docs/settings.de.md) - Einstellungen
 
