@@ -1,6 +1,10 @@
+@import 'sulu-admin-bundle/containers/Application/colors.scss';
+
 .event-type-dot {
-    width: 10px;
-    height: 10px;
+    width: 18px;
+    height: 18px;
     border-radius: 50%;
     display: inline-block;
+    vertical-align: middle;
+    border: 2px solid $white;
 }
