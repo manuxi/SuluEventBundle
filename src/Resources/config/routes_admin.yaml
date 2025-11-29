@@ -1,15 +1,15 @@
 app_events_api:
-    type: attribute
     resource: Manuxi\SuluEventBundle\Controller\Admin\EventController
+    type: attribute
     options:
         expose: true
 app_locations_api:
-    type: attribute
     resource: Manuxi\SuluEventBundle\Controller\Admin\LocationController
+    type: attribute
     options:
         expose: true
 sulu_event_settings_api:
-    type: attribute
     resource: Manuxi\SuluEventBundle\Controller\Admin\SettingsController
+    type: attribute
     options:
         expose: true
