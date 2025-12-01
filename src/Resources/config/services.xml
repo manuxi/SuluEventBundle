@@ -79,17 +79,6 @@
             <argument type="service" id="doctrine"/>
         </service>
 
-        <service id="sulu_event.single_event_selection" class="Manuxi\SuluEventBundle\Content\Type\SingleEventSelection">
-            <argument type="service" id="doctrine.orm.default_entity_manager"/>
-
-            <tag name="sulu.content.type" alias="single_event_selection" />
-        </service>
-
-        <service id="sulu_event.event_selection" class="Manuxi\SuluEventBundle\Content\Type\EventSelection">
-            <argument type="service" id="doctrine.orm.default_entity_manager"/>
-
-            <tag name="sulu.content.type" alias="event_selection"/>
-        </service>
 
         <service id="Manuxi\SuluEventBundle\Routing\EventRouteDefaultsProvider">
             <argument type="service" id="sulu_event.repository.event"/>
@@ -97,56 +86,30 @@
             <tag name="sulu_route.defaults_provider"/>
         </service>
 
-        <!--
-        <service id="Manuxi\SuluEventBundle\Content\EventSelectionContentType">
-            <argument type="service" id="sulu_event.repository.event"/>
-
-            <tag name="sulu.content.type" alias="event_selection"/>
-        </service>
-        -->
-
         <service id="sulu_event.event_smart_content_provider" class="Manuxi\SuluEventBundle\Content\EventSmartContentProvider">
             <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="translator.default"/>
+            <argument>%sulu_event.types%</argument>
             <tag name="sulu_content.smart_content_provider" type="events"/>
         </service>
 
-        <!--
-        <service id="sulu_event.event_data_provider" class="Manuxi\SuluEventBundle\Content\EventDataProvider">
+        <!-- Property Resolvers -->
+        <service id="sulu_event.property_resolver.single_event_selection"
+                 class="Manuxi\SuluEventBundle\Content\PropertyResolver\SingleEventSelectionPropertyResolver">
+            <tag name="sulu_admin.property_resolver"/>
+        </service>
+
+        <service id="sulu_event.property_resolver.event_selection"
+                 class="Manuxi\SuluEventBundle\Content\PropertyResolver\EventSelectionPropertyResolver">
+            <tag name="sulu_admin.property_resolver"/>
+        </service>
+
+        <!-- Resource Loader -->
+        <service id="sulu_event.resource_loader.event"
+                 class="Manuxi\SuluEventBundle\Content\ResourceLoader\EventResourceLoader">
             <argument type="service" id="sulu_event.repository.event"/>
             <argument type="service" id="sulu_core.array_serializer"/>
-            <argument type="service" id="request_stack"/>
-            <argument type="service" id="doctrine.orm.entity_manager" />
-            <argument type="service" id="translator.default"/>
-
-            <tag name="sulu.smart_content.data_provider" alias="events"/>
-        </service>
-
-        <service id="Manuxi\SuluEventBundle\Content\EventDataProvider" class="Manuxi\SuluEventBundle\Content\EventDataProvider">
-            <argument type="service" id="sulu_event.repository.event"/>
-            <argument type="service" id="sulu_admin.serializer"/>
-            <argument type="service" id="request_stack"/>
-            <argument type="service" id="translator"/>
-            <tag name="sulu.smart_content.data_provider" alias="events"/>
-        </service>
-
-        <service id="sulu_event.event_data_provider.events_pending"
-                 class="Manuxi\SuluEventBundle\Content\EventDataProviderPending"
-                 parent="sulu_event.event_data_provider">
-            <tag name="sulu.smart_content.data_provider" alias="events_pending"/>
-        </service>
-
-        <service id="sulu_event.event_data_provider.events_expired"
-                 class="Manuxi\SuluEventBundle\Content\EventDataProviderExpired"
-                 parent="sulu_event.event_data_provider">
-            <tag name="sulu.smart_content.data_provider" alias="events_expired"/>
-        </service>
-        -->
-
-        <service id="sulu_event.webspace_selector"
-                 class="Manuxi\SuluEventBundle\Admin\Helper\WebspaceSelector"
-                 public="true">
-            <argument type="service" id="sulu_core.webspace.webspace_manager"/>
+            <tag name="sulu_content.resource_loader"/>
         </service>
 
         <service id="sulu_event.model.event" class="Manuxi\SuluEventBundle\Entity\Models\EventModel">

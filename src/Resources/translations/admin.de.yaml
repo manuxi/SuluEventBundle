@@ -1,4 +1,5 @@
 sulu_event:
+
     # Formats
     date_format: 'd.m.Y'
     datetime_format: 'd.m.Y H:i'
@@ -388,3 +389,6 @@ sulu_activity:
         # Settings activities
         event_settings:
             modified: "{userFullName} hat die Einstellungen für Veranstaltungen geändert."
+
+sulu_admin:
+    smart_content_label: "{count, plural, =1{# Veranstaltung ausgewählt} other{# Veranstaltungen ausgewählt}}"

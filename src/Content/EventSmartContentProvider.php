@@ -59,9 +59,13 @@ readonly class EventSmartContentProvider implements SmartContentProviderInterfac
      */
     private EntityRepository $entityRepository;
 
+    /**
+     * @param array<string, array{name: string, color: string}> $eventTypes
+     */
     public function __construct(
         EntityManagerInterface $entityManager,
         protected TranslatorInterface $translator,
+        private array $eventTypes = [],
     ) {
         $this->entityRepository = $entityManager->getRepository(Event::class);
     }
@@ -86,10 +90,20 @@ readonly class EventSmartContentProvider implements SmartContentProviderInterfac
 
     protected function getTypes(): array
     {
-        return [
+        $types = [
             ['type' => 'pending', 'title' => $this->translator->trans('sulu_event.filter.pending', [], 'admin')],
             ['type' => 'expired', 'title' => $this->translator->trans('sulu_event.filter.expired', [], 'admin')],
         ];
+
+        // Add configurable event types from config
+        foreach ($this->eventTypes as $key => $config) {
+            $types[] = [
+                'type' => $key,
+                'title' => $this->translator->trans($config['name'], [], 'admin'),
+            ];
+        }
+
+        return $types;
     }
 
     protected function getSorting(): array
@@ -104,7 +118,7 @@ readonly class EventSmartContentProvider implements SmartContentProviderInterfac
 
     /**
      * @param EventSmartContentCountFilters $filters
-     * @param array<string, mixed> $params
+     * @param array<string, mixed>          $params
      */
     public function countBy(array $filters, array $params = []): int
     {
@@ -116,8 +130,8 @@ readonly class EventSmartContentProvider implements SmartContentProviderInterfac
 
     /**
      * @param EventSmartContentFilters $filters
-     * @param array<string, string> $sortBys
-     * @param array<string, mixed> $params
+     * @param array<string, string>    $sortBys
+     * @param array<string, mixed>     $params
      *
      * @return array<array{id: string, title: string}>
      */
@@ -168,9 +182,9 @@ readonly class EventSmartContentProvider implements SmartContentProviderInterfac
             $operator = $filters['categoryOperator'] ?? 'OR';
             if ('AND' === $operator) {
                 foreach ($filters['categories'] as $i => $categoryId) {
-                    $qb->innerJoin('translation.categories', 'category' . $i)
-                        ->andWhere('category' . $i . '.id = :category' . $i)
-                        ->setParameter('category' . $i, $categoryId);
+                    $qb->innerJoin('translation.categories', 'category'.$i)
+                        ->andWhere('category'.$i.'.id = :category'.$i)
+                        ->setParameter('category'.$i, $categoryId);
                 }
             } else {
                 $qb->innerJoin('translation.categories', 'category')
@@ -184,9 +198,9 @@ readonly class EventSmartContentProvider implements SmartContentProviderInterfac
             $operator = $filters['tagOperator'] ?? 'OR';
             if ('AND' === $operator) {
                 foreach ($filters['tags'] as $i => $tagName) {
-                    $qb->innerJoin('translation.tags', 'tag' . $i)
-                        ->andWhere('tag' . $i . '.name = :tag' . $i)
-                        ->setParameter('tag' . $i, $tagName);
+                    $qb->innerJoin('translation.tags', 'tag'.$i)
+                        ->andWhere('tag'.$i.'.name = :tag'.$i)
+                        ->setParameter('tag'.$i, $tagName);
                 }
             } else {
                 $qb->innerJoin('translation.tags', 'tag')
@@ -200,9 +214,9 @@ readonly class EventSmartContentProvider implements SmartContentProviderInterfac
             $operator = $filters['websiteCategoryOperator'] ?? 'OR';
             if ('AND' === $operator) {
                 foreach ($filters['websiteCategories'] as $i => $categoryId) {
-                    $qb->innerJoin('translation.categories', 'websiteCategory' . $i)
-                        ->andWhere('websiteCategory' . $i . '.id = :websiteCategory' . $i)
-                        ->setParameter('websiteCategory' . $i, $categoryId);
+                    $qb->innerJoin('translation.categories', 'websiteCategory'.$i)
+                        ->andWhere('websiteCategory'.$i.'.id = :websiteCategory'.$i)
+                        ->setParameter('websiteCategory'.$i, $categoryId);
                 }
             } else {
                 $qb->innerJoin('translation.categories', 'websiteCategory')
@@ -216,9 +230,9 @@ readonly class EventSmartContentProvider implements SmartContentProviderInterfac
             $operator = $filters['websiteTagOperator'] ?? 'OR';
             if ('AND' === $operator) {
                 foreach ($filters['websiteTags'] as $i => $tagName) {
-                    $qb->innerJoin('translation.tags', 'websiteTag' . $i)
-                        ->andWhere('websiteTag' . $i . '.name = :websiteTag' . $i)
-                        ->setParameter('websiteTag' . $i, $tagName);
+                    $qb->innerJoin('translation.tags', 'websiteTag'.$i)
+                        ->andWhere('websiteTag'.$i.'.name = :websiteTag'.$i)
+                        ->setParameter('websiteTag'.$i, $tagName);
                 }
             } else {
                 $qb->innerJoin('translation.tags', 'websiteTag')
@@ -237,6 +251,7 @@ readonly class EventSmartContentProvider implements SmartContentProviderInterfac
     {
         if (empty($sortBys)) {
             $qb->orderBy('event.startDate', 'ASC');
+
             return;
         }
 
@@ -262,8 +277,18 @@ readonly class EventSmartContentProvider implements SmartContentProviderInterfac
         $hasPending = in_array('pending', $types, true);
         $hasExpired = in_array('expired', $types, true);
 
+        // Collect configurable event type keys
+        $configurableTypes = array_intersect($types, array_keys($this->eventTypes));
+
+        // Filter by configurable event types (if any selected)
+        if (!empty($configurableTypes)) {
+            $qb->andWhere('event.type IN (:eventTypes)')
+                ->setParameter('eventTypes', $configurableTypes);
+        }
+
+        // Temporal filters (pending/expired)
         if ($hasPending && $hasExpired) {
-            return; // All events
+            return; // All events (no temporal filter)
         }
 
         $now = new \DateTime();
@@ -271,14 +296,14 @@ readonly class EventSmartContentProvider implements SmartContentProviderInterfac
 
         if ($hasPending) {
             $qb->andWhere(
-                '(event.endDate IS NOT NULL AND event.endDate >= :now) OR ' .
+                '(event.endDate IS NOT NULL AND event.endDate >= :now) OR '.
                 '(event.endDate IS NULL AND event.startDate >= :todayStart)'
             );
             $qb->setParameter('now', $now);
             $qb->setParameter('todayStart', $todayStart);
         } elseif ($hasExpired) {
             $qb->andWhere(
-                '(event.endDate IS NOT NULL AND event.endDate < :now) OR ' .
+                '(event.endDate IS NOT NULL AND event.endDate < :now) OR '.
                 '(event.endDate IS NULL AND event.startDate < :todayStart)'
             );
             $qb->setParameter('now', $now);
@@ -288,11 +313,11 @@ readonly class EventSmartContentProvider implements SmartContentProviderInterfac
 
     public function getType(): string
     {
-        return 'events';
+        return Event::RESOURCE_KEY;
     }
 
     public function getResourceLoaderKey(): string
     {
-        return 'events';
+        return Event::RESOURCE_KEY;
     }
 }

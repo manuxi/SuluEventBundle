@@ -39,10 +39,16 @@
         </service>
 
         <!-- Event Calendar Content Type -->
-        <service id="sulu_event.content.type.calendar" 
+        <!--<service id="sulu_event.content.type.calendar"
                  class="Manuxi\SuluEventBundle\Content\Type\EventCalendarContentType">
             <argument type="service" id="sulu_event.repository.event"/>
             <tag name="sulu.content.type" alias="event_calendar"/>
+        </service>-->
+
+        <!-- Property Resolvers -->
+        <service id="sulu_event.property_resolver.event_calendar"
+                 class="Manuxi\SuluEventBundle\Content\PropertyResolver\EventCalendarPropertyResolver">
+            <tag name="sulu_admin.property_resolver"/>
         </service>
 
     </services>
