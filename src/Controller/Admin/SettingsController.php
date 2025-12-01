@@ -6,29 +6,25 @@ namespace Manuxi\SuluEventBundle\Controller\Admin;
 
 use Doctrine\ORM\EntityManagerInterface;
 use FOS\RestBundle\View\ViewHandlerInterface;
-use HandcraftedInTheAlps\RestRoutingBundle\Controller\Annotations\RouteResource;
-use HandcraftedInTheAlps\RestRoutingBundle\Routing\ClassResourceInterface;
 use Manuxi\SuluEventBundle\Domain\Event\Config\ModifiedEvent;
 use Manuxi\SuluEventBundle\Entity\EventSettings;
 use Sulu\Bundle\ActivityBundle\Application\Collector\DomainEventCollectorInterface;
 use Sulu\Component\Rest\AbstractRestController;
 use Sulu\Component\Security\SecuredControllerInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
-/**
- * @RouteResource("event-settings")
- */
 #[Route('/admin/api')]
-class SettingsController extends AbstractRestController implements ClassResourceInterface, SecuredControllerInterface
+class SettingsController extends AbstractRestController implements SecuredControllerInterface
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
         private DomainEventCollectorInterface $domainEventCollector,
         ViewHandlerInterface $viewHandler,
-        ?TokenStorageInterface $tokenStorage = null
+        ?TokenStorageInterface $tokenStorage = null,
     ) {
         parent::__construct($viewHandler, $tokenStorage);
     }
@@ -37,11 +33,11 @@ class SettingsController extends AbstractRestController implements ClassResource
         '/event-settings/{id}.{_format}',
         name: 'sulu_event.get_event-settings',
         requirements: [
-            '_format' => 'json|csv'
+            '_format' => 'json|csv',
         ],
         options: ['expose' => true],
         defaults: [
-            '_format' => 'json'
+            '_format' => 'json',
         ],
         methods: ['GET']
     )]
@@ -50,13 +46,14 @@ class SettingsController extends AbstractRestController implements ClassResource
         $entity = $this->entityManager->getRepository(EventSettings::class)->findOneBy([]);
 
         return $this->handleView($this->view($this->getDataForEntity($entity ?: new EventSettings())));
+        // return new JsonResponse($this->getDataForEntity($entity ?: new EventSettings()));
     }
 
     #[Route(
         '/event-settings/{id}.{_format}',
         name: 'sulu_event.put_event-settings',
         requirements: [
-            '_format' => 'json'
+            '_format' => 'json',
         ],
         options: ['expose' => true],
         defaults: ['_format' => 'json'],
@@ -79,6 +76,7 @@ class SettingsController extends AbstractRestController implements ClassResource
         $this->entityManager->flush();
 
         return $this->handleView($this->view($this->getDataForEntity($entity)));
+        // return new JsonResponse($this->getDataForEntity($entity));
     }
 
     protected function getDataForEntity(EventSettings $entity): array

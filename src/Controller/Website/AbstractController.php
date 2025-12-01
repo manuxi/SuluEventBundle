@@ -4,33 +4,27 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Controller\Website;
 
-use Exception;
 use Sulu\Bundle\HttpCacheBundle\Cache\SuluHttpCache;
 use Sulu\Bundle\MediaBundle\Media\Manager\MediaManagerInterface;
-use Sulu\Bundle\WebsiteBundle\Controller\WebsiteController;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController as SymfonyAbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
-abstract class AbstractController extends WebsiteController
+abstract class AbstractController extends SymfonyAbstractController
 {
     protected ?Request $request;
 
     public function __construct(
         RequestStack $requestStack,
-        protected MediaManagerInterface $mediaManager
+        protected MediaManagerInterface $mediaManager,
     ) {
         $this->request = $requestStack->getCurrentRequest();
     }
 
     /**
-     * @param string $viewTemplate
-     * @param array $parameters
-     * @param bool $preview
-     * @param bool $partial
-     * @return Response
-     * @throws Exception
+     * @throws \Exception
      */
     protected function prepareResponse(string $viewTemplate, array $parameters, bool $preview, bool $partial): Response
     {
@@ -59,8 +53,8 @@ abstract class AbstractController extends WebsiteController
                     )
                 );
             }
-            return $response;
 
+            return $response;
         } catch (\InvalidArgumentException $exception) {
             // template not found
             throw new HttpException(406, 'Error encountered while rendering content.', $exception);
@@ -101,7 +95,7 @@ abstract class AbstractController extends WebsiteController
         } else {
             $requestFormat = 'html';
         }
-        return $view . '.' . $requestFormat . '.twig';
-    }
 
+        return $view.'.'.$requestFormat.'.twig';
+    }
 }

@@ -301,6 +301,18 @@ class Event implements AuditableTranslatableInterface, SearchableInterface
         return $this;
     }
 
+    #[Serializer\VirtualProperty(name: 'seo')]
+    public function getSeo(): ?EventSeo
+    {
+        return $this->getEventSeo();
+    }
+
+    #[Serializer\VirtualProperty(name: 'excerpt')]
+    public function getExcerpt(): ?EventExcerpt
+    {
+        return $this->getEventExcerpt();
+    }
+
     public function getEventSeo(): EventSeo
     {
         if (!$this->eventSeo instanceof EventSeo) {

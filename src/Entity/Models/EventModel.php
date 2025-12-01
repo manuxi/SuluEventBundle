@@ -17,19 +17,12 @@ use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\Interfaces\EventModelInterface;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
 use Manuxi\SuluEventBundle\Repository\LocationRepository;
-use Manuxi\SuluSharedToolsBundle\Search\Event\PersistedEvent as SearchPersistedEvent;
-use Manuxi\SuluSharedToolsBundle\Search\Event\PreUpdatedEvent as SearchPreUpdatedEvent;
-use Manuxi\SuluSharedToolsBundle\Search\Event\RemovedEvent as SearchRemovedEvent;
-use Manuxi\SuluSharedToolsBundle\Search\Event\UpdatedEvent as SearchUpdatedEvent;
 use Manuxi\SuluSharedToolsBundle\Entity\Traits\ArrayPropertyTrait;
 use Sulu\Bundle\ActivityBundle\Application\Collector\DomainEventCollectorInterface;
 use Sulu\Bundle\ContactBundle\Entity\ContactRepository;
 use Sulu\Bundle\MediaBundle\Entity\MediaRepositoryInterface;
-use Sulu\Bundle\RouteBundle\Entity\RouteRepositoryInterface;
-use Sulu\Bundle\RouteBundle\Manager\RouteManagerInterface;
 use Sulu\Component\Rest\Exception\EntityNotFoundException;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class EventModel implements EventModelInterface
 {
@@ -40,11 +33,8 @@ class EventModel implements EventModelInterface
         private readonly LocationRepository $locationRepository,
         private readonly MediaRepositoryInterface $mediaRepository,
         private readonly ContactRepository $contactRepository,
-        private readonly RouteManagerInterface $routeManager,
-        private readonly RouteRepositoryInterface $routeRepository,
         private readonly EntityManagerInterface $entityManager,
         private readonly DomainEventCollectorInterface $domainEventCollector,
-        private readonly EventDispatcherInterface $dispatcher,
     ) {
     }
 
@@ -65,8 +55,7 @@ class EventModel implements EventModelInterface
         $this->domainEventCollector->collect(
             new RemovedEvent($entity->getId(), $entity->getTitle() ?? '')
         );
-        $this->dispatcher->dispatch(new SearchRemovedEvent($entity));
-        $this->removeRoutesForEntity($entity);
+
         $this->eventRepository->remove($entity->getId());
     }
 
@@ -83,12 +72,7 @@ class EventModel implements EventModelInterface
         );
 
         $entity = $this->eventRepository->save($entity);
-        $this->updateRoutesForEntity($entity);
-
-        // explicit flush to save routes persisted by updateRoutesForEntity()
         $this->entityManager->flush();
-
-        $this->dispatcher->dispatch(new SearchPersistedEvent($entity));
 
         return $entity;
     }
@@ -101,7 +85,6 @@ class EventModel implements EventModelInterface
     public function updateEvent(int $id, Request $request): Event
     {
         $entity = $this->findEventByIdAndLocale($id, $request);
-        $this->dispatcher->dispatch(new SearchPreUpdatedEvent($entity));
 
         $entity = $this->mapDataToEvent($entity, $request->request->all());
         $entity = $this->mapSettingsToEvent($entity, $request->request->all());
@@ -111,10 +94,7 @@ class EventModel implements EventModelInterface
         );
         $entity = $this->eventRepository->save($entity);
 
-        $this->updateRoutesForEntity($entity);
         $this->entityManager->flush();
-
-        $this->dispatcher->dispatch(new SearchUpdatedEvent($entity));
 
         return $entity;
     }
@@ -125,14 +105,12 @@ class EventModel implements EventModelInterface
     public function publish(int $id, Request $request): Event
     {
         $entity = $this->findEventByIdAndLocale($id, $request);
-        $this->dispatcher->dispatch(new SearchPreUpdatedEvent($entity));
 
         $this->domainEventCollector->collect(
             new PublishedEvent($entity, $request->request->all())
         );
 
         $entity = $this->eventRepository->publish($entity);
-        $this->dispatcher->dispatch(new SearchUpdatedEvent($entity));
 
         return $entity;
     }
@@ -143,12 +121,11 @@ class EventModel implements EventModelInterface
     public function unpublish(int $id, Request $request): Event
     {
         $entity = $this->findEventByIdAndLocale($id, $request);
-        $this->dispatcher->dispatch(new SearchPreUpdatedEvent($entity));
+
         $this->domainEventCollector->collect(
             new UnpublishedEvent($entity, $request->request->all())
         );
         $entity = $this->eventRepository->unpublish($entity);
-        $this->dispatcher->dispatch(new SearchUpdatedEvent($entity));
 
         return $entity;
     }
@@ -162,14 +139,12 @@ class EventModel implements EventModelInterface
             $entity = $entity->copyToLocale($destLocale);
         }
 
-        // @todo: test with more than one different locale
         $entity->setLocale($this->getLocaleFromRequest($request));
 
         $this->domainEventCollector->collect(
             new CopiedLanguageEvent($entity, $request->request->all())
         );
         $entity = $this->eventRepository->save($entity);
-        $this->dispatcher->dispatch(new SearchPersistedEvent($entity));
 
         return $entity;
     }
@@ -303,7 +278,6 @@ class EventModel implements EventModelInterface
      */
     private function mapSettingsToEvent(Event $entity, array $data): Event
     {
-        // settings (author, authored) changeable
         $authorId = $this->getProperty($data, 'author');
         if ($authorId) {
             $author = $this->contactRepository->findById($authorId);
@@ -323,28 +297,5 @@ class EventModel implements EventModelInterface
         }
 
         return $entity;
-    }
-
-    private function updateRoutesForEntity(Event $entity): void
-    {
-        $this->routeManager->createOrUpdateByAttributes(
-            Event::class,
-            (string) $entity->getId(),
-            $entity->getLocale(),
-            $entity->getRoutePath()
-        );
-    }
-
-    private function removeRoutesForEntity(Event $entity): void
-    {
-        $routes = $this->routeRepository->findAllByEntity(
-            Event::class,
-            (string) $entity->getId(),
-            $entity->getLocale()
-        );
-
-        foreach ($routes as $route) {
-            $this->routeRepository->remove($route);
-        }
     }
 }

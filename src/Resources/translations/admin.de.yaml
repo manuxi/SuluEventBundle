@@ -32,7 +32,7 @@ sulu_event:
     published_date: "Veröffentlichungsdatum"
     published_at: "Veröffentlicht am"
     show_author: "Autor anzeigen"
-    show_date: "Veröffentlichungsdatum anzeigen"
+    show_date: "Verfassungsdatum anzeigen"
 
     # Creator and author information
     created_date: "Erstellt am"
@@ -55,7 +55,7 @@ sulu_event:
         additional: "Zusätzliche Optionen"
         mandatory: "Verpflichtende Felder"
         optional: "Optionale Felder"
-        change_author: "Autor-Information anpassen"
+        change_author: "Verfassungsdatum/Autor"
         created_changed: "Erstellungs- und Änderungsinformationen"
 
     # General terms for events
@@ -128,6 +128,9 @@ sulu_event:
         presentation: "Präsentation"
         celebration: "Feier"
 
+    settings:
+        title: "Weiteres"
+
     # Configuration settings for events
     config:
         # Tab titles in settings
@@ -141,7 +144,6 @@ sulu_event:
         title:
             navi: "Einstellungen"
             general: "Einstellungen für Einzelansicht"
-            xbreadcrumbs: "Zwischenseiten für Breadcrumbs"
             general_display: "Allgemeine Anzeigeeinstellungen"
             calendar: "Kalender"
             calendar_basic: "Grundeinstellungen"
@@ -230,6 +232,11 @@ sulu_event:
             enable_location_filter: "Orts-Filter aktivieren"
             enable_date_filter: "Datums-Filter aktivieren"
             enable_search_filter: "Such-Filter aktivieren"
+
+            info:
+                author: "Verfasser kann hier angepasst werden"
+                authored_date: "Verfassungsdatum kann hier angepasst werden"
+
         # Calendar view options
         calendar_view:
             day_grid_month: "Monatsraster"
@@ -269,7 +276,7 @@ sulu_event:
 
     # Recurrence settings
     recurrence:
-        title: "Wiederholung"
+        title: "Zyklus"
         enable: "Wiederkehrende Veranstaltung"
         enable_info: "Aktivieren Sie diese Option, um die Veranstaltung zu wiederholen"
         frequency: "Wiederholungsrhythmus"
@@ -316,7 +323,7 @@ sulu_event:
 
     # Detailed Social Media section
     social_media:
-        title: "Social Media"
+        title: "Social Sharing"
         sharing_title: "Social Sharing"
         enable: "Social Media Sharing aktivieren"
         enable_info: "Ermöglicht das Teilen dieser Veranstaltung auf Social Media Plattformen"

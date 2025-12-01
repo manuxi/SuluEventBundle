@@ -71,13 +71,16 @@ class EventDataProvider extends BaseDataProvider
         array $filters,
         array $propertyParameter,
         array $options = [],
-        $limit = null,
-        $page = 1,
-        $pageSize = null,
+              $limit = null,
+              $page = 1,
+              $pageSize = null,
     ): DataProviderResult {
-        $locale = $options['locale'];
+        $locale = $options['locale'] ?? 'de';
+
         $request = $this->requestStack->getCurrentRequest();
-        $options['page'] = $request->get('p');
+        if ($request) {
+            $options['page'] = $request->get('p');
+        }
 
         $repo = $this->entityManager->getRepository(Event::class);
 

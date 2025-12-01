@@ -20,6 +20,18 @@ class LinkProvider implements LinkProviderInterface
     ) {
     }
 
+    public function getConfigurationBuilder(): LinkConfigurationBuilder
+    {
+        return LinkConfigurationBuilder::create()
+            ->setTitle($this->translator->trans('sulu_event.event', [], 'admin'))
+            ->setResourceKey(Event::RESOURCE_KEY)
+            ->setListAdapter('table')
+            ->setDisplayProperties(['title'])
+            ->setOverlayTitle($this->translator->trans('sulu_event.event', [], 'admin'))
+            ->setEmptyText($this->translator->trans('sulu_event.empty_list', [], 'admin'))
+            ->setIcon('su-calendar');
+    }
+
     public function getConfiguration(): LinkConfiguration
     {
         return LinkConfigurationBuilder::create()

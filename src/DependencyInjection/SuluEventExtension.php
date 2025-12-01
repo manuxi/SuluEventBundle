@@ -32,6 +32,11 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
 
         $container->setParameter('sulu_event.list_date_format', $config['list_date_format']);
 
+        $container->setParameter(
+            'sulu_event.routing.route_schema',
+            $config['routing']['route_schema']
+        );
+
         $loader = new XmlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.xml');
         $loader->load('controller.xml');
@@ -41,12 +46,10 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
         $loader->load('services-calendar.xml');
 
         $this->configurePersistence($config['objects'], $container);
-
     }
 
     public function prepend(ContainerBuilder $container)
     {
-
         if ($container->hasExtension('sulu_event')) {
             // Load all existing configs to check if project has defined types
             $configs = $container->getExtensionConfig('sulu_event');
@@ -72,8 +75,41 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
             }
         }
 
+        if ($container->hasExtension('cmsig_seal')) {
+            $container->prependExtensionConfig('cmsig_seal', [
+                'schemas' => [
+                    'events_admin' => [
+                        'dir' => __DIR__.'/../Resources/config/schemas',
+                    ],
+                    'events_website' => [
+                        'dir' => __DIR__.'/../Resources/config/schemas',
+                    ],
+                ],
+            ]);
+        }
 
+        if ($container->hasExtension('sulu_search')) {
+            $container->prependExtensionConfig('sulu_search', [
+                'admin' => [
+                    'resources' => [
+                        'events_admin' => [
+                            'name' => 'sulu_event.search.events',
+                            'icon' => 'su-calendar',
+                            'securityContext' => Event::SECURITY_CONTEXT,
+                            'route' => [
+                                'name' => EventAdmin::EDIT_FORM_VIEW,
+                                'resultToRoute' => [
+                                    'resourceId' => 'id',
+                                    'locale' => 'locale',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ]);
+        }
 
+        /*
         if ($container->hasExtension('sulu_search')) {
             $container->prependExtensionConfig(
                 'sulu_search',
@@ -107,8 +143,9 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
                 ]
             );
         }
+        */
 
-        if ($container->hasExtension('sulu_route')) {
+        /*if ($container->hasExtension('sulu_route')) {
             $container->prependExtensionConfig(
                 'sulu_route',
                 [
@@ -125,7 +162,7 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
                     ],
                 ]
             );
-        }
+        }*/
 
         if ($container->hasExtension('sulu_admin')) {
             $container->prependExtensionConfig(

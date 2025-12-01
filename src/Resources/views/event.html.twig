@@ -1,4 +1,4 @@
-{% extends "body.html.twig" %}
+{% extends "base.html.twig" %}
 
 {% block content %}
     {% if eventsSettings is not defined %}
@@ -62,7 +62,7 @@
                         {{ event.footer|raw }}
                     {% endif %}
 
-                    {% if event.socialSettings.enableSocialShare %}
+                    {% if event.socialSettings.enableSocialShare|default %}
                         <div class="social-share">
                             <h3>{{ 'sulu_event.feed.share_event'|trans }}</h3>
 

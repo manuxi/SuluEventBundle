@@ -8,7 +8,7 @@
             <argument type="service" id="sulu_admin.view_builder_factory"/>
             <argument type="service" id="sulu_security.security_checker"/>
             <argument type="service" id="sulu_core.webspace.webspace_manager"/>
-            <argument type="service" id="sulu_automation.automation_view_builder_factory"/>
+            <argument type="service" id="sulu_activity.activity_list_view_builder_factory"/>
 
             <tag name="sulu.admin"/>
             <tag name="sulu.context" context="admin"/>
@@ -97,12 +97,21 @@
             <tag name="sulu_route.defaults_provider"/>
         </service>
 
+        <!--
         <service id="Manuxi\SuluEventBundle\Content\EventSelectionContentType">
             <argument type="service" id="sulu_event.repository.event"/>
 
             <tag name="sulu.content.type" alias="event_selection"/>
         </service>
+        -->
 
+        <service id="sulu_event.event_smart_content_provider" class="Manuxi\SuluEventBundle\Content\EventSmartContentProvider">
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="translator.default"/>
+            <tag name="sulu_content.smart_content_provider" type="events"/>
+        </service>
+
+        <!--
         <service id="sulu_event.event_data_provider" class="Manuxi\SuluEventBundle\Content\EventDataProvider">
             <argument type="service" id="sulu_event.repository.event"/>
             <argument type="service" id="sulu_core.array_serializer"/>
@@ -113,7 +122,14 @@
             <tag name="sulu.smart_content.data_provider" alias="events"/>
         </service>
 
-        <!--
+        <service id="Manuxi\SuluEventBundle\Content\EventDataProvider" class="Manuxi\SuluEventBundle\Content\EventDataProvider">
+            <argument type="service" id="sulu_event.repository.event"/>
+            <argument type="service" id="sulu_admin.serializer"/>
+            <argument type="service" id="request_stack"/>
+            <argument type="service" id="translator"/>
+            <tag name="sulu.smart_content.data_provider" alias="events"/>
+        </service>
+
         <service id="sulu_event.event_data_provider.events_pending"
                  class="Manuxi\SuluEventBundle\Content\EventDataProviderPending"
                  parent="sulu_event.event_data_provider">
@@ -138,11 +154,8 @@
             <argument type="service" id="sulu_event.repository.location"/>
             <argument type="service" id="sulu.repository.media"/>
             <argument type="service" id="sulu.repository.contact"/>
-            <argument type="service" id="sulu_route.manager.route_manager"/>
-            <argument type="service" id="sulu.repository.route"/>
             <argument type="service" id="doctrine.orm.entity_manager" />
             <argument type="service" id="sulu_activity.domain_event_collector"/>
-            <argument type="service" id="event_dispatcher"/>
         </service>
 
         <service id="sulu_event.model.event_seo" class="Manuxi\SuluEventBundle\Entity\Models\EventSeoModel">
@@ -186,11 +199,36 @@
             <tag name="sulu.link.provider" alias="event"/>
         </service>
 
-        <!--SearchSubscriber-->
-        <!--<service id="sulu_event.search_subscriber" class="Manuxi\SuluEventBundle\Search\EventSearchSubscriber">
-            <argument type="service" id="massive_search.search_manager"/>
+        <!-- Search -->
+        <!-- Admin Search Provider -->
+        <service id="sulu_event.search.admin_provider" class="Manuxi\SuluEventBundle\Search\EventAdminSearchProvider">
+            <argument type="service" id="sulu_event.repository.event"/>
+            <argument type="service" id="sulu_core.webspace.webspace_manager"/>
+            <tag name="cmsig_seal.reindex_provider"/>
+        </service>
+
+        <!-- Website Search Provider -->
+        <service id="sulu_event.search.website_provider" class="Manuxi\SuluEventBundle\Search\EventWebsiteSearchProvider">
+            <argument type="service" id="sulu_event.repository.event"/>
+            <argument type="service" id="sulu_core.webspace.webspace_manager"/>
+            <tag name="cmsig_seal.reindex_provider"/>
+        </service>
+
+        <!-- Search Listener for live updates -->
+        <!--
+        <service id="sulu_event.search.listener" class="Manuxi\SuluEventBundle\Search\EventSearchListener">
+            <argument type="service" id="cmsig_seal.engine"/>
+            <argument type="service" id="sulu_event.repository.event"/>
+            <argument type="service" id="sulu_core.webspace.webspace_manager"/>
             <tag name="kernel.event_subscriber"/>
-        </service>-->
+        </service>
+        -->
+
+        <!-- Route Generator -->
+        <service id="sulu_event.route_generator" class="Manuxi\SuluEventBundle\Routing\EventRouteGenerator">
+            <argument type="service" id="translator"/>
+            <tag name="sulu.route_generator" alias="event_route_generator"/>
+        </service>
 
         <!--Trash-->
         <service id="sulu_event.event_trash_item_handler" class="Manuxi\SuluEventBundle\Trash\EventTrashItemHandler">

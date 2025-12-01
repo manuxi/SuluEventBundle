@@ -4,68 +4,72 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Controller\Website;
 
-use Exception;
 use JMS\Serializer\SerializerBuilder;
 use Manuxi\SuluEventBundle\Entity\Event;
-use Manuxi\SuluEventBundle\Repository\EventRepository;
-use Sulu\Bundle\MediaBundle\Media\Manager\MediaManagerInterface;
-use Sulu\Bundle\RouteBundle\Entity\RouteRepositoryInterface;
+use Sulu\Bundle\PreviewBundle\Preview\Preview;
 use Sulu\Bundle\WebsiteBundle\Resolver\TemplateAttributeResolverInterface;
 use Sulu\Component\Webspace\Manager\WebspaceManagerInterface;
-use Symfony\Component\HttpFoundation\RequestStack;
+use Sulu\Route\Domain\Repository\RouteRepositoryInterface;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\NotAcceptableHttpException;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use Twig\Environment;
 
-class EventController extends AbstractController
+class EventController
 {
     public function __construct(
-        RequestStack $requestStack,
-        MediaManagerInterface $mediaManager,
-        private EventRepository $eventRepository,
-        private WebspaceManagerInterface $webspaceManager,
-        private TranslatorInterface $translator,
-        private TemplateAttributeResolverInterface $templateAttributeResolver,
-        private RouteRepositoryInterface $routeRepository
+        private readonly Environment $twig,
+        private readonly TemplateAttributeResolverInterface $templateAttributeResolver,
+        private readonly TranslatorInterface $translator,
+        private readonly RouteRepositoryInterface $routeRepository,
+        private readonly WebspaceManagerInterface $webspaceManager,
     ) {
-        parent::__construct($requestStack, $mediaManager);
     }
 
-    /**
-     * @param Event $event
-     * @param string $view
-     * @param bool $preview
-     * @param bool $partial
-     * @return Response
-     * @throws Exception
-     */
-    public function indexAction(Event $event, string $view = '@SuluEvent/event', bool $preview = false, bool $partial = false): Response
-    {
-        $viewTemplate = $this->getViewTemplate($view, $this->request, $preview);
-
+    public function indexAction(
+        Event $event,
+        string $view = '@SuluEvent/event',
+        bool $preview = false,
+        bool $partial = false,
+    ): Response {
         $parameters = $this->templateAttributeResolver->resolve([
-            'event'   => $event,
+            'event' => $event,
             'content' => [
-                'title'    => $this->translator->trans('sulu_event.events'),
+                'title' => $this->translator->trans('sulu_event.events'),
                 'subtitle' => $event->getTitle(),
             ],
-            'path'          => $event->getRoutePath(),
-            'extension'     => $this->extractExtension($event),
+            'path' => $event->getRoutePath(),
+            'extension' => $this->extractExtension($event),
             'localizations' => $this->getLocalizationsArrayForEntity($event),
-            'created'       => $event->getCreated(),
+            'created' => $event->getCreated(),
         ]);
 
-        return $this->prepareResponse($viewTemplate, $parameters, $preview, $partial);
+        $viewTemplate = $view . '.html.twig';
+
+        if (!$this->twig->getLoader()->exists($viewTemplate)) {
+            throw new NotAcceptableHttpException(\sprintf('Template "%s" does not exist.', $viewTemplate));
+        }
+
+        if ($partial) {
+            $twigTemplate = $this->twig->load($viewTemplate);
+            $content = $twigTemplate->renderBlock('content', $this->twig->mergeGlobals($parameters));
+        } elseif ($preview) {
+            $parameters['previewParentTemplate'] = $viewTemplate;
+            $parameters['previewContentReplacer'] = Preview::CONTENT_REPLACER;
+            $content = $this->twig->render('@SuluWebsite/Preview/preview.html.twig', $parameters);
+        } else {
+            $content = $this->twig->render($viewTemplate, $parameters);
+        }
+
+        return new Response($content);
     }
 
-    /**
-     * With the help of this method the corresponding localisations for the
-     * current event are found e.g. to be linked in the language switcher.
-     * @param Event $event
-     * @return array<string, array>
-     */
     protected function getLocalizationsArrayForEntity(Event $event): array
     {
-        $routes = $this->routeRepository->findAllByEntity(Event::class, (string)$event->getId());
+        $routes = $this->routeRepository->findBy([
+            'resourceKey' => Event::RESOURCE_KEY,
+            'resourceId' => (string) $event->getId(),
+        ]);
 
         $localizations = [];
         foreach ($routes as $route) {
@@ -86,20 +90,4 @@ class EventController extends AbstractController
         $serializer = SerializerBuilder::create()->build();
         return $serializer->toArray($event->getExt());
     }
-
-    /**
-     * @return string[]
-     */
-    public static function getSubscribedServices(): array
-    {
-        return array_merge(
-            parent::getSubscribedServices(),
-            [
-                WebspaceManagerInterface::class,
-                RouteRepositoryInterface::class,
-                TemplateAttributeResolverInterface::class,
-            ]
-        );
-    }
-
 }

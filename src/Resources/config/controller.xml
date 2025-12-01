@@ -39,20 +39,14 @@
         </service>
 
         <service id="Manuxi\SuluEventBundle\Controller\Website\EventController" public="true">
-            <argument type="service" id="request_stack"/>
-            <argument type="service" id="sulu_media.media_manager"/>
-            <argument type="service" id="sulu_event.repository.event"/>
-            <argument type="service" id="sulu_core.webspace.webspace_manager"/>
-            <argument type="service" id="translator"/>
+            <argument type="service" id="twig"/>
             <argument type="service" id="sulu_website.resolver.template_attribute"/>
-            <argument type="service" id="sulu.repository.route"/>
+            <argument type="service" id="translator"/>
+            <argument type="service" id="sulu_route.route_repository"/>
+            <argument type="service" id="sulu_core.webspace.webspace_manager"/>
 
             <tag name="controller.service_arguments"/>
             <tag name="sulu.context" context="website"/>
-            <tag name="container.service_subscriber" />
-            <call method="setContainer">
-                <argument type="service" id="Psr\Container\ContainerInterface" />
-            </call>
         </service>
 
     </services>

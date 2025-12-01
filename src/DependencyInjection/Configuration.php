@@ -32,6 +32,15 @@ class Configuration implements ConfigurationInterface
         $root
             ->children()
 
+            ->arrayNode('routing')
+                ->addDefaultsIfNotSet()
+                ->children()
+                    ->scalarNode('route_schema')
+                        ->defaultValue('/{translator.trans("sulu_event.events")}/{object.getTitle()}')
+                    ->end()
+                ->end()
+            ->end()
+
             ->arrayNode('types')
                 ->useAttributeAsKey('key')
                 ->arrayPrototype()

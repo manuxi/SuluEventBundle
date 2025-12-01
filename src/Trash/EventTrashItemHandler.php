@@ -9,8 +9,6 @@ use Manuxi\SuluEventBundle\Admin\EventAdmin;
 use Manuxi\SuluEventBundle\Domain\Event\Event\RestoredEvent;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\Location;
-use Manuxi\SuluSharedToolsBundle\Search\Event\PersistedEvent as SearchPersistedEvent;
-use Manuxi\SuluSharedToolsBundle\Search\Event\RemovedEvent as SearchRemovedEvent;
 use Sulu\Bundle\ActivityBundle\Application\Collector\DomainEventCollectorInterface;
 use Sulu\Bundle\MediaBundle\Entity\MediaInterface;
 use Sulu\Bundle\RouteBundle\Entity\Route;
@@ -73,8 +71,6 @@ class EventTrashItemHandler implements StoreTrashItemHandlerInterface, RestoreTr
 
         $restoreType = isset($options['locale']) ? 'translation' : null;
 
-        $this->dispatcher->dispatch(new SearchRemovedEvent($resource));
-
         return $this->trashItemRepository->create(
             Event::RESOURCE_KEY,
             (string) $resource->getId(),
@@ -128,8 +124,6 @@ class EventTrashItemHandler implements StoreTrashItemHandlerInterface, RestoreTr
         $this->doctrineRestoreHelper->persistAndFlushWithId($entity, $entityId);
         $this->createRoute($this->entityManager, $entityId, $data['locale'], $entity->getRoutePath(), Event::class);
         $this->entityManager->flush();
-
-        $this->dispatcher->dispatch(new SearchPersistedEvent($entity));
 
         return $entity;
     }

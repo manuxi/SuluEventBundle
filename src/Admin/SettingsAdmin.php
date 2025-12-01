@@ -20,13 +20,13 @@ class SettingsAdmin extends Admin
     public const FORM_VIEW = 'sulu_event.config.form';
     public const NAV_ITEM_TRANSLATION = 'sulu_event.config.title.navi';
     public const FORM_VIEW_SETTINGS_GENERAL = 'sulu_event.config.form.general';
-    public const FORM_KEY_SETTINGS_GENERAL = 'event_settings_general';
+    public const FORM_KEY_SETTINGS_GENERAL = 'events_settings_general';
     public const FORM_VIEW_SETTINGS_CALENDAR = 'sulu_event.config.form.calendar';
-    public const FORM_KEY_SETTINGS_CALENDAR = 'event_settings_calendar';
+    public const FORM_KEY_SETTINGS_CALENDAR = 'events_settings_calendar';
     public const FORM_VIEW_SETTINGS_LISTS = 'sulu_event.config.form.lists';
-    public const FORM_KEY_SETTINGS_LISTS = 'event_settings_lists';
+    public const FORM_KEY_SETTINGS_LISTS = 'events_settings_lists';
     public const FORM_VIEW_SETTINGS_BREADCRUMBS = 'sulu_event.config.form.breadcrumbs';
-    public const FORM_KEY_SETTINGS_BREADCRUMBS = 'event_settings_breadcrumbs';
+    public const FORM_KEY_SETTINGS_BREADCRUMBS = 'events_settings_breadcrumbs';
 
     public function __construct(
         private ViewBuilderFactoryInterface $viewBuilderFactory,
@@ -55,15 +55,6 @@ class SettingsAdmin extends Admin
                     ->setResourceKey(EventSettings::RESOURCE_KEY)
                     ->setAttributeDefault('id', '-')
             );
-            /*
-                        $viewCollection->add(
-                            $this->viewBuilderFactory->createFormViewBuilder(static::FORM_VIEW, '/config')
-                                ->setResourceKey(EventSettings::RESOURCE_KEY)
-                                ->setFormKey(EventSettings::FORM_KEY)
-                                ->setTabTitle('sulu_event.config.tab.settings')
-                                ->addToolbarActions([new ToolbarAction('sulu_admin.save')])
-                                ->setParent(static::TAB_VIEW)
-                        );*/
 
             $viewCollection->add(
                 $this->viewBuilderFactory->createFormViewBuilder(static::FORM_VIEW_SETTINGS_GENERAL, '/'.static::FORM_KEY_SETTINGS_GENERAL)
@@ -83,14 +74,16 @@ class SettingsAdmin extends Admin
                     ->setParent(static::TAB_VIEW)
             );
 
-/*            $viewCollection->add(
+            /*
+            $viewCollection->add(
                 $this->viewBuilderFactory->createFormViewBuilder(static::FORM_VIEW_SETTINGS_LISTS, '/'.static::FORM_KEY_SETTINGS_LISTS)
                     ->setResourceKey(EventSettings::RESOURCE_KEY)
                     ->setFormKey(static::FORM_KEY_SETTINGS_LISTS)
                     ->setTabTitle('sulu_event.config.tab.lists')
                     ->addToolbarActions([new ToolbarAction('sulu_admin.save')])
                     ->setParent(static::TAB_VIEW)
-            );*/
+            );
+            */
             $viewCollection->add(
                 $this->viewBuilderFactory->createFormViewBuilder(static::FORM_VIEW_SETTINGS_BREADCRUMBS, '/'.static::FORM_KEY_SETTINGS_BREADCRUMBS)
                     ->setResourceKey(EventSettings::RESOURCE_KEY)

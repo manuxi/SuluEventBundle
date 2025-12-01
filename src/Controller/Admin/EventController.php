@@ -6,7 +6,6 @@ namespace Manuxi\SuluEventBundle\Controller\Admin;
 
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
-use FOS\RestBundle\Routing\ClassResourceInterface;
 use FOS\RestBundle\View\ViewHandlerInterface;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\EventRecurrence;
@@ -32,7 +31,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 #[Route('/admin/api')]
-class EventController extends AbstractRestController implements ClassResourceInterface, SecuredControllerInterface
+class EventController extends AbstractRestController implements SecuredControllerInterface
 {
     use RequestParametersTrait;
 
@@ -110,9 +109,9 @@ class EventController extends AbstractRestController implements ClassResourceInt
     )]
     public function postAction(Request $request): Response
     {
-        $entity = $this->eventModel->createEvent($request);
+        $event = $this->eventModel->createEvent($request);
 
-        return $this->handleView($this->view($entity, 201));
+        return $this->handleView($this->view($event, 201));
     }
 
     /**
@@ -143,7 +142,6 @@ class EventController extends AbstractRestController implements ClassResourceInt
                 };
             } catch (RestException $exc) {
                 $view = $this->view($exc->toArray(), 400);
-
                 return $this->handleView($view);
             }
         } catch (MissingParameterException $e) {
@@ -233,7 +231,6 @@ class EventController extends AbstractRestController implements ClassResourceInt
             }
         } catch (RestException $exc) {
             $view = $this->view($exc->toArray(), 400);
-
             return $this->handleView($view);
         }
 
@@ -307,7 +304,6 @@ class EventController extends AbstractRestController implements ClassResourceInt
             $entity->setSocialSettings($socialSettings);
         }
 
-        // Map data to entity
         $socialSettings->setEnableSharing($data['enableSharing'] ?? false);
         $socialSettings->setPlatforms($data['platforms'] ?? []);
         $socialSettings->setFacebookUrl($data['facebookUrl'] ?? null);
@@ -316,8 +312,6 @@ class EventController extends AbstractRestController implements ClassResourceInt
         $socialSettings->setLinkedinUrl($data['linkedinUrl'] ?? null);
         $socialSettings->setCustomShareText($data['customShareText'] ?? null);
         $socialSettings->setTargetGroups($data['targetGroups'] ?? null);
-
-        //$this->entityManager->flush();
 
         return $this->handleView($this->view([
             'id' => $entity->getId(),
@@ -398,7 +392,6 @@ class EventController extends AbstractRestController implements ClassResourceInt
             $entity->setRecurrence($recurrence);
         }
 
-        // Map data to entity
         $recurrence->setIsRecurring($data['isRecurring'] ?? false);
         $recurrence->setFrequency($data['frequency'] ?? null);
         $recurrence->setInterval($data['interval'] ?? 1);
@@ -411,8 +404,6 @@ class EventController extends AbstractRestController implements ClassResourceInt
         } else {
             $recurrence->setUntil(null);
         }
-
-        //$this->entityManager->flush();
 
         return $this->handleView($this->view([
             'id' => $entity->getId(),

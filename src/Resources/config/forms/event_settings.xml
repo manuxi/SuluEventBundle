@@ -69,37 +69,39 @@
             </params>
         </property>
 
-<!--        <section name="shadowEvent">-->
-<!--            <meta>-->
-<!--                <title>sulu_event.shadow_event</title>-->
-<!--            </meta>-->
-<!--            <properties>-->
-<!--                <property name="shadowOn" type="checkbox" disabledCondition="__locale in shadowLocales|values">-->
-<!--                    <meta>-->
-<!--                        <title>sulu_event.shadow_event</title>-->
-<!--                        <info_text>sulu_page.enable_shadow_page_info_text</info_text>-->
-<!--                    </meta>-->
-<!--                    <params>-->
-<!--                        <param name="type" value="toggler" />-->
-<!--                        <param name="label">-->
-<!--                            <meta>-->
-<!--                                <title>sulu_event.enable_shadow_event</title>-->
-<!--                            </meta>-->
-<!--                        </param>-->
-<!--                    </params>-->
-<!--                </property>-->
-<!--                <property-->
-<!--                        name="shadowBaseLanguage"-->
-<!--                        type="page_settings_shadow_locale_select"-->
-<!--                        visibleCondition="shadowOn == true"-->
-<!--                        colspan="6"-->
-<!--                >-->
-<!--                    <meta>-->
-<!--                        <title>sulu_page.shadow_locale</title>-->
-<!--                    </meta>-->
-<!--                </property>-->
-<!--            </properties>-->
-<!--        </section>-->
+        <!--
+        <section name="shadowEvent">
+            <meta>
+                <title>sulu_event.shadow_event</title>
+            </meta>
+            <properties>
+                <property name="shadowOn" type="checkbox" disabledCondition="__locale in shadowLocales|values">
+                    <meta>
+                        <title>sulu_event.shadow_event</title>
+                        <info_text>sulu_page.enable_shadow_page_info_text</info_text>
+                    </meta>
+                    <params>
+                        <param name="type" value="toggler" />
+                        <param name="label">
+                            <meta>
+                                <title>sulu_event.enable_shadow_event</title>
+                            </meta>
+                        </param>
+                    </params>
+                </property>
+                <property
+                        name="shadowBaseLanguage"
+                        type="page_settings_shadow_locale_select"
+                        visibleCondition="shadowOn == true"
+                        colspan="6"
+                >
+                    <meta>
+                        <title>sulu_page.shadow_locale</title>
+                    </meta>
+                </property>
+            </properties>
+        </section>
+        -->
 
         <section name="editInfo">
             <meta>
@@ -109,13 +111,31 @@
 
                 <property name="authored" type="datetime" colspan="6">
                     <meta>
-                        <title>sulu_page.authored_date</title>
+                        <title>sulu_content.authored_date</title>
+                        <info_text>sulu_event.config.properties.info.authored_date</info_text>
                     </meta>
                 </property>
                 <property name="author" type="single_contact_selection" colspan="6">
                     <meta>
-                        <title>sulu_page.author</title>
+                        <title>sulu_content.author</title>
+                        <info_text>sulu_event.config.properties.info.author</info_text>
                     </meta>
+                </property>
+                <property name="showDate" type="checkbox" colspan="6">
+                    <meta>
+                        <title>sulu_event.show_date</title>
+                    </meta>
+                    <params>
+                        <param name="type" value="toggler"/>
+                    </params>
+                </property>
+                <property name="showAuthor" type="checkbox" colspan="6">
+                    <meta>
+                        <title>sulu_event.show_author</title>
+                    </meta>
+                    <params>
+                        <param name="type" value="toggler"/>
+                    </params>
                 </property>
             </properties>
         </section>
@@ -124,17 +144,6 @@
                 <title>sulu_event.header.created_changed</title>
             </meta>
             <properties>
-                <property name="created" type="datetime" disabledCondition="true" colspan="6">
-                    <meta>
-                        <title>sulu_event.created_date</title>
-                    </meta>
-                </property>
-                <property name="creatorName" type="text_line" disabledCondition="true" colspan="6">
-                    <meta>
-                        <title>sulu_event.creator</title>
-                    </meta>
-                </property>
-
                 <property name="changed" type="datetime" disabledCondition="true" colspan="6">
                     <meta>
                         <title>sulu_event.changed_date</title>
@@ -146,10 +155,19 @@
                     </meta>
                 </property>
 
-                <!--
+                <property name="created" type="datetime" disabledCondition="true" colspan="6">
+                    <meta>
+                        <title>sulu_event.created_date</title>
+                    </meta>
+                </property>
+                <property name="creatorName" type="text_line" disabledCondition="true" colspan="6">
+                    <meta>
+                        <title>sulu_event.creator</title>
+                    </meta>
+                </property>
+
                 <property name="changelog" type="changelog_line">
                 </property>
-                -->
 
             </properties>
         </section>

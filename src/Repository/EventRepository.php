@@ -4,29 +4,22 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Repository;
 
-use Datetime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 use Manuxi\SuluEventBundle\Entity\Event;
-use Sulu\Component\SmartContent\Orm\DataProviderRepositoryInterface;
-use Sulu\Component\SmartContent\Orm\DataProviderRepositoryTrait;
 
 /**
+ * @extends ServiceEntityRepository<Event>
+ *
  * @method Event|null find($id, $lockMode = null, $lockVersion = null)
  * @method Event|null findOneBy(array $criteria, array $orderBy = null)
  * @method Event[]    findAll()
  * @method Event[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
- *
- * @extends ServiceEntityRepository<Event>
  */
-class EventRepository extends ServiceEntityRepository implements DataProviderRepositoryInterface
+class EventRepository extends ServiceEntityRepository
 {
-    use DataProviderRepositoryTrait {
-        DataProviderRepositoryTrait::findByFilters as protected parentFindByFilters;
-    }
-
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Event::class);
@@ -87,6 +80,47 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
         return $event;
     }
 
+    public function countAll(): int
+    {
+        return (int) $this->createQueryBuilder('e')
+            ->select('COUNT(e.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    public function countPublished(): int
+    {
+        return (int) $this->createQueryBuilder('e')
+            ->select('COUNT(e.id)')
+            ->leftJoin('e.translations', 't')
+            ->andWhere('t.published = :published')
+            ->setParameter('published', true)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    public function findAllForLocale(string $locale): array
+    {
+        return $this->createQueryBuilder('e')
+            ->leftJoin('e.translations', 't')
+            ->andWhere('t.locale = :locale')
+            ->setParameter('locale', $locale)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findPublishedForLocale(string $locale): array
+    {
+        return $this->createQueryBuilder('e')
+            ->leftJoin('e.translations', 't')
+            ->andWhere('t.locale = :locale')
+            ->andWhere('t.published = :published')
+            ->setParameter('locale', $locale)
+            ->setParameter('published', true)
+            ->getQuery()
+            ->getResult();
+    }
+
     public function findByDateRange(
         string $locale,
         \DateTimeInterface $startDate,
@@ -126,16 +160,6 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
         return $queryBuilder->getQuery()->getResult();
     }
 
-    public function findAllForSitemapOld(int $page, int $limit): array
-    {
-        $offset = ($page * $limit) - $limit;
-        $criteria = [
-            'enabled' => true,
-        ];
-
-        return $this->findBy($criteria, [], $limit, $offset);
-    }
-
     public function findAllForSitemap(string $locale, ?int $limit = null, ?int $offset = null): array
     {
         $queryBuilder = $this->createQueryBuilder('event')
@@ -150,15 +174,15 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
 
         $this->prepareFilters($queryBuilder, []);
 
-        $abbreviations = $queryBuilder->getQuery()->getResult();
-        if (!$abbreviations) {
+        $result = $queryBuilder->getQuery()->getResult();
+        if (!$result) {
             return [];
         }
 
-        return $abbreviations;
+        return $result;
     }
 
-    public function countForSitemap(string $locale)
+    public function countForSitemap(string $locale): int
     {
         $query = $this->createQueryBuilder('event')
             ->select('count(event)')
@@ -168,10 +192,10 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
             ->andWhere('translation.locale = :locale')
             ->setParameter('locale', $locale);
 
-        return $query->getQuery()->getSingleScalarResult();
+        return (int) $query->getQuery()->getSingleScalarResult();
     }
 
-    public function findAllScheduledEvents(int $limit)
+    public function findAllScheduledEvents(int $limit): array
     {
         $now = new \DateTimeImmutable();
         $queryBuilder = $this->createQueryBuilder('event');
@@ -233,8 +257,6 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
 
     public function hasNextPage(array $filters, ?int $page, ?int $pageSize, ?int $limit, string $locale, array $options = []): bool
     {
-        // $pageCurrent = (key_exists('page', $options)) ? (int)$options['page'] : 0;
-
         $queryBuilder = $this->createQueryBuilder('event')
             ->select('count(event.id)')
             ->leftJoin('event.translations', 'translation')
@@ -246,19 +268,23 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
 
         $this->prepareFilters($queryBuilder, $filters);
 
-        $eventsCount = $queryBuilder->getQuery()->getSingleScalarResult();
+        $eventsCount = (int) $queryBuilder->getQuery()->getSingleScalarResult();
 
-        $pos = (int) ($pageSize * $page);
+        // Safe integer cast for pagination
+        $page = (int) $page;
+        $pageSize = (int) $pageSize;
+
+        $pos = $pageSize * $page;
         if (null !== $limit && $limit <= $pos) {
             return false;
-        } elseif ($pos < (int) $eventsCount) {
+        } elseif ($pos < $eventsCount) {
             return true;
         }
 
         return false;
     }
 
-    public function findByFilters($filters, $page, $pageSize, $limit, $locale, $options = []): array
+    public function findByFilters(array $filters, ?int $page, ?int $pageSize, ?int $limit, string $locale, array $options = []): array
     {
         $entities = $this->getPublishedEvents($filters, $locale, $page, $pageSize, $limit, $options);
 
@@ -270,9 +296,13 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
         );
     }
 
-    public function getPublishedEvents(array $filters, string $locale, ?int $page, $pageSize, $limit = null, array $options = []): array
+    public function getPublishedEvents(array $filters, string $locale, ?int $page, ?int $pageSize, ?int $limit = null, array $options = []): array
     {
         $pageCurrent = (key_exists('page', $options)) ? (int) $options['page'] : 0;
+
+        if (null !== $page) {
+            $pageCurrent = $page - 1;
+        }
 
         $queryBuilder = $this->createQueryBuilder('event')
             ->leftJoin('event.translations', 'translation')
@@ -280,9 +310,12 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
             ->setParameter('published', true)
             ->andWhere('translation.locale = :locale')
             ->setParameter('locale', $locale)
-            ->orderBy('translation.publishedAt', 'DESC')
-            ->setMaxResults($limit)
-            ->setFirstResult($pageCurrent * $limit);
+            ->orderBy('translation.publishedAt', 'DESC');
+
+        if ($limit !== null) {
+            $queryBuilder->setMaxResults($limit);
+            $queryBuilder->setFirstResult($pageCurrent * $limit);
+        }
 
         $this->prepareFilters($queryBuilder, $filters);
 
@@ -299,13 +332,13 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
         return $events;
     }
 
-    private function setOffsetResults(QueryBuilder $queryBuilder, $page, $pageSize, $limit = null): bool
+    private function setOffsetResults(QueryBuilder $queryBuilder, ?int $page, ?int $pageSize, ?int $limit = null): bool
     {
         if (null !== $page && $pageSize > 0) {
             $pageOffset = ($page - 1) * $pageSize;
-            $restLimit = $limit - $pageOffset;
+            $restLimit = $limit ? $limit - $pageOffset : null;
 
-            $maxResults = (null !== $limit && $pageSize > $restLimit ? $restLimit : $pageSize);
+            $maxResults = (null !== $limit && $restLimit !== null && $pageSize > $restLimit ? $restLimit : $pageSize);
 
             if ($maxResults <= 0) {
                 return false;
@@ -323,7 +356,7 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
     private function prepareFilters(QueryBuilder $queryBuilder, array $filters): void
     {
         if (isset($filters['sortBy'])) {
-            $queryBuilder->orderBy($filters['sortBy'], $filters['sortMethod']);
+            $queryBuilder->orderBy($filters['sortBy'], $filters['sortMethod'] ?? 'ASC');
         }
 
         if (!empty($filters['tags']) || !empty($filters['categories'])) {
@@ -349,7 +382,7 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
             return;
         }
 
-        $now = new \Datetime();
+        $now = new \DateTime();
         $todayStart = (clone $now)->setTime(0, 0, 0);
 
         if ($hasPending) {
@@ -469,7 +502,7 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
         // Date range filters
         if (!empty($filters['start'])) {
             try {
-                $startDate = new \Datetime($filters['start']);
+                $startDate = new \DateTime($filters['start']);
                 $qb->andWhere('e.endDate >= :start OR (e.endDate IS NULL AND e.startDate >= :start)')
                     ->setParameter('start', $startDate);
             } catch (\Exception $e) {
@@ -479,7 +512,7 @@ class EventRepository extends ServiceEntityRepository implements DataProviderRep
 
         if (!empty($filters['end'])) {
             try {
-                $endDate = new \Datetime($filters['end']);
+                $endDate = new \DateTime($filters['end']);
                 $qb->andWhere('e.startDate <= :end')
                     ->setParameter('end', $endDate);
             } catch (\Exception $e) {

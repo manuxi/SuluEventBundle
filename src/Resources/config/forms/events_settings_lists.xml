@@ -3,7 +3,7 @@
       xmlns="http://schemas.sulu.io/template/template"
       xsi:schemaLocation="http://schemas.sulu.io/template/template http://schemas.sulu.io/template/form-1.0.xsd"
 >
-    <key>event_settings_lists</key>
+    <key>events_settings_lists</key>
 
     <properties>
         <!-- List View Settings -->

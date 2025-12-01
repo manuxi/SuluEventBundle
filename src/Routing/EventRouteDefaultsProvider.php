@@ -4,33 +4,23 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Routing;
 
-use Manuxi\SuluEventBundle\Controller\Website\EventController;
-use Manuxi\SuluEventBundle\Entity\Event;
-use Manuxi\SuluEventBundle\Repository\EventRepository;
-use Sulu\Bundle\RouteBundle\Routing\Defaults\RouteDefaultsProviderInterface;
+use Doctrine\ORM\EntityManagerInterface;
+use Sulu\Bundle\AdminBundle\Metadata\MetadataProviderRegistry;
+use Sulu\Bundle\HttpCacheBundle\CacheLifetime\CacheLifetimeResolverInterface;
+use Sulu\Content\Application\ContentAggregator\ContentAggregatorInterface;
+use Sulu\Content\Infrastructure\Sulu\Route\ContentRouteDefaultsProvider;
+use Sulu\Route\Application\Routing\Matcher\RouteDefaultsProviderInterface;
+use Sulu\Route\Domain\Model\Route;
 
-class EventRouteDefaultsProvider implements RouteDefaultsProviderInterface
+class EventRouteDefaultsProvider extends ContentRouteDefaultsProvider implements RouteDefaultsProviderInterface
 {
-    public function __construct(private EventRepository $eventRepository)
-    {
-    }
-
-    public function getByEntity($entityClass, $id, $locale, $object = null): array
-    {
-        return [
-            '_controller' => EventController::class.'::indexAction',
-            'event' => $this->eventRepository->findById((int) $id, $locale),
-        ];
-    }
-
-    public function isPublished($entityClass, $id, $locale): bool
-    {
-        $entity = $this->eventRepository->findById((int) $id, $locale);
-        if (!$this->supports($entityClass) || !$entity instanceof Event) {
-            return false;
-        }
-
-        return $entity->isPublished();
+    public function __construct(
+        EntityManagerInterface $entityManager,
+        ContentAggregatorInterface $contentAggregator,
+        MetadataProviderRegistry $metadataProviderRegistry,
+        CacheLifetimeResolverInterface $cacheLifetimeResolver,
+    ) {
+        parent::__construct($entityManager, $contentAggregator, $metadataProviderRegistry, $cacheLifetimeResolver);
     }
 
     public function supports($entityClass): bool

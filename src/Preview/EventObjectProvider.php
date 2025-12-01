@@ -4,54 +4,68 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Preview;
 
+use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
-use Sulu\Bundle\PageBundle\Admin\PageAdmin;
-use Sulu\Bundle\PreviewBundle\Preview\Object\PreviewObjectProviderInterface;
+use Sulu\Bundle\PreviewBundle\Preview\PreviewContext;
+use Sulu\Bundle\PreviewBundle\Preview\Provider\PreviewDefaultsProviderInterface;
 
-class EventObjectProvider implements PreviewObjectProviderInterface
+class EventObjectProvider implements PreviewDefaultsProviderInterface
 {
-    public function __construct(private EventRepository $eventRepository)
-    {
+    public function __construct(
+        private EventRepository $eventRepository
+    ) {
     }
 
-    public function getObject($id, $locale)
+    public function getDefaults(PreviewContext $previewContext): array
     {
-        return $this->eventRepository->findById((int) $id, $locale);
+        $object = $this->eventRepository->findById(
+            (int) $previewContext->getId(),
+            $previewContext->getLocale()
+        );
+
+        if (!$object) {
+            return [];
+        }
+
+        return [
+            '_controller' => 'Manuxi\SuluEventBundle\Controller\Website\EventController::indexAction',
+            'event' => $object,
+        ];
     }
 
-    public function getId($object)
+    public function updateValues(PreviewContext $previewContext, array $defaults, array $data): array
     {
-        return $object->getId();
+        /** @var Event $object */
+        $object = $defaults['event'];
+
+        // TODO: Implement
+
+        // if (isset($data['title'])) {
+        //     $object->setTitle($data['title']);
+        // }
+        // if (isset($data['description'])) {
+        //     $object->setDescription($data['description']);
+        // }
+
+        return $defaults;
     }
 
-    public function setValues($object, $locale, array $data)
+    public function updateContext(PreviewContext $previewContext, array $defaults, array $context): array
     {
-        // TODO: Implement setValues() method.
-    }
+        /** @var Event $object */
+        $object = $defaults['event'];
 
-    public function setContext($object, $locale, array $context): mixed
-    {
         if (\array_key_exists('template', $context)) {
             $object->setStructureType($context['template']);
         }
 
-        return $object;
+        return $defaults;
     }
 
-    public function serialize($object): string
+    public function getSecurityContext(PreviewContext $previewContext): ?string
     {
-        return serialize($object);
-    }
 
-    public function deserialize($serializedObject, $objectClass)
-    {
-        return unserialize($serializedObject);
-    }
+        return 'sulu_events.events';
 
-    public function getSecurityContext($id, $locale): ?string
-    {
-        $webspaceKey = $this->documentInspector->getWebspace($this->getObject($id, $locale));
-
-        return PageAdmin::getPageSecurityContext($webspaceKey);
     }
 }
