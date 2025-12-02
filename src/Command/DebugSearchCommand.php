@@ -12,12 +12,15 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 class DebugSearchCommand extends Command
 {
-    protected static $defaultName = 'sulu:event:debug-search';
-
     public function __construct(
         private readonly EngineInterface $engine,
     ) {
         parent::__construct();
+    }
+
+    public static function getDefaultName(): ?string
+    {
+        return 'sulu:event:debug-search';
     }
 
     protected function configure(): void
@@ -32,13 +35,13 @@ class DebugSearchCommand extends Command
         $io->title('SEAL Search Index Debug');
 
         // Search in admin index
-        $io->section('Searching in events_admin index');
+        $io->section('Searching in admin index');
 
         try {
-            $searchBuilder = $this->engine->createSearchBuilder('events_admin');
+            $searchBuilder = $this->engine->createSearchBuilder('admin');
             $result = $searchBuilder->limit(100)->getResult();
 
-            $io->info('Total results: '.count($result));
+            $io->info('Total results: '.$result->total());
 
             foreach ($result as $doc) {
                 $io->writeln('---');
@@ -50,8 +53,8 @@ class DebugSearchCommand extends Command
                 $io->writeln('Start Date: '.($doc['startDate'] ?? 'N/A'));
             }
 
-            if (0 === count($result)) {
-                $io->warning('No documents found in events_admin index!');
+            if (0 === $result->total()) {
+                $io->warning('No documents found in admin index!');
                 $io->note('Try creating/editing an event to trigger indexing.');
             }
         } catch (\Exception $e) {
@@ -59,13 +62,13 @@ class DebugSearchCommand extends Command
         }
 
         // Search in website index
-        $io->section('Searching in events_website index');
+        $io->section('Searching in website index');
 
         try {
-            $searchBuilder = $this->engine->createSearchBuilder('events_website');
+            $searchBuilder = $this->engine->createSearchBuilder('website');
             $result = $searchBuilder->limit(100)->getResult();
 
-            $io->info('Total results: '.count($result));
+            $io->info('Total results: '.$result->total());
 
             foreach ($result as $doc) {
                 $io->writeln('---');
@@ -75,8 +78,8 @@ class DebugSearchCommand extends Command
                 $io->writeln('URL: '.($doc['url'] ?? 'N/A'));
             }
 
-            if (0 === count($result)) {
-                $io->warning('No documents found in events_website index!');
+            if (0 === $result->total()) {
+                $io->warning('No documents found in website index!');
             }
         } catch (\Exception $e) {
             $io->error('Error searching: '.$e->getMessage());
@@ -84,8 +87,8 @@ class DebugSearchCommand extends Command
 
         // Count documents
         $io->section('Document counts');
-        $io->writeln('events_admin: '.$this->engine->countDocuments('events_admin'));
-        $io->writeln('events_website: '.$this->engine->countDocuments('events_website'));
+        $io->writeln('admin: '.$this->engine->countDocuments('admin'));
+        $io->writeln('website: '.$this->engine->countDocuments('website'));
 
         return Command::SUCCESS;
     }

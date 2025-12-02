@@ -23,7 +23,7 @@ class EventWebsiteSearchProvider implements ReindexProviderInterface
 
     public static function getIndex(): string
     {
-        return 'events_website';
+        return 'website';
     }
 
     public function total(): ?int

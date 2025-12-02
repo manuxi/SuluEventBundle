@@ -23,7 +23,7 @@ class EventAdminSearchProvider implements ReindexProviderInterface
 
     public static function getIndex(): string
     {
-        return 'events_admin';
+        return 'admin';
     }
 
     public function total(): ?int

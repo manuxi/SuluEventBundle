@@ -64,7 +64,7 @@ class EventSearchListener implements EventSubscriberInterface
 
         // Remove from website index
         $documentId = $this->getDocumentId($event);
-        $this->engine->deleteDocument('events_website', $documentId);
+        $this->engine->deleteDocument('website', $documentId);  // ← 'website'
     }
 
     public function onRemoved(RemovedEvent $domainEvent): void
@@ -72,14 +72,14 @@ class EventSearchListener implements EventSubscriberInterface
         // Remove from all locale variants in both indexes
         foreach ($this->getLocales() as $locale) {
             $documentId = 'event-'.$domainEvent->getResourceId().'-'.$locale;
-            $this->engine->deleteDocument('events_admin', $documentId);
-            $this->engine->deleteDocument('events_website', $documentId);
+            $this->engine->deleteDocument('admin', $documentId);  // ← 'admin'
+            $this->engine->deleteDocument('website', $documentId);  // ← 'website'
         }
     }
 
     private function indexForAdmin(Event $event): void
     {
-        $this->engine->saveDocument('events_admin', [
+        $this->engine->saveDocument('admin', [
             'id' => $this->getDocumentId($event),
             'resourceKey' => Event::RESOURCE_KEY,
             'resourceId' => (string) $event->getId(),
@@ -103,7 +103,7 @@ class EventSearchListener implements EventSubscriberInterface
             $event->getFooter(),
         ]);
 
-        $this->engine->saveDocument('events_website', [
+        $this->engine->saveDocument('website', [
             'id' => $this->getDocumentId($event),
             'resourceKey' => Event::RESOURCE_KEY,
             'resourceId' => (string) $event->getId(),
