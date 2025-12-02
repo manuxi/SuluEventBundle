@@ -50,7 +50,7 @@
                 <param
                         name="values"
                         type="expression"
-                        value="service('sulu_event.webspace_selector').getValues()"
+                        value="service('sulu_shared_tools.webspace_selector').getValues()"
                 />
             </params>
         </property>
@@ -64,7 +64,7 @@
                 <param
                         name="values"
                         type="expression"
-                        value="service('sulu_event.webspace_selector').getValues()"
+                        value="service('sulu_shared_tools.webspace_selector').getValues()"
                 />
             </params>
         </property>
