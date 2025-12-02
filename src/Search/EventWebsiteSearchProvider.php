@@ -11,7 +11,7 @@ use Manuxi\SuluEventBundle\Repository\EventRepository;
 use Sulu\Component\Webspace\Manager\WebspaceManagerInterface;
 
 /**
- * Provides ONLY published events for website search
+ * Provides ONLY published events for website search.
  */
 class EventWebsiteSearchProvider implements ReindexProviderInterface
 {
@@ -46,11 +46,12 @@ class EventWebsiteSearchProvider implements ReindexProviderInterface
     private function getLocales(): array
     {
         $locales = [];
-        foreach ($this->webspaceManager->getAllWebspaces() as $webspace) {
+        foreach ($this->webspaceManager->getWebspaceCollection() as $webspace) {
             foreach ($webspace->getAllLocalizations() as $localization) {
                 $locales[$localization->getLocale()] = true;
             }
         }
+
         return array_keys($locales);
     }
 
@@ -64,7 +65,7 @@ class EventWebsiteSearchProvider implements ReindexProviderInterface
         ]);
 
         return [
-            'id' => 'event-' . $event->getId() . '-' . $event->getLocale(),
+            'id' => 'event-'.$event->getId().'-'.$event->getLocale(),
             'resourceKey' => Event::RESOURCE_KEY,
             'resourceId' => (string) $event->getId(),
             'locale' => $event->getLocale(),
@@ -73,7 +74,7 @@ class EventWebsiteSearchProvider implements ReindexProviderInterface
             'url' => $event->getRoutePath() ?? '',
             'content' => $content,
             'mediaId' => $event->getImage()?->getId(),
-            'startDate' => $event->getStartDate(),
+            'startDate' => $event->getStartDate()?->format('c'),
         ];
     }
 }

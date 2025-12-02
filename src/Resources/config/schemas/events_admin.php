@@ -23,4 +23,6 @@ return new Index('events_admin', [
     'mediaId' => new Field\IntegerField('mediaId'),
     'changedAt' => new Field\DateTimeField('changedAt'),
     'createdAt' => new Field\DateTimeField('createdAt'),
+    'published' => new Field\IntegerField('published', filterable: true),
+    'startDate' => new Field\DateTimeField('startDate', filterable: true, sortable: true),
 ]);

@@ -81,7 +81,10 @@
 
 
         <service id="Manuxi\SuluEventBundle\Routing\EventRouteDefaultsProvider">
-            <argument type="service" id="sulu_event.repository.event"/>
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="sulu_content.content_aggregator"/>
+            <argument type="service" id="sulu_admin.metadata_provider_registry"/>
+            <argument type="service" id="sulu_http_cache.cache_lifetime.resolver"/>
 
             <tag name="sulu_route.defaults_provider"/>
         </service>
@@ -178,14 +181,11 @@
         </service>
 
         <!-- Search Listener for live updates -->
-        <!--
         <service id="sulu_event.search.listener" class="Manuxi\SuluEventBundle\Search\EventSearchListener">
-            <argument type="service" id="cmsig_seal.engine"/>
-            <argument type="service" id="sulu_event.repository.event"/>
+            <argument type="service" id="cmsig_seal.engine.default"/>
             <argument type="service" id="sulu_core.webspace.webspace_manager"/>
             <tag name="kernel.event_subscriber"/>
         </service>
-        -->
 
         <!-- Route Generator -->
         <service id="sulu_event.route_generator" class="Manuxi\SuluEventBundle\Routing\EventRouteGenerator">
@@ -235,6 +235,12 @@
             <argument type="service" id="translator"/>
             <argument>%sulu_event.types%</argument>
             <argument>%sulu_event.default_type%</argument>
+        </service>
+
+        <!-- DEBUG -->
+        <service id="manuxi_sulu_event.command.debug_search" class="Manuxi\SuluEventBundle\Command\DebugSearchCommand">
+            <argument type="service" id="cmsig_seal.engine.default"/>
+            <tag name="console.command"/>
         </service>
 
     </services>

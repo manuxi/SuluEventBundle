@@ -14,12 +14,8 @@ use PHPUnit\Framework\TestCase;
 use Sulu\Bundle\ActivityBundle\Application\Collector\DomainEventCollectorInterface;
 use Sulu\Bundle\ContactBundle\Entity\ContactRepository;
 use Sulu\Bundle\MediaBundle\Entity\MediaRepositoryInterface;
-use Sulu\Bundle\RouteBundle\Entity\Route;
-use Sulu\Bundle\RouteBundle\Entity\RouteRepositoryInterface;
-use Sulu\Bundle\RouteBundle\Manager\RouteManagerInterface;
 use Sulu\Component\Rest\Exception\EntityNotFoundException;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class EventModelTest extends TestCase
 {
@@ -30,11 +26,8 @@ class EventModelTest extends TestCase
     private LocationRepository|MockObject $locationRepository;
     private MediaRepositoryInterface|MockObject $mediaRepository;
     private ContactRepository|MockObject $contactRepository;
-    private RouteManagerInterface|MockObject $routeManager;
-    private RouteRepositoryInterface|MockObject $routeRepository;
     private EntityManagerInterface|MockObject $entityManager;
     private DomainEventCollectorInterface|MockObject $domainEventCollector;
-    private EventDispatcherInterface|MockObject $dispatcher;
 
     protected function setUp(): void
     {
@@ -42,22 +35,16 @@ class EventModelTest extends TestCase
         $this->locationRepository = $this->createMock(LocationRepository::class);
         $this->mediaRepository = $this->createMock(MediaRepositoryInterface::class);
         $this->contactRepository = $this->createMock(ContactRepository::class);
-        $this->routeManager = $this->createMock(RouteManagerInterface::class);
-        $this->routeRepository = $this->createMock(RouteRepositoryInterface::class);
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
         $this->domainEventCollector = $this->createMock(DomainEventCollectorInterface::class);
-        $this->dispatcher = $this->createMock(EventDispatcherInterface::class);
 
         $this->eventModel = new EventModel(
             $this->eventRepository,
             $this->locationRepository,
             $this->mediaRepository,
             $this->contactRepository,
-            $this->routeManager,
-            $this->routeRepository,
             $this->entityManager,
             $this->domainEventCollector,
-            $this->dispatcher
         );
     }
 
@@ -138,26 +125,9 @@ class EventModelTest extends TestCase
             ->method('getLocale')
             ->willReturn('en');
 
-        $route = $this->createMock(Route::class);
-
-        $this->routeRepository
-            ->expects($this->once())
-            ->method('findAllByEntity')
-            ->with(Event::class, (string) $eventId, 'en')
-            ->willReturn([$route]);
-
-        $this->routeRepository
-            ->expects($this->once())
-            ->method('remove')
-            ->with($route);
-
         $this->domainEventCollector
             ->expects($this->once())
             ->method('collect');
-
-        $this->dispatcher
-            ->expects($this->once())
-            ->method('dispatch');
 
         $this->eventRepository
             ->expects($this->once())
@@ -201,11 +171,6 @@ class EventModelTest extends TestCase
             ->with($event)
             ->willReturn($event);
 
-        $this->routeManager
-            ->expects($this->once())
-            ->method('createOrUpdateByAttributes')
-            ->with(Event::class, '1', 'en', '/test-event');
-
         $this->entityManager
             ->expects($this->once())
             ->method('flush');
@@ -213,10 +178,6 @@ class EventModelTest extends TestCase
         $this->domainEventCollector
             ->expects($this->once())
             ->method('collect');
-
-        $this->dispatcher
-            ->expects($this->once())
-            ->method('dispatch');
 
         // Act
         $result = $this->eventModel->createEvent($request);
@@ -255,17 +216,9 @@ class EventModelTest extends TestCase
             ->with($event)
             ->willReturn($event);
 
-        $this->routeManager
-            ->expects($this->once())
-            ->method('createOrUpdateByAttributes');
-
         $this->entityManager
             ->expects($this->once())
             ->method('flush');
-
-        $this->dispatcher
-            ->expects($this->exactly(2))
-            ->method('dispatch'); // PreUpdated + Updated
 
         // Act
         $result = $this->eventModel->updateEvent($eventId, $request);
@@ -298,10 +251,6 @@ class EventModelTest extends TestCase
             ->expects($this->once())
             ->method('collect');
 
-        $this->dispatcher
-            ->expects($this->exactly(2))
-            ->method('dispatch'); // PreUpdated + Updated
-
         // Act
         $result = $this->eventModel->publish($eventId, $request);
 
@@ -332,10 +281,6 @@ class EventModelTest extends TestCase
         $this->domainEventCollector
             ->expects($this->once())
             ->method('collect');
-
-        $this->dispatcher
-            ->expects($this->exactly(2))
-            ->method('dispatch'); // PreUpdated + Updated
 
         // Act
         $result = $this->eventModel->unpublish($eventId, $request);
@@ -380,10 +325,6 @@ class EventModelTest extends TestCase
             ->expects($this->once())
             ->method('collect');
 
-        $this->dispatcher
-            ->expects($this->once())
-            ->method('dispatch');
-
         // Act
         $result = $this->eventModel->copyLanguage($eventId, $request, $srcLocale, $destLocales);
 
@@ -424,10 +365,6 @@ class EventModelTest extends TestCase
         $this->domainEventCollector
             ->expects($this->once())
             ->method('collect');
-
-        $this->dispatcher
-            ->expects($this->once())
-            ->method('dispatch');
 
         // Act
         $result = $this->eventModel->copyLanguage($eventId, $request, $srcLocale, $destLocales);

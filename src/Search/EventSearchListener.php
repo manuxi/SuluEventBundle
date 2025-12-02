@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace Manuxi\SuluEventBundle\Search;
 
 use CmsIg\Seal\EngineInterface;
-use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Domain\Event\Event\CreatedEvent;
 use Manuxi\SuluEventBundle\Domain\Event\Event\ModifiedEvent;
 use Manuxi\SuluEventBundle\Domain\Event\Event\PublishedEvent;
 use Manuxi\SuluEventBundle\Domain\Event\Event\RemovedEvent;
 use Manuxi\SuluEventBundle\Domain\Event\Event\UnpublishedEvent;
-use Manuxi\SuluEventBundle\Repository\EventRepository;
+use Manuxi\SuluEventBundle\Entity\Event;
 use Sulu\Component\Webspace\Manager\WebspaceManagerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -19,7 +18,6 @@ class EventSearchListener implements EventSubscriberInterface
 {
     public function __construct(
         private readonly EngineInterface $engine,
-        private readonly EventRepository $eventRepository,
         private readonly WebspaceManagerInterface $webspaceManager,
     ) {
     }
@@ -37,10 +35,7 @@ class EventSearchListener implements EventSubscriberInterface
 
     public function onCreatedOrModified(CreatedEvent|ModifiedEvent $domainEvent): void
     {
-        $event = $this->eventRepository->findById($domainEvent->getResourceId());
-        if (!$event) {
-            return;
-        }
+        $event = $domainEvent->getEntity();
 
         // Always update admin index
         $this->indexForAdmin($event);
@@ -53,10 +48,7 @@ class EventSearchListener implements EventSubscriberInterface
 
     public function onPublished(PublishedEvent $domainEvent): void
     {
-        $event = $this->eventRepository->findById($domainEvent->getResourceId());
-        if (!$event) {
-            return;
-        }
+        $event = $domainEvent->getEntity();
 
         // Update both indexes
         $this->indexForAdmin($event);
@@ -65,10 +57,7 @@ class EventSearchListener implements EventSubscriberInterface
 
     public function onUnpublished(UnpublishedEvent $domainEvent): void
     {
-        $event = $this->eventRepository->findById($domainEvent->getResourceId());
-        if (!$event) {
-            return;
-        }
+        $event = $domainEvent->getEntity();
 
         // Update admin index
         $this->indexForAdmin($event);
@@ -82,7 +71,7 @@ class EventSearchListener implements EventSubscriberInterface
     {
         // Remove from all locale variants in both indexes
         foreach ($this->getLocales() as $locale) {
-            $documentId = 'event-' . $domainEvent->getResourceId() . '-' . $locale;
+            $documentId = 'event-'.$domainEvent->getResourceId().'-'.$locale;
             $this->engine->deleteDocument('events_admin', $documentId);
             $this->engine->deleteDocument('events_website', $documentId);
         }
@@ -98,12 +87,10 @@ class EventSearchListener implements EventSubscriberInterface
             'securityContext' => Event::SECURITY_CONTEXT,
             'title' => $event->getTitle() ?? '',
             'mediaId' => $event->getImage()?->getId(),
-            'changedAt' => $event->getChanged(),
-            'createdAt' => $event->getCreated(),
-            'metadata' => [
-                'published' => $event->isPublished(),
-                'startDate' => $event->getStartDate()?->format('c'),
-            ],
+            'changedAt' => $event->getChanged()?->format('c'),
+            'createdAt' => $event->getCreated()?->format('c'),
+            'published' => $event->isPublished() ? 1 : 0,
+            'startDate' => $event->getStartDate()?->format('c'),
         ]);
     }
 
@@ -126,23 +113,24 @@ class EventSearchListener implements EventSubscriberInterface
             'url' => $event->getRoutePath() ?? '',
             'content' => $content,
             'mediaId' => $event->getImage()?->getId(),
-            'startDate' => $event->getStartDate(),
+            'startDate' => $event->getStartDate()?->format('c'),
         ]);
     }
 
     private function getDocumentId(Event $event): string
     {
-        return 'event-' . $event->getId() . '-' . $event->getLocale();
+        return 'event-'.$event->getId().'-'.$event->getLocale();
     }
 
     private function getLocales(): array
     {
         $locales = [];
-        foreach ($this->webspaceManager->getAllWebspaces() as $webspace) {
+        foreach ($this->webspaceManager->getWebspaceCollection() as $webspace) {
             foreach ($webspace->getAllLocalizations() as $localization) {
                 $locales[$localization->getLocale()] = true;
             }
         }
+
         return array_keys($locales);
     }
 }

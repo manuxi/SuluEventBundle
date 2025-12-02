@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Manuxi\SuluEventBundle\Routing;
 
 use Doctrine\ORM\EntityManagerInterface;
+use Manuxi\SuluEventBundle\Entity\Event;
 use Sulu\Bundle\AdminBundle\Metadata\MetadataProviderRegistry;
 use Sulu\Bundle\HttpCacheBundle\CacheLifetime\CacheLifetimeResolverInterface;
 use Sulu\Content\Application\ContentAggregator\ContentAggregatorInterface;

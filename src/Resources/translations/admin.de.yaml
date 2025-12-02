@@ -1,5 +1,4 @@
 sulu_event:
-
     # Formats
     date_format: 'd.m.Y'
     datetime_format: 'd.m.Y H:i'
@@ -89,6 +88,10 @@ sulu_event:
     # List and search translations
     search_name: "Veranstaltungen"
     empty_list: "Bitte Veranstaltung wählen..."
+
+    # search translations
+    search:
+        events: "Veranstaltungen"
 
     # List sorting options
     sorting:

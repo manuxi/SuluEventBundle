@@ -18,7 +18,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Sulu\Bundle\TrashBundle\Application\TrashManager\TrashManagerInterface;
 use Sulu\Component\Rest\Exception\EntityNotFoundException;
-use Sulu\Component\Rest\ListBuilder\ListRepresentation;
+use Sulu\Component\Rest\ListBuilder\PaginatedRepresentation;
 use Sulu\Component\Security\Authorization\SecurityCheckerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -61,7 +61,7 @@ class EventControllerTest extends TestCase
     {
         // Arrange
         $request = new Request(['locale' => 'en']);
-        $listRepresentation = $this->createMock(ListRepresentation::class);
+        $listRepresentation = $this->createMock(PaginatedRepresentation::class);
 
         $this->doctrineListRepresentationFactory
             ->expects($this->once())

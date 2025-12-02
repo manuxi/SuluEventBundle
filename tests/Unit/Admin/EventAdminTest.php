@@ -6,13 +6,12 @@ namespace Manuxi\SuluEventBundle\Tests\Unit\Admin;
 
 use Manuxi\SuluEventBundle\Admin\EventAdmin;
 use Manuxi\SuluEventBundle\Entity\Event;
-use Manuxi\SuluEventBundle\Service\EventTypeSelect;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Sulu\Bundle\ActivityBundle\Infrastructure\Sulu\Admin\View\ActivityViewBuilderFactoryInterface;
 use Sulu\Bundle\AdminBundle\Admin\Navigation\NavigationItemCollection;
 use Sulu\Bundle\AdminBundle\Admin\View\ViewBuilderFactoryInterface;
 use Sulu\Bundle\AdminBundle\Admin\View\ViewCollection;
-use Sulu\Bundle\AutomationBundle\Admin\View\AutomationViewBuilderFactoryInterface;
 use Sulu\Component\Security\Authorization\PermissionTypes;
 use Sulu\Component\Security\Authorization\SecurityCheckerInterface;
 use Sulu\Component\Webspace\Manager\WebspaceManagerInterface;
@@ -24,23 +23,19 @@ class EventAdminTest extends TestCase
     private ViewBuilderFactoryInterface|MockObject $viewBuilderFactory;
     private SecurityCheckerInterface|MockObject $securityChecker;
     private WebspaceManagerInterface|MockObject $webspaceManager;
-    private EventTypeSelect|MockObject $eventTypeSelect;
-    private AutomationViewBuilderFactoryInterface|MockObject $automationViewBuilderFactory;
 
     protected function setUp(): void
     {
         $this->viewBuilderFactory = $this->createMock(ViewBuilderFactoryInterface::class);
         $this->securityChecker = $this->createMock(SecurityCheckerInterface::class);
         $this->webspaceManager = $this->createMock(WebspaceManagerInterface::class);
-        $this->eventTypeSelect = $this->createMock(EventTypeSelect::class);
-        $this->automationViewBuilderFactory = $this->createMock(AutomationViewBuilderFactoryInterface::class);
+        $activityViewBuilderFactory = $this->createMock(ActivityViewBuilderFactoryInterface::class);
 
         $this->eventAdmin = new EventAdmin(
             $this->viewBuilderFactory,
             $this->securityChecker,
             $this->webspaceManager,
-            $this->automationViewBuilderFactory,
-            $this->eventTypeSelect
+            $activityViewBuilderFactory,
         );
     }
 
@@ -119,27 +114,18 @@ class EventAdminTest extends TestCase
 
     public function testConfigureViewsDoesNothingWhenNoEditPermission(): void
     {
-        // Arrange
         $viewCollection = $this->createMock(ViewCollection::class);
 
-        // Mock returns false for EDIT permission, but could return true for others
         $this->securityChecker
             ->method('hasPermission')
             ->willReturnCallback(function ($context, $permission) {
-                // Return false for EDIT permission
-                if (PermissionTypes::EDIT === $permission) {
-                    return false;
-                }
-
-                // Could return true for other permissions, but views still won't be added
-                return true;
+                return false;
             });
 
         $viewCollection
             ->expects($this->never())
             ->method('add');
 
-        // Act
         $this->eventAdmin->configureViews($viewCollection);
     }
 
@@ -305,7 +291,7 @@ class EventAdminTest extends TestCase
         $this->assertEquals('sulu_event.edit_form.seo', EventAdmin::EDIT_FORM_VIEW_SEO);
         $this->assertEquals('sulu_event.edit_form.excerpt', EventAdmin::EDIT_FORM_VIEW_EXCERPT);
         $this->assertEquals('sulu_event.event.edit_form.settings', EventAdmin::EDIT_FORM_VIEW_SETTINGS);
-        $this->assertEquals('sulu_event.event.edit_form.automation', EventAdmin::EDIT_FORM_VIEW_AUTOMATION);
+        $this->assertEquals('sulu_event.event.edit_form.activity', EventAdmin::EDIT_FORM_VIEW_ACTIVITY);
 
         $this->assertEquals('sulu_event.event.edit_form.recurrence', EventAdmin::EDIT_FORM_VIEW_RECURRENCE);
         $this->assertEquals('sulu_event.event.edit_form.social', EventAdmin::EDIT_FORM_VIEW_SOCIAL);
