@@ -1,0 +1,18 @@
+services:
+    # iCal Generator Service
+    sulu_event.ical_generator:
+        class: Manuxi\SuluEventBundle\Service\ICalGenerator
+        arguments:
+            - '@Manuxi\SuluEventBundle\Repository\EventRepository'
+            - '@sulu_content.content_aggregator'
+
+    # iCal Controller
+    Manuxi\SuluEventBundle\Controller\Website\ICalController:
+        arguments:
+            - '@sulu_event.ical_generator'
+            - '@Manuxi\SuluEventBundle\Repository\EventRepository'
+            - '@sulu_content.content_aggregator'
+        tags:
+            - { name: controller.service_arguments }
+            - { name: sulu.context, context: website }
+        public: true

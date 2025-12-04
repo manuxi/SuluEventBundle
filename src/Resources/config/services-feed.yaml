@@ -1,0 +1,11 @@
+services:
+    # Feed Controller (RSS/Atom)
+    Manuxi\SuluEventBundle\Controller\Website\FeedController:
+        arguments:
+            - '@Manuxi\SuluEventBundle\Repository\EventRepository'
+            - '@router'
+            - '@sulu_content.content_aggregator'
+        tags:
+            - { name: controller.service_arguments }
+            - { name: sulu.context, context: website }
+        public: true

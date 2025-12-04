@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Controller\Website;
 
-use JMS\Serializer\SerializerBuilder;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Sulu\Bundle\PreviewBundle\Preview\Preview;
 use Sulu\Bundle\WebsiteBundle\Resolver\TemplateAttributeResolverInterface;
@@ -12,7 +11,6 @@ use Sulu\Component\Webspace\Manager\WebspaceManagerInterface;
 use Sulu\Route\Domain\Repository\RouteRepositoryInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotAcceptableHttpException;
-use Symfony\Contracts\Translation\TranslatorInterface;
 use Twig\Environment;
 
 class EventController
@@ -20,7 +18,6 @@ class EventController
     public function __construct(
         private readonly Environment $twig,
         private readonly TemplateAttributeResolverInterface $templateAttributeResolver,
-        private readonly TranslatorInterface $translator,
         private readonly RouteRepositoryInterface $routeRepository,
         private readonly WebspaceManagerInterface $webspaceManager,
     ) {
@@ -34,14 +31,7 @@ class EventController
     ): Response {
         $parameters = $this->templateAttributeResolver->resolve([
             'event' => $event,
-            'content' => [
-                'title' => $this->translator->trans('sulu_event.events'),
-                'subtitle' => $event->getTitle(),
-            ],
-            'path' => $event->getRoutePath(),
-            'extension' => $this->extractExtension($event),
             'localizations' => $this->getLocalizationsArrayForEntity($event),
-            'created' => $event->getCreated(),
         ]);
 
         $viewTemplate = $view . '.html.twig';
@@ -74,7 +64,7 @@ class EventController
         $localizations = [];
         foreach ($routes as $route) {
             $url = $this->webspaceManager->findUrlByResourceLocator(
-                $route->getPath(),
+                $route->getSlug(),
                 null,
                 $route->getLocale()
             );
@@ -83,11 +73,5 @@ class EventController
         }
 
         return $localizations;
-    }
-
-    private function extractExtension(Event $event): array
-    {
-        $serializer = SerializerBuilder::create()->build();
-        return $serializer->toArray($event->getExt());
     }
 }

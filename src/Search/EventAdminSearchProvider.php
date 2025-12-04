@@ -7,8 +7,12 @@ namespace Manuxi\SuluEventBundle\Search;
 use CmsIg\Seal\Reindex\ReindexConfig;
 use CmsIg\Seal\Reindex\ReindexProviderInterface;
 use Manuxi\SuluEventBundle\Entity\Event;
+use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
 use Sulu\Component\Webspace\Manager\WebspaceManagerInterface;
+use Sulu\Content\Application\ContentAggregator\ContentAggregatorInterface;
+use Sulu\Content\Domain\Model\DimensionContentInterface;
+use Sulu\Content\Domain\Model\WorkflowInterface;
 
 /**
  * Provides ALL events (draft + published) for admin search.
@@ -18,6 +22,7 @@ class EventAdminSearchProvider implements ReindexProviderInterface
     public function __construct(
         private readonly EventRepository $eventRepository,
         private readonly WebspaceManagerInterface $webspaceManager,
+        private readonly ContentAggregatorInterface $contentAggregator,
     ) {
     }
 
@@ -36,8 +41,25 @@ class EventAdminSearchProvider implements ReindexProviderInterface
         $locales = $this->getLocales();
 
         foreach ($locales as $locale) {
-            foreach ($this->eventRepository->findAllForLocale($locale) as $event) {
-                yield $this->createDocument($event);
+            $events = $this->eventRepository->findBy([]);
+
+            foreach ($events as $event) {
+                /** @var EventDimensionContent $dimensionContent */
+                $dimensionContent = $this->contentAggregator->aggregate(
+                    $event,
+                    [
+                        'locale' => $locale,
+                        'stage' => DimensionContentInterface::STAGE_DRAFT,
+                        'version' => DimensionContentInterface::CURRENT_VERSION,
+                    ]
+                );
+
+                // Skip if no content for this locale
+                if (!$dimensionContent->getTitle()) {
+                    continue;
+                }
+
+                yield $this->createDocument($event, $dimensionContent, $locale);
             }
         }
     }
@@ -54,19 +76,19 @@ class EventAdminSearchProvider implements ReindexProviderInterface
         return array_keys($locales);
     }
 
-    private function createDocument(Event $event): array
+    private function createDocument(Event $event, EventDimensionContent $dimensionContent, string $locale): array
     {
         return [
-            'id' => 'event-'.$event->getId().'-'.$event->getLocale(),
+            'id' => 'event-'.$event->getId().'-'.$locale,
             'resourceKey' => Event::RESOURCE_KEY,
             'resourceId' => (string) $event->getId(),
-            'locale' => $event->getLocale(),
+            'locale' => $locale,
             'securityContext' => Event::SECURITY_CONTEXT,
-            'title' => $event->getTitle() ?? '',
-            'mediaId' => $event->getImage()?->getId(),
-            'changedAt' => $event->getChanged()?->format('c'),
-            'createdAt' => $event->getCreated()?->format('c'),
-            'published' => $event->isPublished() ? 1 : 0,
+            'title' => $dimensionContent->getTitle() ?? '',
+            'mediaId' => $dimensionContent->getImage()?->getId(),
+            'changedAt' => $dimensionContent->getChanged()?->format('c'),
+            'createdAt' => $dimensionContent->getCreated()?->format('c'),
+            'published' => (WorkflowInterface::WORKFLOW_PLACE_PUBLISHED === $dimensionContent->getWorkflowPlace()) ? 1 : 0,
             'startDate' => $event->getStartDate()?->format('c'),
         ];
     }

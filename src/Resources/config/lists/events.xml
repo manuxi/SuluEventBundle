@@ -2,201 +2,107 @@
 <list xmlns="http://schemas.sulu.io/list-builder/list">
     <key>events</key>
 
-    <joins name="translation">
+    <joins name="dimensionContent">
         <join>
-            <entity-name>%sulu.model.event_translation.class%</entity-name>
-            <field-name>%sulu.model.event.class%.translations</field-name>
-            <condition>%sulu.model.event_translation.class%.locale = :locale</condition>
+            <entity-name>dimensionContent</entity-name>
+            <field-name>Manuxi\SuluEventBundle\Entity\Event.dimensionContents</field-name>
+            <method>LEFT</method>
+            <condition>dimensionContent.locale = :locale AND dimensionContent.stage = 'draft' AND dimensionContent.version = 0</condition>
         </join>
     </joins>
 
-    <joins name="location">
+    <joins name="unlocalizedDimensionContent">
         <join>
-            <entity-name>%sulu.model.location.class%</entity-name>
-            <field-name>%sulu.model.event.class%.location</field-name>
+            <entity-name>unlocalizedDimensionContent</entity-name>
+            <field-name>Manuxi\SuluEventBundle\Entity\Event.dimensionContents</field-name>
+            <method>LEFT</method>
+            <condition>unlocalizedDimensionContent.locale IS NULL AND unlocalizedDimensionContent.stage = 'draft' AND unlocalizedDimensionContent.version = 0</condition>
         </join>
     </joins>
 
-    <joins name="changer" ref="translation">
+    <joins name="ghostDimensionContent" ref="unlocalizedDimensionContent">
         <join>
-            <entity-name>%sulu.model.user.class%_changer</entity-name>
-            <field-name>%sulu.model.event_translation.class%.changer</field-name>
-        </join>
-        <join>
-            <entity-name>%sulu.model.contact.class%_changer</entity-name>
-            <field-name>%sulu.model.user.class%_changer.contact</field-name>
-        </join>
-    </joins>
-
-    <joins name="creator" ref="translation">
-        <join>
-            <entity-name>%sulu.model.user.class%_creator</entity-name>
-            <field-name>%sulu.model.event_translation.class%.creator</field-name>
-        </join>
-        <join>
-            <entity-name>%sulu.model.contact.class%_creator</entity-name>
-            <field-name>%sulu.model.user.class%_creator.contact</field-name>
+            <entity-name>ghostDimensionContent</entity-name>
+            <field-name>Manuxi\SuluEventBundle\Entity\Event.dimensionContents</field-name>
+            <method>LEFT</method>
+            <condition>dimensionContent.locale IS NULL AND ghostDimensionContent.locale = unlocalizedDimensionContent.ghostLocale AND ghostDimensionContent.stage = 'draft' AND dimensionContent IS NULL</condition>
         </join>
     </joins>
 
     <properties>
-        <property name="id" visibility="no" translation="sulu_admin.id">
+        <property name="id" translation="sulu_admin.id">
             <field-name>id</field-name>
-            <entity-name>%sulu.model.event.class%</entity-name>
+            <entity-name>Manuxi\SuluEventBundle\Entity\Event</entity-name>
         </property>
 
-        <property name="title" visibility="always" searchability="yes" translation="sulu_admin.title">
-            <field-name>title</field-name>
-            <entity-name>%sulu.model.event_translation.class%</entity-name>
-
-            <joins ref="translation"/>
+        <property name="version" visibility="never">
+            <field-name>version</field-name>
+            <entity-name>dimensionContent</entity-name>
         </property>
 
-        <!-- normal date formatting -->
-        <!--
-        <property name="startDate" visibility="no" translation="sulu_event.start_date" type="datetime">
+        <case-property name="title" translation="sulu_admin.title" visibility="always" searchability="yes">
+            <field>
+                <field-name>title</field-name>
+                <entity-name>dimensionContent</entity-name>
+                <joins ref="dimensionContent"/>
+            </field>
+            <field>
+                <field-name>title</field-name>
+                <entity-name>ghostDimensionContent</entity-name>
+                <joins ref="ghostDimensionContent"/>
+            </field>
+            <transformer type="title"/>
+        </case-property>
+
+        <property name="locale" translation="sulu_admin.locale" visibility="never">
+            <field-name>locale</field-name>
+            <entity-name>dimensionContent</entity-name>
+            <joins ref="dimensionContent"/>
+        </property>
+
+        <property name="ghostLocale" translation="sulu_admin.ghost_locale" visibility="never">
+            <field-name>locale</field-name>
+            <entity-name>ghostDimensionContent</entity-name>
+            <joins ref="ghostDimensionContent"/>
+        </property>
+
+        <property name="type" translation="sulu_event.type" visibility="always">
+            <field-name>type</field-name>
+            <entity-name>Manuxi\SuluEventBundle\Entity\Event</entity-name>
+        </property>
+
+        <property name="startDate" translation="sulu_event.start_date" type="datetime" visibility="always">
             <field-name>startDate</field-name>
-            <entity-name>%sulu.model.event.class%</entity-name>
+            <entity-name>Manuxi\SuluEventBundle\Entity\Event</entity-name>
         </property>
 
-        <property name="endDate" visibility="no" translation="sulu_event.end_date" type="datetime">
+        <property name="endDate" translation="sulu_event.end_date" type="datetime" visibility="no">
             <field-name>endDate</field-name>
-            <entity-name>%sulu.model.event.class%</entity-name>
-        </property>
-        -->
-
-        <!-- new date formatting -->
-        <property name="startDateInternal" visibility="never">
-            <field-name>startDate</field-name>
-            <entity-name>%sulu.model.event.class%</entity-name>
+            <entity-name>Manuxi\SuluEventBundle\Entity\Event</entity-name>
         </property>
 
-        <property name="endDateInternal" visibility="never">
-            <field-name>endDate</field-name>
-            <entity-name>%sulu.model.event.class%</entity-name>
-        </property>
-
-        <property name="startDate" visibility="no" translation="sulu_event.event_date">
-            <field-name>startDate</field-name>
-            <entity-name>%sulu.model.event.class%</entity-name>
-        </property>
-
-        <property name="endDate" visibility="no" translation="sulu_event.event_time">
-            <field-name>endDate</field-name>
-            <entity-name>%sulu.model.event.class%</entity-name>
-        </property>
-        <!-- end new date formatting -->
-
-        <property name="subtitle" visibility="always" searchability="yes" translation="sulu_event.subtitle">
-            <field-name>subtitle</field-name>
-            <entity-name>%sulu.model.event_translation.class%</entity-name>
-
-            <joins ref="translation"/>
-        </property>
-
-        <property name="summary" visibility="no" searchability="yes" translation="sulu_event.summary">
-            <field-name>summary</field-name>
-            <entity-name>%sulu.model.event_translation.class%</entity-name>
-
-            <joins ref="translation"/>
-        </property>
-
-        <property name="text" visibility="no" searchability="yes" translation="sulu_event.text">
-            <field-name>text</field-name>
-            <entity-name>%sulu.model.event_translation.class%</entity-name>
-
-            <joins ref="translation"/>
-        </property>
-
-        <property name="footer" visibility="no" searchability="yes" translation="sulu_event.footer">
-            <field-name>footer</field-name>
-            <entity-name>%sulu.model.event_translation.class%</entity-name>
-
-            <joins ref="translation"/>
-        </property>
-
-        <property name="image" visibility="always" translation="sulu_event.image" sortable="false">
-            <field-name>id</field-name>
-            <entity-name>SuluMediaBundle:Media</entity-name>
-            <joins>
-                <join>
-                    <entity-name>SuluMediaBundle:Media</entity-name>
-                    <field-name>%sulu.model.event_translation.class%.image</field-name>
-                </join>
-            </joins>
-
-            <transformer type="thumbnails"/>
-        </property>
-
-        <property name="locationName" visibility="always" searchability="yes" translation="sulu_event.location">
-            <field-name>name</field-name>
-            <entity-name>%sulu.model.location.class%</entity-name>
-
-            <joins ref="location"/>
-        </property>
-
-        <!--
-        <property name="published" visibility="yes" translation="sulu_event.published" type="bool">
-            <field-name>published</field-name>
-            <entity-name>%sulu.model.event_translation.class%</entity-name>
-            <joins ref="translation"/>
-        </property>
-        -->
-
-        <property name="publishedState" translation="sulu_event.published" visibility="yes" type="bool">
-            <field-name>publishedState</field-name>
-            <entity-name>%sulu.model.event_translation.class%</entity-name>
-            <joins ref="translation"/>
-        </property>
-
-        <property name="publishedAt" visibility="yes" translation="sulu_event.published_date" type="datetime">
-            <field-name>publishedAt</field-name>
-            <entity-name>%sulu.model.event_translation.class%</entity-name>
-            <joins ref="translation"/>
-        </property>
-
-        <property name="created" translation="sulu_admin.created" type="datetime" visibility="yes">
+        <property name="created" translation="sulu_admin.created" type="datetime" visibility="no">
             <field-name>created</field-name>
-            <entity-name>%sulu.model.event_translation.class%</entity-name>
-
-            <joins ref="translation"/>
+            <entity-name>dimensionContent</entity-name>
+            <joins ref="dimensionContent"/>
         </property>
-
-        <concatenation-property name="creator" translation="sulu_admin.creator" visibility="yes" searchability="yes">
-            <field>
-                <field-name>firstName</field-name>
-                <entity-name>%sulu.model.contact.class%_creator</entity-name>
-
-                <joins ref="creator"/>
-            </field>
-            <field>
-                <field-name>lastName</field-name>
-                <entity-name>%sulu.model.contact.class%_creator</entity-name>
-
-                <joins ref="creator"/>
-            </field>
-        </concatenation-property>
 
         <property name="changed" translation="sulu_admin.changed" type="datetime" visibility="no">
             <field-name>changed</field-name>
-            <entity-name>%sulu.model.event_translation.class%</entity-name>
-
-            <joins ref="translation"/>
+            <entity-name>dimensionContent</entity-name>
+            <joins ref="dimensionContent"/>
         </property>
 
-        <concatenation-property name="changer" translation="sulu_admin.changer" visibility="no" searchability="yes">
-            <field>
-                <field-name>firstName</field-name>
-                <entity-name>%sulu.model.contact.class%_changer</entity-name>
+        <property name="workflowPlace" translation="sulu_admin.state" visibility="always">
+            <field-name>workflowPlace</field-name>
+            <entity-name>dimensionContent</entity-name>
+            <joins ref="dimensionContent"/>
+        </property>
 
-                <joins ref="changer"/>
-            </field>
-            <field>
-                <field-name>lastName</field-name>
-                <entity-name>%sulu.model.contact.class%_changer</entity-name>
-
-                <joins ref="changer"/>
-            </field>
-        </concatenation-property>
+        <property name="workflowPublished" translation="sulu_admin.published" type="datetime" visibility="no">
+            <field-name>workflowPublished</field-name>
+            <entity-name>dimensionContent</entity-name>
+            <joins ref="dimensionContent"/>
+        </property>
     </properties>
 </list>

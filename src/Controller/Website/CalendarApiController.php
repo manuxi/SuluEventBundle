@@ -5,29 +5,26 @@ declare(strict_types=1);
 namespace Manuxi\SuluEventBundle\Controller\Website;
 
 use Manuxi\SuluEventBundle\Entity\Event;
+use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
 use Manuxi\SuluEventBundle\Service\EventTypeSelect;
+use Sulu\Content\Application\ContentAggregator\ContentAggregatorInterface;
+use Sulu\Content\Domain\Model\DimensionContentInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
 class CalendarApiController extends AbstractController
 {
     public function __construct(
         private readonly EventRepository $eventRepository,
         private readonly EventTypeSelect $eventTypeSelect,
+        private readonly ContentAggregatorInterface $contentAggregator,
     ) {
     }
 
-    /**
-     * API endpoint for FullCalendar to fetch events.
-     *
-     * Returns events in FullCalendar-compatible JSON format
-     * Supports filtering by date range, categories, tags, and location
-     * Rate limited to 100 requests per hour per IP
-     */
     #[Route(
         path: '/api/events/calendar/{_locale}',
         name: 'sulu_event.api.calendar',
@@ -36,7 +33,6 @@ class CalendarApiController extends AbstractController
     )]
     public function calendarAction(Request $request, string $_locale): JsonResponse
     {
-        // Rate limiting via limiter service
         $this->applyRateLimit($request);
 
         $filters = $this->validateAndSanitizeFilters($request, $_locale);
@@ -45,9 +41,6 @@ class CalendarApiController extends AbstractController
         return new JsonResponse($this->transformEventsForFullCalendar($events, $_locale));
     }
 
-    /**
-     * Apply rate limiting using the limiter service.
-     */
     private function applyRateLimit(Request $request): void
     {
         if (!$this->container->has('limiter')) {
@@ -62,13 +55,10 @@ class CalendarApiController extends AbstractController
                 throw new TooManyRequestsHttpException();
             }
         } catch (\Exception $e) {
-            // Rate limiter not configured - continue without limiting
+            // Rate limiter not configured - continue
         }
     }
 
-    /**
-     * Validate and sanitize request filters.
-     */
     private function validateAndSanitizeFilters(Request $request, string $locale): array
     {
         $filters = [
@@ -87,10 +77,9 @@ class CalendarApiController extends AbstractController
             'end' => $this->validateDate($request->query->get('end')),
         ];
 
-        // dataId = 0 or null means: All events (no page filter)
         if (empty($filters['dataId'])) {
             unset($filters['dataId']);
-            unset($filters['includeSubFolders']);  // Only makes sense with dataId
+            unset($filters['includeSubFolders']);
         } else {
             $filters['dataId'] = (int) $filters['dataId'];
         }
@@ -98,9 +87,6 @@ class CalendarApiController extends AbstractController
         return $filters;
     }
 
-    /**
-     * Validate and sanitize date string.
-     */
     private function validateDate(?string $date): ?string
     {
         if (!$date) {
@@ -109,79 +95,71 @@ class CalendarApiController extends AbstractController
 
         try {
             $dateTime = new \DateTime($date);
-
             return $dateTime->format('Y-m-d H:i:s');
         } catch (\Exception $e) {
             return null;
         }
     }
 
-    /**
-     * Transform events to FullCalendar format.
-     */
     private function transformEventsForFullCalendar(array $events, string $locale): array
     {
         return array_map(function (Event $event) use ($locale) {
-            $event->setLocale($locale);
+            /** @var EventDimensionContent $dimensionContent */
+            $dimensionContent = $this->contentAggregator->aggregate(
+                $event,
+                [
+                    'locale' => $locale,
+                    'stage' => DimensionContentInterface::STAGE_LIVE,
+                ]
+            );
 
-            // Determine if all-day event
             $isAllDay = $this->isAllDayEvent($event);
 
-            // Get type color and name
             $typeColor = $this->eventTypeSelect->getColor($event->getType() ?? 'default');
             $typeName = $this->eventTypeSelect->getTypeName($event->getType() ?? 'default');
 
-            $data = [
+            $calendarEvent = [
                 'id' => $event->getId(),
-                'title' => $event->getTitle(),
-                'start' => $event->getStartDate()?->format('c'), // ISO 8601
+                'title' => $dimensionContent->getTitle() ?? '',
+                'start' => $event->getStartDate()->format('c'),
                 'allDay' => $isAllDay,
-                'url' => $event->getRoutePath(),
+                'url' => $dimensionContent->getRoute()?->getSlug() ?? '',
                 'extendedProps' => [
-                    'summary' => $event->getSummary(),
-                    'type' => $event->getType(),
-                    'type_translation' => $typeName,
+                    'type' => $event->getType() ?? 'default',
+                    'typeName' => $typeName,
                     'typeColor' => $typeColor,
                 ],
             ];
 
-            // Add end date if exists and not all-day
-            if ($event->getEndDate() && !$isAllDay) {
-                $data['end'] = $event->getEndDate()->format('c');
+            if ($event->getEndDate()) {
+                $calendarEvent['end'] = $event->getEndDate()->format('c');
             }
 
-            // Add location if exists
             if ($event->getLocation()) {
-                $data['extendedProps']['location'] = $event->getLocation()->getName();
+                $calendarEvent['extendedProps']['location'] = $event->getLocation()->getName();
             }
 
-            return $data;
+            if ($dimensionContent->getSummary()) {
+                $calendarEvent['extendedProps']['summary'] = $dimensionContent->getSummary();
+            }
+
+            $calendarEvent['backgroundColor'] = $typeColor;
+            $calendarEvent['borderColor'] = $typeColor;
+
+            return $calendarEvent;
         }, $events);
     }
 
-    /**
-     * Check if event is all-day (00:00-00:00 or no end date with 00:00 start).
-     */
     private function isAllDayEvent(Event $event): bool
     {
-        $start = $event->getStartDate();
-        $end = $event->getEndDate();
-
-        if (!$start) {
+        if (!$event->getEndDate()) {
             return true;
         }
 
-        // Check if start time is 00:00
-        $startIsMidnight = '00:00' === $start->format('H:i');
+        $start = $event->getStartDate();
+        $end = $event->getEndDate();
 
-        // No end date with midnight start means all-day
-        if (!$end) {
-            return $startIsMidnight;
-        }
-
-        // Both start and end are midnight
-        $endIsMidnight = '00:00' === $end->format('H:i');
-
-        return $startIsMidnight && $endIsMidnight;
+        return $start->format('H:i:s') === '00:00:00'
+            && $end->format('H:i:s') === '23:59:59';
     }
 }

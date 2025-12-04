@@ -5,14 +5,37 @@ declare(strict_types=1);
 namespace Manuxi\SuluEventBundle\Service;
 
 use Manuxi\SuluEventBundle\Entity\Event;
+use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
+use Sulu\Bundle\MediaBundle\Media\Manager\MediaManagerInterface;
+use Sulu\Content\Application\ContentAggregator\ContentAggregatorInterface;
+use Sulu\Content\Domain\Model\DimensionContentInterface;
 
 class SocialShareGenerator
 {
+    public function __construct(
+        private readonly ContentAggregatorInterface $contentAggregator,
+        private readonly MediaManagerInterface $mediaManager,
+    ) {
+    }
+
+    /**
+     * Generate share links for an event
+     */
     public function generateShareLinks(Event $event, string $locale): array
     {
+        /** @var EventDimensionContent $dimensionContent */
+        $dimensionContent = $this->contentAggregator->aggregate($event, [
+            'locale' => $locale,
+            'stage' => DimensionContentInterface::STAGE_LIVE,
+        ]);
+
         $settings = $event->getSocialSettings();
-        $url = urlencode($this->getEventUrl($event));
-        $title = urlencode($event->getTitle());
+        if (!$settings || !$settings->getEnableSharing()) {
+            return [];
+        }
+
+        $url = urlencode($this->getEventUrl($dimensionContent));
+        $title = urlencode($dimensionContent->getTitle() ?? '');
 
         // Use custom share text or fallback to title
         $shareText = $settings->getCustomShareText()
@@ -28,7 +51,7 @@ class SocialShareGenerator
         ];
 
         // Filter by enabled platforms
-        $enabledPlatforms = $settings->getSocialPlatforms() ?? [];
+        $enabledPlatforms = $settings->getPlatforms() ?? [];
 
         return array_filter(
             $allLinks,
@@ -40,22 +63,29 @@ class SocialShareGenerator
     /**
      * Generate Open Graph meta tags for social media.
      */
-    public function generateOpenGraphTags(Event $event): array
+    public function generateOpenGraphTags(Event $event, string $locale): array
     {
+        /** @var EventDimensionContent $dimensionContent */
+        $dimensionContent = $this->contentAggregator->aggregate($event, [
+            'locale' => $locale,
+            'stage' => DimensionContentInterface::STAGE_LIVE,
+        ]);
+
         $tags = [
             'og:type' => 'event',
-            'og:title' => $event->getTitle(),
-            'og:url' => $this->getEventUrl($event),
+            'og:title' => $dimensionContent->getTitle() ?? '',
+            'og:url' => $this->getEventUrl($dimensionContent),
             'event:start_time' => $event->getStartDate()->format('c'),
         ];
 
         // Add optional properties
-        if ($event->getSummary()) {
-            $tags['og:description'] = $event->getSummary();
+        if ($dimensionContent->getSummary()) {
+            $tags['og:description'] = $dimensionContent->getSummary();
         }
 
-        if ($event->getImage()) {
-            $tags['og:image'] = $event->getImage()->getUrl();
+        if ($image = $dimensionContent->getImage()) {
+            $media = $this->mediaManager->getById($image->getId(), $locale);
+            $tags['og:image'] = $media->getUrl();
         }
 
         if ($event->getEndDate()) {
@@ -72,20 +102,27 @@ class SocialShareGenerator
     /**
      * Generate Twitter Card meta tags.
      */
-    public function generateTwitterCardTags(Event $event): array
+    public function generateTwitterCardTags(Event $event, string $locale): array
     {
+        /** @var EventDimensionContent $dimensionContent */
+        $dimensionContent = $this->contentAggregator->aggregate($event, [
+            'locale' => $locale,
+            'stage' => DimensionContentInterface::STAGE_LIVE,
+        ]);
+
         $tags = [
             'twitter:card' => 'summary_large_image',
-            'twitter:title' => $event->getTitle(),
-            'twitter:url' => $this->getEventUrl($event),
+            'twitter:title' => $dimensionContent->getTitle() ?? '',
+            'twitter:url' => $this->getEventUrl($dimensionContent),
         ];
 
-        if ($event->getSummary()) {
-            $tags['twitter:description'] = $event->getSummary();
+        if ($dimensionContent->getSummary()) {
+            $tags['twitter:description'] = $dimensionContent->getSummary();
         }
 
-        if ($event->getImage()) {
-            $tags['twitter:image'] = $event->getImage()->getUrl();
+        if ($image = $dimensionContent->getImage()) {
+            $media = $this->mediaManager->getById($image->getId(), $locale);
+            $tags['twitter:image'] = $media->getUrl();
         }
 
         return $tags;
@@ -94,10 +131,9 @@ class SocialShareGenerator
     /**
      * Get absolute URL for event.
      */
-    private function getEventUrl(Event $event): string
+    private function getEventUrl(EventDimensionContent $dimensionContent): string
     {
-        // Use the event's route path as absolute URL
-        // In production, this should generate a full absolute URL
-        return $event->getRoutePath();
+        $route = $dimensionContent->getRoute();
+        return $route ? $route->getSlug() : '';
     }
 }

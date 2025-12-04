@@ -11,7 +11,7 @@ use Sulu\Bundle\PersistenceBundle\DependencyInjection\PersistenceExtensionTrait;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
-use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
+use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 use Symfony\Component\Yaml\Yaml;
 
@@ -37,19 +37,36 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
             $config['routing']['route_schema']
         );
 
-        $loader = new XmlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
-        $loader->load('services.xml');
-        $loader->load('controller.xml');
-        $loader->load('automation.xml');
-        $loader->load('services-feed.xml');
-        $loader->load('services-ical.xml');
-        $loader->load('services-calendar.xml');
+        $loader = new YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
+        $loader->load('controller.yaml');
+        $loader->load('services.yaml');
+        $loader->load('services-calendar.yaml');
+        $loader->load('services-ical.yaml');
+        $loader->load('services-feed.yaml');
 
         $this->configurePersistence($config['objects'], $container);
     }
 
     public function prepend(ContainerBuilder $container)
     {
+        if ($container->hasExtension('doctrine')) {
+            $container->prependExtensionConfig(
+                'doctrine',
+                [
+                    'orm' => [
+                        'mappings' => [
+                            'SuluEventBundle' => [
+                                'type' => 'xml',
+                                'dir' => __DIR__ . '/../Resources/config/doctrine',
+                                'prefix' => 'Manuxi\SuluEventBundle\Entity',
+                                'alias' => 'SuluEventBundle',
+                            ],
+                        ],
+                    ],
+                ]
+            );
+        }
+
         if ($container->hasExtension('sulu_event')) {
             // Load all existing configs to check if project has defined types
             $configs = $container->getExtensionConfig('sulu_event');
@@ -96,6 +113,23 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
                         ],
                     ],
                 ],
+            );
+        }
+
+        if ($container->hasExtension('sulu_route')) {
+            $container->prependExtensionConfig(
+                'sulu_route',
+                [
+                    'mappings' => [
+                        Event::class => [
+                            'generator' => 'schema',
+                            'options' => [
+                                'route_schema' => '/{translator.trans("sulu_event.events")}/{object.getTitle()}',
+                            ],
+                            'resource_key' => Event::RESOURCE_KEY,
+                        ],
+                    ],
+                ]
             );
         }
 

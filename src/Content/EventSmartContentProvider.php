@@ -7,12 +7,15 @@ namespace Manuxi\SuluEventBundle\Content;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\QueryBuilder;
-use Manuxi\SuluEventBundle\Admin\EventAdmin;
 use Manuxi\SuluEventBundle\Entity\Event;
+use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
 use Sulu\Bundle\AdminBundle\SmartContent\Configuration\Builder;
 use Sulu\Bundle\AdminBundle\SmartContent\Configuration\BuilderInterface;
 use Sulu\Bundle\AdminBundle\SmartContent\Configuration\ProviderConfigurationInterface;
 use Sulu\Bundle\AdminBundle\SmartContent\SmartContentProviderInterface;
+use Sulu\Bundle\AdminBundle\SmartContent\SmartContentQueryEnhancer;
+use Sulu\Content\Domain\Model\DimensionContentInterface;
+use Sulu\Content\Infrastructure\Doctrine\DimensionContentQueryEnhancer;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
@@ -60,14 +63,23 @@ readonly class EventSmartContentProvider implements SmartContentProviderInterfac
     private EntityRepository $entityRepository;
 
     /**
+     * @var class-string<EventDimensionContent>
+     */
+    private string $eventDimensionContentClassName;
+
+    /**
      * @param array<string, array{name: string, color: string}> $eventTypes
      */
     public function __construct(
+        private DimensionContentQueryEnhancer $dimensionContentQueryEnhancer,
+        private SmartContentQueryEnhancer $smartContentQueryEnhancer,
         EntityManagerInterface $entityManager,
-        protected TranslatorInterface $translator,
+        private TranslatorInterface $translator,
         private array $eventTypes = [],
     ) {
         $this->entityRepository = $entityManager->getRepository(Event::class);
+        $entityDimensionContentRepository = $entityManager->getRepository(EventDimensionContent::class);
+        $this->eventDimensionContentClassName = $entityDimensionContentRepository->getClassName();
     }
 
     public function getConfiguration(): ProviderConfigurationInterface
@@ -84,8 +96,7 @@ readonly class EventSmartContentProvider implements SmartContentProviderInterfac
             ->enablePagination()
             ->enablePresentAs()
             ->enableSorting($this->getSorting())
-            ->enableTypes($this->getTypes())
-            ->enableView(EventAdmin::EDIT_FORM_VIEW, ['id' => 'id']);
+            ->enableTypes($this->getTypes());
     }
 
     protected function getTypes(): array
@@ -95,7 +106,6 @@ readonly class EventSmartContentProvider implements SmartContentProviderInterfac
             ['type' => 'expired', 'title' => $this->translator->trans('sulu_event.filter.expired', [], 'admin')],
         ];
 
-        // Add configurable event types from config
         foreach ($this->eventTypes as $key => $config) {
             $types[] = [
                 'type' => $key,
@@ -112,7 +122,9 @@ readonly class EventSmartContentProvider implements SmartContentProviderInterfac
             ['column' => 'startDate', 'title' => 'sulu_event.sorting.start_date'],
             ['column' => 'endDate', 'title' => 'sulu_event.sorting.end_date'],
             ['column' => 'title', 'title' => 'sulu_event.title'],
-            ['column' => 'published', 'title' => 'sulu_event.published'],
+            ['column' => 'workflowPublished', 'title' => 'sulu_admin.published'],
+            ['column' => 'created', 'title' => 'sulu_admin.created'],
+            ['column' => 'changed', 'title' => 'sulu_admin.changed'],
         ];
     }
 
@@ -122,192 +134,201 @@ readonly class EventSmartContentProvider implements SmartContentProviderInterfac
      */
     public function countBy(array $filters, array $params = []): int
     {
-        $qb = $this->createBaseQueryBuilder($filters);
-        $qb->select('COUNT(DISTINCT event.id)');
+        /** @var EventSmartContentCountFilters $filters */
+        $filters = $this->enhanceWithDimensionAttributes($filters);
 
-        return (int) $qb->getQuery()->getSingleScalarResult();
+        $alias = 'event';
+        $queryBuilder = $this->entityRepository->createQueryBuilder($alias);
+
+        $filters = $this->mapFilters($filters);
+        $this->dimensionContentQueryEnhancer->addFilters(
+            $queryBuilder,
+            $alias,
+            $this->eventDimensionContentClassName,
+            $filters,
+            [],
+        );
+        $this->addInternalFilters($queryBuilder, $filters, $alias);
+
+        $queryBuilder->select('COUNT(DISTINCT '.$alias.'.id)');
+
+        return (int) $queryBuilder->getQuery()->getSingleScalarResult();
     }
 
     /**
      * @param EventSmartContentFilters $filters
-     * @param array<string, string>    $sortBys
-     * @param array<string, mixed>     $params
+     * @param array{
+     *     title?: 'asc'|'desc',
+     *     startDate?: 'asc'|'desc',
+     *     endDate?: 'asc'|'desc',
+     *     workflowPublished?: 'asc'|'desc',
+     *     created?: 'asc'|'desc',
+     *     changed?: 'asc'|'desc',
+     * } $sortBys
+     * @param array<string, mixed> $params
      *
      * @return array<array{id: string, title: string}>
      */
     public function findFlatBy(array $filters, array $sortBys, array $params = []): array
     {
-        $qb = $this->createBaseQueryBuilder($filters);
+        /** @var EventSmartContentFilters $filters */
+        $filters = $this->enhanceWithDimensionAttributes($filters);
 
-        // Select required fields
-        $qb->select('DISTINCT CAST(event.id AS string) as id')
-            ->addSelect('translation.title');
+        $alias = 'event';
+        $queryBuilder = $this->entityRepository->createQueryBuilder($alias);
 
-        // Apply sorting
-        $this->applySorting($qb, $sortBys);
+        $filters = $this->mapFilters($filters);
+        $this->dimensionContentQueryEnhancer->addFilters(
+            $queryBuilder,
+            $alias,
+            $this->eventDimensionContentClassName,
+            $filters,
+            $sortBys,
+        );
+        $this->addInternalFilters($queryBuilder, $filters, $alias);
 
-        // Apply pagination
-        if (isset($filters['limit']) && $filters['limit'] > 0) {
-            $qb->setMaxResults($filters['limit']);
-        }
+        $queryBuilder->select('DISTINCT '.$alias.'.id as id');
+        $this->smartContentQueryEnhancer->addOrderBySelects($queryBuilder);
+        $this->smartContentQueryEnhancer->addPagination($queryBuilder, $filters['offset'] ?? 0, $filters['limit']);
 
-        if (isset($filters['offset']) && $filters['offset'] > 0) {
-            $qb->setFirstResult($filters['offset']);
-        }
+        /** @var array{id: int|string, title?: string}[] $queryResult */
+        $queryResult = $queryBuilder->getQuery()->getArrayResult();
 
-        /** @var array<array{id: string, title: string}> $result */
-        $result = $qb->getQuery()->getArrayResult();
+        /** @var array{id: string, title: string}[] $result */
+        $result = \array_map(
+            static fn (array $item) => [
+                'id' => (string) $item['id'],
+                'title' => (string) ($item['title'] ?? ''),
+            ],
+            $queryResult
+        );
 
         return $result;
     }
 
-    protected function createBaseQueryBuilder(array $filters): QueryBuilder
+    /**
+     * @param array<string, mixed> $filters
+     *
+     * @return array<string, mixed>
+     */
+    protected function enhanceWithDimensionAttributes(array $filters): array
     {
-        $locale = $filters['locale'];
+        $dimensionAttributes = [
+            'stage' => $filters['stage'] ?? DimensionContentInterface::STAGE_LIVE,
+        ];
 
-        $qb = $this->entityRepository->createQueryBuilder('event')
-            ->leftJoin('event.translations', 'translation')
-            ->where('translation.locale = :locale')
-            ->andWhere('translation.published = :published')
-            ->setParameter('locale', $locale)
-            ->setParameter('published', true);
-
-        // Type filter (pending/expired)
-        if (!empty($filters['types'])) {
-            $this->applyTypeFilter($qb, $filters['types']);
-        }
-
-        // Category filter
-        if (!empty($filters['categories'])) {
-            $operator = $filters['categoryOperator'] ?? 'OR';
-            if ('AND' === $operator) {
-                foreach ($filters['categories'] as $i => $categoryId) {
-                    $qb->innerJoin('translation.categories', 'category'.$i)
-                        ->andWhere('category'.$i.'.id = :category'.$i)
-                        ->setParameter('category'.$i, $categoryId);
-                }
-            } else {
-                $qb->innerJoin('translation.categories', 'category')
-                    ->andWhere('category.id IN (:categories)')
-                    ->setParameter('categories', $filters['categories']);
-            }
-        }
-
-        // Tag filter
-        if (!empty($filters['tags'])) {
-            $operator = $filters['tagOperator'] ?? 'OR';
-            if ('AND' === $operator) {
-                foreach ($filters['tags'] as $i => $tagName) {
-                    $qb->innerJoin('translation.tags', 'tag'.$i)
-                        ->andWhere('tag'.$i.'.name = :tag'.$i)
-                        ->setParameter('tag'.$i, $tagName);
-                }
-            } else {
-                $qb->innerJoin('translation.tags', 'tag')
-                    ->andWhere('tag.name IN (:tags)')
-                    ->setParameter('tags', $filters['tags']);
-            }
-        }
-
-        // Website category filter (excerpt categories)
-        if (!empty($filters['websiteCategories'])) {
-            $operator = $filters['websiteCategoryOperator'] ?? 'OR';
-            if ('AND' === $operator) {
-                foreach ($filters['websiteCategories'] as $i => $categoryId) {
-                    $qb->innerJoin('translation.categories', 'websiteCategory'.$i)
-                        ->andWhere('websiteCategory'.$i.'.id = :websiteCategory'.$i)
-                        ->setParameter('websiteCategory'.$i, $categoryId);
-                }
-            } else {
-                $qb->innerJoin('translation.categories', 'websiteCategory')
-                    ->andWhere('websiteCategory.id IN (:websiteCategories)')
-                    ->setParameter('websiteCategories', $filters['websiteCategories']);
-            }
-        }
-
-        // Website tag filter (excerpt tags)
-        if (!empty($filters['websiteTags'])) {
-            $operator = $filters['websiteTagOperator'] ?? 'OR';
-            if ('AND' === $operator) {
-                foreach ($filters['websiteTags'] as $i => $tagName) {
-                    $qb->innerJoin('translation.tags', 'websiteTag'.$i)
-                        ->andWhere('websiteTag'.$i.'.name = :websiteTag'.$i)
-                        ->setParameter('websiteTag'.$i, $tagName);
-                }
-            } else {
-                $qb->innerJoin('translation.tags', 'websiteTag')
-                    ->andWhere('websiteTag.name IN (:websiteTags)')
-                    ->setParameter('websiteTags', $filters['websiteTags']);
-            }
-        }
-
-        return $qb;
+        return \array_merge($dimensionAttributes, $filters);
     }
 
     /**
-     * @param array<string, string> $sortBys
+     * @param EventSmartContentFilters|EventSmartContentCountFilters $filters
+     *
+     * @return array{
+     *         categoryIds?: int[],
+     *         categoryOperator: 'AND'|'OR',
+     *         websiteCategories: string[],
+     *         websiteCategoryOperator: 'AND'|'OR',
+     *         tagNames?: string[],
+     *         tagOperator: 'AND'|'OR',
+     *         websiteTags: string[],
+     *         websiteTagOperator: 'AND'|'OR',
+     *         templateKeys?: string[],
+     *         typesOperator: 'OR',
+     *         locale: string,
+     *         dataSource: string|null,
+     *         limit: int|null,
+     *         offset?: int,
+     *         includeSubFolders: bool,
+     *         excludeDuplicates: bool,
+     *         stage?: string,
+     *     }
      */
-    protected function applySorting(QueryBuilder $qb, array $sortBys): void
+    protected function mapFilters(array $filters): array
     {
-        if (empty($sortBys)) {
-            $qb->orderBy('event.startDate', 'ASC');
+        $mappedFilters = [
+            'categoryIds' => $filters['categories'] ?? [],
+            'categoryOperator' => $filters['categoryOperator'] ?? 'OR',
+            'websiteCategories' => $filters['websiteCategories'] ?? [],
+            'websiteCategoryOperator' => $filters['websiteCategoryOperator'] ?? 'OR',
+            'tagNames' => $filters['tags'] ?? [],
+            'tagOperator' => $filters['tagOperator'] ?? 'OR',
+            'websiteTags' => $filters['websiteTags'] ?? [],
+            'websiteTagOperator' => $filters['websiteTagOperator'] ?? 'OR',
+            'templateKeys' => $filters['types'] ?? [],
+            'typesOperator' => $filters['typesOperator'] ?? 'OR',
+            'locale' => $filters['locale'],
+            'dataSource' => $filters['dataSource'] ?? null,
+            'limit' => $filters['limit'] ?? null,
+            'includeSubFolders' => $filters['includeSubFolders'] ?? false,
+            'excludeDuplicates' => $filters['excludeDuplicates'] ?? false,
+        ];
 
+        if (isset($filters['offset'])) {
+            $mappedFilters['offset'] = $filters['offset'];
+        }
+
+        if (isset($filters['stage'])) {
+            $mappedFilters['stage'] = $filters['stage'];
+        }
+
+        return $mappedFilters;
+    }
+
+    /**
+     * @param array{
+     *     websiteCategories: string[],
+     *     websiteCategoryOperator: 'AND'|'OR',
+     *     websiteTags: string[],
+     *     websiteTagOperator: 'AND'|'OR',
+     *     templateKeys: string[],
+     *     typesOperator: 'OR',
+     * } $filters
+     */
+    protected function addInternalFilters(QueryBuilder $queryBuilder, array $filters, string $alias): void
+    {
+        $this->addTypeFilters($queryBuilder, $filters['templateKeys'] ?? [], $alias);
+    }
+
+    /**
+     * @param string[] $types
+     */
+    protected function addTypeFilters(QueryBuilder $queryBuilder, array $types, string $alias): void
+    {
+        if (empty($types)) {
             return;
         }
 
-        $sortMap = [
-            'startDate' => 'event.startDate',
-            'endDate' => 'event.endDate',
-            'title' => 'translation.title',
-            'published' => 'translation.publishedAt',
-            'workflowPublished' => 'translation.publishedAt',
-            'authored' => 'translation.authored',
-            'created' => 'event.created',
-            'changed' => 'event.changed',
-        ];
+        $hasPending = \in_array('pending', $types, true);
+        $hasExpired = \in_array('expired', $types, true);
 
-        foreach ($sortBys as $sortBy => $direction) {
-            $field = $sortMap[$sortBy] ?? 'event.startDate';
-            $qb->addOrderBy($field, strtoupper($direction));
-        }
-    }
+        $configurableTypes = \array_intersect($types, \array_keys($this->eventTypes));
 
-    protected function applyTypeFilter(QueryBuilder $qb, array $types): void
-    {
-        $hasPending = in_array('pending', $types, true);
-        $hasExpired = in_array('expired', $types, true);
-
-        // Collect configurable event type keys
-        $configurableTypes = array_intersect($types, array_keys($this->eventTypes));
-
-        // Filter by configurable event types (if any selected)
         if (!empty($configurableTypes)) {
-            $qb->andWhere('event.type IN (:eventTypes)')
+            $queryBuilder->andWhere($alias.'.type IN (:eventTypes)')
                 ->setParameter('eventTypes', $configurableTypes);
         }
 
-        // Temporal filters (pending/expired)
         if ($hasPending && $hasExpired) {
-            return; // All events (no temporal filter)
+            return;
         }
 
         $now = new \DateTime();
         $todayStart = (clone $now)->setTime(0, 0, 0);
 
         if ($hasPending) {
-            $qb->andWhere(
-                '(event.endDate IS NOT NULL AND event.endDate >= :now) OR '.
-                '(event.endDate IS NULL AND event.startDate >= :todayStart)'
+            $queryBuilder->andWhere(
+                '('.$alias.'.endDate IS NOT NULL AND '.$alias.'.endDate >= :now) OR '.
+                '('.$alias.'.endDate IS NULL AND '.$alias.'.startDate >= :todayStart)'
             );
-            $qb->setParameter('now', $now);
-            $qb->setParameter('todayStart', $todayStart);
+            $queryBuilder->setParameter('now', $now);
+            $queryBuilder->setParameter('todayStart', $todayStart);
         } elseif ($hasExpired) {
-            $qb->andWhere(
-                '(event.endDate IS NOT NULL AND event.endDate < :now) OR '.
-                '(event.endDate IS NULL AND event.startDate < :todayStart)'
+            $queryBuilder->andWhere(
+                '('.$alias.'.endDate IS NOT NULL AND '.$alias.'.endDate < :now) OR '.
+                '('.$alias.'.endDate IS NULL AND '.$alias.'.startDate < :todayStart)'
             );
-            $qb->setParameter('now', $now);
-            $qb->setParameter('todayStart', $todayStart);
+            $queryBuilder->setParameter('now', $now);
+            $queryBuilder->setParameter('todayStart', $todayStart);
         }
     }
 

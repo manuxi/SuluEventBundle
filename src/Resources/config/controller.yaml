@@ -1,0 +1,53 @@
+services:
+    # Admin Controllers
+    Manuxi\SuluEventBundle\Controller\Admin\EventController:
+        arguments:
+            - '@fos_rest.view_handler.default'
+            - '@security.token_storage'
+            - '@sulu_core.list_builder.field_descriptor_factory'
+            - '@sulu_core.doctrine_list_builder_factory'
+            - '@sulu_core.rest_helper'
+            - '@sulu_content.content_manager'
+            - '@doctrine.orm.entity_manager'
+        tags:
+            - { name: controller.service_arguments }
+            - { name: sulu.context, context: admin }
+        public: true
+
+        Manuxi\SuluEventBundle\Controller\Admin\LocationController:
+            arguments:
+                - '@sulu_event.repository.location'
+                - '@doctrine.orm.entity_manager'
+                - '@sulu_trash.trash_manager'
+                - '@sulu_core.list_builder.field_descriptor_factory'
+                - '@sulu_core.doctrine_list_builder_factory'
+                - '@sulu_core.rest_helper'
+                - '@fos_rest.view_handler.default'
+                - '@security.token_storage'
+            tags:
+                - { name: controller.service_arguments }
+                - { name: sulu.context, context: admin }
+            public: true
+
+    Manuxi\SuluEventBundle\Controller\Admin\SettingsController:
+        arguments:
+            - '@doctrine.orm.default_entity_manager'
+            - '@sulu_activity.domain_event_collector'
+            - '@fos_rest.view_handler.default'
+            - '@security.token_storage'
+        tags:
+            - { name: sulu.context, context: admin }
+        public: true
+
+    # Website Controller
+    Manuxi\SuluEventBundle\Controller\Website\EventController:
+        arguments:
+            - '@twig'
+            - '@sulu_website.resolver.template_attribute'
+            - '@translator'
+            - '@sulu_route.route_repository'
+            - '@sulu_core.webspace.webspace_manager'
+        tags:
+            - { name: controller.service_arguments }
+            - { name: sulu.context, context: website }
+        public: true

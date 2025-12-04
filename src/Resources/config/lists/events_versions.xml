@@ -1,0 +1,106 @@
+<?xml version="1.0" ?>
+<list xmlns="http://schemas.sulu.io/list-builder/list">
+    <key>events_versions</key>
+
+    <joins name="dimensionContent">
+        <join>
+            <entity-name>dimensionContent</entity-name>
+            <field-name>Manuxi\SuluEventBundle\Entity\Event.dimensionContents</field-name>
+            <method>INNER</method>
+            <condition>dimensionContent.locale = :locale AND dimensionContent.stage = 'draft' AND Manuxi\SuluEventBundle\Entity\Event.id = :id</condition>
+        </join>
+    </joins>
+
+    <properties>
+        <property name="id" translation="sulu_admin.id" visibility="never">
+            <field-name>id</field-name>
+            <entity-name>Manuxi\SuluEventBundle\Entity\Event</entity-name>
+        </property>
+
+        <property name="version" translation="sulu_admin.version" visibility="always">
+            <field-name>version</field-name>
+            <entity-name>dimensionContent</entity-name>
+            <joins ref="dimensionContent"/>
+        </property>
+
+        <property name="title" translation="sulu_admin.title" visibility="always">
+            <field-name>title</field-name>
+            <entity-name>dimensionContent</entity-name>
+            <joins ref="dimensionContent"/>
+        </property>
+
+        <property name="created" translation="sulu_admin.created" type="datetime" visibility="always">
+            <field-name>created</field-name>
+            <entity-name>dimensionContent</entity-name>
+            <joins ref="dimensionContent"/>
+        </property>
+
+        <property name="changed" translation="sulu_admin.changed" type="datetime" visibility="always">
+            <field-name>changed</field-name>
+            <entity-name>dimensionContent</entity-name>
+            <joins ref="dimensionContent"/>
+        </property>
+
+        <concatenation-property name="creator" translation="sulu_admin.creator" visibility="always" sortable="false" glue=" ">
+            <field>
+                <field-name>firstName</field-name>
+                <entity-name>creatorContact</entity-name>
+                <joins ref="dimensionContent">
+                    <join>
+                        <entity-name>creator</entity-name>
+                        <field-name>dimensionContent.creator</field-name>
+                    </join>
+                    <join>
+                        <entity-name>creatorContact</entity-name>
+                        <field-name>creator.contact</field-name>
+                    </join>
+                </joins>
+            </field>
+            <field>
+                <field-name>lastName</field-name>
+                <entity-name>creatorContact</entity-name>
+                <joins ref="dimensionContent">
+                    <join>
+                        <entity-name>creator</entity-name>
+                        <field-name>dimensionContent.creator</field-name>
+                    </join>
+                    <join>
+                        <entity-name>creatorContact</entity-name>
+                        <field-name>creator.contact</field-name>
+                    </join>
+                </joins>
+            </field>
+        </concatenation-property>
+
+        <concatenation-property name="changer" translation="sulu_admin.changer" visibility="always" sortable="false" glue=" ">
+            <field>
+                <field-name>firstName</field-name>
+                <entity-name>changerContact</entity-name>
+                <joins ref="dimensionContent">
+                    <join>
+                        <entity-name>changer</entity-name>
+                        <field-name>dimensionContent.changer</field-name>
+                    </join>
+                    <join>
+                        <entity-name>changerContact</entity-name>
+                        <field-name>changer.contact</field-name>
+                    </join>
+                </joins>
+            </field>
+            <field>
+                <field-name>lastName</field-name>
+                <entity-name>changerContact</entity-name>
+                <joins ref="dimensionContent">
+                    <join>
+                        <entity-name>changer</entity-name>
+                        <field-name>dimensionContent.changer</field-name>
+                    </join>
+                    <join>
+                        <entity-name>changerContact</entity-name>
+                        <field-name>changer.contact</field-name>
+                    </join>
+                </joins>
+            </field>
+        </concatenation-property>
+    </properties>
+</list>

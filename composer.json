@@ -17,6 +17,7 @@
         }
     ],
     "require": {
+        "ext-simplexml": "*",
         "php": "^8.2",
         "doctrine/doctrine-bundle": "^2.13",
         "manuxi/sulu-shared-tools-bundle": "3.x-dev",

@@ -4,380 +4,383 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Repository;
 
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\Query\Expr\Join;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\QueryBuilder;
-use Doctrine\Persistence\ManagerRegistry;
 use Manuxi\SuluEventBundle\Entity\Event;
+use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
+use Sulu\Content\Domain\Model\DimensionContentInterface;
+use Sulu\Content\Domain\Model\WorkflowInterface;
+use Sulu\Content\Infrastructure\Doctrine\DimensionContentQueryEnhancer;
+use Webmozart\Assert\Assert;
 
-/**
- * @extends ServiceEntityRepository<Event>
- *
- * @method Event|null find($id, $lockMode = null, $lockVersion = null)
- * @method Event|null findOneBy(array $criteria, array $orderBy = null)
- * @method Event[]    findAll()
- * @method Event[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
- */
-class EventRepository extends ServiceEntityRepository
+class EventRepository
 {
-    public function __construct(ManagerRegistry $registry)
-    {
-        parent::__construct($registry, Event::class);
+    public const GROUP_SELECT_EVENT_ADMIN = 'event_admin';
+    public const GROUP_SELECT_EVENT_WEBSITE = 'event_website';
+
+    public const SELECT_EVENT_CONTENT = 'with-event-content';
+
+    private const SELECTS = [
+        self::GROUP_SELECT_EVENT_ADMIN => [
+            self::SELECT_EVENT_CONTENT => [
+                DimensionContentQueryEnhancer::GROUP_SELECT_CONTENT_ADMIN => true,
+            ],
+        ],
+        self::GROUP_SELECT_EVENT_WEBSITE => [
+            self::SELECT_EVENT_CONTENT => [
+                DimensionContentQueryEnhancer::GROUP_SELECT_CONTENT_WEBSITE => true,
+            ],
+        ],
+    ];
+
+    private EntityManagerInterface $entityManager;
+
+    /**
+     * @var EntityRepository<Event>
+     */
+    private EntityRepository $entityRepository;
+
+    private DimensionContentQueryEnhancer $dimensionContentQueryEnhancer;
+
+    public function __construct(
+        EntityManagerInterface $entityManager,
+        DimensionContentQueryEnhancer $dimensionContentQueryEnhancer
+    ) {
+        $this->entityRepository = $entityManager->getRepository(Event::class);
+        $this->entityManager = $entityManager;
+        $this->dimensionContentQueryEnhancer = $dimensionContentQueryEnhancer;
     }
 
-    public function create(string $locale): Event
+    public function findById(int $id): ?Event
     {
-        $event = new Event();
-        $event->setLocale($locale);
-
-        return $event;
+        return $this->entityRepository->find($id);
     }
 
-    public function remove(int $id): void
+    /**
+     * @param array{
+     *     id?: int,
+     *     ids?: int[],
+     *     locale?: string|null,
+     *     stage?: string|null,
+     *     categoryIds?: int[],
+     *     categoryKeys?: string[],
+     *     categoryOperator?: 'AND'|'OR',
+     *     tagIds?: int[],
+     *     tagNames?: string[],
+     *     tagOperator?: 'AND'|'OR',
+     *     templateKeys?: string[],
+     *     types?: string[],
+     *     startDate?: \DateTimeInterface,
+     *     endDate?: \DateTimeInterface,
+     *     locationId?: int,
+     *     pending?: bool,
+     *     expired?: bool,
+     * } $filters
+     * @param array{
+     *     event_admin?: bool,
+     *     event_website?: bool,
+     *     with-event-content?: bool|array<string, mixed>,
+     * } $selects
+     */
+    public function findOneBy(array $filters = [], array $selects = []): ?Event
     {
-        /** @var object $event */
-        $event = $this->getEntityManager()->getReference(
-            $this->getClassName(),
-            $id
-        );
+        $filters = $this->normalizeFindByFilters($filters);
+        $selects = $this->normalizeSelects($selects);
+        $queryBuilder = $this->buildQueryBuilder($filters, [], $selects);
 
-        $this->getEntityManager()->remove($event);
-        $this->getEntityManager()->flush();
-    }
-
-    public function save(Event $event): Event
-    {
-        $this->getEntityManager()->persist($event);
-        $this->getEntityManager()->flush();
-
-        return $event;
-    }
-
-    public function publish(Event $entity): Event
-    {
-        $entity->setPublished(true);
-
-        return $this->save($entity);
-    }
-
-    public function unpublish(Event $entity): Event
-    {
-        $entity->setPublished(false);
-
-        return $this->save($entity);
-    }
-
-    public function findById(int $id, string $locale): ?Event
-    {
-        $event = $this->find($id);
-
-        if (!$event) {
+        try {
+            return $queryBuilder->getQuery()->getSingleResult();
+        } catch (NoResultException) {
             return null;
         }
-
-        $event->setLocale($locale);
-
-        return $event;
     }
 
-    public function countAll(): int
+    /**
+     * @param array{
+     *     id?: int,
+     *     ids?: int[],
+     *     locale?: string|null,
+     *     stage?: string|null,
+     *     categoryIds?: int[],
+     *     categoryKeys?: string[],
+     *     categoryOperator?: 'AND'|'OR',
+     *     tagIds?: int[],
+     *     tagNames?: string[],
+     *     tagOperator?: 'AND'|'OR',
+     *     templateKeys?: string[],
+     *     types?: string[],
+     *     startDate?: \DateTimeInterface,
+     *     endDate?: \DateTimeInterface,
+     *     locationId?: int,
+     *     pending?: bool,
+     *     expired?: bool,
+     * } $filters
+     */
+    public function countBy(array $filters = []): int
     {
-        return (int) $this->createQueryBuilder('e')
-            ->select('COUNT(e.id)')
-            ->getQuery()
-            ->getSingleScalarResult();
+        $filters = $this->normalizeFindByFilters($filters);
+        $selects = $this->normalizeSelects([]);
+        $queryBuilder = $this->buildQueryBuilder($filters, [], $selects);
+
+        $queryBuilder->select('COUNT(DISTINCT event.id)');
+
+        return (int) $queryBuilder->getQuery()->getSingleScalarResult();
     }
 
-    public function countPublished(): int
+    /**
+     * @param array{
+     *     id?: int,
+     *     ids?: int[],
+     *     locale?: string|null,
+     *     stage?: string|null,
+     *     categoryIds?: int[],
+     *     categoryKeys?: string[],
+     *     categoryOperator?: 'AND'|'OR',
+     *     tagIds?: int[],
+     *     tagNames?: string[],
+     *     tagOperator?: 'AND'|'OR',
+     *     templateKeys?: string[],
+     *     types?: string[],
+     *     page?: int,
+     *     limit?: int,
+     *     startDate?: \DateTimeInterface,
+     *     endDate?: \DateTimeInterface,
+     *     locationId?: int,
+     *     pending?: bool,
+     *     expired?: bool,
+     * } $filters
+     * @param array{
+     *     id?: 'asc'|'desc',
+     *     title?: 'asc'|'desc',
+     *     startDate?: 'asc'|'desc',
+     *     created?: 'asc'|'desc',
+     *     changed?: 'asc'|'desc',
+     * } $sortBys
+     * @param array{
+     *     event_admin?: bool,
+     *     event_website?: bool,
+     *     with-event-content?: bool|array<string, mixed>,
+     * } $selects
+     *
+     * @return \Generator<Event>
+     */
+    public function findBy(array $filters = [], array $sortBys = [], array $selects = []): \Generator
     {
-        return (int) $this->createQueryBuilder('e')
-            ->select('COUNT(e.id)')
-            ->leftJoin('e.translations', 't')
-            ->andWhere('t.published = :published')
-            ->setParameter('published', true)
-            ->getQuery()
-            ->getSingleScalarResult();
-    }
+        $filters = $this->normalizeFindByFilters($filters);
+        $selects = $this->normalizeSelects($selects);
+        $queryBuilder = $this->buildQueryBuilder($filters, $sortBys, $selects);
 
-    public function findAllForLocale(string $locale): array
-    {
-        return $this->createQueryBuilder('e')
-            ->leftJoin('e.translations', 't')
-            ->andWhere('t.locale = :locale')
-            ->setParameter('locale', $locale)
-            ->getQuery()
-            ->getResult();
-    }
+        /** @var iterable<Event> $events */
+        $events = $queryBuilder->getQuery()->getResult();
 
-    public function findPublishedForLocale(string $locale): array
-    {
-        return $this->createQueryBuilder('e')
-            ->leftJoin('e.translations', 't')
-            ->andWhere('t.locale = :locale')
-            ->andWhere('t.published = :published')
-            ->setParameter('locale', $locale)
-            ->setParameter('published', true)
-            ->getQuery()
-            ->getResult();
+        foreach ($events as $event) {
+            yield $event;
+        }
     }
 
     public function findByDateRange(
         string $locale,
         \DateTimeInterface $startDate,
-        \DateTimeInterface $endDate,
-        bool $publishedOnly = true,
+        \DateTimeInterface $endDate
     ): array {
-        $queryBuilder = $this->createQueryBuilder('event')
-            ->leftJoin('event.translations', 'translation')
-            ->andWhere('translation.locale = :locale')
-            ->setParameter('locale', $locale);
+        $filters = [
+            'locale' => $locale,
+            'stage' => 'live',
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+        ];
 
-        if ($publishedOnly) {
-            $queryBuilder
-                ->andWhere('translation.published = :published')
-                ->setParameter('published', true);
-        }
+        $selects = [self::GROUP_SELECT_EVENT_WEBSITE => true];
 
-        // Events that start OR end within the range
-        $queryBuilder
-            ->andWhere(
-                $queryBuilder->expr()->orX(
-                    // Event starts within range
-                    $queryBuilder->expr()->between('event.startDate', ':startDate', ':endDate'),
-                    // Event ends within range
-                    $queryBuilder->expr()->between('event.endDate', ':startDate', ':endDate'),
-                    // Event spans the entire range
-                    $queryBuilder->expr()->andX(
-                        $queryBuilder->expr()->lte('event.startDate', ':startDate'),
-                        $queryBuilder->expr()->gte('event.endDate', ':endDate')
-                    )
-                )
-            )
-            ->setParameter('startDate', $startDate)
-            ->setParameter('endDate', $endDate)
-            ->orderBy('event.startDate', 'ASC');
+        $queryBuilder = $this->buildQueryBuilder($filters, ['startDate' => 'asc'], $selects);
 
         return $queryBuilder->getQuery()->getResult();
     }
 
-    public function findAllForSitemap(string $locale, ?int $limit = null, ?int $offset = null): array
+    public function add(Event $event): void
     {
-        $queryBuilder = $this->createQueryBuilder('event')
-            ->leftJoin('event.translations', 'translation')
-            ->where('translation.published = :published')
-            ->setParameter('published', true)
-            ->andWhere('translation.locale = :locale')
-            ->setParameter('locale', $locale)
-            ->orderBy('translation.publishedAt', 'DESC')
-            ->setMaxResults($limit)
-            ->setFirstResult($offset);
-
-        $this->prepareFilters($queryBuilder, []);
-
-        $result = $queryBuilder->getQuery()->getResult();
-        if (!$result) {
-            return [];
-        }
-
-        return $result;
+        $this->entityManager->persist($event);
     }
 
-    public function countForSitemap(string $locale): int
+    public function remove(Event $event): void
     {
-        $query = $this->createQueryBuilder('event')
-            ->select('count(event)')
-            ->leftJoin('event.translations', 'translation')
-            ->where('translation.published = :published')
-            ->setParameter('published', true)
-            ->andWhere('translation.locale = :locale')
-            ->setParameter('locale', $locale);
-
-        return (int) $query->getQuery()->getSingleScalarResult();
-    }
-
-    public function findAllScheduledEvents(int $limit): array
-    {
-        $now = new \DateTimeImmutable();
-        $queryBuilder = $this->createQueryBuilder('event');
-        $queryBuilder
-            ->leftJoin('event.translations', 'translation')
-            ->where('translation.published = :published')
-            ->setParameter('published', true)
-            ->andWhere(
-                $queryBuilder->expr()->orX(
-                    $queryBuilder->expr()->gte('event.startDate', ':now'),
-                    $queryBuilder->expr()->andX(
-                        $queryBuilder->expr()->isNotNull('event.endDate'),
-                        $queryBuilder->expr()->gte('event.endDate', ':now')
-                    )
-                )
-            )
-            ->orderBy('event.startDate', 'ASC')
-            ->setMaxResults($limit)
-            ->setParameter('published', 1)
-            ->setParameter('now', $now->format('Y-m-d'));
-
-        return $queryBuilder->getQuery()->getResult();
-    }
-
-    protected function appendJoins(QueryBuilder $queryBuilder, $alias, $locale): void
-    {
+        $this->entityManager->remove($event);
     }
 
     /**
-     * @param mixed[] $options
-     *
-     * @return string[]
+     * @param array<string, mixed> $filters
+     * @param array<string, string> $sortBys
+     * @param array<string, mixed> $selects
      */
-    protected function append(QueryBuilder $queryBuilder, string $alias, string $locale, $options = []): array
-    {
-        $queryBuilder->innerJoin($alias.'.translations', 'translation', Join::WITH, 'translation.locale = :locale');
-        $queryBuilder->setParameter('locale', $locale);
-        $queryBuilder->andWhere('translation.published = :published');
-        $queryBuilder->setParameter('published', true);
-        // $queryBuilder->andWhere($alias.'.published = true');
-        /*        $queryBuilder->andWhere('('. $alias .'.startDate >= :now OR ('. $alias .'.endDate IS NOT NULL AND '. $alias .'.endDate >= :now))');
-                $queryBuilder->setParameter("now", (new Datetime())->format("Y-m-d H:i:s"));
-                $queryBuilder->orderBy($alias . ".startDate", "ASC");*/
+    private function buildQueryBuilder(
+        array $filters = [],
+        array $sortBys = [],
+        array $selects = []
+    ): QueryBuilder {
+        $queryBuilder = $this->entityRepository->createQueryBuilder('event');
 
-        return [];
+        $this->applyContentJoin($queryBuilder, $filters, $sortBys, $selects);
+        $this->applyFilters($queryBuilder, $filters);
+        $this->applySortBys($queryBuilder, $sortBys);
+        $this->applyPagination($queryBuilder, $filters);
+
+        return $queryBuilder;
     }
 
-    public function appendCategoriesRelation(QueryBuilder $queryBuilder, $alias)
+    /**
+     * @param array<string, mixed> $filters
+     *
+     * @return array<string, mixed>
+     */
+    private function normalizeFindByFilters(array $filters): array
     {
-        return $alias.'.category';
-        // $queryBuilder->addSelect($alias.'.category');
+        $filters['stage'] = $filters['stage'] ?? 'draft';
+
+        return $filters;
     }
 
-    protected function appendSortByJoins(QueryBuilder $queryBuilder, string $alias, string $locale): void
+    /**
+     * @param array<string, mixed> $selects
+     *
+     * @return array<string, mixed>
+     */
+    private function normalizeSelects(array $selects): array
     {
-        $queryBuilder->innerJoin($alias.'.translations', 'translation', Join::WITH, 'translation.locale = :locale');
-        $queryBuilder->setParameter('locale', $locale);
-    }
-
-    public function hasNextPage(array $filters, ?int $page, ?int $pageSize, ?int $limit, string $locale, array $options = []): bool
-    {
-        $queryBuilder = $this->createQueryBuilder('event')
-            ->select('count(event.id)')
-            ->leftJoin('event.translations', 'translation')
-            ->where('translation.published = :published')
-            ->setParameter('published', true)
-            ->andWhere('translation.locale = :locale')
-            ->setParameter('locale', $locale)
-            ->orderBy('event.startDate', 'DESC');
-
-        $this->prepareFilters($queryBuilder, $filters);
-
-        $eventsCount = (int) $queryBuilder->getQuery()->getSingleScalarResult();
-
-        // Safe integer cast for pagination
-        $page = (int) $page;
-        $pageSize = (int) $pageSize;
-
-        $pos = $pageSize * $page;
-        if (null !== $limit && $limit <= $pos) {
-            return false;
-        } elseif ($pos < $eventsCount) {
-            return true;
-        }
-
-        return false;
-    }
-
-    public function findByFilters(array $filters, ?int $page, ?int $pageSize, ?int $limit, string $locale, array $options = []): array
-    {
-        $entities = $this->getPublishedEvents($filters, $locale, $page, $pageSize, $limit, $options);
-
-        return \array_map(
-            function (Event $entity) use ($locale) {
-                return $entity->setLocale($locale);
-            },
-            $entities
-        );
-    }
-
-    public function getPublishedEvents(array $filters, string $locale, ?int $page, ?int $pageSize, ?int $limit = null, array $options = []): array
-    {
-        $pageCurrent = (key_exists('page', $options)) ? (int) $options['page'] : 0;
-
-        if (null !== $page) {
-            $pageCurrent = $page - 1;
-        }
-
-        $queryBuilder = $this->createQueryBuilder('event')
-            ->leftJoin('event.translations', 'translation')
-            ->where('translation.published = :published')
-            ->setParameter('published', true)
-            ->andWhere('translation.locale = :locale')
-            ->setParameter('locale', $locale)
-            ->orderBy('translation.publishedAt', 'DESC');
-
-        if ($limit !== null) {
-            $queryBuilder->setMaxResults($limit);
-            $queryBuilder->setFirstResult($pageCurrent * $limit);
-        }
-
-        $this->prepareFilters($queryBuilder, $filters);
-
-        // Apply offset/max results
-        if (!$this->setOffsetResults($queryBuilder, $page, $pageSize, $limit)) {
-            return [];
-        }
-
-        $events = $queryBuilder->getQuery()->getResult();
-        if (!$events) {
-            return [];
-        }
-
-        return $events;
-    }
-
-    private function setOffsetResults(QueryBuilder $queryBuilder, ?int $page, ?int $pageSize, ?int $limit = null): bool
-    {
-        if (null !== $page && $pageSize > 0) {
-            $pageOffset = ($page - 1) * $pageSize;
-            $restLimit = $limit ? $limit - $pageOffset : null;
-
-            $maxResults = (null !== $limit && $restLimit !== null && $pageSize > $restLimit ? $restLimit : $pageSize);
-
-            if ($maxResults <= 0) {
-                return false;
+        foreach ($selects as $selectGroup => $value) {
+            if (!$value) {
+                continue;
             }
 
-            $queryBuilder->setMaxResults($maxResults);
-            $queryBuilder->setFirstResult($pageOffset);
-        } elseif (null !== $limit) {
-            $queryBuilder->setMaxResults($limit);
+            if (isset(self::SELECTS[$selectGroup])) {
+                $selects = \array_replace_recursive($selects, self::SELECTS[$selectGroup]);
+            }
         }
 
-        return true;
+        return $selects;
     }
 
-    private function prepareFilters(QueryBuilder $queryBuilder, array $filters): void
-    {
-        if (isset($filters['sortBy'])) {
-            $queryBuilder->orderBy($filters['sortBy'], $filters['sortMethod'] ?? 'ASC');
+    /**
+     * @param array<string, mixed> $filters
+     * @param array<string, string> $sortBys
+     * @param array<string, mixed> $selects
+     */
+    private function applyContentJoin(
+        QueryBuilder $queryBuilder,
+        array $filters,
+        array $sortBys,
+        array $selects
+    ): void {
+        if ((
+                \array_key_exists('locale', $filters)
+                && \array_key_exists('stage', $filters)
+            )
+            || ([] === $filters && [] !== $sortBys)
+        ) {
+            $this->dimensionContentQueryEnhancer->addFilters(
+                $queryBuilder,
+                'event',
+                EventDimensionContent::class,
+                $filters,
+                $sortBys
+            );
         }
 
-        if (!empty($filters['tags']) || !empty($filters['categories'])) {
-            $queryBuilder->leftJoin('event.eventExcerpt', 'excerpt')
-                ->leftJoin('excerpt.translations', 'excerpt_translation');
+        if ($selects[self::SELECT_EVENT_CONTENT] ?? null) {
+            /** @var array<string, bool> $contentSelects */
+            $contentSelects = $selects[self::SELECT_EVENT_CONTENT];
+
+            $queryBuilder->leftJoin(
+                'event.dimensionContents',
+                'dimensionContent'
+            );
+
+            $this->dimensionContentQueryEnhancer->addSelects(
+                $queryBuilder,
+                EventDimensionContent::class,
+                $filters,
+                $contentSelects
+            );
         }
-        $this->prepareTypesFilter($queryBuilder, $filters);
-        $this->prepareTagsFilter($queryBuilder, $filters);
-        $this->prepareCategoriesFilter($queryBuilder, $filters);
     }
 
-    private function prepareTypesFilter(QueryBuilder $queryBuilder, array $filters): void
+    /**
+     * @param array<string, mixed> $filters
+     */
+    private function applyFilters(QueryBuilder $queryBuilder, array $filters): void
     {
-        if (empty($filters['types'])) {
+        if (isset($filters['id'])) {
+            $queryBuilder->andWhere('event.id = :id');
+            $queryBuilder->setParameter('id', $filters['id']);
+        }
+
+        if (isset($filters['ids'])) {
+            $queryBuilder->andWhere('event.id IN (:ids)');
+            $queryBuilder->setParameter('ids', $filters['ids']);
+        }
+
+        if (isset($filters['types'])) {
+            $queryBuilder->andWhere('event.type IN (:types)');
+            $queryBuilder->setParameter('types', $filters['types']);
+        }
+
+        if (isset($filters['locationId'])) {
+            $queryBuilder->andWhere('event.location = :locationId');
+            $queryBuilder->setParameter('locationId', $filters['locationId']);
+        }
+
+        $this->applyDateFilters($queryBuilder, $filters);
+        $this->applyPendingExpiredFilters($queryBuilder, $filters);
+    }
+
+    /**
+     * @param array<string, mixed> $filters
+     */
+    private function applyDateFilters(QueryBuilder $queryBuilder, array $filters): void
+    {
+        if (isset($filters['startDate']) && isset($filters['endDate'])) {
+            $queryBuilder->andWhere(
+                $queryBuilder->expr()->orX(
+                    $queryBuilder->expr()->between('event.startDate', ':filterStartDate', ':filterEndDate'),
+                    $queryBuilder->expr()->between('event.endDate', ':filterStartDate', ':filterEndDate'),
+                    $queryBuilder->expr()->andX(
+                        $queryBuilder->expr()->lte('event.startDate', ':filterStartDate'),
+                        $queryBuilder->expr()->gte('event.endDate', ':filterEndDate')
+                    )
+                )
+            );
+            $queryBuilder->setParameter('filterStartDate', $filters['startDate']);
+            $queryBuilder->setParameter('filterEndDate', $filters['endDate']);
+        } elseif (isset($filters['startDate'])) {
+            $queryBuilder->andWhere(
+                $queryBuilder->expr()->orX(
+                    $queryBuilder->expr()->gte('event.endDate', ':filterStartDate'),
+                    $queryBuilder->expr()->andX(
+                        $queryBuilder->expr()->isNull('event.endDate'),
+                        $queryBuilder->expr()->gte('event.startDate', ':filterStartDate')
+                    )
+                )
+            );
+            $queryBuilder->setParameter('filterStartDate', $filters['startDate']);
+        } elseif (isset($filters['endDate'])) {
+            $queryBuilder->andWhere('event.startDate <= :filterEndDate');
+            $queryBuilder->setParameter('filterEndDate', $filters['endDate']);
+        }
+    }
+
+    /**
+     * @param array<string, mixed> $filters
+     */
+    private function applyPendingExpiredFilters(QueryBuilder $queryBuilder, array $filters): void
+    {
+        $hasPending = $filters['pending'] ?? false;
+        $hasExpired = $filters['expired'] ?? false;
+
+        if (!$hasPending && !$hasExpired) {
             return;
         }
 
-        $hasPending = in_array('pending', $filters['types'], true);
-        $hasExpired = in_array('expired', $filters['types'], true);
-
-        // if pending and expired both are selected, we don't need them.
         if ($hasPending && $hasExpired) {
             return;
         }
@@ -402,215 +405,128 @@ class EventRepository extends ServiceEntityRepository
         }
     }
 
-    private function prepareTagsFilter(QueryBuilder $queryBuilder, array $filters): void
+    /**
+     * @param array{
+     *     id?: 'asc'|'desc',
+     *     title?: 'asc'|'desc',
+     *     startDate?: 'asc'|'desc',
+     *     created?: 'asc'|'desc',
+     *     changed?: 'asc'|'desc',
+     * } $sortBys
+     */
+    private function applySortBys(QueryBuilder $queryBuilder, array $sortBys): void
     {
-        if (empty($filters['tags'])) {
-            return;
-        }
+        foreach ($sortBys as $field => $direction) {
+            Assert::inArray($direction, ['asc', 'desc']);
 
-        $operator = $filters['tagOperator'] ?? 'or';
-
-        if ('and' === $operator) {
-            // AND: Entity must have ALL tags (multiple JOINs necessary)
-            foreach ($filters['tags'] as $i => $tag) {
-                $alias = 'tag'.$i;
-                $queryBuilder
-                    ->innerJoin('excerpt_translation.tags', $alias)
-                    ->andWhere($queryBuilder->expr()->eq($alias.'.id', ':tag'.$i))
-                    ->setParameter('tag'.$i, $tag);
+            switch ($field) {
+                case 'id':
+                    $queryBuilder->addOrderBy('event.id', $direction);
+                    break;
+                case 'title':
+                    $queryBuilder->addOrderBy('dimensionContent.title', $direction);
+                    break;
+                case 'startDate':
+                    $queryBuilder->addOrderBy('event.startDate', $direction);
+                    break;
+                case 'created':
+                    $queryBuilder->addOrderBy('dimensionContent.created', $direction);
+                    break;
+                case 'changed':
+                    $queryBuilder->addOrderBy('dimensionContent.changed', $direction);
+                    break;
             }
-        } else {
-            // OR: Entity must at least have one of the tags
-            $queryBuilder
-                ->leftJoin('excerpt_translation.tags', 'tags')
-                ->andWhere($queryBuilder->expr()->in('tags.id', ':tags'))
-                ->setParameter('tags', $filters['tags']);
-        }
-    }
-
-    private function prepareCategoriesFilter(QueryBuilder $queryBuilder, array $filters): void
-    {
-        if (empty($filters['categories'])) {
-            return;
-        }
-
-        $operator = $filters['categoryOperator'] ?? 'or';
-
-        if ('and' === $operator) {
-            // AND: Entity must have ALL categories (multiple JOINs necessary)
-            $queryBuilder->leftJoin('excerpt_translation.categories', 'categories');
-
-            foreach ($filters['categories'] as $i => $category) {
-                $alias = 'category'.$i;
-                $queryBuilder
-                    ->innerJoin('excerpt_translation.categories', $alias)
-                    ->andWhere($queryBuilder->expr()->eq($alias.'.id', ':category'.$i))
-                    ->setParameter('category'.$i, $category);
-            }
-        } else {
-            // OR: Entity must at least have one of the categories
-            $queryBuilder
-                ->leftJoin('excerpt_translation.categories', 'categories')
-                ->andWhere($queryBuilder->expr()->in('categories.id', ':categories'))
-                ->setParameter('categories', $filters['categories']);
         }
     }
 
     /**
-     * Find all recurring events (with EventRecurrence relationship).
-     *
-     * @return Event[]
+     * @param array{page?: int, limit?: int} $filters
      */
-    public function findRecurringEvents(): array
+    private function applyPagination(QueryBuilder $queryBuilder, array $filters): void
     {
-        return $this->createQueryBuilder('e')
-            ->innerJoin('e.eventRecurrence', 'r')
-            ->where('r.isRecurring = :recurring')
-            ->setParameter('recurring', true)
+        $page = $filters['page'] ?? null;
+        $limit = $filters['limit'] ?? null;
+
+        if (null !== $limit) {
+            $queryBuilder->setMaxResults($limit);
+        }
+
+        if (null !== $page && null !== $limit) {
+            $offset = ($page - 1) * $limit;
+            $queryBuilder->setFirstResult($offset);
+        }
+    }
+
+    public function countAll(): int
+    {
+        return (int) $this->entityRepository
+            ->createQueryBuilder('e')
+            ->select('COUNT(e.id)')
             ->getQuery()
-            ->getResult();
+            ->getSingleScalarResult();
     }
 
-    /**
-     * Find events for calendar display with optional filters
-     * Supports date range, locale, categories, tags, and location filters.
-     *
-     * @param array $filters {
-     *
-     * @var string|null $locale       Filter by locale (e.g., 'de', 'en')
-     * @var string|null $start        Start date (ISO format)
-     * @var string|null $end          End date (ISO format)
-     * @var array|null  $categories   Category IDs to filter
-     * @var array|null  $tags         Tag IDs to filter
-     * @var string|null $location     Location name filter
-     * @var int|null    $dataId       Folder/page ID filter
-     * @var bool        $includeSubFolders Include subfolders in dataId filter
-     * @var string      $sortBy       Sort field (default: 'startDate')
-     * @var string      $sortMethod   Sort direction (default: 'asc')
-     *                  }
-     *
-     * @return Event[]
-     */
+    public function countPublished(string $locale): int
+    {
+        $qb = $this->entityRepository->createQueryBuilder('event');
+
+        $qb->select('COUNT(DISTINCT event.id)')
+            ->leftJoin('event.dimensionContents', 'dc')
+            ->where('dc.locale = :locale')
+            ->andWhere('dc.stage = :stage')
+            ->andWhere('dc.workflowPlace = :published')
+            ->setParameter('locale', $locale)
+            ->setParameter('stage', DimensionContentInterface::STAGE_LIVE)
+            ->setParameter('published', WorkflowInterface::WORKFLOW_PLACE_PUBLISHED);
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
+    }
+
     public function findForCalendar(array $filters): array
     {
-        $qb = $this->createQueryBuilder('e')
-            ->leftJoin('e.location', 'loc')
-            ->leftJoin('e.translations', 'translation')
-            ->where('translation.published = :published')
-            ->setParameter('published', true);
+        $qb = $this->entityRepository->createQueryBuilder('event');
 
-        // Date range filters
-        if (!empty($filters['start'])) {
-            try {
-                $startDate = new \DateTime($filters['start']);
-                $qb->andWhere('e.endDate >= :start OR (e.endDate IS NULL AND e.startDate >= :start)')
-                    ->setParameter('start', $startDate);
-            } catch (\Exception $e) {
-                // Invalid date format - skip filter
-            }
+        if (isset($filters['start'])) {
+            $qb->andWhere('event.startDate >= :start')
+                ->setParameter('start', new \DateTime($filters['start']));
         }
 
-        if (!empty($filters['end'])) {
-            try {
-                $endDate = new \DateTime($filters['end']);
-                $qb->andWhere('e.startDate <= :end')
-                    ->setParameter('end', $endDate);
-            } catch (\Exception $e) {
-                // Invalid date format - skip filter
-            }
+        if (isset($filters['end'])) {
+            $qb->andWhere('event.startDate <= :end')
+                ->setParameter('end', new \DateTime($filters['end']));
         }
 
-        // Locale filter
-        if (!empty($filters['locale'])) {
-            $qb->andWhere('translation.locale = :locale')
-                ->setParameter('locale', $filters['locale']);
-        }
-
-        // Category filter
-        if (!empty($filters['categories']) && is_array($filters['categories'])) {
-            $qb->innerJoin('translation.categories', 'c')
-                ->andWhere('c.id IN (:categories)')
-                ->setParameter('categories', $filters['categories']);
-        }
-
-        // Tag filter
-        if (!empty($filters['tags']) && is_array($filters['tags'])) {
-            $qb->innerJoin('translation.tags', 't')
-                ->andWhere('t.id IN (:tags)')
-                ->setParameter('tags', $filters['tags']);
-        }
-
-        // Location filter
-        if (!empty($filters['location'])) {
-            $qb->andWhere('loc.name LIKE :location')
-                ->setParameter('location', '%'.$filters['location'].'%');
-        }
-
-        // Folder/dataId filter (from content block)
-        if (!empty($filters['dataId'])) {
-            if (!empty($filters['includeSubFolders'])) {
-                // Include subfolders - use LIKE for path matching
-                $qb->andWhere('translation.route LIKE :dataPath')
-                    ->setParameter('dataPath', '%/'.$filters['dataId'].'/%');
-            } else {
-                // Exact folder only
-                $qb->andWhere('e.parent = :dataId')
-                    ->setParameter('dataId', $filters['dataId']);
-            }
-        }
-
-        // Sorting
-        $sortBy = $filters['sortBy'] ?? 'startDate';
-        $sortMethod = strtoupper($filters['sortMethod'] ?? 'ASC');
-
-        // Map sort fields to actual entity properties
-        $sortFieldMap = [
-            'startDate' => 'e.startDate',
-            'title' => 'e.title',
-            'created' => 'e.created',
-            'changed' => 'e.changed',
-        ];
-
-        $sortField = $sortFieldMap[$sortBy] ?? 'e.startDate';
-        $qb->orderBy($sortField, 'DESC' === $sortMethod ? 'DESC' : 'ASC');
+        $qb->orderBy('event.startDate', 'ASC');
 
         return $qb->getQuery()->getResult();
     }
 
-    /**
-     * Find events for iCal export
-     * Uses same filtering as calendar view.
-     *
-     * @param array $filters Same as findForCalendar()
-     *
-     * @return Event[]
-     */
     public function findForIcal(array $filters): array
     {
-        return $this->findForCalendar($filters);
+        $qb = $this->entityRepository->createQueryBuilder('event');
+
+        $qb->orderBy('event.startDate', 'ASC');
+
+        return $qb->getQuery()->getResult();
     }
 
-    /**
-     * Find published events for RSS/Atom feeds.
-     *
-     * @param int $limit Maximum number of events to return
-     *
-     * @return Event[]
-     */
-    public function findForFeed(string $locale, int $limit = 50): array
+    public function findRecurringEvents(): array
     {
-        return $this->createQueryBuilder('event')
-
-            ->leftJoin('event.translations', 'translation')
-            ->andWhere('translation.locale = :locale')
-            ->setParameter('locale', $locale)
-
-            ->andWhere('translation.published = :published')
-            ->setParameter('published', true)
-
-            ->orderBy('event.startDate', 'DESC')
-            ->setMaxResults($limit)
+        return $this->entityRepository->createQueryBuilder('event')
+            ->where('event.recurrence IS NOT NULL')
             ->getQuery()
             ->getResult();
     }
+
+    /*
+    public function findRecurringEvents(): array
+    {
+        return $this->entityRepository->createQueryBuilder('event')
+            ->innerJoin('event.recurrence', 'recurrence')
+            ->where('recurrence.isRecurring = :recurring')
+            ->setParameter('recurring', true)
+            ->getQuery()
+            ->getResult();
+    }
+    */
 }

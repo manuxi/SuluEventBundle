@@ -4,237 +4,280 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Controller\Admin;
 
-use Doctrine\ORM\OptimisticLockException;
-use Doctrine\ORM\ORMException;
+use Doctrine\ORM\EntityManagerInterface;
 use FOS\RestBundle\View\ViewHandlerInterface;
 use Manuxi\SuluEventBundle\Entity\Event;
+use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
 use Manuxi\SuluEventBundle\Entity\EventRecurrence;
 use Manuxi\SuluEventBundle\Entity\EventSocialSettings;
-use Manuxi\SuluEventBundle\Entity\Models\EventExcerptModel;
-use Manuxi\SuluEventBundle\Entity\Models\EventModel;
-use Manuxi\SuluEventBundle\Entity\Models\EventSeoModel;
-use Manuxi\SuluEventBundle\ListBuilder\DoctrineListRepresentationFactory;
-use Sulu\Bundle\TrashBundle\Application\TrashManager\TrashManagerInterface;
 use Sulu\Component\Rest\AbstractRestController;
 use Sulu\Component\Rest\Exception\EntityNotFoundException;
-use Sulu\Component\Rest\Exception\MissingParameterException;
-use Sulu\Component\Rest\Exception\RestException;
+use Sulu\Component\Rest\ListBuilder\Doctrine\DoctrineListBuilder;
+use Sulu\Component\Rest\ListBuilder\Doctrine\DoctrineListBuilderFactoryInterface;
+use Sulu\Component\Rest\ListBuilder\Doctrine\FieldDescriptor\DoctrineFieldDescriptorInterface;
+use Sulu\Component\Rest\ListBuilder\Metadata\FieldDescriptorFactoryInterface;
+use Sulu\Component\Rest\ListBuilder\PaginatedRepresentation;
 use Sulu\Component\Rest\RequestParametersTrait;
-use Sulu\Component\Security\Authorization\PermissionTypes;
-use Sulu\Component\Security\Authorization\SecurityCheckerInterface;
-use Sulu\Component\Security\Authorization\SecurityCondition;
-use Sulu\Component\Security\SecuredControllerInterface;
+use Sulu\Component\Rest\RestHelperInterface;
+use Sulu\Content\Application\ContentManager\ContentManagerInterface;
+use Sulu\Content\Domain\Model\DimensionContentInterface;
+use Sulu\Content\Domain\Model\WorkflowInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
-#[Route('/admin/api')]
-class EventController extends AbstractRestController implements SecuredControllerInterface
+#[Route(path: '/admin/api')]
+class EventController extends AbstractRestController
 {
     use RequestParametersTrait;
 
+    private FieldDescriptorFactoryInterface $fieldDescriptorFactory;
+    private DoctrineListBuilderFactoryInterface $listBuilderFactory;
+    private RestHelperInterface $restHelper;
+    private ContentManagerInterface $contentManager;
+    private EntityManagerInterface $entityManager;
+
     public function __construct(
-        private readonly EventModel $eventModel,
-        private readonly EventSeoModel $eventSeoModel,
-        private readonly EventExcerptModel $eventExcerptModel,
-        private readonly DoctrineListRepresentationFactory $doctrineListRepresentationFactory,
-        private readonly SecurityCheckerInterface $securityChecker,
-        private readonly TrashManagerInterface $trashManager,
         ViewHandlerInterface $viewHandler,
-        ?TokenStorageInterface $tokenStorage = null,
+        TokenStorageInterface $tokenStorage,
+        FieldDescriptorFactoryInterface $fieldDescriptorFactory,
+        DoctrineListBuilderFactoryInterface $listBuilderFactory,
+        RestHelperInterface $restHelper,
+        ContentManagerInterface $contentManager,
+        EntityManagerInterface $entityManager,
     ) {
+        $this->fieldDescriptorFactory = $fieldDescriptorFactory;
+        $this->listBuilderFactory = $listBuilderFactory;
+        $this->restHelper = $restHelper;
+        $this->contentManager = $contentManager;
+        $this->entityManager = $entityManager;
+
         parent::__construct($viewHandler, $tokenStorage);
     }
 
-    #[Route(
-        '/events.{_format}',
-        name: 'sulu_event.get_events',
-        requirements: [
-            'id' => '\d+',
-            '_format' => 'json|csv',
-        ],
-        options: ['expose' => true],
-        defaults: [
-            '_format' => 'json',
-        ],
-        methods: ['GET']
-    )]
+    #[Route(path: '/events.{_format}', defaults: ['_format' => 'json'], methods: ['GET'])]
     public function cgetAction(Request $request): Response
     {
-        $locale = $request->query->get('locale');
-        $listRepresentation = $this->doctrineListRepresentationFactory->createDoctrineListRepresentation(
+        /** @var DoctrineFieldDescriptorInterface[] $fieldDescriptors */
+        $fieldDescriptors = $this->fieldDescriptorFactory->getFieldDescriptors(Event::RESOURCE_KEY);
+        /** @var DoctrineListBuilder $listBuilder */
+        $listBuilder = $this->listBuilderFactory->create(Event::class);
+        $listBuilder->addSelectField($fieldDescriptors['locale']);
+        $listBuilder->addSelectField($fieldDescriptors['ghostLocale']);
+        $listBuilder->setParameter('locale', $request->query->get('locale'));
+        $this->restHelper->initializeListBuilder($listBuilder, $fieldDescriptors);
+
+        $listRepresentation = new PaginatedRepresentation(
+            $listBuilder->execute(),
             Event::RESOURCE_KEY,
-            [],
-            ['locale' => $locale]
+            (int) $listBuilder->getCurrentPage(),
+            (int) $listBuilder->getLimit(),
+            $listBuilder->count()
         );
 
         return $this->handleView($this->view($listRepresentation));
     }
 
-    /**
-     * @throws EntityNotFoundException
-     */
-    #[Route(
-        '/events/{id}.{_format}',
-        name: 'sulu_event.get_event',
-        requirements: [
-            'id' => '\d+',
-            '_format' => 'json|csv',
-        ],
-        options: ['expose' => true],
-        defaults: [
-            '_format' => 'json',
-        ],
-        methods: ['GET']
-    )]
-    public function getAction(int $id, Request $request): Response
+    #[Route(path: '/events/{id}/versions.{_format}', defaults: ['_format' => 'json'], methods: ['GET'])]
+    public function getVersionsAction(Request $request, string $id): Response
     {
-        $event = $this->eventModel->getEvent($id, $request);
+        $locale = $request->query->get('locale');
 
-        return $this->handleView($this->view($event));
+        /** @var DoctrineFieldDescriptorInterface[] $fieldDescriptors */
+        $fieldDescriptors = $this->fieldDescriptorFactory->getFieldDescriptors('events_versions');
+        /** @var DoctrineListBuilder $listBuilder */
+        $listBuilder = $this->listBuilderFactory->create(Event::class);
+        $listBuilder->setParameter('locale', $locale);
+        $listBuilder->setParameter('id', $id);
+        $listBuilder->setIdField($fieldDescriptors['id']);
+        $listBuilder->sort($fieldDescriptors['version'], 'DESC');
+        $this->restHelper->initializeListBuilder($listBuilder, $fieldDescriptors);
+
+        $result = $listBuilder->execute();
+        $listRepresentation = new PaginatedRepresentation(
+            $result,
+            'events_versions',
+            (int) $listBuilder->getCurrentPage(),
+            (int) $listBuilder->getLimit(),
+            $listBuilder->count(),
+        );
+
+        return $this->handleView($this->view($listRepresentation));
     }
 
-    /**
-     * @throws EntityNotFoundException
-     */
-    #[Route(
-        '/events.{_format}',
-        name: 'sulu_event.post_event',
-        requirements: ['_format' => 'json'],
-        options: ['expose' => true],
-        defaults: ['_format' => 'json'],
-        methods: ['POST']
-    )]
-    public function postAction(Request $request): Response
+    #[Route(path: '/events/{id}.{_format}', defaults: ['_format' => 'json'], methods: ['GET'])]
+    public function getAction(Request $request, int $id): Response
     {
-        $event = $this->eventModel->createEvent($request);
+        /** @var Event|null $event */
+        $event = $this->entityManager->getRepository(Event::class)->findOneBy(['id' => $id]);
 
-        return $this->handleView($this->view($event, 201));
-    }
-
-    /**
-     * @throws EntityNotFoundException
-     * @throws ORMException
-     * @throws OptimisticLockException
-     */
-    #[Route(
-        '/events/{id}.{_format}',
-        name: 'sulu_event.put_event',
-        requirements: [
-            'id' => '\d+',
-            '_format' => 'json',
-        ],
-        options: ['expose' => true],
-        defaults: ['_format' => 'json'],
-        methods: ['PUT']
-    )]
-    public function putAction(int $id, Request $request): Response
-    {
-        try {
-            $action = $this->getRequestParameter($request, 'action', true);
-            try {
-                $entity = match ($action) {
-                    'publish' => $this->eventModel->publish($id, $request),
-                    'draft', 'unpublish' => $this->eventModel->unpublish($id, $request),
-                    default => throw new BadRequestHttpException(sprintf('Unknown action "%s".', $action)),
-                };
-            } catch (RestException $exc) {
-                $view = $this->view($exc->toArray(), 400);
-                return $this->handleView($view);
-            }
-        } catch (MissingParameterException $e) {
-            $entity = $this->eventModel->updateEvent($id, $request);
-
-            $this->eventSeoModel->updateEventSeo($entity->getEventSeo(), $request);
-            $this->eventExcerptModel->updateEventExcerpt($entity->getEventExcerpt(), $request);
+        if (!$event) {
+            throw new NotFoundHttpException();
         }
 
-        return $this->handleView($this->view($entity));
+        $dimensionAttributes = $this->getDimensionAttributes($request);
+        $dimensionContent = $this->contentManager->resolve($event, $dimensionAttributes);
+
+        return $this->handleView($this->view($this->normalize($event, $dimensionContent)));
     }
 
-    /**
-     * @throws EntityNotFoundException
-     */
-    #[Route(
-        '/events/{id}.{_format}',
-        name: 'sulu_event.delete_event',
-        requirements: [
-            'id' => '\d+',
-            '_format' => 'json',
-        ],
-        options: ['expose' => true],
-        defaults: ['_format' => 'json'],
-        methods: ['DELETE']
-    )]
-    public function deleteAction(int $id, Request $request): Response
+    #[Route(path: '/events.{_format}', defaults: ['_format' => 'json'], methods: ['POST'])]
+    public function postAction(Request $request): Response
     {
-        $entity = $this->eventModel->getEvent($id, $request);
+        $event = new Event();
+        $this->entityManager->persist($event);
 
-        $this->trashManager->store(Event::RESOURCE_KEY, $entity);
+        $dimensionAttributes = $this->getDimensionAttributes($request);
+        $data = $this->getData($request);
 
-        $this->eventModel->deleteEvent($entity);
+        /** @var EventDimensionContent $dimensionContent */
+        $dimensionContent = $this->contentManager->persist($event, $data, $dimensionAttributes);
+        $this->entityManager->flush();
 
-        return $this->handleView($this->view(null, 204));
+        return $this->handleView($this->view($this->normalize($event, $dimensionContent)), 201);
     }
 
-    /**
-     * @throws ORMException|OptimisticLockException|EntityNotFoundException|MissingParameterException
-     */
-    #[Route(
-        '/events/{id}.{_format}',
-        name: 'sulu_event.post_event_trigger',
-        requirements: [
-            'id' => '\d+',
-            '_format' => 'json|csv',
-        ],
-        options: ['expose' => true],
-        defaults: [
-            '_format' => 'json',
-        ],
-        methods: ['POST']
-    )]
+    #[Route(path: '/events/{id}.{_format}', defaults: ['_format' => 'json'], methods: ['POST'])]
     public function postTriggerAction(int $id, Request $request): Response
     {
         $action = $this->getRequestParameter($request, 'action', true);
 
-        try {
-            switch ($action) {
-                case 'publish':
-                    $entity = $this->eventModel->publish($id, $request);
-                    break;
-                case 'draft':
-                case 'unpublish':
-                    $entity = $this->eventModel->unpublish($id, $request);
-                    break;
-                case 'copy':
-                    $entity = $this->eventModel->copy($id, $request);
-                    break;
-                case 'copy-locale':
-                    $locale = $this->getRequestParameter($request, 'locale', true);
-                    $srcLocale = $this->getRequestParameter($request, 'src', false, $locale);
-                    $destLocales = $this->getRequestParameter($request, 'dest', true);
-                    $destLocales = explode(',', $destLocales);
+        /** @var Event|null $event */
+        $event = $this->entityManager->getRepository(Event::class)->findOneBy(['id' => $id]);
 
-                    foreach ($destLocales as $destLocale) {
-                        $this->securityChecker->checkPermission(
-                            new SecurityCondition($this->getSecurityContext(), $destLocale),
-                            PermissionTypes::EDIT
-                        );
-                    }
-
-                    $entity = $this->eventModel->copyLanguage($id, $request, $srcLocale, $destLocales);
-                    break;
-                default:
-                    throw new BadRequestHttpException(sprintf('Unknown action "%s".', $action));
-            }
-        } catch (RestException $exc) {
-            $view = $this->view($exc->toArray(), 400);
-            return $this->handleView($view);
+        if (!$event) {
+            throw new NotFoundHttpException();
         }
 
-        return $this->handleView($this->view($entity));
+        $dimensionAttributes = $this->getDimensionAttributes($request);
+
+        switch ($action) {
+            /*case 'publish':
+                $dimensionContent = $this->contentManager->applyTransition(
+                    $event,
+                    $dimensionAttributes,
+                    WorkflowInterface::WORKFLOW_TRANSITION_PUBLISH
+                );
+
+                $this->entityManager->flush();
+
+                return $this->handleView($this->view($this->normalize($event, $dimensionContent)));
+            case 'unpublish':
+                $dimensionContent = $this->contentManager->applyTransition(
+                    $event,
+                    $dimensionAttributes,
+                    WorkflowInterface::WORKFLOW_TRANSITION_UNPUBLISH
+                );
+
+                $this->entityManager->flush();
+
+                return $this->handleView($this->view($this->normalize($event, $dimensionContent)));*/
+            case 'copy-locale':
+                $srcLocale = $this->getRequestParameter($request, 'src', true);
+                $destLocale = $this->getRequestParameter($request, 'dest', true);
+
+                $data = $this->contentManager->normalize($event, ['locale' => $srcLocale]);
+                $dimensionContent = $this->contentManager->persist($event, $data, ['locale' => $destLocale, 'stage' => 'draft']);
+                return $this->handleView($this->view($this->normalize($event, $dimensionContent)));
+
+            case 'restore-version':
+                /*$version = (int) $this->getRequestParameter($request, 'version', true);
+
+                $dimensionContent = $this->contentManager->restoreVersion(
+                    $event,
+                    [
+                        'stage' => $dimensionAttributes['stage'] ?? DimensionContentInterface::STAGE_DRAFT,
+                        'locale' => $dimensionAttributes['locale'] ?? null,
+                        'version' => $version,
+                    ],
+                    $event,
+                    [
+                        'stage' => $dimensionAttributes['stage'] ?? DimensionContentInterface::STAGE_DRAFT,
+                        'locale' => $dimensionAttributes['locale'] ?? null,
+                        'version' => DimensionContentInterface::CURRENT_VERSION,
+                    ],
+                    [
+                        'ignoredAttributes' => ['url'],
+                    ]
+                );
+
+                $this->entityManager->flush();
+
+                return $this->handleView($this->view($this->normalize($event, $dimensionContent)));*/
+                return $this->handleView(
+                    $this->view(null, 501)
+                );
+            default:
+                throw new \RuntimeException('Unrecognized action: '.$action);
+        }
+    }
+
+    #[Route(path: '/events/{id}.{_format}', defaults: ['_format' => 'json'], methods: ['PUT'])]
+    public function putAction(Request $request, int $id): Response
+    {
+        /** @var Event|null $event */
+        $event = $this->entityManager->getRepository(Event::class)->findOneBy(['id' => $id]);
+
+        if (!$event) {
+            throw new NotFoundHttpException();
+        }
+
+        $data = $this->getData($request);
+        $dimensionAttributes = $this->getDimensionAttributes($request);
+
+        /** @var EventDimensionContent $dimensionContent */
+        $dimensionContent = $this->contentManager->persist($event, $data, $dimensionAttributes);
+        if (WorkflowInterface::WORKFLOW_PLACE_PUBLISHED === $dimensionContent->getWorkflowPlace()) {
+            $dimensionContent = $this->contentManager->applyTransition(
+                $event,
+                $dimensionAttributes,
+                WorkflowInterface::WORKFLOW_TRANSITION_CREATE_DRAFT
+            );
+        }
+
+        $this->entityManager->flush();
+
+        if ('publish' === $request->query->get('action')) {
+            $dimensionContent = $this->contentManager->applyTransition(
+                $event,
+                $dimensionAttributes,
+                WorkflowInterface::WORKFLOW_TRANSITION_PUBLISH
+            );
+
+            $this->entityManager->flush();
+        }
+
+        return $this->handleView($this->view($this->normalize($event, $dimensionContent)));
+    }
+
+    #[Route(path: '/events/{id}.{_format}', defaults: ['_format' => 'json'], methods: ['DELETE'])]
+    public function deleteAction(int $id): Response
+    {
+        /** @var Event $event */
+        $event = $this->entityManager->getReference(Event::class, $id);
+
+        $this->entityManager->remove($event);
+        $this->entityManager->flush();
+
+        return new Response('', 204);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function getDimensionAttributes(Request $request): array
+    {
+        return $request->query->all();
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function getData(Request $request): array
+    {
+        return $request->request->all();
     }
 
     /**
@@ -253,16 +296,17 @@ class EventController extends AbstractRestController implements SecuredControlle
     )]
     public function getSocialAction(int $id, Request $request): Response
     {
-        $entity = $this->eventModel->getEvent($id, $request);
+        /** @var Event $event */
+        $event = $this->entityManager->getReference(Event::class, $id);
 
-        if (!$entity) {
+        if (!$event) {
             throw new EntityNotFoundException(Event::class, $id);
         }
 
-        $socialSettings = $entity->getSocialSettings();
+        $socialSettings = $event->getSocialSettings();
 
         return $this->handleView($this->view([
-            'id' => $entity->getId(),
+            'id' => $event->getId(),
             'enableSharing' => $socialSettings?->getEnableSharing() ?? false,
             'platforms' => $socialSettings?->getPlatforms() ?? [],
             'facebookUrl' => $socialSettings?->getFacebookUrl(),
@@ -292,18 +336,20 @@ class EventController extends AbstractRestController implements SecuredControlle
     {
         $data = $request->toArray();
 
-        $entity = $this->eventModel->getEvent($id, $request);
+        /** @var Event $event */
+        $event = $this->entityManager->getReference(Event::class, $id);
 
-        if (!$entity) {
+        if (!$event) {
             throw new EntityNotFoundException(Event::class, $id);
         }
 
-        $socialSettings = $entity->getSocialSettings();
+        $socialSettings = $event->getSocialSettings();
         if (!$socialSettings) {
             $socialSettings = new EventSocialSettings();
-            $entity->setSocialSettings($socialSettings);
+            $event->setSocialSettings($socialSettings);
         }
 
+        // Map data to entity
         $socialSettings->setEnableSharing($data['enableSharing'] ?? false);
         $socialSettings->setPlatforms($data['platforms'] ?? []);
         $socialSettings->setFacebookUrl($data['facebookUrl'] ?? null);
@@ -313,8 +359,10 @@ class EventController extends AbstractRestController implements SecuredControlle
         $socialSettings->setCustomShareText($data['customShareText'] ?? null);
         $socialSettings->setTargetGroups($data['targetGroups'] ?? null);
 
+        //$this->entityManager->flush();
+
         return $this->handleView($this->view([
-            'id' => $entity->getId(),
+            'id' => $event->getId(),
             'enableSharing' => $socialSettings->getEnableSharing(),
             'platforms' => $socialSettings->getPlatforms(),
             'facebookUrl' => $socialSettings->getFacebookUrl(),
@@ -342,16 +390,17 @@ class EventController extends AbstractRestController implements SecuredControlle
     )]
     public function getRecurrenceAction(int $id, Request $request): Response
     {
-        $entity = $this->eventModel->getEvent($id, $request);
+        /** @var Event $event */
+        $event = $this->entityManager->getReference(Event::class, $id);
 
-        if (!$entity) {
+        if (!$event) {
             throw new EntityNotFoundException(Event::class, $id);
         }
 
-        $recurrence = $entity->getRecurrence();
+        $recurrence = $event->getRecurrence();
 
         return $this->handleView($this->view([
-            'id' => $entity->getId(),
+            'id' => $event->getId(),
             'isRecurring' => $recurrence?->getIsRecurring() ?? false,
             'frequency' => $recurrence?->getFrequency(),
             'interval' => $recurrence?->getInterval() ?? 1,
@@ -380,18 +429,20 @@ class EventController extends AbstractRestController implements SecuredControlle
     {
         $data = $request->toArray();
 
-        $entity = $this->eventModel->getEvent($id, $request);
+        /** @var Event $event */
+        $event = $this->entityManager->getReference(Event::class, $id);
 
-        if (!$entity) {
+        if (!$event) {
             throw new EntityNotFoundException(Event::class, $id);
         }
 
-        $recurrence = $entity->getRecurrence();
+        $recurrence = $event->getRecurrence();
         if (!$recurrence) {
             $recurrence = new EventRecurrence();
-            $entity->setRecurrence($recurrence);
+            $event->setRecurrence($recurrence);
         }
 
+        // Map data to entity
         $recurrence->setIsRecurring($data['isRecurring'] ?? false);
         $recurrence->setFrequency($data['frequency'] ?? null);
         $recurrence->setInterval($data['interval'] ?? 1);
@@ -406,7 +457,7 @@ class EventController extends AbstractRestController implements SecuredControlle
         }
 
         return $this->handleView($this->view([
-            'id' => $entity->getId(),
+            'id' => $event->getId(),
             'isRecurring' => $recurrence->getIsRecurring(),
             'frequency' => $recurrence->getFrequency(),
             'interval' => $recurrence->getInterval(),
@@ -417,8 +468,13 @@ class EventController extends AbstractRestController implements SecuredControlle
         ]));
     }
 
-    public function getSecurityContext(): string
+    /**
+     * @return array<string, mixed>
+     */
+    protected function normalize(Event $event, EventDimensionContent $dimensionContent): array
     {
-        return Event::SECURITY_CONTEXT;
+        $normalizedContent = $this->contentManager->normalize($dimensionContent);
+
+        return $normalizedContent;
     }
 }

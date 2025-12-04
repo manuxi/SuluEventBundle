@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Manuxi\SuluEventBundle\Routing;
 
 use Manuxi\SuluEventBundle\Entity\Event;
-use Sulu\Bundle\RouteBundle\Generator\RouteGeneratorInterface;
+use Sulu\Route\Application\Routing\Generator\RouteGeneratorInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\String\Slugger\AsciiSlugger;
 use Symfony\Contracts\Translation\TranslatorInterface;

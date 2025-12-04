@@ -12,8 +12,9 @@ use Twig\TwigFunction;
 class SocialShareExtension extends AbstractExtension
 {
     public function __construct(
-        private SocialShareGenerator $socialShareGenerator
-    ) {}
+        private SocialShareGenerator $socialShareGenerator,
+    ) {
+    }
 
     public function getFunctions(): array
     {
@@ -25,7 +26,7 @@ class SocialShareExtension extends AbstractExtension
     }
 
     /**
-     * Get enabled social share links for an event
+     * Get enabled social share links for an event.
      */
     public function getSocialShares(Event $event, string $locale): array
     {
@@ -39,13 +40,13 @@ class SocialShareExtension extends AbstractExtension
         // Filter by enabled platforms
         return array_filter(
             $allLinks,
-            fn($key) => in_array($key, $enabledPlatforms, true),
+            fn ($key) => in_array($key, $enabledPlatforms, true),
             ARRAY_FILTER_USE_KEY
         );
     }
 
     /**
-     * Get Open Graph meta tags
+     * Get Open Graph meta tags.
      */
     public function getOpenGraphTags(Event $event): array
     {
@@ -53,7 +54,7 @@ class SocialShareExtension extends AbstractExtension
     }
 
     /**
-     * Get Twitter Card meta tags
+     * Get Twitter Card meta tags.
      */
     public function getTwitterTags(Event $event): array
     {

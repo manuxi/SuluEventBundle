@@ -1,0 +1,39 @@
+services:
+    # Calendar API Controller
+    Manuxi\SuluEventBundle\Controller\Website\CalendarApiController:
+        arguments:
+            - '@Manuxi\SuluEventBundle\Repository\EventRepository'
+            - '@sulu_event.type_selection'
+            - '@sulu_content.content_aggregator'
+        tags:
+            - { name: controller.service_arguments }
+            - { name: sulu.context, context: website }
+        public: true
+
+    # Recurrence Generator Service
+    sulu_event.recurrence_generator:
+        class: Manuxi\SuluEventBundle\Service\RecurrenceGenerator
+
+    # Recurrence Command
+    sulu_event.command.generate_recurring:
+        class: Manuxi\SuluEventBundle\Command\GenerateRecurringEventsCommand
+        arguments:
+            - '@Manuxi\SuluEventBundle\Repository\EventRepository'
+            - '@sulu_event.recurrence_generator'
+            - '@doctrine.orm.entity_manager'
+        tags:
+            - { name: console.command }
+
+    # Social Share Generator Service
+    sulu_event.social_share_generator:
+        class: Manuxi\SuluEventBundle\Service\SocialShareGenerator
+        arguments:
+            - '@router'
+
+    # Social Share Twig Extension
+    sulu_event.social_share_extension:
+        class: Manuxi\SuluEventBundle\Twig\SocialShareExtension
+        arguments:
+            - '@sulu_event.social_share_generator'
+        tags:
+            - { name: twig.extension }

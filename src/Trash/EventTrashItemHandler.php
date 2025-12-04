@@ -4,31 +4,41 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Trash;
 
-use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Common\Collections\ArrayCollection;
 use Manuxi\SuluEventBundle\Admin\EventAdmin;
+use Manuxi\SuluEventBundle\Application\Mapper\EventMapperInterface;
 use Manuxi\SuluEventBundle\Domain\Event\Event\RestoredEvent;
 use Manuxi\SuluEventBundle\Entity\Event;
-use Manuxi\SuluEventBundle\Entity\Location;
+use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
+use Manuxi\SuluEventBundle\Repository\EventRepository;
 use Sulu\Bundle\ActivityBundle\Application\Collector\DomainEventCollectorInterface;
-use Sulu\Bundle\MediaBundle\Entity\MediaInterface;
-use Sulu\Bundle\RouteBundle\Entity\Route;
-use Sulu\Bundle\TrashBundle\Application\DoctrineRestoreHelper\DoctrineRestoreHelperInterface;
 use Sulu\Bundle\TrashBundle\Application\RestoreConfigurationProvider\RestoreConfiguration;
 use Sulu\Bundle\TrashBundle\Application\RestoreConfigurationProvider\RestoreConfigurationProviderInterface;
 use Sulu\Bundle\TrashBundle\Application\TrashItemHandler\RestoreTrashItemHandlerInterface;
 use Sulu\Bundle\TrashBundle\Application\TrashItemHandler\StoreTrashItemHandlerInterface;
 use Sulu\Bundle\TrashBundle\Domain\Model\TrashItemInterface;
 use Sulu\Bundle\TrashBundle\Domain\Repository\TrashItemRepositoryInterface;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use Sulu\Content\Application\ContentMerger\ContentMergerInterface;
+use Sulu\Content\Application\ContentNormalizer\ContentNormalizerInterface;
+use Sulu\Content\Domain\Model\DimensionContentCollection;
+use Sulu\Content\Domain\Model\DimensionContentInterface;
+use Webmozart\Assert\Assert;
 
-class EventTrashItemHandler implements StoreTrashItemHandlerInterface, RestoreTrashItemHandlerInterface, RestoreConfigurationProviderInterface
+class EventTrashItemHandler implements
+    StoreTrashItemHandlerInterface,
+    RestoreTrashItemHandlerInterface,
+    RestoreConfigurationProviderInterface
 {
+    /**
+     * @param iterable<EventMapperInterface> $eventMappers
+     */
     public function __construct(
         private readonly TrashItemRepositoryInterface $trashItemRepository,
-        private readonly EntityManagerInterface $entityManager,
-        private readonly DoctrineRestoreHelperInterface $doctrineRestoreHelper,
+        private readonly EventRepository $eventRepository,
+        private readonly ContentNormalizerInterface $contentNormalizer,
+        private readonly ContentMergerInterface $contentMerger,
+        private readonly iterable $eventMappers,
         private readonly DomainEventCollectorInterface $domainEventCollector,
-        private readonly EventDispatcherInterface $dispatcher,
     ) {
     }
 
@@ -39,42 +49,81 @@ class EventTrashItemHandler implements StoreTrashItemHandlerInterface, RestoreTr
 
     public function store(object $resource, array $options = []): TrashItemInterface
     {
-        /* @var $resource Event */
+        Assert::isInstanceOf($resource, Event::class);
+        /** @var Event $event */
+        $event = $resource;
 
-        $image = $resource->getImage();
-        $pdf = $resource->getPdf();
+        $data = [];
+        $restoreType = $options['locale'] ?? null ? 'translation' : null;
 
-        $data = [
-            'locale' => $resource->getLocale(),
-            'title' => $resource->getTitle(),
-            'subtitle' => $resource->getSubtitle(),
-            'summary' => $resource->getSummary(),
-            'text' => $resource->getText(),
-            'footer' => $resource->getFooter(),
-            'startdate' => $resource->getStartDate(),
-            'enddate' => $resource->getEndDate(),
-            'slug' => $resource->getRoutePath(),
-            'published' => $resource->isPublished(),
-            'publishedAt' => $resource->getPublishedAt(),
-            'ext' => $resource->getExt(),
-            'location' => $resource->getLocation()->getId(),
+        $titles = [];
+        $localizedDimensionContents = [];
+        $unlocalizedDimensionContent = null;
 
-            'imageId' => $image?->getId(),
-            'pdfIdId' => $pdf?->getId(),
-            'link' => $resource->getLink(),
-            'email' => $resource->getEmail(),
-            'phone' => $resource->getPhoneNumber(),
-            'images' => $resource->getImages(),
-            'showAuthor' => $resource->getShowAuthor(),
-            'showDate' => $resource->getShowDate(),
-        ];
+        foreach ($event->getDimensionContents() as $dimensionContent) {
+            if (
+                DimensionContentInterface::CURRENT_VERSION !== $dimensionContent->getVersion()
+                || DimensionContentInterface::STAGE_DRAFT !== $dimensionContent->getStage()
+            ) {
+                continue;
+            }
 
-        $restoreType = isset($options['locale']) ? 'translation' : null;
+            if (null === $dimensionContent->getLocale()) {
+                $unlocalizedDimensionContent = $dimensionContent;
+                continue;
+            }
+
+            if ('translation' === $restoreType && $dimensionContent->getLocale() !== $options['locale']) {
+                continue;
+            }
+
+            $localizedDimensionContents[$dimensionContent->getLocale()] = $dimensionContent;
+        }
+
+        Assert::notNull($unlocalizedDimensionContent, 'Expected to find an unlocalized dimension content for the event.');
+        Assert::notEmpty($localizedDimensionContents, 'Expected to find at least one localized dimension content for the event.');
+
+        // Reorder localized dimension contents to match the order defined in availableLocales
+        $availableLocales = $unlocalizedDimensionContent->getAvailableLocales();
+        Assert::isArray($availableLocales, 'Expected availableLocales to be an array');
+        /** @var array<string, EventDimensionContent> $localizedDimensionContents */
+        $localizedDimensionContents = \array_merge(
+            \array_flip(
+                \array_filter(
+                    $availableLocales,
+                    static fn ($locale) => \array_key_exists($locale, $localizedDimensionContents)
+                )
+            ),
+            $localizedDimensionContents,
+        );
+
+        $data['dimensionContents'] = [];
+        foreach ($localizedDimensionContents as $locale => $localizedDimensionContent) {
+            $mergedDimensionContent = $this->contentMerger->merge(
+                new DimensionContentCollection(
+                    new ArrayCollection([$unlocalizedDimensionContent, $localizedDimensionContent]),
+                    [
+                        'locale' => $locale,
+                        'stage' => DimensionContentInterface::STAGE_DRAFT,
+                        'version' => DimensionContentInterface::CURRENT_VERSION,
+                    ],
+                    EventDimensionContent::class,
+                ),
+            );
+
+            $normalizedContent = $this->contentNormalizer->normalize($mergedDimensionContent);
+            $data['dimensionContents'][] = $normalizedContent;
+
+            $title = $localizedDimensionContent->getTitle();
+            if ($title) {
+                $titles[$locale] = $title;
+            }
+        }
 
         return $this->trashItemRepository->create(
             Event::RESOURCE_KEY,
-            (string) $resource->getId(),
-            $resource->getTitle(),
+            (string) $event->getId(),
+            $titles,
             $data,
             $restoreType,
             $options,
@@ -86,59 +135,42 @@ class EventTrashItemHandler implements StoreTrashItemHandlerInterface, RestoreTr
 
     public function restore(TrashItemInterface $trashItem, array $restoreFormData = []): object
     {
-        $data = $trashItem->getRestoreData();
-        $entityId = (int) $trashItem->getResourceId();
-        $entity = new Event();
-        $entity->setLocale($data['locale']);
+        $restoreData = $trashItem->getRestoreData();
+        $eventId = (int) $trashItem->getResourceId();
 
-        $entity->setStartDate($data['startdate'] ? new \DateTimeImmutable($data['startdate']['date']) : null);
-        $entity->setEndDate($data['enddate'] ? new \DateTimeImmutable($data['enddate']['date']) : null);
-        $entity->setTitle($data['title']);
-        $entity->setSubtitle($data['subtitle']);
-        $entity->setSummary($data['summary']);
-        $entity->setText($data['text']);
-        $entity->setFooter($data['footer']);
-        $entity->setRoutePath($data['slug']);
-        $entity->setPublished($data['published']);
-        $entity->setPublishedAt($data['publishedAt'] ? new \DateTime($data['publishedAt']['date']) : null);
-        $entity->setExt($data['ext']);
-        $entity->setLocation($this->entityManager->find(Location::class, $data['location']));
-        $entity->setEmail($data['email']);
-        $entity->setPhoneNumber($data['phone']);
-        $entity->setImages($data['images']);
-        $entity->setShowAuthor($data['showAuthor']);
-        $entity->setShowDate($data['showDate']);
-
-        if ($data['link']) {
-            $entity->setLink($data['link']);
+        $event = $this->eventRepository->findOneBy(['id' => $eventId]);
+        if (!$event) {
+            $event = new Event();
+            $this->eventRepository->add($event);
         }
 
-        if ($data['imageId']) {
-            $entity->setImage($this->entityManager->find(MediaInterface::class, $data['imageId']));
+        $dimensionContents = $restoreData['dimensionContents'] ?? [];
+        $allLocales = [];
+        $eventTitle = null;
+
+        Assert::isArray($dimensionContents, 'Expected dimensionContents to be an array');
+        foreach ($dimensionContents as $dimensionContentData) {
+            Assert::isArray($dimensionContentData, 'Expected dimensionContentData to be an array');
+
+            if (!$eventTitle && \array_key_exists('title', $dimensionContentData) && $dimensionContentData['title']) {
+                /** @var string $eventTitle */
+                $eventTitle = $dimensionContentData['title'];
+            }
+
+            if (\array_key_exists('locale', $dimensionContentData) && $dimensionContentData['locale']) {
+                $allLocales[] = $dimensionContentData['locale'];
+            }
+
+            foreach ($this->eventMappers as $eventMapper) {
+                $eventMapper->mapEventData($event, $dimensionContentData);
+            }
         }
 
         $this->domainEventCollector->collect(
-            new RestoredEvent($entity, $data)
+            new RestoredEvent($event, $restoreData)
         );
 
-        $this->doctrineRestoreHelper->persistAndFlushWithId($entity, $entityId);
-        $this->createRoute($this->entityManager, $entityId, $data['locale'], $entity->getRoutePath(), Event::class);
-        $this->entityManager->flush();
-
-        return $entity;
-    }
-
-    private function createRoute(EntityManagerInterface $manager, int $id, string $locale, string $slug, string $class)
-    {
-        $route = new Route();
-        $route->setPath($slug);
-        $route->setLocale($locale);
-        $route->setEntityClass($class);
-        $route->setEntityId($id);
-        $route->setHistory(0);
-        $route->setCreated(new \DateTime());
-        $route->setChanged(new \DateTime());
-        $manager->persist($route);
+        return $event;
     }
 
     public function getConfiguration(): RestoreConfiguration
@@ -146,7 +178,7 @@ class EventTrashItemHandler implements StoreTrashItemHandlerInterface, RestoreTr
         return new RestoreConfiguration(
             null,
             EventAdmin::EDIT_FORM_VIEW,
-            ['id' => 'id']
+            ['id' => 'id', 'locale' => 'locale']
         );
     }
 }

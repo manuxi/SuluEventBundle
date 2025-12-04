@@ -55,17 +55,15 @@ class EventObjectProvider implements PreviewDefaultsProviderInterface
         /** @var Event $object */
         $object = $defaults['event'];
 
-        if (\array_key_exists('template', $context)) {
+        /*if (\array_key_exists('template', $context)) {
             $object->setStructureType($context['template']);
-        }
+        }*/
 
         return $defaults;
     }
 
     public function getSecurityContext(PreviewContext $previewContext): ?string
     {
-
         return 'sulu_events.events';
-
     }
 }

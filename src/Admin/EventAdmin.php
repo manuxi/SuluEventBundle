@@ -18,7 +18,6 @@ use Sulu\Component\Security\Authorization\PermissionTypes;
 use Sulu\Component\Security\Authorization\SecurityCheckerInterface;
 use Sulu\Component\Webspace\Manager\WebspaceManagerInterface;
 
-
 class EventAdmin extends Admin
 {
     public const NAV_ITEM = 'sulu_event.events';
@@ -49,16 +48,9 @@ class EventAdmin extends Admin
     {
         if ($this->securityChecker->hasPermission(Event::SECURITY_CONTEXT, PermissionTypes::EDIT)) {
             $rootNavigationItem = new NavigationItem(static::NAV_ITEM);
+            $rootNavigationItem->setPosition(35);
             $rootNavigationItem->setIcon('su-calendar');
-            $rootNavigationItem->setPosition(37);
             $rootNavigationItem->setView(static::LIST_VIEW);
-
-            // Configure a NavigationItem with a View
-            $eventNavigationItem = new NavigationItem(static::NAV_ITEM);
-            $eventNavigationItem->setPosition(10);
-            $eventNavigationItem->setView(static::LIST_VIEW);
-
-            $rootNavigationItem->addChild($eventNavigationItem);
 
             $navigationItemCollection->add($rootNavigationItem);
         }
@@ -68,8 +60,9 @@ class EventAdmin extends Admin
     {
         $locales = $this->webspaceManager->getAllLocales();
 
-        /*$formToolbarActions = [
+        $formToolbarActions = [
             new ToolbarAction('sulu_admin.save'),
+            new ToolbarAction('sulu_admin.delete'),
             new TogglerToolbarAction(
                 'sulu_event.enable_event',
                 'enabled',
@@ -78,97 +71,36 @@ class EventAdmin extends Admin
             ),
             new DropdownToolbarAction(
                 'sulu_admin.edit',
-                '',
+                'su-pen',
                 [
-                    new ToolbarAction(
-                        'sulu_admin.delete',
-                        [
-                            'visible_condition' => '!!id',
-                        ]
+                    new ToolbarAction('sulu_admin.delete'),
+                    new TogglerToolbarAction(
+                        'sulu_event.enable_event',
+                        'enabled',
+                        'enable',
+                        'disable'
                     ),
                 ]
             ),
-        ];*/
+        ];
 
-        $formToolbarActions = [];
-        $listToolbarActions = [];
-        $previewCondition = 'nodeType == 1';
-
-        $locales = $this->webspaceManager->getAllLocales();
+        $listToolbarActions = [
+            new ToolbarAction('sulu_admin.add'),
+            new ToolbarAction('sulu_admin.delete'),
+        ];
 
         if ($this->securityChecker->hasPermission(Event::SECURITY_CONTEXT, PermissionTypes::EDIT)) {
-            $formToolbarActions[] = new ToolbarAction('sulu_admin.save');
-        }
-
-        if ($this->securityChecker->hasPermission(Event::SECURITY_CONTEXT, PermissionTypes::ADD)) {
-            $listToolbarActions[] = new ToolbarAction('sulu_admin.add');
-        }
-
-        if ($this->securityChecker->hasPermission(Event::SECURITY_CONTEXT, PermissionTypes::DELETE)) {
-            $formToolbarActions[] = new ToolbarAction('sulu_admin.delete');
-            $listToolbarActions[] = new ToolbarAction('sulu_admin.delete');
-        }
-
-        /*
-        if ($this->securityChecker->hasPermission(Event::SECURITY_CONTEXT, PermissionTypes::DELETE)) {
-
-            $formToolbarActions[] = new DropdownToolbarAction(
-                'sulu_admin.delete',
-                'su-trash-alt',
-                [
-                    new ToolbarAction(
-                        'sulu_admin.delete',
-                        [
-                            'visible_condition' => '(!_permissions || _permissions.delete) && url != "/"',
-                            'router_attributes_to_back_view' => ['webspace'],
-                        ]
-                    ),
-                    new ToolbarAction(
-                        'sulu_admin.delete',
-                        [
-                            'visible_condition' => '(!_permissions || _permissions.delete) && url != "/"',
-                            'router_attributes_to_back_view' => ['webspace'],
-                            'delete_locale' => true,
-                        ]
-                    ),
-                ]
-            );
-
-            $listToolbarActions[] = new ToolbarAction('sulu_admin.delete');
-        }
-        */
-
-        if ($this->securityChecker->hasPermission(Event::SECURITY_CONTEXT, PermissionTypes::VIEW)) {
-            $listToolbarActions[] = new ToolbarAction('sulu_admin.export');
-        }
-
-        if ($this->securityChecker->hasPermission(Event::SECURITY_CONTEXT, PermissionTypes::LIVE)) {
-            $editDropdownToolbarActions = [
-                new ToolbarAction('sulu_admin.publish'),
-                new ToolbarAction('sulu_admin.set_unpublished'),
-            ];
-
-            if (\count($locales) > 1) {
-                $editDropdownToolbarActions[] = new ToolbarAction('sulu_admin.copy_locale');
-            }
-
-            $formToolbarActions[] = new DropdownToolbarAction(
-                'sulu_admin.edit',
-                'su-cog',
-                $editDropdownToolbarActions
-            );
-        }
-
-        if ($this->securityChecker->hasPermission(Event::SECURITY_CONTEXT, PermissionTypes::VIEW)) {
             $viewCollection->add(
-                $this->viewBuilderFactory->createListViewBuilder(self::LIST_VIEW, '/events/:locale')
+                $this->viewBuilderFactory->createListViewBuilder(static::LIST_VIEW, '/events/:locale')
                     ->setResourceKey(Event::RESOURCE_KEY)
                     ->setListKey('events')
+                    ->setTitle('sulu_event.events')
                     ->addListAdapters(['table'])
+                    ->addLocales($locales)
+                    ->setDefaultLocale($locales[0])
                     ->setAddView(static::ADD_FORM_VIEW)
                     ->setEditView(static::EDIT_FORM_VIEW)
-                    ->addToolbarActions([new ToolbarAction('sulu_admin.add'), new ToolbarAction('sulu_admin.delete')])
-                    ->addLocales($locales)
+                    ->addToolbarActions($listToolbarActions)
             );
 
             $viewCollection->add(
@@ -260,9 +192,8 @@ class EventAdmin extends Admin
                     ->setParent(static::EDIT_FORM_VIEW)
             );
 
-            // if ($this->activityViewBuilderFactory->hasActivityListPermission() || $this->referenceViewBuilderFactory->hasReferenceListPermission()) {
             if ($this->activityViewBuilderFactory->hasActivityListPermission()) {
-                $insightsResourceTabViewName = static::EDIT_FORM_VIEW.'.insights';
+                $insightsResourceTabViewName = static::EDIT_FORM_VIEW . '.insights';
 
                 $viewCollection->add(
                     $this->viewBuilderFactory
@@ -274,56 +205,32 @@ class EventAdmin extends Admin
                         ->setParent(static::EDIT_FORM_VIEW)
                 );
 
-                if ($this->activityViewBuilderFactory->hasActivityListPermission()) {
-                    $viewCollection->add(
-                        $this->activityViewBuilderFactory
-                            ->createActivityListViewBuilder(
-                                $insightsResourceTabViewName.'.activity',
-                                '/activities',
-                                Event::RESOURCE_KEY
-                            )
-                            ->setParent($insightsResourceTabViewName)
-                    );
-                }
+                $viewCollection->add(
+                    $this->activityViewBuilderFactory
+                        ->createActivityListViewBuilder(
+                            $insightsResourceTabViewName . '.activity',
+                            '/activity',
+                            Event::RESOURCE_KEY
+                        )
+                        ->setParent($insightsResourceTabViewName)
+                );
 
-                /*if ($this->referenceViewBuilderFactory->hasReferenceListPermission()) {
-                    $viewCollection->add(
-                        $this->referenceViewBuilderFactory
-                            ->createReferenceListViewBuilder(
-                                $insightsResourceTabViewName . '.reference',
-                                '/references',
-                                MediaInterface::RESOURCE_KEY
-                            )
-                            ->setParent($insightsResourceTabViewName)
-                    );
-                }*/
+                $viewCollection->add(
+                    $this->viewBuilderFactory
+                        ->createListViewBuilder(
+                            $insightsResourceTabViewName . '.versions',
+                            '/versions',
+                            'events_versions'
+                        )
+                        ->setResourceKey(Event::RESOURCE_KEY)
+                        ->setListKey('events_versions')
+                        ->setTabTitle('sulu_admin.versions')
+                        ->addListAdapters(['table'])
+                        ->disableSelection()
+                        ->addAdapterOptions(['table' => ['show_header' => true]])
+                        ->setParent($insightsResourceTabViewName)
+                );
             }
         }
     }
-
-    /**
-     * @return mixed[]
-     */
-    public function getSecurityContexts(): array
-    {
-        return [
-            self::SULU_ADMIN_SECURITY_SYSTEM => [
-                'Events' => [
-                    Event::SECURITY_CONTEXT => [
-                        PermissionTypes::VIEW,
-                        PermissionTypes::ADD,
-                        PermissionTypes::EDIT,
-                        PermissionTypes::DELETE,
-                        PermissionTypes::LIVE,
-                    ],
-                ],
-            ],
-        ];
-    }
-
-    public function getConfigKey(): ?string
-    {
-        return 'sulu_event';
-    }
-
 }

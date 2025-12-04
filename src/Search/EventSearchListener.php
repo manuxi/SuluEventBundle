@@ -11,7 +11,11 @@ use Manuxi\SuluEventBundle\Domain\Event\Event\PublishedEvent;
 use Manuxi\SuluEventBundle\Domain\Event\Event\RemovedEvent;
 use Manuxi\SuluEventBundle\Domain\Event\Event\UnpublishedEvent;
 use Manuxi\SuluEventBundle\Entity\Event;
+use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
 use Sulu\Component\Webspace\Manager\WebspaceManagerInterface;
+use Sulu\Content\Application\ContentAggregator\ContentAggregatorInterface;
+use Sulu\Content\Domain\Model\DimensionContentInterface;
+use Sulu\Content\Domain\Model\WorkflowInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class EventSearchListener implements EventSubscriberInterface
@@ -19,6 +23,7 @@ class EventSearchListener implements EventSubscriberInterface
     public function __construct(
         private readonly EngineInterface $engine,
         private readonly WebspaceManagerInterface $webspaceManager,
+        private readonly ContentAggregatorInterface $contentAggregator,
     ) {
     }
 
@@ -37,12 +42,30 @@ class EventSearchListener implements EventSubscriberInterface
     {
         $event = $domainEvent->getEntity();
 
-        // Always update admin index
-        $this->indexForAdmin($event);
+        // Index for all locales
+        foreach ($this->getLocales() as $locale) {
+            /** @var EventDimensionContent $dimensionContent */
+            $dimensionContent = $this->contentAggregator->aggregate(
+                $event,
+                [
+                    'locale' => $locale,
+                    'stage' => DimensionContentInterface::STAGE_DRAFT,
+                    'version' => DimensionContentInterface::CURRENT_VERSION,
+                ]
+            );
 
-        // Update website index only if published
-        if ($event->isPublished()) {
-            $this->indexForWebsite($event);
+            // Skip if no content for this locale
+            if (!$dimensionContent->getTitle()) {
+                continue;
+            }
+
+            // Always update admin index
+            $this->indexForAdmin($event, $dimensionContent, $locale);
+
+            // Update website index only if published
+            if (WorkflowInterface::WORKFLOW_PLACE_PUBLISHED === $dimensionContent->getWorkflowPlace()) {
+                $this->indexForWebsite($event, $dimensionContent, $locale);
+            }
         }
     }
 
@@ -50,21 +73,53 @@ class EventSearchListener implements EventSubscriberInterface
     {
         $event = $domainEvent->getEntity();
 
-        // Update both indexes
-        $this->indexForAdmin($event);
-        $this->indexForWebsite($event);
+        foreach ($this->getLocales() as $locale) {
+            /** @var EventDimensionContent $dimensionContent */
+            $dimensionContent = $this->contentAggregator->aggregate(
+                $event,
+                [
+                    'locale' => $locale,
+                    'stage' => DimensionContentInterface::STAGE_LIVE,
+                    'version' => DimensionContentInterface::CURRENT_VERSION,
+                ]
+            );
+
+            if (!$dimensionContent->getTitle()) {
+                continue;
+            }
+
+            // Update both indexes
+            $this->indexForAdmin($event, $dimensionContent, $locale);
+            $this->indexForWebsite($event, $dimensionContent, $locale);
+        }
     }
 
     public function onUnpublished(UnpublishedEvent $domainEvent): void
     {
         $event = $domainEvent->getEntity();
 
-        // Update admin index
-        $this->indexForAdmin($event);
+        foreach ($this->getLocales() as $locale) {
+            /** @var EventDimensionContent $dimensionContent */
+            $dimensionContent = $this->contentAggregator->aggregate(
+                $event,
+                [
+                    'locale' => $locale,
+                    'stage' => DimensionContentInterface::STAGE_DRAFT,
+                    'version' => DimensionContentInterface::CURRENT_VERSION,
+                ]
+            );
 
-        // Remove from website index
-        $documentId = $this->getDocumentId($event);
-        $this->engine->deleteDocument('website', $documentId);  // ← 'website'
+            if (!$dimensionContent->getTitle()) {
+                continue;
+            }
+
+            // Update admin index
+            $this->indexForAdmin($event, $dimensionContent, $locale);
+
+            // Remove from website index
+            $documentId = $this->getDocumentId($event, $locale);
+            $this->engine->deleteDocument('website', $documentId);
+        }
     }
 
     public function onRemoved(RemovedEvent $domainEvent): void
@@ -72,54 +127,54 @@ class EventSearchListener implements EventSubscriberInterface
         // Remove from all locale variants in both indexes
         foreach ($this->getLocales() as $locale) {
             $documentId = 'event-'.$domainEvent->getResourceId().'-'.$locale;
-            $this->engine->deleteDocument('admin', $documentId);  // ← 'admin'
-            $this->engine->deleteDocument('website', $documentId);  // ← 'website'
+            $this->engine->deleteDocument('admin', $documentId);
+            $this->engine->deleteDocument('website', $documentId);
         }
     }
 
-    private function indexForAdmin(Event $event): void
+    private function indexForAdmin(Event $event, EventDimensionContent $dimensionContent, string $locale): void
     {
         $this->engine->saveDocument('admin', [
-            'id' => $this->getDocumentId($event),
+            'id' => $this->getDocumentId($event, $locale),
             'resourceKey' => Event::RESOURCE_KEY,
             'resourceId' => (string) $event->getId(),
-            'locale' => $event->getLocale(),
+            'locale' => $locale,
             'securityContext' => Event::SECURITY_CONTEXT,
-            'title' => $event->getTitle() ?? '',
-            'mediaId' => $event->getImage()?->getId(),
-            'changedAt' => $event->getChanged()?->format('c'),
-            'createdAt' => $event->getCreated()?->format('c'),
-            'published' => $event->isPublished() ? 1 : 0,
+            'title' => $dimensionContent->getTitle() ?? '',
+            'mediaId' => $dimensionContent->getImage()?->getId(),
+            'changedAt' => $dimensionContent->getChanged()?->format('c'),
+            'createdAt' => $dimensionContent->getCreated()?->format('c'),
+            'published' => WorkflowInterface::WORKFLOW_PLACE_PUBLISHED === $dimensionContent->getWorkflowPlace() ? 1 : 0,
             'startDate' => $event->getStartDate()?->format('c'),
         ]);
     }
 
-    private function indexForWebsite(Event $event): void
+    private function indexForWebsite(Event $event, EventDimensionContent $dimensionContent, string $locale): void
     {
         $content = array_filter([
-            $event->getSubtitle(),
-            $event->getSummary(),
-            $event->getText(),
-            $event->getFooter(),
+            $dimensionContent->getSubtitle(),
+            $dimensionContent->getSummary(),
+            $dimensionContent->getText(),
+            $dimensionContent->getFooter(),
         ]);
 
         $this->engine->saveDocument('website', [
-            'id' => $this->getDocumentId($event),
+            'id' => $this->getDocumentId($event, $locale),
             'resourceKey' => Event::RESOURCE_KEY,
             'resourceId' => (string) $event->getId(),
-            'locale' => $event->getLocale(),
+            'locale' => $locale,
             'webspaces' => [],
-            'title' => $event->getTitle() ?? '',
-            'url' => $event->getRoutePath() ?? '',
+            'title' => $dimensionContent->getTitle() ?? '',
+            'url' => $dimensionContent->getRoute()?->getSlug() ?? '',
             'content' => $content,
-            'mediaId' => $event->getImage()?->getId(),
+            'mediaId' => $dimensionContent->getImage()?->getId(),
             'startDate' => $event->getStartDate()?->format('c'),
         ]);
     }
 
-    private function getDocumentId(Event $event): string
+    private function getDocumentId(Event $event, string $locale): string
     {
-        return 'event-'.$event->getId().'-'.$event->getLocale();
+        return 'event-'.$event->getId().'-'.$locale;
     }
 
     private function getLocales(): array
