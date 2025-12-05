@@ -5,9 +5,6 @@ declare(strict_types=1);
 namespace Manuxi\SuluEventBundle\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\EntityRepository;
-use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 use Manuxi\SuluEventBundle\Entity\Event;
@@ -37,23 +34,16 @@ class EventRepository extends ServiceEntityRepository
         ],
     ];
 
-    /**
-     * @var EntityRepository<Event>
-     */
-    private EntityRepository $entityRepository;
-
     public function __construct(
         ManagerRegistry $registry,
-        private EntityManagerInterface $entityManager,
         private DimensionContentQueryEnhancer $dimensionContentQueryEnhancer,
     ) {
         parent::__construct($registry, Event::class);
-        $this->entityRepository = $entityManager->getRepository(Event::class);
     }
 
     public function findById(int $id): ?Event
     {
-        return $this->entityRepository->find($id);
+        return $this->find($id);
     }
 
     /**
@@ -90,8 +80,8 @@ class EventRepository extends ServiceEntityRepository
 
     public function countAll(): int
     {
-        return (int) $this->entityRepository
-            ->createQueryBuilder('e')
+        // ✅ Use $this->createQueryBuilder() directly!
+        return (int) $this->createQueryBuilder('e')
             ->select('COUNT(e.id)')
             ->getQuery()
             ->getSingleScalarResult();
@@ -99,7 +89,8 @@ class EventRepository extends ServiceEntityRepository
 
     public function countPublished(string $locale): int
     {
-        $qb = $this->entityRepository->createQueryBuilder('event');
+        // ✅ Use $this->createQueryBuilder() directly!
+        $qb = $this->createQueryBuilder('event');
 
         $qb->select('COUNT(DISTINCT event.id)')
             ->leftJoin('event.dimensionContents', 'dc')
@@ -134,7 +125,8 @@ class EventRepository extends ServiceEntityRepository
 
     public function findForCalendar(array $filters): array
     {
-        $qb = $this->entityRepository->createQueryBuilder('event');
+        // ✅ Use $this->createQueryBuilder() directly!
+        $qb = $this->createQueryBuilder('event');
 
         // Join unlocalizedDimensionContent for date fields
         $qb->leftJoin(
@@ -162,7 +154,8 @@ class EventRepository extends ServiceEntityRepository
 
     public function findForIcal(array $filters): array
     {
-        $qb = $this->entityRepository->createQueryBuilder('event');
+        // ✅ Use $this->createQueryBuilder() directly!
+        $qb = $this->createQueryBuilder('event');
 
         // Join unlocalizedDimensionContent for date fields
         $qb->leftJoin(
@@ -180,7 +173,8 @@ class EventRepository extends ServiceEntityRepository
 
     public function findRecurringEvents(): array
     {
-        $qb = $this->entityRepository->createQueryBuilder('event');
+        // ✅ Use $this->createQueryBuilder() directly!
+        $qb = $this->createQueryBuilder('event');
 
         // Join unlocalizedDimensionContent where recurrence exists
         $qb->leftJoin(
@@ -196,12 +190,14 @@ class EventRepository extends ServiceEntityRepository
 
     public function add(Event $event): void
     {
-        $this->entityManager->persist($event);
+        // ✅ Use getEntityManager() from parent!
+        $this->getEntityManager()->persist($event);
     }
 
     public function remove(Event $event): void
     {
-        $this->entityManager->remove($event);
+        // ✅ Use getEntityManager() from parent!
+        $this->getEntityManager()->remove($event);
     }
 
     /**
@@ -214,7 +210,8 @@ class EventRepository extends ServiceEntityRepository
         array $sortBys = [],
         array $selects = []
     ): QueryBuilder {
-        $queryBuilder = $this->entityRepository->createQueryBuilder('event');
+        // ✅ Use $this->createQueryBuilder() directly!
+        $queryBuilder = $this->createQueryBuilder('event');
 
         $this->applyContentJoin($queryBuilder, $filters, $sortBys, $selects);
         $this->applyFilters($queryBuilder, $filters);

@@ -34,7 +34,6 @@ services:
         class: Manuxi\SuluEventBundle\Repository\EventRepository
         arguments:
             - '@doctrine'
-            - '@doctrine.orm.entity_manager'
             - '@sulu_content.dimension_content_query_enhancer'
         public: true
         tags:
@@ -52,7 +51,8 @@ services:
         class: Manuxi\SuluEventBundle\Repository\LocationRepository
         arguments:
             - '@doctrine'
-        lazy: true
+        tags:
+            - { name: doctrine.repository_service }
 
     # Routing
     Manuxi\SuluEventBundle\Routing\EventRouteDefaultsProvider:

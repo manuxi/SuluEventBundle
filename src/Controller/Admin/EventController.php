@@ -28,14 +28,26 @@ class EventController extends AbstractFOSRestController
     ) {
     }
 
-    #[Route(path: '/events.{_format}', defaults: ['_format' => 'json'], methods: ['GET'])]
+    #[Route(
+        path: '/events.{_format}',
+        name: 'sulu_event.get_events',
+        options: ['expose' => true],
+        defaults: ['_format' => 'json'],
+        methods: ['GET']
+    )]
     public function cgetAction(Request $request): Response
     {
         // List action is handled by Sulu's ListBuilder (events.xml)
         return new Response('', 501);
     }
 
-    #[Route(path: '/events/{id}.{_format}', defaults: ['_format' => 'json'], methods: ['GET'])]
+    #[Route(
+        path: '/events/{id}.{_format}',
+        name: 'sulu_event.get_event',
+        options: ['expose' => true],
+        defaults: ['_format' => 'json'],
+        methods: ['GET']
+    )]
     public function getAction(int $id, Request $request): Response
     {
         /** @var Event|null $event */
@@ -53,7 +65,13 @@ class EventController extends AbstractFOSRestController
         return $this->handleView($this->view($this->normalize($event, $dimensionContent)));
     }
 
-    #[Route(path: '/events.{_format}', defaults: ['_format' => 'json'], methods: ['POST'])]
+    #[Route(
+        path: '/events.{_format}',
+        name: 'sulu_event.post_event',
+        options: ['expose' => true],
+        defaults: ['_format' => 'json'],
+        methods: ['POST']
+    )]
     public function postAction(Request $request): Response
     {
         $event = new Event();
@@ -69,7 +87,13 @@ class EventController extends AbstractFOSRestController
         return $this->handleView($this->view($this->normalize($event, $dimensionContent), 201));
     }
 
-    #[Route(path: '/events/{id}.{_format}', defaults: ['_format' => 'json'], methods: ['PUT'])]
+    #[Route(
+        path: '/events/{id}.{_format}',
+        name: 'sulu_event.put_event',
+        options: ['expose' => true],
+        defaults: ['_format' => 'json'],
+        methods: ['PUT']
+    )]
     public function putAction(Request $request, int $id): Response
     {
         /** @var Event|null $event */
@@ -107,7 +131,13 @@ class EventController extends AbstractFOSRestController
         return $this->handleView($this->view($this->normalize($event, $dimensionContent)));
     }
 
-    #[Route(path: '/events/{id}.{_format}', defaults: ['_format' => 'json'], methods: ['POST'])]
+    #[Route(
+        path: '/events/{id}.{_format}',
+        name: 'sulu_event.post_event_trigger',
+        options: ['expose' => true],
+        defaults: ['_format' => 'json'],
+        methods: ['POST']
+    )]
     public function postTriggerAction(int $id, Request $request): Response
     {
         $action = $this->getRequestParameter($request, 'action', true);
@@ -118,8 +148,6 @@ class EventController extends AbstractFOSRestController
         if (!$event) {
             throw new NotFoundHttpException();
         }
-
-        $dimensionAttributes = $this->getDimensionAttributes($request);
 
         switch ($action) {
             case 'copy-locale':
@@ -139,6 +167,13 @@ class EventController extends AbstractFOSRestController
     }
 
     #[Route(path: '/events/{id}.{_format}', defaults: ['_format' => 'json'], methods: ['DELETE'])]
+    #[Route(
+        path: '/events/{id}.{_format}',
+        name: 'sulu_event.delete_event',
+        options: ['expose' => true],
+        defaults: ['_format' => 'json'],
+        methods: ['DELETE']
+    )]
     public function deleteAction(int $id): Response
     {
         /** @var Event $event */

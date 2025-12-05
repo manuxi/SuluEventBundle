@@ -57,14 +57,14 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  *     stage?: string,
  * }
  */
-readonly class EventSmartContentProvider implements SmartContentProviderInterface
+class EventSmartContentProvider implements SmartContentProviderInterface
 {
     /**
      * @var class-string<EventDimensionContent>
      */
     private string $eventDimensionContentClassName;
 
-    private ?EventRepository $eventRepository;
+    private ?EventRepository $eventRepository = null;
 
     /**
      * @param array<string, array{name: string, color: string}> $eventTypes

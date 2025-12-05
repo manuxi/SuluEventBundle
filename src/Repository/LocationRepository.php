@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Repository;
 
-use Manuxi\SuluEventBundle\Entity\Location;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
+use Manuxi\SuluEventBundle\Entity\Location;
 
 /**
  * @method Location|null find($id, $lockMode = null, $lockVersion = null)
@@ -47,6 +46,7 @@ class LocationRepository extends ServiceEntityRepository
     {
         $this->getEntityManager()->persist($location);
         $this->getEntityManager()->flush();
+
         return $location;
     }
 
