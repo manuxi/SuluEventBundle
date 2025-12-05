@@ -84,6 +84,7 @@ services:
             - '@translator'
             - '%sulu_event.types%'
             - '%sulu_event.default_type%'
+        public: true
 
     # Property Resolvers
     sulu_event.property_resolver.single_event_selection:
