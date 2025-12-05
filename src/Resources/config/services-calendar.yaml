@@ -34,7 +34,7 @@ services:
 
     # Social Share Twig Extension
     sulu_event.social_share_extension:
-        class: Manuxi\SuluEventBundle\Twig\SocialShareExtension
+        class: Manuxi\SuluEventBundle\Twig\SocialShareTwigExtension
         arguments:
             - '@sulu_event.social_share_generator'
         tags:

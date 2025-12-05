@@ -1,6 +1,7 @@
 services:
     # Admin Controllers
-    Manuxi\SuluEventBundle\Controller\Admin\EventController:
+    sulu_event.controller.admin.event:
+        class: Manuxi\SuluEventBundle\Controller\Admin\EventController
         arguments:
             - '@doctrine.orm.entity_manager'
             - '@sulu_content.content_manager'
@@ -9,7 +10,8 @@ services:
             - { name: sulu.context, context: admin }
         public: true
 
-    Manuxi\SuluEventBundle\Controller\Admin\LocationController:
+    sulu_event.controller.admin.location:
+        class: Manuxi\SuluEventBundle\Controller\Admin\LocationController
         arguments:
             - '@sulu_event.repository.location'
             - '@doctrine.orm.entity_manager'
@@ -24,7 +26,8 @@ services:
             - { name: sulu.context, context: admin }
         public: true
 
-    Manuxi\SuluEventBundle\Controller\Admin\SettingsController:
+    sulu_event.controller.admin.settings:
+        class: Manuxi\SuluEventBundle\Controller\Admin\SettingsController
         arguments:
             - '@doctrine.orm.entity_manager'
             - '@sulu_activity.domain_event_collector'
@@ -35,7 +38,8 @@ services:
         public: true
 
     # Website Controller
-    Manuxi\SuluEventBundle\Controller\Website\EventController:
+    sulu_event.controller.event:
+        class: Manuxi\SuluEventBundle\Controller\Website\EventController
         arguments:
             - '@twig'
             - '@sulu_website.resolver.template_attribute'
@@ -45,3 +49,31 @@ services:
             - { name: controller.service_arguments }
             - { name: sulu.context, context: website }
         public: true
+
+    # Feed Services
+    Manuxi\SuluEventBundle\Controller\Website\FeedController:
+        class: Manuxi\SuluEventBundle\Controller\Website\FeedController
+        public: true
+        arguments:
+            - '@Manuxi\SuluEventBundle\Repository\EventRepository'
+            - '@router'
+            - '@sulu_content.content_aggregator'
+        tags:
+            - { name: controller.service_arguments }
+            - { name: sulu.context, context: website }
+        calls:
+            - [ setContainer, [ '@service_container' ] ]
+
+    # Calendar Services
+    Manuxi\SuluEventBundle\Controller\Website\CalendarApiController:
+        class: Manuxi\SuluEventBundle\Controller\Website\CalendarApiController
+        public: true
+        arguments:
+            - '@Manuxi\SuluEventBundle\Repository\EventRepository'
+            - '@sulu_event.type_selection'
+            - '@sulu_content.content_aggregator'
+        tags:
+            - { name: controller.service_arguments }
+            - { name: sulu.context, context: website }
+        calls:
+            - [ setContainer, [ '@service_container' ] ]

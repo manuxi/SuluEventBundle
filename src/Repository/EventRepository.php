@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Repository;
 
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\QueryBuilder;
+use Doctrine\Persistence\ManagerRegistry;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
 use Sulu\Content\Domain\Model\DimensionContentInterface;
@@ -15,7 +17,7 @@ use Sulu\Content\Domain\Model\WorkflowInterface;
 use Sulu\Content\Infrastructure\Doctrine\DimensionContentQueryEnhancer;
 use Webmozart\Assert\Assert;
 
-class EventRepository
+class EventRepository extends ServiceEntityRepository
 {
     public const GROUP_SELECT_EVENT_ADMIN = 'event_admin';
     public const GROUP_SELECT_EVENT_WEBSITE = 'event_website';
@@ -35,125 +37,23 @@ class EventRepository
         ],
     ];
 
-    private EntityManagerInterface $entityManager;
-
     /**
      * @var EntityRepository<Event>
      */
     private EntityRepository $entityRepository;
 
-    private DimensionContentQueryEnhancer $dimensionContentQueryEnhancer;
-
     public function __construct(
-        EntityManagerInterface $entityManager,
-        DimensionContentQueryEnhancer $dimensionContentQueryEnhancer
+        ManagerRegistry $registry,
+        private EntityManagerInterface $entityManager,
+        private DimensionContentQueryEnhancer $dimensionContentQueryEnhancer,
     ) {
+        parent::__construct($registry, Event::class);
         $this->entityRepository = $entityManager->getRepository(Event::class);
-        $this->entityManager = $entityManager;
-        $this->dimensionContentQueryEnhancer = $dimensionContentQueryEnhancer;
     }
 
     public function findById(int $id): ?Event
     {
         return $this->entityRepository->find($id);
-    }
-
-    /**
-     * Create a QueryBuilder for Event entity
-     */
-    public function createQueryBuilder(string $alias): QueryBuilder
-    {
-        return $this->entityRepository->createQueryBuilder($alias);
-    }
-
-    /**
-     * @param array{
-     *     id?: int,
-     *     ids?: int[],
-     *     locale?: string|null,
-     *     stage?: string|null,
-     *     categoryIds?: int[],
-     *     categoryKeys?: string[],
-     *     categoryOperator?: 'AND'|'OR',
-     *     tagIds?: int[],
-     *     tagNames?: string[],
-     *     tagOperator?: 'AND'|'OR',
-     *     templateKeys?: string[],
-     *     types?: string[],
-     *     page?: int,
-     *     limit?: int,
-     *     startDate?: \DateTimeInterface,
-     *     endDate?: \DateTimeInterface,
-     *     locationId?: int,
-     *     pending?: bool,
-     *     expired?: bool,
-     * } $filters
-     * @param array{
-     *     id?: 'asc'|'desc',
-     *     title?: 'asc'|'desc',
-     *     startDate?: 'asc'|'desc',
-     *     created?: 'asc'|'desc',
-     *     changed?: 'asc'|'desc',
-     * } $sortBys
-     * @param array{
-     *     event_admin?: bool,
-     *     event_website?: bool,
-     *     with-event-content?: bool|array<string, mixed>,
-     * } $selects
-     *
-     * @return \Generator<Event>
-     */
-    public function findBy(array $filters = [], array $sortBys = [], array $selects = []): \Generator
-    {
-        $filters = $this->normalizeFindByFilters($filters);
-        $selects = $this->normalizeSelects($selects);
-        $queryBuilder = $this->buildQueryBuilder($filters, $sortBys, $selects);
-
-        /** @var iterable<Event> $events */
-        $events = $queryBuilder->getQuery()->getResult();
-
-        foreach ($events as $event) {
-            yield $event;
-        }
-    }
-
-    /**
-     * @param array{
-     *     id?: int,
-     *     ids?: int[],
-     *     locale?: string|null,
-     *     stage?: string|null,
-     *     categoryIds?: int[],
-     *     categoryKeys?: string[],
-     *     categoryOperator?: 'AND'|'OR',
-     *     tagIds?: int[],
-     *     tagNames?: string[],
-     *     tagOperator?: 'AND'|'OR',
-     *     templateKeys?: string[],
-     *     types?: string[],
-     *     startDate?: \DateTimeInterface,
-     *     endDate?: \DateTimeInterface,
-     *     locationId?: int,
-     *     pending?: bool,
-     *     expired?: bool,
-     * } $filters
-     * @param array{
-     *     event_admin?: bool,
-     *     event_website?: bool,
-     *     with-event-content?: bool|array<string, mixed>,
-     * } $selects
-     */
-    public function findOneBy(array $filters = [], array $selects = []): ?Event
-    {
-        $filters = $this->normalizeFindByFilters($filters);
-        $selects = $this->normalizeSelects($selects);
-        $queryBuilder = $this->buildQueryBuilder($filters, [], $selects);
-
-        try {
-            return $queryBuilder->getQuery()->getSingleResult();
-        } catch (NoResultException) {
-            return null;
-        }
     }
 
     /**

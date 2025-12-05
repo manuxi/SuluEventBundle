@@ -64,19 +64,41 @@ readonly class EventSmartContentProvider implements SmartContentProviderInterfac
      */
     private string $eventDimensionContentClassName;
 
+    private ?EventRepository $eventRepository;
+
     /**
      * @param array<string, array{name: string, color: string}> $eventTypes
      */
     public function __construct(
         private DimensionContentQueryEnhancer $dimensionContentQueryEnhancer,
         private SmartContentQueryEnhancer $smartContentQueryEnhancer,
-        private EventRepository $eventRepository,
-        EntityManagerInterface $entityManager,
+        private EntityManagerInterface $entityManager,
         private TranslatorInterface $translator,
         private array $eventTypes = [],
     ) {
         $entityDimensionContentRepository = $entityManager->getRepository(EventDimensionContent::class);
         $this->eventDimensionContentClassName = $entityDimensionContentRepository->getClassName();
+    }
+
+    private function getEventRepository(): EventRepository
+    {
+        if (null === $this->eventRepository) {
+            $repository = $this->entityManager->getRepository(Event::class);
+
+            // This should be our EventRepository because Event.orm.xml declares it
+            if (!$repository instanceof EventRepository) {
+                throw new \RuntimeException(
+                    sprintf(
+                        'Expected EventRepository, got %s',
+                        get_class($repository)
+                    )
+                );
+            }
+
+            $this->eventRepository = $repository;
+        }
+
+        return $this->eventRepository;
     }
 
     public function getConfiguration(): ProviderConfigurationInterface
@@ -135,7 +157,7 @@ readonly class EventSmartContentProvider implements SmartContentProviderInterfac
         $filters = $this->enhanceWithDimensionAttributes($filters);
 
         $alias = 'event';
-        $queryBuilder = $this->eventRepository->createQueryBuilder($alias);
+        $queryBuilder = $this->getEventRepository()->createQueryBuilder($alias);
 
         $filters = $this->mapFilters($filters);
         $this->dimensionContentQueryEnhancer->addFilters(
@@ -172,7 +194,7 @@ readonly class EventSmartContentProvider implements SmartContentProviderInterfac
         $filters = $this->enhanceWithDimensionAttributes($filters);
 
         $alias = 'event';
-        $queryBuilder = $this->eventRepository->createQueryBuilder($alias);
+        $queryBuilder = $this->getEventRepository()->createQueryBuilder($alias);
 
         $filters = $this->mapFilters($filters);
         $this->dimensionContentQueryEnhancer->addFilters(

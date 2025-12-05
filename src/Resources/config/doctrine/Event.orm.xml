@@ -5,7 +5,8 @@
                   http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
 
     <entity name="Manuxi\SuluEventBundle\Entity\Event"
-            table="app_event">
+            table="app_event"
+            repository-class="Manuxi\SuluEventBundle\Repository\EventRepository">
 
         <id name="id" type="integer" column="id">
             <generator strategy="AUTO"/>

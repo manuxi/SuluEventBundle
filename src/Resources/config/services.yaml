@@ -33,10 +33,10 @@ services:
     Manuxi\SuluEventBundle\Repository\EventRepository:
         class: Manuxi\SuluEventBundle\Repository\EventRepository
         arguments:
+            - '@doctrine'
             - '@doctrine.orm.entity_manager'
             - '@sulu_content.dimension_content_query_enhancer'
         public: true
-        lazy: true
         tags:
             - { name: doctrine.repository_service }
 
@@ -53,57 +53,6 @@ services:
         arguments:
             - '@doctrine'
         lazy: true
-
-    # Controllers
-    Manuxi\SuluEventBundle\Controller\Admin\EventController:
-        class: Manuxi\SuluEventBundle\Controller\Admin\EventController
-        public: true
-        arguments:
-            - '@doctrine.orm.entity_manager'
-            - '@sulu_content.content_manager'
-        tags:
-            - { name: controller.service_arguments }
-            - { name: sulu.context, context: admin }
-
-    Manuxi\SuluEventBundle\Controller\Admin\LocationController:
-        class: Manuxi\SuluEventBundle\Controller\Admin\LocationController
-        public: true
-        arguments:
-            - '@sulu_event.repository.location'
-            - '@doctrine.orm.entity_manager'
-            - '@sulu_trash.trash_manager'
-            - '@sulu_core.list_builder.field_descriptor_factory'
-            - '@sulu_core.doctrine_list_builder_factory'
-            - '@sulu_core.doctrine_rest_helper'
-            - '@fos_rest.view_handler.default'
-            - '@security.token_storage'
-        tags:
-            - { name: controller.service_arguments }
-            - { name: sulu.context, context: admin }
-
-    Manuxi\SuluEventBundle\Controller\Admin\SettingsController:
-        class: Manuxi\SuluEventBundle\Controller\Admin\SettingsController
-        public: true
-        arguments:
-            - '@doctrine.orm.entity_manager'
-            - '@sulu_activity.domain_event_collector'
-            - '@fos_rest.view_handler.default'
-            - '@security.token_storage'
-        tags:
-            - { name: controller.service_arguments }
-            - { name: sulu.context, context: admin }
-
-    Manuxi\SuluEventBundle\Controller\Website\EventController:
-        class: Manuxi\SuluEventBundle\Controller\Website\EventController
-        public: true
-        arguments:
-            - '@twig'
-            - '@sulu_website.resolver.template_attribute'
-            - '@sulu_route.route_repository'
-            - '@sulu_core.webspace.webspace_manager'
-        tags:
-            - { name: controller.service_arguments }
-            - { name: sulu.context, context: website }
 
     # Routing
     Manuxi\SuluEventBundle\Routing\EventRouteDefaultsProvider:
@@ -122,7 +71,6 @@ services:
         arguments:
             - '@sulu_content.dimension_content_query_enhancer'
             - '@sulu_admin.smart_content_query_enhancer'
-            - '@Manuxi\SuluEventBundle\Repository\EventRepository'
             - '@doctrine.orm.entity_manager'
             - '@translator.default'
             - '%sulu_event.types%'
@@ -141,7 +89,6 @@ services:
     sulu_event.property_resolver.single_event_selection:
         class: Manuxi\SuluEventBundle\Content\PropertyResolver\SingleEventSelectionPropertyResolver
         arguments:
-            - '@Manuxi\SuluEventBundle\Repository\EventRepository'
             - '@sulu_content.content_resolver'
         tags:
             - { name: sulu_admin.property_resolver }
@@ -149,7 +96,6 @@ services:
     sulu_event.property_resolver.event_selection:
         class: Manuxi\SuluEventBundle\Content\PropertyResolver\EventSelectionPropertyResolver
         arguments:
-            - '@Manuxi\SuluEventBundle\Repository\EventRepository'
             - '@sulu_content.content_resolver'
         tags:
             - { name: sulu_admin.property_resolver }
@@ -163,7 +109,7 @@ services:
     sulu_event.resource_loader.event:
         class: Manuxi\SuluEventBundle\Content\ResourceLoader\EventResourceLoader
         arguments:
-            - '@Manuxi\SuluEventBundle\Repository\EventRepository'
+            - '@doctrine.orm.entity_manager'
         tags:
             - { name: sulu_content.resource_loader }
 
@@ -179,20 +125,6 @@ services:
         tags:
             - { name: sulu.context, context: admin }
             - { name: sulu_preview.object_provider, provider-key: events }
-
-    # Calendar Services
-    Manuxi\SuluEventBundle\Controller\Website\CalendarApiController:
-        class: Manuxi\SuluEventBundle\Controller\Website\CalendarApiController
-        public: true
-        arguments:
-            - '@Manuxi\SuluEventBundle\Repository\EventRepository'
-            - '@sulu_event.type_selection'
-            - '@sulu_content.content_aggregator'
-        tags:
-            - { name: controller.service_arguments }
-            - { name: sulu.context, context: website }
-        calls:
-            - [setContainer, ['@service_container']]
 
     sulu_event.recurrence_generator:
         class: Manuxi\SuluEventBundle\Service\RecurrenceGenerator
@@ -219,20 +151,6 @@ services:
             - '@sulu_event.social_share_generator'
         tags:
             - { name: twig.extension }
-
-    # Feed Services
-    Manuxi\SuluEventBundle\Controller\Website\FeedController:
-        class: Manuxi\SuluEventBundle\Controller\Website\FeedController
-        public: true
-        arguments:
-            - '@Manuxi\SuluEventBundle\Repository\EventRepository'
-            - '@router'
-            - '@sulu_content.content_aggregator'
-        tags:
-            - { name: controller.service_arguments }
-            - { name: sulu.context, context: website }
-        calls:
-            - [setContainer, ['@service_container']]
 
     # Sitemap Provider
     sulu_event.sitemap_provider:
@@ -277,7 +195,7 @@ services:
         class: Manuxi\SuluEventBundle\Link\LinkProvider
         arguments:
             - '@sulu_content.content_aggregator'
-            - '@Manuxi\SuluEventBundle\Repository\EventRepository'
+            - '@doctrine.orm.entity_manager'
             - '@translator.default'
         tags:
             - { name: sulu.link.provider, alias: event }
@@ -309,7 +227,7 @@ services:
     sulu_event.twig_extension:
         class: Manuxi\SuluEventBundle\Twig\EventTwigExtension
         arguments:
-            - '@Manuxi\SuluEventBundle\Repository\EventRepository'
+            - '@doctrine.orm.entity_manager'
             - '@sulu_content.content_aggregator'
             - '@sulu_content.content_resolver'
             - '@sulu_core.webspace.request_analyzer'
@@ -319,7 +237,7 @@ services:
     sulu_event.calendar_twig_extension:
         class: Manuxi\SuluEventBundle\Twig\EventCalendarTwigExtension
         arguments:
-            - '@Manuxi\SuluEventBundle\Repository\EventRepository'
+            - '@doctrine.orm.entity_manager'
             - '@sulu_content.content_aggregator'
             - '@sulu_content.content_resolver'
             - '@sulu_core.webspace.request_analyzer'

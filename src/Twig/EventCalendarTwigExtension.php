@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Twig;
 
+use Doctrine\ORM\EntityManagerInterface;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
@@ -16,12 +17,35 @@ use Twig\TwigFunction;
 
 class EventCalendarTwigExtension extends AbstractExtension
 {
+    private ?EventRepository $eventRepository = null;
+
     public function __construct(
-        private readonly EventRepository $eventRepository,
+        private EntityManagerInterface $entityManager,
         private readonly ContentAggregatorInterface $contentAggregator,
         private readonly ContentResolverInterface $contentResolver,
         private readonly RequestAnalyzerInterface $requestAnalyzer,
     ) {
+    }
+
+    private function getEventRepository(): EventRepository
+    {
+        if (null === $this->eventRepository) {
+            $repository = $this->entityManager->getRepository(Event::class);
+
+            // This should be our EventRepository because Event.orm.xml declares it
+            if (!$repository instanceof EventRepository) {
+                throw new \RuntimeException(
+                    sprintf(
+                        'Expected EventRepository, got %s',
+                        get_class($repository)
+                    )
+                );
+            }
+
+            $this->eventRepository = $repository;
+        }
+
+        return $this->eventRepository;
     }
 
     public function getFunctions(): array
@@ -56,7 +80,7 @@ class EventCalendarTwigExtension extends AbstractExtension
         $startDate = $startDate ?? new \DateTimeImmutable('first day of this month');
         $endDate = $endDate ?? new \DateTimeImmutable('last day of this month');
 
-        $events = $this->eventRepository->findByDateRange($locale, $startDate, $endDate);
+        $events = $this->getEventRepository()->findByDateRange($locale, $startDate, $endDate);
 
         return $this->groupEventsByDate($events, $locale, $properties);
     }
