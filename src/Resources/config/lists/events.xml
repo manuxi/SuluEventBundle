@@ -68,17 +68,50 @@
 
         <property name="type" translation="sulu_event.type" visibility="always">
             <field-name>type</field-name>
-            <entity-name>Manuxi\SuluEventBundle\Entity\Event</entity-name>
+            <entity-name>unlocalizedDimensionContent</entity-name>
+            <joins ref="unlocalizedDimensionContent"/>
         </property>
 
         <property name="startDate" translation="sulu_event.start_date" type="datetime" visibility="always">
             <field-name>startDate</field-name>
-            <entity-name>Manuxi\SuluEventBundle\Entity\Event</entity-name>
+            <entity-name>unlocalizedDimensionContent</entity-name>
+            <joins ref="unlocalizedDimensionContent"/>
         </property>
 
         <property name="endDate" translation="sulu_event.end_date" type="datetime" visibility="no">
             <field-name>endDate</field-name>
-            <entity-name>Manuxi\SuluEventBundle\Entity\Event</entity-name>
+            <entity-name>unlocalizedDimensionContent</entity-name>
+            <joins ref="unlocalizedDimensionContent"/>
+        </property>
+
+        <property name="email" translation="sulu_event.email" visibility="no">
+            <field-name>email</field-name>
+            <entity-name>unlocalizedDimensionContent</entity-name>
+            <joins ref="unlocalizedDimensionContent"/>
+        </property>
+
+        <property name="phoneNumber" translation="sulu_event.phone_number" visibility="no">
+            <field-name>phoneNumber</field-name>
+            <entity-name>unlocalizedDimensionContent</entity-name>
+            <joins ref="unlocalizedDimensionContent"/>
+        </property>
+
+        <property name="subtitle" translation="sulu_event.subtitle" visibility="no">
+            <field-name>subtitle</field-name>
+            <entity-name>dimensionContent</entity-name>
+            <joins ref="dimensionContent"/>
+        </property>
+
+        <property name="showAuthor" translation="sulu_event.show_author" type="bool" visibility="no">
+            <field-name>showAuthor</field-name>
+            <entity-name>dimensionContent</entity-name>
+            <joins ref="dimensionContent"/>
+        </property>
+
+        <property name="showDate" translation="sulu_event.show_date" type="bool" visibility="no">
+            <field-name>showDate</field-name>
+            <entity-name>dimensionContent</entity-name>
+            <joins ref="dimensionContent"/>
         </property>
 
         <property name="created" translation="sulu_admin.created" type="datetime" visibility="no">

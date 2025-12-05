@@ -24,10 +24,7 @@ use Sulu\Content\Domain\Model\DimensionContentCollection;
 use Sulu\Content\Domain\Model\DimensionContentInterface;
 use Webmozart\Assert\Assert;
 
-class EventTrashItemHandler implements
-    StoreTrashItemHandlerInterface,
-    RestoreTrashItemHandlerInterface,
-    RestoreConfigurationProviderInterface
+class EventTrashItemHandler implements StoreTrashItemHandlerInterface, RestoreTrashItemHandlerInterface, RestoreConfigurationProviderInterface
 {
     /**
      * @param iterable<EventMapperInterface> $eventMappers
@@ -50,34 +47,42 @@ class EventTrashItemHandler implements
     public function store(object $resource, array $options = []): TrashItemInterface
     {
         Assert::isInstanceOf($resource, Event::class);
-        /** @var Event $event */
         $event = $resource;
 
-        $data = [];
-        $restoreType = $options['locale'] ?? null ? 'translation' : null;
+        $data = [
+            'id' => $event->getId(),
+        ];
 
         $titles = [];
-        $localizedDimensionContents = [];
+        $restoreType = null;
+
+        /** @var ArrayCollection<int, EventDimensionContent> $allDimensionContents */
+        $allDimensionContents = $event->getDimensionContents();
+
+        /** @var array<EventDimensionContent> $localizedDimensionContents */
+        $localizedDimensionContents = \array_filter(
+            $allDimensionContents->toArray(),
+            static fn (EventDimensionContent $dimensionContent) => null !== $dimensionContent->getLocale()
+                && DimensionContentInterface::STAGE_DRAFT === $dimensionContent->getStage()
+                && DimensionContentInterface::CURRENT_VERSION === $dimensionContent->getVersion(),
+        );
+        $localizedDimensionContents = \array_combine(
+            \array_map(
+                static fn (EventDimensionContent $dimensionContent) => $dimensionContent->getLocale(),
+                $localizedDimensionContents
+            ),
+            $localizedDimensionContents
+        );
+
         $unlocalizedDimensionContent = null;
-
-        foreach ($event->getDimensionContents() as $dimensionContent) {
-            if (
-                DimensionContentInterface::CURRENT_VERSION !== $dimensionContent->getVersion()
-                || DimensionContentInterface::STAGE_DRAFT !== $dimensionContent->getStage()
+        foreach ($allDimensionContents as $dimensionContent) {
+            if (null === $dimensionContent->getLocale()
+                && DimensionContentInterface::STAGE_DRAFT === $dimensionContent->getStage()
+                && DimensionContentInterface::CURRENT_VERSION === $dimensionContent->getVersion()
             ) {
-                continue;
-            }
-
-            if (null === $dimensionContent->getLocale()) {
                 $unlocalizedDimensionContent = $dimensionContent;
-                continue;
+                break;
             }
-
-            if ('translation' === $restoreType && $dimensionContent->getLocale() !== $options['locale']) {
-                continue;
-            }
-
-            $localizedDimensionContents[$dimensionContent->getLocale()] = $dimensionContent;
         }
 
         Assert::notNull($unlocalizedDimensionContent, 'Expected to find an unlocalized dimension content for the event.');
@@ -138,7 +143,7 @@ class EventTrashItemHandler implements
         $restoreData = $trashItem->getRestoreData();
         $eventId = (int) $trashItem->getResourceId();
 
-        $event = $this->eventRepository->findOneBy(['id' => $eventId]);
+        $event = $this->eventRepository->findById($eventId);
         if (!$event) {
             $event = new Event();
             $this->eventRepository->add($event);

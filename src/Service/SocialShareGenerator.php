@@ -29,35 +29,46 @@ class SocialShareGenerator
             'stage' => DimensionContentInterface::STAGE_LIVE,
         ]);
 
-        $settings = $event->getSocialSettings();
-        if (!$settings || !$settings->getEnableSharing()) {
+        // Get unlocalized dimension content for socialSettings
+        $unlocalizedDimensionContent = $this->getUnlocalizedDimensionContent($event);
+        if (!$unlocalizedDimensionContent) {
+            return [];
+        }
+
+        $settings = $unlocalizedDimensionContent->getSocialSettings();
+        if (!$settings) {
             return [];
         }
 
         $url = urlencode($this->getEventUrl($dimensionContent));
         $title = urlencode($dimensionContent->getTitle() ?? '');
 
-        // Use custom share text or fallback to title
-        $shareText = $settings->getCustomShareText()
-            ? urlencode($settings->getCustomShareText())
+        // Use configured share texts or fallback to title
+        $twitterText = $settings->getTwitterShareText()
+            ? urlencode($settings->getTwitterShareText())
+            : $title;
+
+        $facebookText = $settings->getFacebookShareText()
+            ? urlencode($settings->getFacebookShareText())
+            : $title;
+
+        $linkedInText = $settings->getLinkedInShareText()
+            ? urlencode($settings->getLinkedInShareText())
             : $title;
 
         $allLinks = [
-            'facebook' => sprintf('https://www.facebook.com/sharer/sharer.php?u=%s', $url),
-            'twitter' => sprintf('https://twitter.com/intent/tweet?url=%s&text=%s', $url, $shareText),
-            'linkedin' => sprintf('https://www.linkedin.com/sharing/share-offsite/?url=%s', $url),
-            'whatsapp' => sprintf('https://wa.me/?text=%s%%20%s', $shareText, $url),
-            'email' => sprintf('mailto:?subject=%s&body=%s', $title, $url),
+            'facebook' => sprintf('https://www.facebook.com/sharer/sharer.php?u=%s&quote=%s', $url, $facebookText),
+            'twitter' => sprintf('https://twitter.com/intent/tweet?url=%s&text=%s', $url, $twitterText),
+            'linkedin' => sprintf('https://www.linkedin.com/sharing/share-offsite/?url=%s&summary=%s', $url, $linkedInText),
+            'whatsapp' => sprintf('https://wa.me/?text=%s%%20%s', $title, $url),
+            'email' => sprintf(
+                'mailto:?subject=%s&body=%s',
+                $settings->getEmailShareSubject() ? urlencode($settings->getEmailShareSubject()) : $title,
+                $settings->getEmailShareBody() ? urlencode($settings->getEmailShareBody()) : $url
+            ),
         ];
 
-        // Filter by enabled platforms
-        $enabledPlatforms = $settings->getPlatforms() ?? [];
-
-        return array_filter(
-            $allLinks,
-            fn ($key) => in_array($key, $enabledPlatforms, true),
-            ARRAY_FILTER_USE_KEY
-        );
+        return $allLinks;
     }
 
     /**
@@ -71,12 +82,22 @@ class SocialShareGenerator
             'stage' => DimensionContentInterface::STAGE_LIVE,
         ]);
 
+        // Get unlocalized dimension content for dates/location
+        $unlocalizedDimensionContent = $this->getUnlocalizedDimensionContent($event);
+        if (!$unlocalizedDimensionContent) {
+            return [];
+        }
+
         $tags = [
             'og:type' => 'event',
             'og:title' => $dimensionContent->getTitle() ?? '',
             'og:url' => $this->getEventUrl($dimensionContent),
-            'event:start_time' => $event->getStartDate()->format('c'),
         ];
+
+        // Add start date
+        if ($startDate = $unlocalizedDimensionContent->getStartDate()) {
+            $tags['event:start_time'] = $startDate->format('c');
+        }
 
         // Add optional properties
         if ($dimensionContent->getSummary()) {
@@ -88,12 +109,12 @@ class SocialShareGenerator
             $tags['og:image'] = $media->getUrl();
         }
 
-        if ($event->getEndDate()) {
-            $tags['event:end_time'] = $event->getEndDate()->format('c');
+        if ($endDate = $unlocalizedDimensionContent->getEndDate()) {
+            $tags['event:end_time'] = $endDate->format('c');
         }
 
-        if ($event->getLocation()) {
-            $tags['event:location'] = $event->getLocation()->getName();
+        if ($location = $unlocalizedDimensionContent->getLocation()) {
+            $tags['event:location'] = $location->getName();
         }
 
         return $tags;
@@ -135,5 +156,22 @@ class SocialShareGenerator
     {
         $route = $dimensionContent->getRoute();
         return $route ? $route->getSlug() : '';
+    }
+
+    /**
+     * Get unlocalized dimension content from event
+     */
+    private function getUnlocalizedDimensionContent(Event $event): ?EventDimensionContent
+    {
+        foreach ($event->getDimensionContents() as $dc) {
+            if ($dc->getLocale() === null
+                && $dc->getStage() === DimensionContentInterface::STAGE_LIVE
+                && $dc->getVersion() === DimensionContentInterface::CURRENT_VERSION
+            ) {
+                return $dc;
+            }
+        }
+
+        return null;
     }
 }

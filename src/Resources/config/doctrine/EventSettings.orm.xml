@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                  http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+
+    <entity name="Manuxi\SuluEventBundle\Entity\EventSettings"
+            table="app_event_settings">
+
+        <id name="id" type="integer" column="id">
+            <generator strategy="AUTO"/>
+        </id>
+
+        <!-- AUDITABLE TRAIT FIELDS -->
+        <field name="created" type="datetime_immutable" nullable="false"/>
+        <field name="changed" type="datetime_immutable" nullable="false"/>
+
+        <many-to-one field="creator" target-entity="Sulu\Component\Security\Authentication\UserInterface">
+            <join-columns>
+                <join-column name="creator_id" referenced-column-name="id" on-delete="SET NULL" nullable="true"/>
+            </join-columns>
+        </many-to-one>
+
+        <many-to-one field="changer" target-entity="Sulu\Component\Security\Authentication\UserInterface">
+            <join-columns>
+                <join-column name="changer_id" referenced-column-name="id" on-delete="SET NULL" nullable="true"/>
+            </join-columns>
+        </many-to-one>
+
+        <!-- General Display Settings -->
+        <field name="toggleHeader" type="boolean" nullable="true" column="toggle_header"/>
+        <field name="toggleHero" type="boolean" nullable="true" column="toggle_hero"/>
+        <field name="toggleBreadcrumbs" type="boolean" nullable="true" column="toggle_breadcrumbs"/>
+        <field name="toggleTags" type="boolean" nullable="true" column="toggle_tags"/>
+        <field name="tagsColor" type="string" nullable="true" column="tags_color"/>
+        <field name="toggleCategories" type="boolean" nullable="true" column="toggle_categories"/>
+        <field name="categoriesColor" type="string" nullable="true" column="categories_color"/>
+        <field name="toggleFeedRss" type="boolean" nullable="true" column="toggle_feed_rss"/>
+        <field name="toggleFeedAtom" type="boolean" nullable="true" column="toggle_feed_atom"/>
+        <field name="toggleIcal" type="boolean" nullable="true" column="toggle_ical"/>
+
+        <!-- Calendar Settings -->
+        <field name="calendarStartDay" type="integer" nullable="true" column="calendar_start_day"/>
+        <field name="showWeekNumbers" type="boolean" nullable="true" column="show_week_numbers"/>
+        <field name="showWeekends" type="boolean" nullable="true" column="show_weekends"/>
+        <field name="eventLimitPerDay" type="integer" nullable="true" column="event_limit_per_day"/>
+        <field name="showCalendarEventTime" type="boolean" nullable="true" column="show_calendar_event_time"/>
+        <field name="showCalendarEventLocation" type="boolean" nullable="true" column="show_calendar_event_location"/>
+        <field name="showCalendarEventType" type="boolean" nullable="true" column="show_calendar_event_type"/>
+        <field name="limitToEventRange" type="boolean" nullable="true" column="limit_to_event_range"/>
+        <field name="eventColor" type="string" nullable="true" column="event_color"/>
+        <field name="toggleCalendarView" type="boolean" nullable="true" column="toggle_calendar_view"/>
+        <field name="allowedCalendarViews" type="json" nullable="true" column="allowed_calendar_views"/>
+        <field name="calendarWeekTimeStart" type="string" nullable="true" column="calendar_week_time_start"/>
+        <field name="calendarWeekTimeEnd" type="string" nullable="true" column="calendar_week_time_end"/>
+        <field name="calendarYearMonths" type="integer" nullable="true" column="calendar_year_months"/>
+
+        <!-- Breadcrumbs -->
+        <field name="pageEvents" type="string" nullable="true" column="page_events"/>
+        <field name="pageEventsPending" type="string" nullable="true" column="page_events_pending"/>
+        <field name="pageEventsExpired" type="string" nullable="true" column="page_events_expired"/>
+
+        <!-- List View Settings -->
+        <field name="eventsPerPage" type="integer" nullable="true" column="events_per_page"/>
+        <field name="defaultSortOrder" type="string" length="50" nullable="true" column="default_sort_order"/>
+        <field name="showEventImages" type="boolean" nullable="true" column="show_event_images"/>
+        <field name="showEventSummary" type="boolean" nullable="true" column="show_event_summary"/>
+
+        <!-- Filter Settings -->
+        <field name="enableCategoryFilter" type="boolean" nullable="true" column="enable_category_filter"/>
+        <field name="enableLocationFilter" type="boolean" nullable="true" column="enable_location_filter"/>
+        <field name="enableDateFilter" type="boolean" nullable="true" column="enable_date_filter"/>
+        <field name="enableSearchFilter" type="boolean" nullable="true" column="enable_search_filter"/>
+
+    </entity>
+</doctrine-mapping>

@@ -59,6 +59,65 @@ class EventRepository
     }
 
     /**
+     * Create a QueryBuilder for Event entity
+     */
+    public function createQueryBuilder(string $alias): QueryBuilder
+    {
+        return $this->entityRepository->createQueryBuilder($alias);
+    }
+
+    /**
+     * @param array{
+     *     id?: int,
+     *     ids?: int[],
+     *     locale?: string|null,
+     *     stage?: string|null,
+     *     categoryIds?: int[],
+     *     categoryKeys?: string[],
+     *     categoryOperator?: 'AND'|'OR',
+     *     tagIds?: int[],
+     *     tagNames?: string[],
+     *     tagOperator?: 'AND'|'OR',
+     *     templateKeys?: string[],
+     *     types?: string[],
+     *     page?: int,
+     *     limit?: int,
+     *     startDate?: \DateTimeInterface,
+     *     endDate?: \DateTimeInterface,
+     *     locationId?: int,
+     *     pending?: bool,
+     *     expired?: bool,
+     * } $filters
+     * @param array{
+     *     id?: 'asc'|'desc',
+     *     title?: 'asc'|'desc',
+     *     startDate?: 'asc'|'desc',
+     *     created?: 'asc'|'desc',
+     *     changed?: 'asc'|'desc',
+     * } $sortBys
+     * @param array{
+     *     event_admin?: bool,
+     *     event_website?: bool,
+     *     with-event-content?: bool|array<string, mixed>,
+     * } $selects
+     *
+     * @return \Generator<Event>
+     */
+    public function findBy(array $filters = [], array $sortBys = [], array $selects = []): \Generator
+    {
+        $filters = $this->normalizeFindByFilters($filters);
+        $selects = $this->normalizeSelects($selects);
+        $queryBuilder = $this->buildQueryBuilder($filters, $sortBys, $selects);
+
+        /** @var iterable<Event> $events */
+        $events = $queryBuilder->getQuery()->getResult();
+
+        foreach ($events as $event) {
+            yield $event;
+        }
+    }
+
+    /**
      * @param array{
      *     id?: int,
      *     ids?: int[],
@@ -129,55 +188,29 @@ class EventRepository
         return (int) $queryBuilder->getQuery()->getSingleScalarResult();
     }
 
-    /**
-     * @param array{
-     *     id?: int,
-     *     ids?: int[],
-     *     locale?: string|null,
-     *     stage?: string|null,
-     *     categoryIds?: int[],
-     *     categoryKeys?: string[],
-     *     categoryOperator?: 'AND'|'OR',
-     *     tagIds?: int[],
-     *     tagNames?: string[],
-     *     tagOperator?: 'AND'|'OR',
-     *     templateKeys?: string[],
-     *     types?: string[],
-     *     page?: int,
-     *     limit?: int,
-     *     startDate?: \DateTimeInterface,
-     *     endDate?: \DateTimeInterface,
-     *     locationId?: int,
-     *     pending?: bool,
-     *     expired?: bool,
-     * } $filters
-     * @param array{
-     *     id?: 'asc'|'desc',
-     *     title?: 'asc'|'desc',
-     *     startDate?: 'asc'|'desc',
-     *     created?: 'asc'|'desc',
-     *     changed?: 'asc'|'desc',
-     * } $sortBys
-     * @param array{
-     *     event_admin?: bool,
-     *     event_website?: bool,
-     *     with-event-content?: bool|array<string, mixed>,
-     * } $selects
-     *
-     * @return \Generator<Event>
-     */
-    public function findBy(array $filters = [], array $sortBys = [], array $selects = []): \Generator
+    public function countAll(): int
     {
-        $filters = $this->normalizeFindByFilters($filters);
-        $selects = $this->normalizeSelects($selects);
-        $queryBuilder = $this->buildQueryBuilder($filters, $sortBys, $selects);
+        return (int) $this->entityRepository
+            ->createQueryBuilder('e')
+            ->select('COUNT(e.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 
-        /** @var iterable<Event> $events */
-        $events = $queryBuilder->getQuery()->getResult();
+    public function countPublished(string $locale): int
+    {
+        $qb = $this->entityRepository->createQueryBuilder('event');
 
-        foreach ($events as $event) {
-            yield $event;
-        }
+        $qb->select('COUNT(DISTINCT event.id)')
+            ->leftJoin('event.dimensionContents', 'dc')
+            ->where('dc.locale = :locale')
+            ->andWhere('dc.stage = :stage')
+            ->andWhere('dc.workflowPlace = :published')
+            ->setParameter('locale', $locale)
+            ->setParameter('stage', DimensionContentInterface::STAGE_LIVE)
+            ->setParameter('published', WorkflowInterface::WORKFLOW_PLACE_PUBLISHED);
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
     }
 
     public function findByDateRange(
@@ -197,6 +230,68 @@ class EventRepository
         $queryBuilder = $this->buildQueryBuilder($filters, ['startDate' => 'asc'], $selects);
 
         return $queryBuilder->getQuery()->getResult();
+    }
+
+    public function findForCalendar(array $filters): array
+    {
+        $qb = $this->entityRepository->createQueryBuilder('event');
+
+        // Join unlocalizedDimensionContent for date fields
+        $qb->leftJoin(
+            'event.dimensionContents',
+            'unlocalizedDimensionContent',
+            'WITH',
+            'unlocalizedDimensionContent.locale IS NULL AND unlocalizedDimensionContent.stage = :stage'
+        );
+        $qb->setParameter('stage', DimensionContentInterface::STAGE_LIVE);
+
+        if (isset($filters['start'])) {
+            $qb->andWhere('unlocalizedDimensionContent.startDate >= :start')
+                ->setParameter('start', new \DateTime($filters['start']));
+        }
+
+        if (isset($filters['end'])) {
+            $qb->andWhere('unlocalizedDimensionContent.startDate <= :end')
+                ->setParameter('end', new \DateTime($filters['end']));
+        }
+
+        $qb->orderBy('unlocalizedDimensionContent.startDate', 'ASC');
+
+        return $qb->getQuery()->getResult();
+    }
+
+    public function findForIcal(array $filters): array
+    {
+        $qb = $this->entityRepository->createQueryBuilder('event');
+
+        // Join unlocalizedDimensionContent for date fields
+        $qb->leftJoin(
+            'event.dimensionContents',
+            'unlocalizedDimensionContent',
+            'WITH',
+            'unlocalizedDimensionContent.locale IS NULL AND unlocalizedDimensionContent.stage = :stage'
+        );
+        $qb->setParameter('stage', DimensionContentInterface::STAGE_LIVE);
+
+        $qb->orderBy('unlocalizedDimensionContent.startDate', 'ASC');
+
+        return $qb->getQuery()->getResult();
+    }
+
+    public function findRecurringEvents(): array
+    {
+        $qb = $this->entityRepository->createQueryBuilder('event');
+
+        // Join unlocalizedDimensionContent where recurrence exists
+        $qb->leftJoin(
+            'event.dimensionContents',
+            'unlocalizedDimensionContent',
+            'WITH',
+            'unlocalizedDimensionContent.locale IS NULL'
+        );
+        $qb->where('unlocalizedDimensionContent.recurrence IS NOT NULL');
+
+        return $qb->getQuery()->getResult();
     }
 
     public function add(Event $event): void
@@ -236,7 +331,7 @@ class EventRepository
      */
     private function normalizeFindByFilters(array $filters): array
     {
-        $filters['stage'] = $filters['stage'] ?? 'draft';
+        $filters['stage'] = $filters['stage'] ?? DimensionContentInterface::STAGE_DRAFT;
 
         return $filters;
     }
@@ -248,17 +343,23 @@ class EventRepository
      */
     private function normalizeSelects(array $selects): array
     {
-        foreach ($selects as $selectGroup => $value) {
-            if (!$value) {
-                continue;
-            }
+        $normalizedSelects = [];
 
-            if (isset(self::SELECTS[$selectGroup])) {
-                $selects = \array_replace_recursive($selects, self::SELECTS[$selectGroup]);
+        foreach (self::SELECTS as $groupKey => $groupSelects) {
+            if (true === ($selects[$groupKey] ?? false)) {
+                foreach ($groupSelects as $selectKey => $selectValue) {
+                    $normalizedSelects[$selectKey] = $selectValue;
+                }
             }
         }
 
-        return $selects;
+        foreach ($selects as $key => $value) {
+            if (\is_string($key) && \is_array($value)) {
+                $normalizedSelects[$key] = $value;
+            }
+        }
+
+        return $normalizedSelects;
     }
 
     /**
@@ -272,35 +373,27 @@ class EventRepository
         array $sortBys,
         array $selects
     ): void {
-        if ((
-                \array_key_exists('locale', $filters)
-                && \array_key_exists('stage', $filters)
-            )
-            || ([] === $filters && [] !== $sortBys)
-        ) {
-            $this->dimensionContentQueryEnhancer->addFilters(
-                $queryBuilder,
-                'event',
-                EventDimensionContent::class,
-                $filters,
-                $sortBys
-            );
-        }
+        $locale = $filters['locale'] ?? null;
+        $stage = $filters['stage'] ?? DimensionContentInterface::STAGE_DRAFT;
+        $version = $filters['version'] ?? DimensionContentInterface::CURRENT_VERSION;
 
-        if ($selects[self::SELECT_EVENT_CONTENT] ?? null) {
-            /** @var array<string, bool> $contentSelects */
-            $contentSelects = $selects[self::SELECT_EVENT_CONTENT];
+        // Always join unlocalizedDimensionContent for non-localized fields (type, startDate, endDate, etc.)
+        $queryBuilder->leftJoin(
+            'event.dimensionContents',
+            'unlocalizedDimensionContent',
+            'WITH',
+            'unlocalizedDimensionContent.locale IS NULL AND unlocalizedDimensionContent.stage = :stage AND unlocalizedDimensionContent.version = :version'
+        );
+        $queryBuilder->setParameter('stage', $stage);
+        $queryBuilder->setParameter('version', $version);
 
-            $queryBuilder->leftJoin(
-                'event.dimensionContents',
-                'dimensionContent'
-            );
-
+        if ($locale) {
+            // Join dimensionContent for localized fields (title, text, etc.)
             $this->dimensionContentQueryEnhancer->addSelects(
                 $queryBuilder,
                 EventDimensionContent::class,
-                $filters,
-                $contentSelects
+                'event',
+                $selects
             );
         }
     }
@@ -321,12 +414,17 @@ class EventRepository
         }
 
         if (isset($filters['types'])) {
-            $queryBuilder->andWhere('event.type IN (:types)');
+            $queryBuilder->andWhere('unlocalizedDimensionContent.type IN (:types)');
             $queryBuilder->setParameter('types', $filters['types']);
         }
 
+        if (isset($filters['templateKeys'])) {
+            $queryBuilder->andWhere('dimensionContent.templateKey IN (:templateKeys)');
+            $queryBuilder->setParameter('templateKeys', $filters['templateKeys']);
+        }
+
         if (isset($filters['locationId'])) {
-            $queryBuilder->andWhere('event.location = :locationId');
+            $queryBuilder->andWhere('unlocalizedDimensionContent.location = :locationId');
             $queryBuilder->setParameter('locationId', $filters['locationId']);
         }
 
@@ -342,11 +440,11 @@ class EventRepository
         if (isset($filters['startDate']) && isset($filters['endDate'])) {
             $queryBuilder->andWhere(
                 $queryBuilder->expr()->orX(
-                    $queryBuilder->expr()->between('event.startDate', ':filterStartDate', ':filterEndDate'),
-                    $queryBuilder->expr()->between('event.endDate', ':filterStartDate', ':filterEndDate'),
+                    $queryBuilder->expr()->between('unlocalizedDimensionContent.startDate', ':filterStartDate', ':filterEndDate'),
+                    $queryBuilder->expr()->between('unlocalizedDimensionContent.endDate', ':filterStartDate', ':filterEndDate'),
                     $queryBuilder->expr()->andX(
-                        $queryBuilder->expr()->lte('event.startDate', ':filterStartDate'),
-                        $queryBuilder->expr()->gte('event.endDate', ':filterEndDate')
+                        $queryBuilder->expr()->lte('unlocalizedDimensionContent.startDate', ':filterStartDate'),
+                        $queryBuilder->expr()->gte('unlocalizedDimensionContent.endDate', ':filterEndDate')
                     )
                 )
             );
@@ -355,16 +453,16 @@ class EventRepository
         } elseif (isset($filters['startDate'])) {
             $queryBuilder->andWhere(
                 $queryBuilder->expr()->orX(
-                    $queryBuilder->expr()->gte('event.endDate', ':filterStartDate'),
+                    $queryBuilder->expr()->gte('unlocalizedDimensionContent.endDate', ':filterStartDate'),
                     $queryBuilder->expr()->andX(
-                        $queryBuilder->expr()->isNull('event.endDate'),
-                        $queryBuilder->expr()->gte('event.startDate', ':filterStartDate')
+                        $queryBuilder->expr()->isNull('unlocalizedDimensionContent.endDate'),
+                        $queryBuilder->expr()->gte('unlocalizedDimensionContent.startDate', ':filterStartDate')
                     )
                 )
             );
             $queryBuilder->setParameter('filterStartDate', $filters['startDate']);
         } elseif (isset($filters['endDate'])) {
-            $queryBuilder->andWhere('event.startDate <= :filterEndDate');
+            $queryBuilder->andWhere('unlocalizedDimensionContent.startDate <= :filterEndDate');
             $queryBuilder->setParameter('filterEndDate', $filters['endDate']);
         }
     }
@@ -390,15 +488,15 @@ class EventRepository
 
         if ($hasPending) {
             $queryBuilder->andWhere(
-                '(event.endDate IS NOT NULL AND event.endDate >= :now) OR '.
-                '(event.endDate IS NULL AND event.startDate >= :todayStart)'
+                '(unlocalizedDimensionContent.endDate IS NOT NULL AND unlocalizedDimensionContent.endDate >= :now) OR '.
+                '(unlocalizedDimensionContent.endDate IS NULL AND unlocalizedDimensionContent.startDate >= :todayStart)'
             );
             $queryBuilder->setParameter('now', $now);
             $queryBuilder->setParameter('todayStart', $todayStart);
         } elseif ($hasExpired) {
             $queryBuilder->andWhere(
-                '(event.endDate IS NOT NULL AND event.endDate < :now) OR '.
-                '(event.endDate IS NULL AND event.startDate < :todayStart)'
+                '(unlocalizedDimensionContent.endDate IS NOT NULL AND unlocalizedDimensionContent.endDate < :now) OR '.
+                '(unlocalizedDimensionContent.endDate IS NULL AND unlocalizedDimensionContent.startDate < :todayStart)'
             );
             $queryBuilder->setParameter('now', $now);
             $queryBuilder->setParameter('todayStart', $todayStart);
@@ -427,7 +525,7 @@ class EventRepository
                     $queryBuilder->addOrderBy('dimensionContent.title', $direction);
                     break;
                 case 'startDate':
-                    $queryBuilder->addOrderBy('event.startDate', $direction);
+                    $queryBuilder->addOrderBy('unlocalizedDimensionContent.startDate', $direction);
                     break;
                 case 'created':
                     $queryBuilder->addOrderBy('dimensionContent.created', $direction);
@@ -456,77 +554,4 @@ class EventRepository
             $queryBuilder->setFirstResult($offset);
         }
     }
-
-    public function countAll(): int
-    {
-        return (int) $this->entityRepository
-            ->createQueryBuilder('e')
-            ->select('COUNT(e.id)')
-            ->getQuery()
-            ->getSingleScalarResult();
-    }
-
-    public function countPublished(string $locale): int
-    {
-        $qb = $this->entityRepository->createQueryBuilder('event');
-
-        $qb->select('COUNT(DISTINCT event.id)')
-            ->leftJoin('event.dimensionContents', 'dc')
-            ->where('dc.locale = :locale')
-            ->andWhere('dc.stage = :stage')
-            ->andWhere('dc.workflowPlace = :published')
-            ->setParameter('locale', $locale)
-            ->setParameter('stage', DimensionContentInterface::STAGE_LIVE)
-            ->setParameter('published', WorkflowInterface::WORKFLOW_PLACE_PUBLISHED);
-
-        return (int) $qb->getQuery()->getSingleScalarResult();
-    }
-
-    public function findForCalendar(array $filters): array
-    {
-        $qb = $this->entityRepository->createQueryBuilder('event');
-
-        if (isset($filters['start'])) {
-            $qb->andWhere('event.startDate >= :start')
-                ->setParameter('start', new \DateTime($filters['start']));
-        }
-
-        if (isset($filters['end'])) {
-            $qb->andWhere('event.startDate <= :end')
-                ->setParameter('end', new \DateTime($filters['end']));
-        }
-
-        $qb->orderBy('event.startDate', 'ASC');
-
-        return $qb->getQuery()->getResult();
-    }
-
-    public function findForIcal(array $filters): array
-    {
-        $qb = $this->entityRepository->createQueryBuilder('event');
-
-        $qb->orderBy('event.startDate', 'ASC');
-
-        return $qb->getQuery()->getResult();
-    }
-
-    public function findRecurringEvents(): array
-    {
-        return $this->entityRepository->createQueryBuilder('event')
-            ->where('event.recurrence IS NOT NULL')
-            ->getQuery()
-            ->getResult();
-    }
-
-    /*
-    public function findRecurringEvents(): array
-    {
-        return $this->entityRepository->createQueryBuilder('event')
-            ->innerJoin('event.recurrence', 'recurrence')
-            ->where('recurrence.isRecurring = :recurring')
-            ->setParameter('recurring', true)
-            ->getQuery()
-            ->getResult();
-    }
-    */
 }

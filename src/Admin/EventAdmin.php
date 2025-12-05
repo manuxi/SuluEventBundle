@@ -233,4 +233,29 @@ class EventAdmin extends Admin
             }
         }
     }
+
+    /**
+     * @return mixed[]
+     */
+    public function getSecurityContexts(): array
+    {
+        return [
+            self::SULU_ADMIN_SECURITY_SYSTEM => [
+                'Events' => [
+                    Event::SECURITY_CONTEXT => [
+                        PermissionTypes::VIEW,
+                        PermissionTypes::ADD,
+                        PermissionTypes::EDIT,
+                        PermissionTypes::DELETE,
+                        PermissionTypes::LIVE,
+                    ],
+                ],
+            ],
+        ];
+    }
+
+    public function getConfigKey(): ?string
+    {
+        return 'sulu_event';
+    }
 }

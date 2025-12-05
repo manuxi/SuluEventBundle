@@ -33,7 +33,13 @@ class EventWebsiteSearchProvider implements ReindexProviderInterface
 
     public function total(): ?int
     {
-        return $this->eventRepository->countPublished();
+        // Sum of all published events across all locales
+        $locales = $this->getLocales();
+        $total = 0;
+        foreach ($locales as $locale) {
+            $total += $this->eventRepository->countPublished($locale);
+        }
+        return $total;
     }
 
     public function provide(ReindexConfig $reindexConfig): \Generator
@@ -41,7 +47,10 @@ class EventWebsiteSearchProvider implements ReindexProviderInterface
         $locales = $this->getLocales();
 
         foreach ($locales as $locale) {
-            $events = $this->eventRepository->findBy([]);
+            $events = $this->eventRepository->findBy([
+                'locale' => $locale,
+                'stage' => DimensionContentInterface::STAGE_LIVE,
+            ]);
 
             foreach ($events as $event) {
                 /** @var EventDimensionContent $dimensionContent */
@@ -100,7 +109,6 @@ class EventWebsiteSearchProvider implements ReindexProviderInterface
             'url' => $dimensionContent->getRoute()?->getSlug() ?? '',
             'content' => $content,
             'mediaId' => $dimensionContent->getImage()?->getId(),
-            'startDate' => $event->getStartDate()?->format('c'),
         ];
     }
 }

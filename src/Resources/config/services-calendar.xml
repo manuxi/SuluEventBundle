@@ -33,7 +33,7 @@
         </service>
 
         <!-- Social Share Twig Extension -->
-        <service id="sulu_event.social_share_extension" class="Manuxi\SuluEventBundle\Twig\SocialShareExtension">
+        <service id="sulu_event.social_share_extension" class="SocialShareTwigExtension">
             <argument type="service" id="sulu_event.social_share_generator"/>
             <tag name="twig.extension"/>
         </service>

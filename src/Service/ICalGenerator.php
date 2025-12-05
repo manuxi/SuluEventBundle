@@ -50,7 +50,13 @@ class ICalGenerator
                 continue;
             }
 
-            $ical .= $this->generateEventBlock($event, $dimensionContent);
+            // Get unlocalized dimension content for non-localized fields
+            $unlocalizedDimensionContent = $this->getUnlocalizedDimensionContent($event);
+            if (!$unlocalizedDimensionContent) {
+                continue;
+            }
+
+            $ical .= $this->generateEventBlock($unlocalizedDimensionContent, $dimensionContent);
         }
 
         $ical .= "END:VCALENDAR\r\n";
@@ -63,27 +69,51 @@ class ICalGenerator
      */
     public function generateSingle(Event $event, EventDimensionContent $dimensionContent): string
     {
+        $unlocalizedDimensionContent = $this->getUnlocalizedDimensionContent($event);
+        if (!$unlocalizedDimensionContent) {
+            return '';
+        }
+
         $ical = "BEGIN:VCALENDAR\r\n";
         $ical .= "VERSION:2.0\r\n";
         $ical .= "PRODID:-//Sulu Event Bundle//EN\r\n";
-        $ical .= $this->generateEventBlock($event, $dimensionContent);
+        $ical .= $this->generateEventBlock($unlocalizedDimensionContent, $dimensionContent);
         $ical .= "END:VCALENDAR\r\n";
 
         return $ical;
     }
 
     /**
+     * Get unlocalized dimension content from event.
+     */
+    private function getUnlocalizedDimensionContent(Event $event): ?EventDimensionContent
+    {
+        foreach ($event->getDimensionContents() as $dc) {
+            if ($dc->getLocale() === null
+                && $dc->getStage() === DimensionContentInterface::STAGE_LIVE
+                && $dc->getVersion() === DimensionContentInterface::CURRENT_VERSION
+            ) {
+                return $dc;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Generate VEVENT block for a single event.
      */
-    private function generateEventBlock(Event $event, EventDimensionContent $dimensionContent): string
-    {
+    private function generateEventBlock(
+        EventDimensionContent $unlocalizedDimensionContent,
+        EventDimensionContent $dimensionContent
+    ): string {
         $block = "BEGIN:VEVENT\r\n";
-        $block .= 'UID:'.$event->getId().'@'.($_SERVER['HTTP_HOST'] ?? 'localhost')."\r\n";
+        $block .= 'UID:'.$unlocalizedDimensionContent->getEvent()->getId().'@'.($_SERVER['HTTP_HOST'] ?? 'localhost')."\r\n";
         $block .= 'DTSTAMP:'.gmdate('Ymd\THis\Z')."\r\n";
-        $block .= 'DTSTART:'.$event->getStartDate()->format('Ymd\THis\Z')."\r\n";
+        $block .= 'DTSTART:'.$unlocalizedDimensionContent->getStartDate()->format('Ymd\THis\Z')."\r\n";
 
-        if ($event->getEndDate()) {
-            $block .= 'DTEND:'.$event->getEndDate()->format('Ymd\THis\Z')."\r\n";
+        if ($unlocalizedDimensionContent->getEndDate()) {
+            $block .= 'DTEND:'.$unlocalizedDimensionContent->getEndDate()->format('Ymd\THis\Z')."\r\n";
         }
 
         $block .= 'SUMMARY:'.$this->escapeString($dimensionContent->getTitle() ?? '')."\r\n";
@@ -92,8 +122,8 @@ class ICalGenerator
             $block .= 'DESCRIPTION:'.$this->escapeString($dimensionContent->getSummary())."\r\n";
         }
 
-        if ($event->getLocation()) {
-            $location = $event->getLocation();
+        if ($unlocalizedDimensionContent->getLocation()) {
+            $location = $unlocalizedDimensionContent->getLocation();
             $block .= 'LOCATION:'.$this->escapeString($location->getName())."\r\n";
         }
 

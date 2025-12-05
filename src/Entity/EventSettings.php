@@ -82,7 +82,7 @@ class EventSettings implements AuditableInterface
     private ?string $eventColor = '';
 
     #[ORM\Column(type: Types::BOOLEAN, nullable: true)]
-    private ?bool $toggleCalendarView = true;
+    private ?bool $toggleCalendarView = false;
 
     #[ORM\Column(type: Types::JSON, nullable: true)]
     private ?array $allowedCalendarViews = ['dayGridMonth'];

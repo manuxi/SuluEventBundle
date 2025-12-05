@@ -34,7 +34,7 @@ class EventController
             'localizations' => $this->getLocalizationsArrayForEntity($event),
         ]);
 
-        $viewTemplate = $view . '.html.twig';
+        $viewTemplate = $view.'.html.twig';
 
         if (!$this->twig->getLoader()->exists($viewTemplate)) {
             throw new NotAcceptableHttpException(\sprintf('Template "%s" does not exist.', $viewTemplate));

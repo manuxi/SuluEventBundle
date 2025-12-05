@@ -42,7 +42,6 @@ class EventSearchListener implements EventSubscriberInterface
     {
         $event = $domainEvent->getEntity();
 
-        // Index for all locales
         foreach ($this->getLocales() as $locale) {
             /** @var EventDimensionContent $dimensionContent */
             $dimensionContent = $this->contentAggregator->aggregate(
@@ -54,18 +53,12 @@ class EventSearchListener implements EventSubscriberInterface
                 ]
             );
 
-            // Skip if no content for this locale
             if (!$dimensionContent->getTitle()) {
                 continue;
             }
 
-            // Always update admin index
+            // Update admin index only (draft changes)
             $this->indexForAdmin($event, $dimensionContent, $locale);
-
-            // Update website index only if published
-            if (WorkflowInterface::WORKFLOW_PLACE_PUBLISHED === $dimensionContent->getWorkflowPlace()) {
-                $this->indexForWebsite($event, $dimensionContent, $locale);
-            }
         }
     }
 
@@ -134,6 +127,13 @@ class EventSearchListener implements EventSubscriberInterface
 
     private function indexForAdmin(Event $event, EventDimensionContent $dimensionContent, string $locale): void
     {
+        $content = array_filter([
+            $dimensionContent->getSubtitle(),
+            $dimensionContent->getSummary(),
+            $dimensionContent->getText(),
+            $dimensionContent->getFooter(),
+        ]);
+
         $this->engine->saveDocument('admin', [
             'id' => $this->getDocumentId($event, $locale),
             'resourceKey' => Event::RESOURCE_KEY,
@@ -141,11 +141,12 @@ class EventSearchListener implements EventSubscriberInterface
             'locale' => $locale,
             'securityContext' => Event::SECURITY_CONTEXT,
             'title' => $dimensionContent->getTitle() ?? '',
+            'content' => $content,
             'mediaId' => $dimensionContent->getImage()?->getId(),
             'changedAt' => $dimensionContent->getChanged()?->format('c'),
             'createdAt' => $dimensionContent->getCreated()?->format('c'),
-            'published' => WorkflowInterface::WORKFLOW_PLACE_PUBLISHED === $dimensionContent->getWorkflowPlace() ? 1 : 0,
-            'startDate' => $event->getStartDate()?->format('c'),
+            'published' => WorkflowInterface::WORKFLOW_PLACE_PUBLISHED === $dimensionContent->getWorkflowPlace() ? '1' : '0',
+            'workflowPlace' => $dimensionContent->getWorkflowPlace(),
         ]);
     }
 
@@ -168,7 +169,6 @@ class EventSearchListener implements EventSubscriberInterface
             'url' => $dimensionContent->getRoute()?->getSlug() ?? '',
             'content' => $content,
             'mediaId' => $dimensionContent->getImage()?->getId(),
-            'startDate' => $event->getStartDate()?->format('c'),
         ]);
     }
 

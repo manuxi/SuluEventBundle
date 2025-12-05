@@ -66,6 +66,16 @@ class EventDimensionContent implements
 
     protected int $id;
     protected Event $event;
+
+    protected ?string $type = 'default';
+    protected ?\DateTimeImmutable $startDate = null;
+    protected ?\DateTimeImmutable $endDate = null;
+    protected ?string $email = null;
+    protected ?string $phoneNumber = null;
+    protected ?Location $location = null;
+    protected ?EventSocialSettings $socialSettings = null;
+    protected ?EventRecurrence $recurrence = null;
+
     protected ?string $title = null;
     protected ?string $subtitle = null;
     protected ?string $summary = null;
@@ -75,8 +85,8 @@ class EventDimensionContent implements
     protected ?array $images = null;
     protected ?MediaInterface $pdf = null;
     protected ?ContactInterface $speaker = null;
-    protected ?bool $showAuthor = true;
-    protected ?bool $showDate = true;
+    protected ?bool $showAuthor = false;
+    protected ?bool $showDate = false;
 
     public function __construct(Event $event)
     {
@@ -100,6 +110,99 @@ class EventDimensionContent implements
         return $this->event;
     }
 
+    public function getType(): ?string
+    {
+        return $this->type;
+    }
+
+    public function setType(?string $type): self
+    {
+        $this->type = $type;
+        return $this;
+    }
+
+    public function getStartDate(): ?\DateTimeImmutable
+    {
+        return $this->startDate;
+    }
+
+    public function setStartDate(?\DateTimeImmutable $startDate): self
+    {
+        $this->startDate = $startDate;
+        return $this;
+    }
+
+    public function getEndDate(): ?\DateTimeImmutable
+    {
+        return $this->endDate;
+    }
+
+    public function setEndDate(?\DateTimeImmutable $endDate): self
+    {
+        $this->endDate = $endDate;
+        return $this;
+    }
+
+    public function getEmail(): ?string
+    {
+        return $this->email;
+    }
+
+    public function setEmail(?string $email): self
+    {
+        $this->email = $email;
+        return $this;
+    }
+
+    public function getPhoneNumber(): ?string
+    {
+        return $this->phoneNumber;
+    }
+
+    public function setPhoneNumber(?string $phoneNumber): self
+    {
+        $this->phoneNumber = $phoneNumber;
+        return $this;
+    }
+
+    public function getLocation(): ?Location
+    {
+        return $this->location;
+    }
+
+    public function setLocation(?Location $location): self
+    {
+        $this->location = $location;
+        return $this;
+    }
+
+    public function getLocationId(): ?int
+    {
+        return $this->location?->getId();
+    }
+
+    public function getSocialSettings(): ?EventSocialSettings
+    {
+        return $this->socialSettings;
+    }
+
+    public function setSocialSettings(?EventSocialSettings $socialSettings): self
+    {
+        $this->socialSettings = $socialSettings;
+        return $this;
+    }
+
+    public function getRecurrence(): ?EventRecurrence
+    {
+        return $this->recurrence;
+    }
+
+    public function setRecurrence(?EventRecurrence $recurrence): self
+    {
+        $this->recurrence = $recurrence;
+        return $this;
+    }
+
     public function getTitle(): ?string
     {
         return $this->title;
@@ -108,7 +211,6 @@ class EventDimensionContent implements
     public function setTitle(?string $title): self
     {
         $this->title = $title;
-
         return $this;
     }
 
@@ -120,7 +222,6 @@ class EventDimensionContent implements
     public function setSubtitle(?string $subtitle): self
     {
         $this->subtitle = $subtitle;
-
         return $this;
     }
 
@@ -132,7 +233,6 @@ class EventDimensionContent implements
     public function setSummary(?string $summary): self
     {
         $this->summary = $summary;
-
         return $this;
     }
 
@@ -144,7 +244,6 @@ class EventDimensionContent implements
     public function setText(?string $text): self
     {
         $this->text = $text;
-
         return $this;
     }
 
@@ -156,7 +255,6 @@ class EventDimensionContent implements
     public function setFooter(?string $footer): self
     {
         $this->footer = $footer;
-
         return $this;
     }
 
@@ -168,7 +266,6 @@ class EventDimensionContent implements
     public function setImage(?MediaInterface $image): self
     {
         $this->image = $image;
-
         return $this;
     }
 
@@ -180,7 +277,6 @@ class EventDimensionContent implements
     public function setImages(?array $images): self
     {
         $this->images = $images;
-
         return $this;
     }
 
@@ -192,7 +288,6 @@ class EventDimensionContent implements
     public function setPdf(?MediaInterface $pdf): self
     {
         $this->pdf = $pdf;
-
         return $this;
     }
 
@@ -204,7 +299,6 @@ class EventDimensionContent implements
     public function setSpeaker(?ContactInterface $speaker): self
     {
         $this->speaker = $speaker;
-
         return $this;
     }
 
@@ -216,7 +310,6 @@ class EventDimensionContent implements
     public function setShowAuthor(?bool $showAuthor): self
     {
         $this->showAuthor = $showAuthor;
-
         return $this;
     }
 
@@ -228,15 +321,65 @@ class EventDimensionContent implements
     public function setShowDate(?bool $showDate): self
     {
         $this->showDate = $showDate;
-
         return $this;
     }
 
-    /**
-     * @param array<string, mixed> $templateData
-     */
+    public function copyAttributesFrom(DimensionContentInterface $dimensionContent): void
+    {
+        if (!$dimensionContent instanceof self) {
+            return;
+        }
+
+        $this->type = $dimensionContent->type;
+        $this->startDate = $dimensionContent->startDate;
+        $this->endDate = $dimensionContent->endDate;
+        $this->email = $dimensionContent->email;
+        $this->phoneNumber = $dimensionContent->phoneNumber;
+        $this->location = $dimensionContent->location;
+        $this->socialSettings = $dimensionContent->socialSettings;
+        $this->recurrence = $dimensionContent->recurrence;
+
+        $this->title = $dimensionContent->title;
+        $this->subtitle = $dimensionContent->subtitle;
+        $this->summary = $dimensionContent->summary;
+        $this->text = $dimensionContent->text;
+        $this->footer = $dimensionContent->footer;
+        $this->image = $dimensionContent->image;
+        $this->images = $dimensionContent->images;
+        $this->pdf = $dimensionContent->pdf;
+        $this->speaker = $dimensionContent->speaker;
+        $this->showAuthor = $dimensionContent->showAuthor;
+        $this->showDate = $dimensionContent->showDate;
+    }
+
     public function setTemplateData(array $templateData): void
     {
+        // Non-localized fields
+        if (\array_key_exists('type', $templateData)) {
+            $this->type = \is_string($templateData['type']) ? $templateData['type'] : null;
+        }
+
+        if (\array_key_exists('startDate', $templateData)) {
+            $this->startDate = $templateData['startDate'] instanceof \DateTimeImmutable ? $templateData['startDate'] : null;
+        }
+
+        if (\array_key_exists('endDate', $templateData)) {
+            $this->endDate = $templateData['endDate'] instanceof \DateTimeImmutable ? $templateData['endDate'] : null;
+        }
+
+        if (\array_key_exists('email', $templateData)) {
+            $this->email = \is_string($templateData['email']) ? $templateData['email'] : null;
+        }
+
+        if (\array_key_exists('phoneNumber', $templateData)) {
+            $this->phoneNumber = \is_string($templateData['phoneNumber']) ? $templateData['phoneNumber'] : null;
+        }
+
+        if (\array_key_exists('location', $templateData)) {
+            $this->location = $templateData['location'] instanceof Location ? $templateData['location'] : null;
+        }
+
+        // Localized fields
         if (\array_key_exists('title', $templateData)) {
             $this->title = \is_string($templateData['title']) ? $templateData['title'] : null;
         }

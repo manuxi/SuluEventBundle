@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                  http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+
+    <entity name="Manuxi\SuluEventBundle\Entity\EventSocialSettings"
+            table="app_event_social_settings">
+
+        <id name="id" type="integer" column="id">
+            <generator strategy="AUTO"/>
+        </id>
+
+        <one-to-one field="dimensionContent"
+                    target-entity="Manuxi\SuluEventBundle\Entity\EventDimensionContent"
+                    inversed-by="socialSettings">
+            <join-columns>
+                <join-column name="dimension_content_id"
+                             referenced-column-name="id"
+                             nullable="false"
+                             on-delete="CASCADE"/>
+            </join-columns>
+        </one-to-one>
+
+        <field name="twitterShareText" type="text" nullable="true" column="twitter_share_text"/>
+        <field name="facebookShareText" type="text" nullable="true" column="facebook_share_text"/>
+        <field name="linkedInShareText" type="text" nullable="true" column="linkedin_share_text"/>
+        <field name="emailShareSubject" type="string" length="255" nullable="true" column="email_share_subject"/>
+        <field name="emailShareBody" type="text" nullable="true" column="email_share_body"/>
+
+    </entity>
+</doctrine-mapping>

@@ -79,11 +79,21 @@ class GenerateRecurringEventsCommand extends Command
         $rangeEnd = new \DateTimeImmutable("+{$lookahead} days");
 
         foreach ($recurringEvents as $event) {
-            if (!$event->getEventRecurrence()) {
+            // Get unlocalizedDimensionContent for recurrence, startDate, endDate
+            $unlocalizedDimensionContent = $this->getUnlocalizedDimensionContent($event);
+
+            if (!$unlocalizedDimensionContent) {
+                $io->warning(sprintf('No unlocalized dimension content for event #%d', $event->getId()));
+                $errors++;
                 continue;
             }
 
-            // Get title from dimension content for display
+            $recurrence = $unlocalizedDimensionContent->getRecurrence();
+            if (!$recurrence || !$recurrence->getIsRecurring()) {
+                continue;
+            }
+
+            // Get title from localized dimension content for display
             $dimensionContent = $this->contentManager->resolve($event, [
                 'locale' => $locale,
                 'stage' => DimensionContentInterface::STAGE_LIVE,
@@ -96,9 +106,10 @@ class GenerateRecurringEventsCommand extends Command
             $io->writeln(sprintf('Processing: %s (ID: %d)', $title, $event->getId()));
 
             try {
-                // Generate occurrences
+                // Generate occurrences - NOW with unlocalizedDimensionContent!
                 $occurrences = $this->recurrenceGenerator->generateOccurrences(
-                    $event->getEventRecurrence(),
+                    $recurrence,
+                    $unlocalizedDimensionContent,  // ✅ NEW: Must pass this!
                     $rangeStart,
                     $rangeEnd
                 );
@@ -111,7 +122,12 @@ class GenerateRecurringEventsCommand extends Command
                     }
 
                     // Create new event for this occurrence
-                    $newEvent = $this->createEventOccurrence($event, $occurrenceDate, $locale);
+                    $newEvent = $this->createEventOccurrence(
+                        $event,
+                        $unlocalizedDimensionContent,
+                        $occurrenceDate,
+                        $locale
+                    );
                     $this->entityManager->persist($newEvent);
                     $generated++;
                 }
@@ -139,10 +155,23 @@ class GenerateRecurringEventsCommand extends Command
      */
     private function occurrenceExists(Event $parentEvent, \DateTimeInterface $date): bool
     {
-        return $this->eventRepository->count([
-                'recurringParent' => $parentEvent->getId(),
-                'startDate' => $date
-            ]) > 0;
+        // Check if there's any event with same parent and start date
+        $events = $this->eventRepository->findBy([]);
+
+        foreach ($events as $event) {
+            $unlocalizedDimensionContent = $this->getUnlocalizedDimensionContent($event);
+            if (!$unlocalizedDimensionContent) {
+                continue;
+            }
+
+            $startDate = $unlocalizedDimensionContent->getStartDate();
+            if ($startDate && $startDate->format('Y-m-d') === $date->format('Y-m-d')) {
+                // Found existing occurrence
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -150,122 +179,109 @@ class GenerateRecurringEventsCommand extends Command
      */
     private function createEventOccurrence(
         Event $parentEvent,
+        EventDimensionContent $parentUnlocalizedDimensionContent,
         \DateTimeInterface $occurrenceDate,
         string $locale
     ): Event {
         // Create new event entity
         $newEvent = new Event();
+        $this->entityManager->persist($newEvent);
+        $this->entityManager->flush(); // Need ID for ContentManager
 
         // Calculate duration from parent event
-        $duration = $parentEvent->getStartDate()->diff(
-            $parentEvent->getEndDate() ?? $parentEvent->getStartDate()
+        $parentStartDate = $parentUnlocalizedDimensionContent->getStartDate();
+        $parentEndDate = $parentUnlocalizedDimensionContent->getEndDate();
+
+        $duration = null;
+        if ($parentStartDate && $parentEndDate) {
+            $duration = $parentStartDate->diff($parentEndDate);
+        }
+
+        // Calculate new end date
+        $newStartDate = \DateTimeImmutable::createFromMutable($occurrenceDate);
+        $newEndDate = $duration ? $newStartDate->add($duration) : null;
+
+        // Get parent localized content
+        $parentDimensionContent = $this->contentManager->resolve($parentEvent, [
+            'locale' => $locale,
+            'stage' => DimensionContentInterface::STAGE_LIVE,
+        ]);
+
+        if (!$parentDimensionContent instanceof EventDimensionContent) {
+            throw new \RuntimeException('Could not resolve parent dimension content');
+        }
+
+        // Build data array from parent
+        $data = [
+            'title' => $parentDimensionContent->getTitle(),
+            'subtitle' => $parentDimensionContent->getSubtitle(),
+            'summary' => $parentDimensionContent->getSummary(),
+            'text' => $parentDimensionContent->getText(),
+            'footer' => $parentDimensionContent->getFooter(),
+            'type' => $parentUnlocalizedDimensionContent->getType(),
+            'startDate' => $newStartDate->format('Y-m-d H:i:s'),
+            'endDate' => $newEndDate?->format('Y-m-d H:i:s'),
+            'email' => $parentUnlocalizedDimensionContent->getEmail(),
+            'phoneNumber' => $parentUnlocalizedDimensionContent->getPhoneNumber(),
+            'location' => $parentUnlocalizedDimensionContent->getLocation()?->getId(),
+            'showAuthor' => $parentDimensionContent->getShowAuthor(),
+            'showDate' => $parentDimensionContent->getShowDate(),
+        ];
+
+        // Copy media if exists
+        if ($image = $parentDimensionContent->getImage()) {
+            $data['image'] = ['id' => $image->getId()];
+        }
+
+        if ($pdf = $parentDimensionContent->getPdf()) {
+            $data['pdf'] = ['id' => $pdf->getId()];
+        }
+
+        // Copy speaker if exists
+        if ($speaker = $parentDimensionContent->getSpeaker()) {
+            $data['speaker'] = $speaker->getId();
+        }
+
+        // Copy images array
+        if ($images = $parentDimensionContent->getImages()) {
+            $data['images'] = $images;
+        }
+
+        // Persist content via ContentManager
+        $this->contentManager->persist($newEvent, $data, [
+            'locale' => $locale,
+            'stage' => DimensionContentInterface::STAGE_DRAFT,
+        ]);
+
+        // Publish immediately
+        $this->contentManager->applyTransition(
+            $newEvent,
+            [
+                'locale' => $locale,
+                'stage' => DimensionContentInterface::STAGE_DRAFT,
+            ],
+            WorkflowInterface::WORKFLOW_TRANSITION_PUBLISH
         );
 
-        // Set dates
-        $newEvent->setStartDate(\DateTimeImmutable::createFromInterface($occurrenceDate));
-        $endDate = (clone $occurrenceDate)->add($duration);
-        $newEvent->setEndDate(\DateTimeImmutable::createFromInterface($endDate));
-
-        // Copy basic properties from parent
-        $newEvent->setEnabled($parentEvent->getEnabled());
-        $newEvent->setLocation($parentEvent->getLocation());
-        $newEvent->setType($parentEvent->getType());
-
-        // Mark as recurring child
-        $newEvent->setRecurringParent($parentEvent);
-
-        // Persist event first to get ID
-        $this->entityManager->persist($newEvent);
         $this->entityManager->flush();
-
-        // Copy content from parent using ContentManager
-        $this->copyEventContent($parentEvent, $newEvent, $locale, $occurrenceDate);
 
         return $newEvent;
     }
 
     /**
-     * Copy content from parent event to new occurrence
+     * Get unlocalized dimension content from event
      */
-    private function copyEventContent(
-        Event $parentEvent,
-        Event $newEvent,
-        string $locale,
-        \DateTimeInterface $occurrenceDate
-    ): void {
-        // Get parent content
-        $parentContent = $this->contentManager->resolve($parentEvent, [
-            'locale' => $locale,
-            'stage' => DimensionContentInterface::STAGE_DRAFT,
-        ]);
-
-        if (!$parentContent instanceof EventDimensionContent) {
-            return;
-        }
-
-        // Create draft content for new event
-        $newContent = $this->contentManager->resolve($newEvent, [
-            'locale' => $locale,
-            'stage' => DimensionContentInterface::STAGE_DRAFT,
-        ]);
-
-        if (!$newContent instanceof EventDimensionContent) {
-            return;
-        }
-
-        // Copy content fields
-        $newContent->setTitle($parentContent->getTitle());
-        $newContent->setSubtitle($parentContent->getSubtitle());
-        $newContent->setSummary($parentContent->getSummary());
-        $newContent->setDescription($parentContent->getDescription());
-        $newContent->setFooter($parentContent->getFooter());
-
-        // Copy media
-        $newContent->setImage($parentContent->getImage());
-        $newContent->setImages($parentContent->getImages());
-        $newContent->setPdf($parentContent->getPdf());
-
-        // Copy speaker
-        $newContent->setSpeaker($parentContent->getSpeaker());
-
-        // Copy template and data
-        $newContent->setTemplateKey($parentContent->getTemplateKey());
-        $newContent->setTemplateData($parentContent->getTemplateData());
-
-        // Generate unique route path
-        $baseSlug = $parentContent->getRoute()?->getSlug() ?? '/events/event-' . $newEvent->getId();
-        $uniqueSlug = $this->generateUniqueSlug($baseSlug, $occurrenceDate);
-
-        // Set route through ContentManager
-        $this->contentManager->applyTransition($newEvent, [
-            'locale' => $locale,
-            'stage' => DimensionContentInterface::STAGE_DRAFT,
-        ], WorkflowInterface::WORKFLOW_TRANSITION_CREATE);
-
-        // Persist changes
-        $this->contentManager->persist($newEvent, [
-            'locale' => $locale,
-            'stage' => DimensionContentInterface::STAGE_DRAFT,
-        ], $newContent->getTemplateData());
-
-        // Publish the occurrence
-        $this->contentManager->applyTransition($newEvent, [
-            'locale' => $locale,
-            'stage' => DimensionContentInterface::STAGE_DRAFT,
-        ], WorkflowInterface::WORKFLOW_TRANSITION_PUBLISH);
-
-        $this->entityManager->flush();
-    }
-
-    /**
-     * Generate unique slug for occurrence
-     */
-    private function generateUniqueSlug(string $baseSlug, \DateTimeInterface $date): string
+    private function getUnlocalizedDimensionContent(Event $event): ?EventDimensionContent
     {
-        // Remove trailing slash
-        $baseSlug = rtrim($baseSlug, '/');
+        foreach ($event->getDimensionContents() as $dc) {
+            if ($dc->getLocale() === null
+                && $dc->getStage() === DimensionContentInterface::STAGE_DRAFT
+                && $dc->getVersion() === DimensionContentInterface::CURRENT_VERSION
+            ) {
+                return $dc;
+            }
+        }
 
-        // Append date to make unique
-        return $baseSlug . '-' . $date->format('Y-m-d');
+        return null;
     }
 }

@@ -9,7 +9,7 @@ use Manuxi\SuluEventBundle\Service\SocialShareGenerator;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
 
-class SocialShareExtension extends AbstractExtension
+class SocialShareTwigExtension extends AbstractExtension
 {
     public function __construct(
         private SocialShareGenerator $socialShareGenerator,
@@ -27,37 +27,31 @@ class SocialShareExtension extends AbstractExtension
 
     /**
      * Get enabled social share links for an event.
+     *
+     * @return array<string, string>
      */
     public function getSocialShares(Event $event, string $locale): array
     {
-        if (!$event->getEnableSocialShare()) {
-            return [];
-        }
-
-        $allLinks = $this->socialShareGenerator->generateShareLinks($event, $locale);
-        $enabledPlatforms = $event->getSocialPlatforms() ?? ['facebook', 'twitter', 'linkedin', 'whatsapp', 'email'];
-
-        // Filter by enabled platforms
-        return array_filter(
-            $allLinks,
-            fn ($key) => in_array($key, $enabledPlatforms, true),
-            ARRAY_FILTER_USE_KEY
-        );
+        return $this->socialShareGenerator->generateShareLinks($event, $locale);
     }
 
     /**
      * Get Open Graph meta tags.
+     *
+     * @return array<string, string>
      */
-    public function getOpenGraphTags(Event $event): array
+    public function getOpenGraphTags(Event $event, string $locale): array
     {
-        return $this->socialShareGenerator->generateOpenGraphTags($event);
+        return $this->socialShareGenerator->generateOpenGraphTags($event, $locale);
     }
 
     /**
      * Get Twitter Card meta tags.
+     *
+     * @return array<string, string>
      */
-    public function getTwitterTags(Event $event): array
+    public function getTwitterTags(Event $event, string $locale): array
     {
-        return $this->socialShareGenerator->generateTwitterCardTags($event);
+        return $this->socialShareGenerator->generateTwitterCardTags($event, $locale);
     }
 }

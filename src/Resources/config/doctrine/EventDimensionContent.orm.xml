@@ -5,59 +5,191 @@
                   http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
 
     <entity name="Manuxi\SuluEventBundle\Entity\EventDimensionContent"
-            table="app_event_dimension_content"
-            repository-class="Manuxi\SuluEventBundle\Repository\EventDimensionContentRepository">
+            table="app_event_dimension_content">
 
         <id name="id" type="integer" column="id">
             <generator strategy="AUTO"/>
         </id>
 
+        <!-- DIMENSION CONTENT TRAIT FIELDS -->
+        <field name="stage" type="string" length="16" nullable="false"/>
+        <field name="locale" type="string" length="5" nullable="true"/>
+        <field name="version" type="integer" nullable="false">
+            <options>
+                <option name="default">0</option>
+            </options>
+        </field>
+        <field name="ghostLocale" type="string" length="5" nullable="true" column="ghost_locale"/>
+        <field name="availableLocales" type="json" nullable="true" column="available_locales"/>
+
+        <!-- AUDITABLE TRAIT FIELDS -->
+        <field name="created" type="datetime_immutable" nullable="false"/>
+        <field name="changed" type="datetime_immutable" nullable="false"/>
+
+        <many-to-one field="creator" target-entity="Sulu\Bundle\SecurityBundle\Entity\User">
+            <join-columns>
+                <join-column name="creator_id" referenced-column-name="id" on-delete="SET NULL" nullable="true"/>
+            </join-columns>
+        </many-to-one>
+
+        <many-to-one field="changer" target-entity="Sulu\Bundle\SecurityBundle\Entity\User">
+            <join-columns>
+                <join-column name="changer_id" referenced-column-name="id" on-delete="SET NULL" nullable="true"/>
+            </join-columns>
+        </many-to-one>
+
+        <!-- AUTHOR TRAIT FIELDS -->
+        <many-to-one field="author" target-entity="Sulu\Bundle\ContactBundle\Entity\ContactInterface">
+            <join-columns>
+                <join-column name="author_id" referenced-column-name="id" on-delete="SET NULL" nullable="true"/>
+            </join-columns>
+        </many-to-one>
+
+        <field name="authored" type="datetime_immutable" nullable="true"/>
+
+        <!-- WORKFLOW TRAIT FIELDS -->
+
+        <!-- SEO TRAIT FIELDS -->
+        <field name="seoData" type="json" nullable="true" column="seo_data"/>
+        <field name="seoNoIndex" type="boolean" nullable="false" column="seo_no_index">
+            <options>
+                <option name="default">false</option>
+            </options>
+        </field>
+        <field name="seoNoFollow" type="boolean" nullable="false" column="seo_no_follow">
+            <options>
+                <option name="default">false</option>
+            </options>
+        </field>
+        <field name="seoHideInSitemap" type="boolean" nullable="false" column="seo_hide_in_sitemap">
+            <options>
+                <option name="default">false</option>
+            </options>
+        </field>
+
+        <!-- EXCERPT TRAIT FIELDS -->
+        <field name="excerptData" type="json" nullable="true" column="excerpt_data"/>
+
+        <!-- TAXONOMY TRAIT FIELDS -->
+        <!-- EXCERPT CATEGORIES -->
+        <many-to-many field="excerptCategories" target-entity="Sulu\Bundle\CategoryBundle\Entity\CategoryInterface">
+            <join-table name="app_event_content_excerpt_categories">
+                <join-columns>
+                    <join-column name="event_content_id" referenced-column-name="id" on-delete="CASCADE"/>
+                </join-columns>
+                <inverse-join-columns>
+                    <join-column name="category_id" referenced-column-name="id" on-delete="CASCADE"/>
+                </inverse-join-columns>
+            </join-table>
+        </many-to-many>
+
+        <!-- EXCERPT TAGS -->
+        <many-to-many field="excerptTags" target-entity="Sulu\Bundle\TagBundle\Tag\TagInterface">
+            <join-table name="app_event_content_excerpt_tags">
+                <join-columns>
+                    <join-column name="event_content_id" referenced-column-name="id" on-delete="CASCADE"/>
+                </join-columns>
+                <inverse-join-columns>
+                    <join-column name="tag_id" referenced-column-name="id" on-delete="CASCADE"/>
+                </inverse-join-columns>
+            </join-table>
+        </many-to-many>
+
+        <!-- EXCERPT TARGET GROUPS -->
+        <!--
+        <many-to-many field="excerptAudienceTargetGroups" target-entity="Sulu\Bundle\AudienceTargetingBundle\Entity\TargetGroupInterface">
+            <join-table name="app_event_content_excerpt_target_groups">
+                <join-columns>
+                    <join-column name="event_content_id" referenced-column-name="id" on-delete="CASCADE"/>
+                </join-columns>
+                <inverse-join-columns>
+                    <join-column name="target_group_id" referenced-column-name="id" on-delete="CASCADE"/>
+                </inverse-join-columns>
+            </join-table>
+        </many-to-many>
+        -->
+
+        <!-- EXCERPT SEGMENT -->
+        <field name="excerptSegment" type="string" length="255" nullable="true" column="excerpt_segment"/>
+
+        <!-- ROUTABLE TRAIT FIELDS -->
+        <many-to-one field="route" target-entity="Sulu\Route\Domain\Model\Route">
+            <join-columns>
+                <join-column name="route_id" referenced-column-name="id" on-delete="SET NULL" nullable="true"/>
+            </join-columns>
+        </many-to-one>
+
+        <field name="lastModified" type="datetime_immutable" nullable="true" column="last_modified"/>
+
+        <!-- WEBSPACE TRAIT FIELDS -->
+        <field name="mainWebspace" type="string" length="32" nullable="true"/>
+
+        <!-- SHADOW TRAIT FIELDS -->
+        <field name="shadowLocale" type="string" length="5" nullable="true" column="shadow_locale"/>
+
+        <!-- LINK TRAIT FIELDS -->
+        <field name="linkData" type="json" nullable="true" column="link_data"/>
+
+        <!-- RELATION TO EVENT -->
+        <many-to-one field="event" target-entity="Manuxi\SuluEventBundle\Entity\Event" inversed-by="dimensionContents">
+            <join-columns>
+                <join-column name="event_id" referenced-column-name="id" nullable="false" on-delete="CASCADE"/>
+            </join-columns>
+        </many-to-one>
+
+        <!-- NON-LOCALIZED EVENT FIELDS (stored in unlocalized dimension) -->
+        <field name="type" type="string" length="50" nullable="true"/>
+        <field name="startDate" type="datetime_immutable" nullable="true" column="start_date"/>
+        <field name="endDate" type="datetime_immutable" nullable="true" column="end_date"/>
+        <field name="email" type="string" length="255" nullable="true"/>
+        <field name="phoneNumber" type="string" length="255" nullable="true" column="phone_number"/>
+
+        <many-to-one field="location" target-entity="Manuxi\SuluEventBundle\Entity\Location">
+            <join-column name="location_id" referenced-column-name="id" on-delete="SET NULL"/>
+        </many-to-one>
+
+        <one-to-one field="socialSettings"
+                    target-entity="Manuxi\SuluEventBundle\Entity\EventSocialSettings"
+                    mapped-by="dimensionContent">
+            <cascade>
+                <cascade-persist/>
+                <cascade-remove/>
+            </cascade>
+        </one-to-one>
+
+        <one-to-one field="recurrence"
+                    target-entity="Manuxi\SuluEventBundle\Entity\EventRecurrence"
+                    mapped-by="dimensionContent">
+            <cascade>
+                <cascade-persist/>
+                <cascade-remove/>
+            </cascade>
+        </one-to-one>
+
+        <!-- LOCALIZED EVENT FIELDS -->
         <field name="title" type="string" length="255" nullable="true"/>
         <field name="subtitle" type="string" length="255" nullable="true"/>
         <field name="summary" type="text" nullable="true"/>
         <field name="text" type="text" nullable="true"/>
         <field name="footer" type="text" nullable="true"/>
 
-        <many-to-one field="image"
-                     target-entity="Sulu\Bundle\MediaBundle\Entity\MediaInterface">
+        <many-to-one field="image" target-entity="Sulu\Bundle\MediaBundle\Entity\MediaInterface">
             <join-columns>
-                <join-column name="image_id"
-                             referenced-column-name="id"
-                             on-delete="SET NULL"
-                             nullable="true"/>
+                <join-column name="image_id" referenced-column-name="id" on-delete="SET NULL" nullable="true"/>
             </join-columns>
         </many-to-one>
 
         <field name="images" type="json" nullable="true"/>
 
-        <many-to-one field="pdf"
-                     target-entity="Sulu\Bundle\MediaBundle\Entity\MediaInterface">
+        <many-to-one field="pdf" target-entity="Sulu\Bundle\MediaBundle\Entity\MediaInterface">
             <join-columns>
-                <join-column name="pdf_id"
-                             referenced-column-name="id"
-                             on-delete="SET NULL"
-                             nullable="true"/>
+                <join-column name="pdf_id" referenced-column-name="id" on-delete="SET NULL" nullable="true"/>
             </join-columns>
         </many-to-one>
 
-        <many-to-one field="event"
-                     target-entity="Manuxi\SuluEventBundle\Entity\Event"
-                     inversed-by="dimensionContents">
+        <many-to-one field="speaker" target-entity="Sulu\Bundle\ContactBundle\Entity\ContactInterface">
             <join-columns>
-                <join-column name="event_id"
-                             referenced-column-name="id"
-                             nullable="false"
-                             on-delete="CASCADE"/>
-            </join-columns>
-        </many-to-one>
-
-        <many-to-one field="speaker"
-                     target-entity="Sulu\Bundle\ContactBundle\Entity\ContactInterface">
-            <join-columns>
-                <join-column name="speaker_id"
-                             referenced-column-name="id"
-                             on-delete="SET NULL"
-                             nullable="true"/>
+                <join-column name="speaker_id" referenced-column-name="id" on-delete="SET NULL" nullable="true"/>
             </join-columns>
         </many-to-one>
 
@@ -73,5 +205,9 @@
             </options>
         </field>
 
+        <!-- UNIQUE CONSTRAINT FOR DIMENSIONS -->
+        <unique-constraints>
+            <unique-constraint name="unique_dimension" columns="event_id,stage,locale,version"/>
+        </unique-constraints>
     </entity>
 </doctrine-mapping>

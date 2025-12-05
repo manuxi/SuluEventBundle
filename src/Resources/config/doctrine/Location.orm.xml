@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                  http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+
+    <entity name="Manuxi\SuluEventBundle\Entity\Location"
+            table="app_location">
+
+        <id name="id" type="integer" column="id">
+            <generator strategy="AUTO"/>
+        </id>
+
+        <field name="name" type="string" length="255" nullable="false"/>
+        <field name="street" type="string" length="255" nullable="true"/>
+        <field name="number" type="string" length="255" nullable="true"/>
+        <field name="postalCode" type="string" length="255" nullable="true" column="postal_code"/>
+        <field name="city" type="string" length="255" nullable="true"/>
+        <field name="state" type="string" length="255" nullable="true"/>
+        <field name="countryCode" type="string" length="255" nullable="true" column="country_code"/>
+        <field name="notes" type="text" nullable="true"/>
+        <field name="email" type="string" length="255" nullable="true"/>
+        <field name="phoneNumber" type="string" length="50" nullable="true" column="phone_number"/>
+
+        <field name="location" type="json" nullable="true"/>
+        <field name="images" type="json" nullable="true"/>
+
+        <!-- PDF Field -->
+        <many-to-one field="pdf" target-entity="Sulu\Bundle\MediaBundle\Entity\MediaInterface">
+            <join-columns>
+                <join-column name="pdf_id" referenced-column-name="id" on-delete="SET NULL" nullable="true"/>
+            </join-columns>
+        </many-to-one>
+
+        <!-- IMAGE TRAIT FIELDS -->
+        <many-to-one field="image" target-entity="Sulu\Bundle\MediaBundle\Entity\MediaInterface">
+            <join-columns>
+                <join-column name="image_id" referenced-column-name="id" on-delete="SET NULL" nullable="true"/>
+            </join-columns>
+        </many-to-one>
+
+        <!-- LINK TRAIT FIELDS -->
+        <field name="link" type="json" nullable="true" column="link"/>
+
+    </entity>
+</doctrine-mapping>

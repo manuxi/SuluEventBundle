@@ -8,6 +8,8 @@ services:
 
     # iCal Controller
     Manuxi\SuluEventBundle\Controller\Website\ICalController:
+        class: Manuxi\SuluEventBundle\Controller\Website\ICalController
+        public: true
         arguments:
             - '@sulu_event.ical_generator'
             - '@Manuxi\SuluEventBundle\Repository\EventRepository'
@@ -15,4 +17,5 @@ services:
         tags:
             - { name: controller.service_arguments }
             - { name: sulu.context, context: website }
-        public: true
+        calls:
+            - [ setContainer, [ '@service_container' ] ]

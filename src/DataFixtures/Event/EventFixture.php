@@ -33,11 +33,8 @@ class EventFixture extends Fixture
 
     private function createEvent1(ObjectManager $manager): void
     {
-        // Step 1: Create Event entity
+        // Step 1: Create Event entity (NO properties set here!)
         $event = new Event();
-        $event->setStartDate(new \DateTimeImmutable('+7 days'));
-        $event->setEndDate(new \DateTimeImmutable('+7 days +3 hours'));
-
         $manager->persist($event);
         $manager->flush(); // Flush to get ID
 
@@ -49,6 +46,10 @@ class EventFixture extends Fixture
             'text' => '<p>This is the main conference text with <strong>HTML</strong> content.</p>',
             'footer' => 'Sponsored by TechCorp',
             'type' => 'conference',
+            'startDate' => (new \DateTimeImmutable('+7 days'))->format('Y-m-d H:i:s'),
+            'endDate' => (new \DateTimeImmutable('+7 days +3 hours'))->format('Y-m-d H:i:s'),
+            'email' => 'info@summerconf.com',
+            'phoneNumber' => '+1-555-0100',
             'showAuthor' => true,
             'showDate' => true,
             'seo' => [
@@ -72,7 +73,6 @@ class EventFixture extends Fixture
             'stage' => DimensionContentInterface::STAGE_DRAFT,
         ]);
 
-        // Publish English version
         $this->contentManager->applyTransition(
             $event,
             [
@@ -82,14 +82,18 @@ class EventFixture extends Fixture
             WorkflowInterface::WORKFLOW_TRANSITION_PUBLISH
         );
 
-        // Step 3: Add German translation
+        // Add German translation
         $this->contentManager->persist($event, [
             'title' => 'Sommerkonferenz 2025',
             'subtitle' => 'Die Zukunft der Technologie',
-            'summary' => 'Begleiten Sie uns drei Tage lang mit inspirierenden Vorträgen und Networking.',
+            'summary' => 'Nehmen Sie an drei Tagen inspirierender Vorträge und Networking teil.',
             'text' => '<p>Dies ist der Haupttext der Konferenz mit <strong>HTML</strong>-Inhalt.</p>',
             'footer' => 'Gesponsert von TechCorp',
             'type' => 'conference',
+            'startDate' => (new \DateTimeImmutable('+7 days'))->format('Y-m-d H:i:s'),
+            'endDate' => (new \DateTimeImmutable('+7 days +3 hours'))->format('Y-m-d H:i:s'),
+            'email' => 'info@sommerkonferenz.de',
+            'phoneNumber' => '+49-555-0100',
             'showAuthor' => true,
             'showDate' => true,
             'seo' => [
@@ -126,9 +130,6 @@ class EventFixture extends Fixture
     private function createEvent2(ObjectManager $manager): void
     {
         $event = new Event();
-        $event->setStartDate(new \DateTimeImmutable('+14 days'));
-        $event->setEndDate(new \DateTimeImmutable('+14 days +2 hours'));
-
         $manager->persist($event);
         $manager->flush();
 
@@ -139,6 +140,10 @@ class EventFixture extends Fixture
             'text' => '<p>Build a complete web application from scratch.</p>',
             'footer' => '',
             'type' => 'workshop',
+            'startDate' => (new \DateTimeImmutable('+14 days'))->format('Y-m-d H:i:s'),
+            'endDate' => (new \DateTimeImmutable('+14 days +2 hours'))->format('Y-m-d H:i:s'),
+            'email' => 'workshop@example.com',
+            'phoneNumber' => '+1-555-0200',
             'showAuthor' => false,
             'showDate' => true,
             'seo' => [
@@ -176,8 +181,6 @@ class EventFixture extends Fixture
     {
         // Draft-only event (not published)
         $event = new Event();
-        $event->setStartDate(new \DateTimeImmutable('+30 days'));
-
         $manager->persist($event);
         $manager->flush();
 
@@ -188,6 +191,10 @@ class EventFixture extends Fixture
             'text' => '<p>This is an internal event.</p>',
             'footer' => '',
             'type' => 'meeting',
+            'startDate' => (new \DateTimeImmutable('+30 days'))->format('Y-m-d H:i:s'),
+            'endDate' => null,
+            'email' => 'internal@company.com',
+            'phoneNumber' => null,
             'showAuthor' => false,
             'showDate' => false,
             'seo' => [

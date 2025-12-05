@@ -6,14 +6,11 @@ namespace Manuxi\SuluEventBundle\Tests\Unit\Entity;
 
 use Manuxi\SuluEventBundle\Entity\Location;
 use PHPUnit\Framework\TestCase;
-use Prophecy\PhpUnit\ProphecyTrait;
 use Sulu\Bundle\MediaBundle\Entity\MediaInterface;
 
 class LocationTest extends TestCase
 {
-    use ProphecyTrait;
-
-    private ?Location $location = null;
+    private Location $location;
 
     protected function setUp(): void
     {
@@ -87,13 +84,27 @@ class LocationTest extends TestCase
 
     public function testImage(): void
     {
-        $image = $this->prophesize(MediaInterface::class);
-        $image->getId()->willReturn(42);
+        $image = $this->createMock(MediaInterface::class);
+        $image->method('getId')->willReturn(42);
 
         $this->assertNull($this->location->getImage());
         $this->assertNull($this->location->getImageData());
-        $this->assertSame($this->location, $this->location->setImage($image->reveal()));
-        $this->assertSame($image->reveal(), $this->location->getImage());
+        $this->assertSame($this->location, $this->location->setImage($image));
+        $this->assertSame($image, $this->location->getImage());
         $this->assertSame(['id' => 42], $this->location->getImageData());
+    }
+
+    /*public function testLink(): void
+    {
+        $this->assertNull($this->location->getLink());
+        $this->location->setLink('https://example.com');
+        $this->assertEquals('https://example.com', $this->location->getLink());
+    }*/
+
+    public function testResourceKeyConstants(): void
+    {
+        $this->assertEquals('locations', Location::RESOURCE_KEY);
+        $this->assertEquals('location_details', Location::FORM_KEY);
+        $this->assertEquals('locations', Location::LIST_KEY);
     }
 }

@@ -7,123 +7,79 @@ namespace Manuxi\SuluEventBundle\Sitemap;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Manuxi\SuluEventBundle\Entity\Event;
-use Sulu\Bundle\WebsiteBundle\Sitemap\AbstractSitemapProvider;
+use Sulu\Bundle\WebsiteBundle\Sitemap\Sitemap;
 use Sulu\Bundle\WebsiteBundle\Sitemap\SitemapAlternateLink;
+use Sulu\Bundle\WebsiteBundle\Sitemap\SitemapProviderInterface;
 use Sulu\Bundle\WebsiteBundle\Sitemap\SitemapUrl;
-use Sulu\Component\Localization\Localization;
 use Sulu\Component\Webspace\Manager\WebspaceManagerInterface;
 use Sulu\Content\Domain\Model\DimensionContentInterface;
 use Sulu\Content\Domain\Model\WorkflowInterface;
 
-/**
- * @phpstan-type EventData array{
- *     lastModified: \DateTimeImmutable|null,
- *     changed: \DateTimeImmutable,
- *     locale: string,
- *     availableLocales: string[]|null,
- *     slug: string,
- *     id: int
- * }
- * @phpstan-type AlternateRoute array{
- *     locale: string,
- *     slug: string,
- *     id: int
- * }
- */
-class EventSitemapProvider extends AbstractSitemapProvider
+class EventSitemapProvider implements SitemapProviderInterface
 {
-    /**
-     * @var EntityRepository<Event>
-     */
-    protected EntityRepository $entityRepository;
+    public const PAGE_SIZE = 10000;
+
+    private EntityRepository $entityRepository;
 
     public function __construct(
-        EntityManagerInterface $entityManager,
-        private readonly WebspaceManagerInterface $webspaceManager,
-        private readonly string $environment,
+        private EntityManagerInterface $entityManager,
+        private WebspaceManagerInterface $webspaceManager,
+        private string $environment,
     ) {
-        $repository = $entityManager->getRepository(Event::class);
-        $this->entityRepository = $repository;
+        $this->entityRepository = $this->entityManager->getRepository(Event::class);
     }
 
-    /**
-     * @return SitemapUrl[]
-     */
     public function build($page, $scheme, $host): array
     {
-        $portalInformations = $this->webspaceManager->findPortalInformationsByHostIncludingSubdomains(
-            $host,
-            $this->environment
-        );
+        $locale = $this->getLocaleFromHost($host);
+
+        if (!$locale) {
+            return [];
+        }
+
+        $offset = ($page - 1) * self::PAGE_SIZE;
+        $events = $this->findEvents($locale, self::PAGE_SIZE, $offset);
+
+        $alternateRoutes = $this->getAlternateRoutes($locale);
 
         $result = [];
+        foreach ($events as $eventData) {
+            $eventId = (string) $eventData['id'];
+            $locale = $eventData['locale'];
+            $slug = $eventData['slug'];
+            $lastModified = $eventData['lastModified'];
 
-        foreach ($portalInformations as $portalInformation) {
-            /** @var Localization|null $localization */
-            $localization = $portalInformation->getLocalization();
+            $sitemapUrl = new SitemapUrl(
+                $scheme.'://'.$host.$slug,
+                $locale,
+                $locale,
+                $lastModified,
+            );
 
-            if (!$localization) {
-                continue;
-            }
-
-            $locale = $localization->getLocale();
-
-            $offset = ($page - 1) * static::PAGE_SIZE;
-            $limit = static::PAGE_SIZE;
-
-            $eventDataCollection = $this->getEventData($locale, $offset, $limit);
-            $alternateRoutes = $this->getAlternateRoutes($locale);
-
-            foreach ($eventDataCollection as $eventData) {
-                $eventId = (string) $eventData['id'];
-                $slug = $eventData['slug'];
-                $availableLocales = $eventData['availableLocales'] ?? [];
-
-                $sitemapUrl = new SitemapUrl(
-                    $this->getUrl($slug, $scheme, $portalInformation),
-                    $locale,
-                    $locale,
-                    $eventData['lastModified'] ?? $eventData['changed']
-                );
-
-                $result[] = $sitemapUrl;
-
-                if (!\is_array($availableLocales)) {
-                    continue;
-                }
-
-                foreach ($availableLocales as $availableLocale) {
-                    if ($availableLocale === $locale) {
-                        continue;
-                    }
-
-                    $alternateSlug = $alternateRoutes[$eventId][$availableLocale] ?? null;
-
-                    if (!$alternateSlug) {
-                        continue;
-                    }
-
-                    $alternatePortalInformation = $this->findPortalInformationForLocale(
-                        $availableLocale,
-                        $portalInformation,
-                        $portalInformations
-                    );
-
-                    if (!$alternatePortalInformation) {
-                        continue;
-                    }
-
+            // Add alternate links for other locales
+            if (isset($alternateRoutes[$eventId])) {
+                foreach ($alternateRoutes[$eventId] as $alternateLocale => $alternateSlug) {
                     $sitemapUrl->addAlternateLink(
                         new SitemapAlternateLink(
-                            $this->getUrl($alternateSlug, $scheme, $alternatePortalInformation),
-                            $availableLocale
+                            $scheme.'://'.$host.$alternateSlug,
+                            $alternateLocale,
                         )
                     );
                 }
             }
+
+            $result[] = $sitemapUrl;
         }
 
         return $result;
+    }
+
+    public function createSitemap($scheme, $host): Sitemap
+    {
+        return new Sitemap(
+            $this->getAlias(),
+            $this->getMaxPage($scheme, $host)
+        );
     }
 
     public function getAlias(): string
@@ -131,35 +87,43 @@ class EventSitemapProvider extends AbstractSitemapProvider
         return 'events';
     }
 
-    public function getMaxPage($scheme, $host): ?float
+    public function getMaxPage($scheme, $host): int
+    {
+        $locale = $this->getLocaleFromHost($host);
+
+        if (!$locale) {
+            return 0;
+        }
+
+        $count = $this->countEvents($locale);
+
+        return (int) ceil($count / self::PAGE_SIZE);
+    }
+
+    private function getLocaleFromHost(string $host): ?string
     {
         $portalInformations = $this->webspaceManager->findPortalInformationsByHostIncludingSubdomains(
             $host,
             $this->environment
         );
 
-        $maxPages = [];
-        foreach ($portalInformations as $portalInformation) {
-            $localization = $portalInformation->getLocalization();
-
-            if (!$localization) {
-                continue;
-            }
-
-            $locale = $localization->getLocale();
-            $maxPages[] = \ceil($this->countEvents($locale) / static::PAGE_SIZE);
+        if (0 === \count($portalInformations)) {
+            return null;
         }
 
-        return \max($maxPages) ?: null;
+        return $portalInformations[0]->getLocale();
     }
 
     /**
-     * @return iterable<EventData>
+     * @return array<array{id: int, locale: string, slug: string, lastModified: \DateTimeInterface}>
      */
-    private function getEventData(string $locale, int $offset, int $limit): iterable
+    private function findEvents(string $locale, int $limit, int $offset): array
     {
         $queryBuilder = $this->entityRepository->createQueryBuilder('event');
 
+        $queryBuilder->andWhere('1 = 1');
+
+        // Join localized dimension content
         $queryBuilder->distinct()->leftJoin('event.dimensionContents', 'dimensionContent', 'WITH', '
             dimensionContent.locale = :locale
             AND dimensionContent.stage = :stage
@@ -168,32 +132,32 @@ class EventSitemapProvider extends AbstractSitemapProvider
             AND dimensionContent.workflowPlace = :published
         ')
             ->leftJoin('dimensionContent.route', 'route')
-            ->leftJoin('event.dimensionContents', 'unLocalizedDimensionContent', 'WITH', '
-                unLocalizedDimensionContent.locale IS NULL
-                AND unLocalizedDimensionContent.stage = :stage
-                AND unLocalizedDimensionContent.version = :version
-            ')
             ->setParameter('locale', $locale)
             ->setParameter('stage', DimensionContentInterface::STAGE_LIVE)
             ->setParameter('version', DimensionContentInterface::CURRENT_VERSION)
             ->setParameter('hide', false)
             ->setParameter('published', WorkflowInterface::WORKFLOW_PLACE_PUBLISHED);
 
-        $queryBuilder->select('dimensionContent.lastModified');
-        $queryBuilder->addSelect('dimensionContent.changed');
-        $queryBuilder->addSelect('dimensionContent.locale');
-        $queryBuilder->addSelect('unLocalizedDimensionContent.availableLocales');
+        // Join unlocalized dimension content for lastModified
+        $queryBuilder->leftJoin(
+            'event.dimensionContents',
+            'unlocalizedDimensionContent',
+            'WITH',
+            'unlocalizedDimensionContent.locale IS NULL 
+             AND unlocalizedDimensionContent.stage = :stage 
+             AND unlocalizedDimensionContent.version = :version'
+        );
+
+        $queryBuilder->select('dimensionContent.locale');
         $queryBuilder->addSelect('route.slug');
         $queryBuilder->addSelect('event.id');
+        $queryBuilder->addSelect('dimensionContent.changed as lastModified');
 
         $queryBuilder->orderBy('route.slug', 'ASC');
         $queryBuilder->setFirstResult($offset);
         $queryBuilder->setMaxResults($limit);
 
-        /**
-         * @var iterable<EventData>
-         */
-        return $queryBuilder->getQuery()->toIterable();
+        return $queryBuilder->getQuery()->getResult();
     }
 
     /**
@@ -224,13 +188,8 @@ class EventSitemapProvider extends AbstractSitemapProvider
         $queryBuilder->addSelect('route.slug');
         $queryBuilder->addSelect('event.id');
 
-        /**
-         * @var iterable<AlternateRoute>
-         */
-        $alternateRoutes = $queryBuilder->getQuery()->toIterable();
-
         $result = [];
-        foreach ($alternateRoutes as $alternateRoute) {
+        foreach ($queryBuilder->getQuery()->getResult() as $alternateRoute) {
             $eventId = (string) $alternateRoute['id'];
             $locale = $alternateRoute['locale'];
             $slug = $alternateRoute['slug'];

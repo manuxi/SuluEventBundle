@@ -21,6 +21,7 @@ services:
             - '@Manuxi\SuluEventBundle\Repository\EventRepository'
             - '@sulu_event.recurrence_generator'
             - '@doctrine.orm.entity_manager'
+            - '@sulu_content.content_manager'
         tags:
             - { name: console.command }
 
@@ -28,7 +29,8 @@ services:
     sulu_event.social_share_generator:
         class: Manuxi\SuluEventBundle\Service\SocialShareGenerator
         arguments:
-            - '@router'
+            - '@sulu_content.content_aggregator'
+            - '@sulu_media.media_manager'
 
     # Social Share Twig Extension
     sulu_event.social_share_extension:

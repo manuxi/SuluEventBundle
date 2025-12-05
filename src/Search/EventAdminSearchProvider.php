@@ -12,7 +12,6 @@ use Manuxi\SuluEventBundle\Repository\EventRepository;
 use Sulu\Component\Webspace\Manager\WebspaceManagerInterface;
 use Sulu\Content\Application\ContentAggregator\ContentAggregatorInterface;
 use Sulu\Content\Domain\Model\DimensionContentInterface;
-use Sulu\Content\Domain\Model\WorkflowInterface;
 
 /**
  * Provides ALL events (draft + published) for admin search.
@@ -78,6 +77,13 @@ class EventAdminSearchProvider implements ReindexProviderInterface
 
     private function createDocument(Event $event, EventDimensionContent $dimensionContent, string $locale): array
     {
+        $content = array_filter([
+            $dimensionContent->getSubtitle(),
+            $dimensionContent->getSummary(),
+            $dimensionContent->getText(),
+            $dimensionContent->getFooter(),
+        ]);
+
         return [
             'id' => 'event-'.$event->getId().'-'.$locale,
             'resourceKey' => Event::RESOURCE_KEY,
@@ -85,11 +91,9 @@ class EventAdminSearchProvider implements ReindexProviderInterface
             'locale' => $locale,
             'securityContext' => Event::SECURITY_CONTEXT,
             'title' => $dimensionContent->getTitle() ?? '',
+            'content' => $content,
             'mediaId' => $dimensionContent->getImage()?->getId(),
-            'changedAt' => $dimensionContent->getChanged()?->format('c'),
-            'createdAt' => $dimensionContent->getCreated()?->format('c'),
-            'published' => (WorkflowInterface::WORKFLOW_PLACE_PUBLISHED === $dimensionContent->getWorkflowPlace()) ? 1 : 0,
-            'startDate' => $event->getStartDate()?->format('c'),
+            'workflowPlace' => $dimensionContent->getWorkflowPlace(),
         ];
     }
 }

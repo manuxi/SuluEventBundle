@@ -95,6 +95,7 @@ class CalendarApiController extends AbstractController
 
         try {
             $dateTime = new \DateTime($date);
+
             return $dateTime->format('Y-m-d H:i:s');
         } catch (\Exception $e) {
             return null;
@@ -113,30 +114,47 @@ class CalendarApiController extends AbstractController
                 ]
             );
 
-            $isAllDay = $this->isAllDayEvent($event);
+            // Get unlocalized dimension content for non-localized fields
+            /** @var EventDimensionContent|null $unlocalizedDimensionContent */
+            $unlocalizedDimensionContent = null;
+            foreach ($event->getDimensionContents() as $dc) {
+                if (null === $dc->getLocale()
+                    && DimensionContentInterface::STAGE_LIVE === $dc->getStage()
+                    && DimensionContentInterface::CURRENT_VERSION === $dc->getVersion()
+                ) {
+                    $unlocalizedDimensionContent = $dc;
+                    break;
+                }
+            }
 
-            $typeColor = $this->eventTypeSelect->getColor($event->getType() ?? 'default');
-            $typeName = $this->eventTypeSelect->getTypeName($event->getType() ?? 'default');
+            if (!$unlocalizedDimensionContent) {
+                return null;
+            }
+
+            $isAllDay = $this->isAllDayEvent($unlocalizedDimensionContent);
+
+            $typeColor = $this->eventTypeSelect->getColor($unlocalizedDimensionContent->getType() ?? 'default');
+            $typeName = $this->eventTypeSelect->getTypeName($unlocalizedDimensionContent->getType() ?? 'default');
 
             $calendarEvent = [
                 'id' => $event->getId(),
                 'title' => $dimensionContent->getTitle() ?? '',
-                'start' => $event->getStartDate()->format('c'),
+                'start' => $unlocalizedDimensionContent->getStartDate()->format('c'),
                 'allDay' => $isAllDay,
                 'url' => $dimensionContent->getRoute()?->getSlug() ?? '',
                 'extendedProps' => [
-                    'type' => $event->getType() ?? 'default',
+                    'type' => $unlocalizedDimensionContent->getType() ?? 'default',
                     'typeName' => $typeName,
                     'typeColor' => $typeColor,
                 ],
             ];
 
-            if ($event->getEndDate()) {
-                $calendarEvent['end'] = $event->getEndDate()->format('c');
+            if ($unlocalizedDimensionContent->getEndDate()) {
+                $calendarEvent['end'] = $unlocalizedDimensionContent->getEndDate()->format('c');
             }
 
-            if ($event->getLocation()) {
-                $calendarEvent['extendedProps']['location'] = $event->getLocation()->getName();
+            if ($unlocalizedDimensionContent->getLocation()) {
+                $calendarEvent['extendedProps']['location'] = $unlocalizedDimensionContent->getLocation()->getName();
             }
 
             if ($dimensionContent->getSummary()) {
@@ -150,16 +168,16 @@ class CalendarApiController extends AbstractController
         }, $events);
     }
 
-    private function isAllDayEvent(Event $event): bool
+    private function isAllDayEvent(EventDimensionContent $dimensionContent): bool
     {
-        if (!$event->getEndDate()) {
+        if (!$dimensionContent->getEndDate()) {
             return true;
         }
 
-        $start = $event->getStartDate();
-        $end = $event->getEndDate();
+        $start = $dimensionContent->getStartDate();
+        $end = $dimensionContent->getEndDate();
 
-        return $start->format('H:i:s') === '00:00:00'
-            && $end->format('H:i:s') === '23:59:59';
+        return '00:00:00' === $start->format('H:i:s')
+            && '23:59:59' === $end->format('H:i:s');
     }
 }

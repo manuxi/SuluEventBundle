@@ -4,7 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/manuxi/SuluEventBundle/LICENSE)
 ![GitHub Tag](https://img.shields.io/github/v/tag/manuxi/SuluEventBundle)
 ![Github Release](https://img.shields.io/github/v/release/manuxi/SuluEventBundle?color=116ea3)
-![Supports Sulu 2.6 or later](https://img.shields.io/badge/%20Sulu->=2.6-0088cc?color=00b2df)
+![Supports Sulu 3.0 or later](https://img.shields.io/badge/%20Sulu->=3.0-0088cc?color=00b2df)
 
 [🇩🇪 German Version](README.de.md)
 
@@ -39,7 +39,7 @@ This bundle is based on the [Sulu Workshop](https://github.com/sulu/sulu-worksho
 ## 📋 Prerequisites
 
 - PHP 8.2 or higher
-- Sulu CMS 2.6 or higher
+- Sulu CMS 3.0 or higher
 - Symfony 6.2 or higher
 - MySQL 5.7+ / MariaDB 10.2+ / PostgreSQL 11+
 
@@ -75,19 +75,7 @@ SuluEventBundle:
     resource: '@SuluEventBundle/Resources/config/routes_website.yaml'
 ```
 
-### Step 3: Configure search
-
-Add to `sulu_search.yaml`:
-
-```yaml
-sulu_search:
-    website:
-        indexes:
-            - events_published  # Published Events (Website)
-            - events            # Draft Events (Admin)
-```
-
-### Step 4: Update the database
+### Step 3: Update the database
 
 ```bash
 # Check what will be created
@@ -97,7 +85,7 @@ php bin/console doctrine:schema:update --dump-sql
 php bin/console doctrine:schema:update --force
 ```
 
-### Step 5: Grant permissions
+### Step 4: Grant permissions
 
 1. Go to Sulu Admin → Settings → User Roles
 2. Find the appropriate role

@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Manuxi\SuluEventBundle\Content;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
+use Manuxi\SuluEventBundle\Repository\EventRepository;
 use Sulu\Bundle\AdminBundle\SmartContent\Configuration\Builder;
 use Sulu\Bundle\AdminBundle\SmartContent\Configuration\BuilderInterface;
 use Sulu\Bundle\AdminBundle\SmartContent\Configuration\ProviderConfigurationInterface;
@@ -36,6 +36,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  *     offset: int,
  *     includeSubFolders: bool,
  *     excludeDuplicates: bool,
+ *     stage?: string,
  * }
  * @phpstan-type EventSmartContentCountFilters array{
  *     categories: int[],
@@ -53,15 +54,11 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  *     limit: int|null,
  *     includeSubFolders: bool,
  *     excludeDuplicates: bool,
+ *     stage?: string,
  * }
  */
 readonly class EventSmartContentProvider implements SmartContentProviderInterface
 {
-    /**
-     * @var EntityRepository<Event>
-     */
-    private EntityRepository $entityRepository;
-
     /**
      * @var class-string<EventDimensionContent>
      */
@@ -73,11 +70,11 @@ readonly class EventSmartContentProvider implements SmartContentProviderInterfac
     public function __construct(
         private DimensionContentQueryEnhancer $dimensionContentQueryEnhancer,
         private SmartContentQueryEnhancer $smartContentQueryEnhancer,
+        private EventRepository $eventRepository,
         EntityManagerInterface $entityManager,
         private TranslatorInterface $translator,
         private array $eventTypes = [],
     ) {
-        $this->entityRepository = $entityManager->getRepository(Event::class);
         $entityDimensionContentRepository = $entityManager->getRepository(EventDimensionContent::class);
         $this->eventDimensionContentClassName = $entityDimensionContentRepository->getClassName();
     }
@@ -102,14 +99,14 @@ readonly class EventSmartContentProvider implements SmartContentProviderInterfac
     protected function getTypes(): array
     {
         $types = [
-            ['type' => 'pending', 'title' => $this->translator->trans('sulu_event.filter.pending', [], 'admin')],
-            ['type' => 'expired', 'title' => $this->translator->trans('sulu_event.filter.expired', [], 'admin')],
+            ['type' => 'pending', 'title' => $this->translator->trans('sulu_event.pending', [], 'admin')],
+            ['type' => 'expired', 'title' => $this->translator->trans('sulu_event.expired', [], 'admin')],
         ];
 
         foreach ($this->eventTypes as $key => $config) {
             $types[] = [
                 'type' => $key,
-                'title' => $this->translator->trans($config['name'], [], 'admin'),
+                'title' => $config['name'],
             ];
         }
 
@@ -119,18 +116,18 @@ readonly class EventSmartContentProvider implements SmartContentProviderInterfac
     protected function getSorting(): array
     {
         return [
-            ['column' => 'startDate', 'title' => 'sulu_event.sorting.start_date'],
-            ['column' => 'endDate', 'title' => 'sulu_event.sorting.end_date'],
-            ['column' => 'title', 'title' => 'sulu_event.title'],
-            ['column' => 'workflowPublished', 'title' => 'sulu_admin.published'],
-            ['column' => 'created', 'title' => 'sulu_admin.created'],
-            ['column' => 'changed', 'title' => 'sulu_admin.changed'],
+            ['column' => 'title', 'title' => $this->translator->trans('sulu_event.title', [], 'admin')],
+            ['column' => 'startDate', 'title' => $this->translator->trans('sulu_event.start_date', [], 'admin')],
+            ['column' => 'endDate', 'title' => $this->translator->trans('sulu_event.end_date', [], 'admin')],
+            ['column' => 'workflowPublished', 'title' => $this->translator->trans('sulu_admin.published', [], 'admin')],
+            ['column' => 'created', 'title' => $this->translator->trans('sulu_admin.created', [], 'admin')],
+            ['column' => 'changed', 'title' => $this->translator->trans('sulu_admin.changed', [], 'admin')],
         ];
     }
 
     /**
      * @param EventSmartContentCountFilters $filters
-     * @param array<string, mixed>          $params
+     * @param array<string, mixed> $params
      */
     public function countBy(array $filters, array $params = []): int
     {
@@ -138,7 +135,7 @@ readonly class EventSmartContentProvider implements SmartContentProviderInterfac
         $filters = $this->enhanceWithDimensionAttributes($filters);
 
         $alias = 'event';
-        $queryBuilder = $this->entityRepository->createQueryBuilder($alias);
+        $queryBuilder = $this->eventRepository->createQueryBuilder($alias);
 
         $filters = $this->mapFilters($filters);
         $this->dimensionContentQueryEnhancer->addFilters(
@@ -175,7 +172,7 @@ readonly class EventSmartContentProvider implements SmartContentProviderInterfac
         $filters = $this->enhanceWithDimensionAttributes($filters);
 
         $alias = 'event';
-        $queryBuilder = $this->entityRepository->createQueryBuilder($alias);
+        $queryBuilder = $this->eventRepository->createQueryBuilder($alias);
 
         $filters = $this->mapFilters($filters);
         $this->dimensionContentQueryEnhancer->addFilters(
@@ -220,29 +217,6 @@ readonly class EventSmartContentProvider implements SmartContentProviderInterfac
         return \array_merge($dimensionAttributes, $filters);
     }
 
-    /**
-     * @param EventSmartContentFilters|EventSmartContentCountFilters $filters
-     *
-     * @return array{
-     *         categoryIds?: int[],
-     *         categoryOperator: 'AND'|'OR',
-     *         websiteCategories: string[],
-     *         websiteCategoryOperator: 'AND'|'OR',
-     *         tagNames?: string[],
-     *         tagOperator: 'AND'|'OR',
-     *         websiteTags: string[],
-     *         websiteTagOperator: 'AND'|'OR',
-     *         templateKeys?: string[],
-     *         typesOperator: 'OR',
-     *         locale: string,
-     *         dataSource: string|null,
-     *         limit: int|null,
-     *         offset?: int,
-     *         includeSubFolders: bool,
-     *         excludeDuplicates: bool,
-     *         stage?: string,
-     *     }
-     */
     protected function mapFilters(array $filters): array
     {
         $mappedFilters = [
@@ -275,18 +249,29 @@ readonly class EventSmartContentProvider implements SmartContentProviderInterfac
     }
 
     /**
-     * @param array{
-     *     websiteCategories: string[],
-     *     websiteCategoryOperator: 'AND'|'OR',
-     *     websiteTags: string[],
-     *     websiteTagOperator: 'AND'|'OR',
-     *     templateKeys: string[],
-     *     typesOperator: 'OR',
-     * } $filters
+     * Add internal filters for event types (pending/expired) and custom event types.
+     *
+     * IMPORTANT: This method is called AFTER dimensionContentQueryEnhancer->addFilters()
+     * which already joins filterDimensionContent. We need to join unlocalizedDimensionContent
+     * separately for startDate/endDate/type which are stored unlocalized.
      */
     protected function addInternalFilters(QueryBuilder $queryBuilder, array $filters, string $alias): void
     {
-        $this->addTypeFilters($queryBuilder, $filters['templateKeys'] ?? [], $alias);
+        // Join unlocalizedDimensionContent for type, startDate, endDate
+        $stage = $filters['stage'] ?? DimensionContentInterface::STAGE_LIVE;
+
+        $queryBuilder->leftJoin(
+            $alias . '.dimensionContents',
+            'unlocalizedDimensionContent',
+            'WITH',
+            'unlocalizedDimensionContent.locale IS NULL 
+             AND unlocalizedDimensionContent.stage = :unlocalized_stage 
+             AND unlocalizedDimensionContent.version = :unlocalized_version'
+        );
+        $queryBuilder->setParameter('unlocalized_stage', $stage);
+        $queryBuilder->setParameter('unlocalized_version', DimensionContentInterface::CURRENT_VERSION);
+
+        $this->addTypeFilters($queryBuilder, $filters['templateKeys'] ?? [], 'unlocalizedDimensionContent');
     }
 
     /**
@@ -315,6 +300,7 @@ readonly class EventSmartContentProvider implements SmartContentProviderInterfac
         $now = new \DateTime();
         $todayStart = (clone $now)->setTime(0, 0, 0);
 
+        // Use unlocalizedDimensionContent alias for startDate/endDate!
         if ($hasPending) {
             $queryBuilder->andWhere(
                 '('.$alias.'.endDate IS NOT NULL AND '.$alias.'.endDate >= :now) OR '.

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Twig;
 
+use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
 use Sulu\Component\Webspace\Analyzer\RequestAnalyzerInterface;
@@ -82,7 +83,7 @@ class EventCalendarTwigExtension extends AbstractExtension
     /**
      * Group events by date for easier calendar rendering.
      *
-     * @param array<int, \Manuxi\SuluEventBundle\Entity\Event> $events
+     * @param array<int, Event> $events
      * @param array<string, string> $properties
      *
      * @return array<string, array<int, array<string, mixed>>>
@@ -92,11 +93,18 @@ class EventCalendarTwigExtension extends AbstractExtension
         $grouped = [];
 
         foreach ($events as $event) {
-            $startDate = $event->getStartDate();
+            // Get unlocalizedDimensionContent for startDate
+            $unlocalizedDimensionContent = $this->getUnlocalizedDimensionContent($event);
+            if (!$unlocalizedDimensionContent) {
+                continue;
+            }
+
+            $startDate = $unlocalizedDimensionContent->getStartDate();
             if (!$startDate) {
                 continue;
             }
 
+            // Get localized dimension content for title, etc.
             /** @var EventDimensionContent $dimensionContent */
             $dimensionContent = $this->contentAggregator->aggregate(
                 $event,
@@ -118,5 +126,22 @@ class EventCalendarTwigExtension extends AbstractExtension
         }
 
         return $grouped;
+    }
+
+    /**
+     * Get unlocalized dimension content from event (for startDate, endDate, etc.)
+     */
+    private function getUnlocalizedDimensionContent(Event $event): ?EventDimensionContent
+    {
+        foreach ($event->getDimensionContents() as $dc) {
+            if ($dc->getLocale() === null
+                && $dc->getStage() === DimensionContentInterface::STAGE_LIVE
+                && $dc->getVersion() === DimensionContentInterface::CURRENT_VERSION
+            ) {
+                return $dc;
+            }
+        }
+
+        return null;
     }
 }
