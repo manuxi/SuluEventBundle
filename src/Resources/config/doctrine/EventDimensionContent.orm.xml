@@ -173,7 +173,7 @@
         <field name="text" type="text" nullable="true"/>
         <field name="footer" type="text" nullable="true"/>
 
-        <many-to-one field="image" target-entity="Sulu\Bundle\MediaBundle\Entity\MediaInterface">
+        <many-to-one field="image" target-entity="Sulu\Bundle\MediaBundle\Entity\Media">
             <join-columns>
                 <join-column name="image_id" referenced-column-name="id" on-delete="SET NULL" nullable="true"/>
             </join-columns>
@@ -181,7 +181,7 @@
 
         <field name="images" type="json" nullable="true"/>
 
-        <many-to-one field="pdf" target-entity="Sulu\Bundle\MediaBundle\Entity\MediaInterface">
+        <many-to-one field="pdf" target-entity="Sulu\Bundle\MediaBundle\Entity\Media">
             <join-columns>
                 <join-column name="pdf_id" referenced-column-name="id" on-delete="SET NULL" nullable="true"/>
             </join-columns>

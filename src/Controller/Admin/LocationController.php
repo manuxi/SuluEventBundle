@@ -13,6 +13,7 @@ use Sulu\Bundle\TrashBundle\Application\TrashManager\TrashManagerInterface;
 use Sulu\Component\Rest\AbstractRestController;
 use Sulu\Component\Rest\ListBuilder\Doctrine\DoctrineListBuilderFactoryInterface;
 use Sulu\Component\Rest\ListBuilder\Metadata\FieldDescriptorFactoryInterface;
+use Sulu\Component\Rest\ListBuilder\PaginatedRepresentation;
 use Sulu\Component\Rest\RequestParametersTrait;
 use Sulu\Component\Rest\RestHelperInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -52,9 +53,15 @@ class LocationController extends AbstractRestController
         $listBuilder = $this->listBuilderFactory->create(Location::class);
         $this->restHelper->initializeListBuilder($listBuilder, $fieldDescriptors);
 
-        $listResponse = $listBuilder->execute();
+        $listRepresentation = new PaginatedRepresentation(
+            $listBuilder->execute(),
+            Location::RESOURCE_KEY,
+            (int) $listBuilder->getCurrentPage(),
+            (int) $listBuilder->getLimit(),
+            $listBuilder->count()
+        );
 
-        return $this->handleView($this->view($listResponse));
+        return $this->handleView($this->view($listRepresentation));
     }
 
     #[Route(
@@ -131,91 +138,35 @@ class LocationController extends AbstractRestController
         }
 
         $this->trashManager->store(Location::RESOURCE_KEY, $location);
-
         $this->entityManager->remove($location);
         $this->entityManager->flush();
 
         return $this->handleView($this->view(null, 204));
     }
 
-    private function mapDataToEntity(array $data, Location $location): void
+    protected function mapDataToEntity(array $data, Location $entity): void
     {
-        // Basic address fields
-        if (array_key_exists('name', $data)) {
-            $location->setName($data['name']);
+        $entity->setName($data['name'] ?? null);
+        $entity->setStreet($data['street'] ?? null);
+        $entity->setNumber($data['number'] ?? null);
+        $entity->setPostalCode($data['postalCode'] ?? null);
+        $entity->setCity($data['city'] ?? null);
+        $entity->setState($data['state'] ?? null);
+        $entity->setCountryCode($data['countryCode'] ?? null);
+        $entity->setNotes($data['notes'] ?? null);
+        $entity->setEmail($data['email'] ?? null);
+        $entity->setPhoneNumber($data['phoneNumber'] ?? null);
+        $entity->setLocation($data['location'] ?? null);
+        $entity->setImages($data['images'] ?? null);
+
+        if (isset($data['image']) && is_array($data['image']) && isset($data['image']['id'])) {
+            $image = $this->entityManager->getReference(MediaInterface::class, $data['image']['id']);
+            $entity->setImage($image);
         }
 
-        if (array_key_exists('street', $data)) {
-            $location->setStreet($data['street']);
-        }
-
-        if (array_key_exists('number', $data)) {
-            $location->setNumber($data['number']);
-        }
-
-        if (array_key_exists('postalCode', $data)) {
-            $location->setPostalCode($data['postalCode']);
-        }
-
-        if (array_key_exists('city', $data)) {
-            $location->setCity($data['city']);
-        }
-
-        if (array_key_exists('state', $data)) {
-            $location->setState($data['state']);
-        }
-
-        if (array_key_exists('countryCode', $data)) {
-            $location->setCountryCode($data['countryCode']);
-        }
-
-        // Contact info
-        if (array_key_exists('email', $data)) {
-            $location->setEmail($data['email']);
-        }
-
-        if (array_key_exists('phoneNumber', $data)) {
-            $location->setPhoneNumber($data['phoneNumber']);
-        }
-
-        // Link
-        if (array_key_exists('link', $data)) {
-            $location->setLink($data['link']);
-        }
-
-        // Coordinates
-        if (array_key_exists('location', $data)) {
-            $location->setLocation($data['location']);
-        }
-
-        // Notes
-        if (array_key_exists('notes', $data)) {
-            $location->setNotes($data['notes']);
-        }
-
-        // Image (single)
-        if (array_key_exists('image', $data)) {
-            if (isset($data['image']['id'])) {
-                $image = $this->entityManager->find(MediaInterface::class, $data['image']['id']);
-                $location->setImage($image);
-            } else {
-                $location->setImage(null);
-            }
-        }
-
-        // Images (gallery)
-        if (array_key_exists('images', $data)) {
-            $location->setImages($data['images']);
-        }
-
-        // PDF
-        if (array_key_exists('pdf', $data)) {
-            if (isset($data['pdf']['id'])) {
-                $pdf = $this->entityManager->find(MediaInterface::class, $data['pdf']['id']);
-                $location->setPdf($pdf);
-            } else {
-                $location->setPdf(null);
-            }
+        if (isset($data['pdf']) && is_array($data['pdf']) && isset($data['pdf']['id'])) {
+            $pdf = $this->entityManager->getReference(MediaInterface::class, $data['pdf']['id']);
+            $entity->setPdf($pdf);
         }
     }
 }

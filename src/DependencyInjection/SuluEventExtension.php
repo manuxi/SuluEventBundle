@@ -40,9 +40,9 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.yaml');
         $loader->load('controller.yaml');
-/*        $loader->load('services-calendar.yaml');
+        $loader->load('services-calendar.yaml');
         $loader->load('services-ical.yaml');
-        $loader->load('services-feed.yaml');*/
+        $loader->load('services-feed.yaml');
 
         $this->configurePersistence($config['objects'], $container);
     }

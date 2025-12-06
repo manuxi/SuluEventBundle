@@ -1,16 +1,21 @@
 services:
     # Admin Controllers
-    sulu_event.controller.admin.event:
+    Manuxi\SuluEventBundle\Controller\Admin\EventController:
         class: Manuxi\SuluEventBundle\Controller\Admin\EventController
         arguments:
-            - '@doctrine.orm.entity_manager'
+            - '@fos_rest.view_handler.default'
+            - '@security.token_storage'
+            - '@sulu_core.list_builder.field_descriptor_factory'
+            - '@sulu_core.doctrine_list_builder_factory'
+            - '@sulu_core.rest_helper'
             - '@sulu_content.content_manager'
+            - '@doctrine.orm.entity_manager'
         tags:
             - { name: controller.service_arguments }
             - { name: sulu.context, context: admin }
         public: true
 
-    sulu_event.controller.admin.location:
+    Manuxi\SuluEventBundle\Controller\Admin\LocationController:
         class: Manuxi\SuluEventBundle\Controller\Admin\LocationController
         arguments:
             - '@sulu_event.repository.location'
@@ -26,7 +31,7 @@ services:
             - { name: sulu.context, context: admin }
         public: true
 
-    sulu_event.controller.admin.settings:
+    Manuxi\SuluEventBundle\Controller\Admin\SettingsController:
         class: Manuxi\SuluEventBundle\Controller\Admin\SettingsController
         arguments:
             - '@doctrine.orm.entity_manager'
@@ -34,11 +39,12 @@ services:
             - '@fos_rest.view_handler.default'
             - '@security.token_storage'
         tags:
+            - { name: controller.service_arguments }
             - { name: sulu.context, context: admin }
         public: true
 
     # Website Controller
-    sulu_event.controller.event:
+    Manuxi\SuluEventBundle\Controller\Website\EventController:
         class: Manuxi\SuluEventBundle\Controller\Website\EventController
         arguments:
             - '@twig'
