@@ -110,7 +110,7 @@ class EventController extends AbstractRestController
         $dimensionAttributes = $this->getDimensionAttributes($request);
 
         $dimensionContent = $this->contentManager->persist($event, $data, $dimensionAttributes);
-        $this->setCustomData($dimensionContent, $data);
+        $this->setCustomData($event, $dimensionContent, $data);
 
         $this->entityManager->persist($event);
         $this->entityManager->flush();
@@ -238,7 +238,7 @@ class EventController extends AbstractRestController
 
         /** @var EventDimensionContent $dimensionContent */
         $dimensionContent = $this->contentManager->persist($event, $data, $dimensionAttributes);
-        $this->setCustomData($dimensionContent, $data);
+        $this->setCustomData($event, $dimensionContent, $data);
 
         if (WorkflowInterface::WORKFLOW_PLACE_PUBLISHED === $dimensionContent->getWorkflowPlace()) {
             $dimensionContent = $this->contentManager->applyTransition(
@@ -322,20 +322,57 @@ class EventController extends AbstractRestController
 
     protected function getData(Request $request): array
     {
+        if ($request->headers->get('Content-Type') === 'application/json') {
+            return $request->toArray();
+        }
         return $request->request->all();
     }
 
-    private function setCustomData(EventDimensionContent $dimensionContent, array $data): void
+    private function setCustomData(Event $event, EventDimensionContent $dimensionContent, array $data): void
     {
-        // Set Location
+        // Set Location (Unlocalized)
+        // Set Location (Unlocalized + Localized)
+        $locationId = null;
         if (isset($data['locationId'])) {
             $locationId = $data['locationId'];
-dump($locationId);
-            $location = $this->entityManager->getRepository(Location::class)->findOneBy(['id' => $locationId]);
-            $dimensionContent->setLocation($location);
+        } elseif (isset($data['location'])) {
+            $locationId = $data['location'];
         }
 
-        // Set Author
+        if (is_array($locationId) && isset($locationId['id'])) {
+            $locationId = $locationId['id'];
+        }
+
+        if ($locationId) {
+            // Use find() to ensure entity exists and is loaded
+            $location = $this->entityManager->find(Location::class, $locationId);
+
+            if ($location) {
+
+                // Find or create unlocalized content
+                $unlocalizedContent = null;
+                foreach ($event->getDimensionContents() as $content) {
+                    if ($content->getLocale() === null && $content->getStage() === DimensionContentInterface::STAGE_DRAFT) {
+                        $unlocalizedContent = $content;
+                        break;
+                    }
+                }
+
+                if (!$unlocalizedContent) {
+                    $unlocalizedContent = new EventDimensionContent($event);
+                    $unlocalizedContent->setStage(DimensionContentInterface::STAGE_DRAFT);
+                    $event->addDimensionContent($unlocalizedContent);
+                    $this->entityManager->persist($unlocalizedContent);
+                }
+
+                $unlocalizedContent->setLocation($location);
+
+                // Also set on current localized content to be safe (needed for Response)
+                $dimensionContent->setLocation($location);
+            }
+        }
+
+        // Set Author (Localized)
         if (isset($data['author'])) {
             $authorId = $data['author'];
             if (is_array($authorId) && isset($authorId['id'])) {
@@ -345,7 +382,7 @@ dump($locationId);
             $dimensionContent->setAuthor($author);
         }
 
-        // Set Authored Date
+        // Set Authored Date (Localized)
         if (isset($data['authored'])) {
             $authored = $data['authored'] ? new \DateTimeImmutable($data['authored']) : new \DateTimeImmutable();
             $dimensionContent->setAuthored($authored);

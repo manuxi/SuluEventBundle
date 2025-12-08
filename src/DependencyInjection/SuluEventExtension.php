@@ -250,6 +250,12 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
                             'single_location_selection' => [
                                 'default_type' => 'list_overlay',
                                 'resource_key' => Location::RESOURCE_KEY,
+                                'view' => [
+                                    'name' => 'sulu_event.location.edit_form',
+                                    'result_to_view' => [
+                                        'id' => 'id',
+                                    ],
+                                ],
                                 'types' => [
                                     'list_overlay' => [
                                         'adapter' => 'table',

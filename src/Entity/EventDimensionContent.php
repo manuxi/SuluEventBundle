@@ -28,6 +28,7 @@ use Sulu\Content\Domain\Model\TaxonomyTrait;
 use Sulu\Content\Domain\Model\TemplateInterface;
 use Sulu\Content\Domain\Model\TemplateTrait;
 use Sulu\Content\Domain\Model\WebspaceInterface;
+use JMS\Serializer\Annotation as Serializer;
 use Sulu\Content\Domain\Model\WebspaceTrait;
 use Sulu\Content\Domain\Model\WorkflowInterface;
 use Sulu\Content\Domain\Model\WorkflowTrait;
@@ -179,9 +180,14 @@ class EventDimensionContent implements
         return $this;
     }
 
+
+
+    #[Serializer\VirtualProperty]
+    #[Serializer\SerializedName("locationId")]
+    #[Serializer\Type("int")]
     public function getLocationId(): ?int
     {
-        return $this->location?->getId();
+        return $this->location ? $this->location->getId() : null;
     }
 
     public function getSocialSettings(): ?EventSocialSettings
