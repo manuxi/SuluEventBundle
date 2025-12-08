@@ -9,6 +9,7 @@ use Sulu\Bundle\PreviewBundle\Preview\Preview;
 use Sulu\Bundle\WebsiteBundle\Resolver\TemplateAttributeResolverInterface;
 use Sulu\Component\Webspace\Manager\WebspaceManagerInterface;
 use Sulu\Route\Domain\Repository\RouteRepositoryInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotAcceptableHttpException;
 use Twig\Environment;
@@ -20,6 +21,7 @@ class EventController
         private readonly TemplateAttributeResolverInterface $templateAttributeResolver,
         private readonly RouteRepositoryInterface $routeRepository,
         private readonly WebspaceManagerInterface $webspaceManager,
+        private readonly RequestStack $requestStack,
     ) {
     }
 
@@ -29,12 +31,28 @@ class EventController
         bool $preview = false,
         bool $partial = false,
     ): Response {
+        $request = $this->requestStack->getCurrentRequest();
+        $locale = $request ? $request->getLocale() : 'en';
+
+        // Resolve the correct DimensionContent for the current locale
+        $content = null;
+        foreach ($event->getDimensionContents() as $dimensionContent) {
+            if ($dimensionContent->getLocale() === $locale) {
+                $content = $dimensionContent;
+                break;
+            }
+        }
+
+        if (!$content) {
+            throw new NotAcceptableHttpException(sprintf('No content found for locale "%s".', $locale));
+        }
+
         $parameters = $this->templateAttributeResolver->resolve([
-            'event' => $event,
+            'event' => $content,
             'localizations' => $this->getLocalizationsArrayForEntity($event),
         ]);
 
-        $viewTemplate = $view.'.html.twig';
+        $viewTemplate = $view . '.html.twig';
 
         if (!$this->twig->getLoader()->exists($viewTemplate)) {
             throw new NotAcceptableHttpException(\sprintf('Template "%s" does not exist.', $viewTemplate));

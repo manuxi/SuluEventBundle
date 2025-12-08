@@ -133,6 +133,21 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
             );
         }
 
+        if ($container->hasExtension('sulu_excerpt')) {
+            $container->prependExtensionConfig(
+                'sulu_excerpt',
+                [
+                    'content' => [
+                        'types' => [
+                            Event::TEMPLATE_TYPE => [
+                                'template_driver' => true,
+                            ],
+                        ],
+                    ],
+                ]
+            );
+        }
+
         if ($container->hasExtension('sulu_media')) {
             $container->prependExtensionConfig(
                 'sulu_media',
