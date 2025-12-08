@@ -143,7 +143,7 @@ class EventAdmin extends Admin
 
             foreach ($viewBuilders as $viewBuilder) {
                 // Ensure toolbar actions are set (Workaround for missing Save button on SEO/Excerpt)
-                if ($viewBuilder instanceof \Sulu\Bundle\AdminBundle\Admin\View\FormViewBuilderInterface) {
+                if (method_exists($viewBuilder, 'addToolbarActions')) {
                     $viewBuilder->addToolbarActions($formToolbarActions);
                 }
                 $viewCollection->add($viewBuilder);
