@@ -66,7 +66,7 @@ class EventDimensionContent implements
     use AuditableTrait;
     use LinkTrait;
 
-    protected int $id;
+    protected ?int $id = null;
 
     #[Ignore]
     protected Event $event;
@@ -99,7 +99,7 @@ class EventDimensionContent implements
         $this->changed = new \DateTimeImmutable();
     }
 
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }
@@ -185,9 +185,14 @@ class EventDimensionContent implements
     #[Serializer\VirtualProperty]
     #[Serializer\SerializedName("locationId")]
     #[Serializer\Type("int")]
+    #[Serializer\Groups(["default", "admin", "fullEvent", "partialEvent"])]
     public function getLocationId(): ?int
     {
-        return $this->location ? $this->location->getId() : null;
+        if ($this->location) {
+            return $this->location->getId();
+        }
+
+        return (int) ($this->templateData['locationId'] ?? null) ?: null;
     }
 
     public function getSocialSettings(): ?EventSocialSettings

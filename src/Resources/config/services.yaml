@@ -64,6 +64,7 @@ services:
         class: Manuxi\SuluEventBundle\Repository\LocationRepository
         arguments:
             - '@doctrine'
+        public: true
         tags:
             - { name: doctrine.repository_service }
 
@@ -116,16 +117,30 @@ services:
 
     sulu_event.property_resolver.event_calendar:
         class: Manuxi\SuluEventBundle\Content\PropertyResolver\EventCalendarPropertyResolver
+        arguments:
+            - '@sulu_content.content_resolver'
         tags:
             - { name: sulu_admin.property_resolver }
+
+    sulu_event.property_resolver.single_location_selection:
+        class: Manuxi\SuluEventBundle\Content\PropertyResolver\SingleLocationSelectionPropertyResolver
+        tags:
+            - { name: sulu_content.property_resolver, type: 'single_location_selection' }
 
     # Resource Loader
     sulu_event.resource_loader.event:
         class: Manuxi\SuluEventBundle\Content\ResourceLoader\EventResourceLoader
         arguments:
-            - '@doctrine.orm.entity_manager'
+            - '@Manuxi\SuluEventBundle\Repository\EventRepository'
         tags:
             - { name: sulu_content.resource_loader }
+
+    Manuxi\SuluEventBundle\Content\ResourceLoader\LocationResourceLoader:
+        class: Manuxi\SuluEventBundle\Content\ResourceLoader\LocationResourceLoader
+        arguments:
+            - '@Manuxi\SuluEventBundle\Repository\LocationRepository'
+        tags:
+            - { name: sulu_content.resource_loader, type: 'locations' }
 
     # Preview Object Provider
     sulu_event.preview_object_provider:

@@ -369,6 +369,15 @@ class EventController extends AbstractRestController
 
                 // Also set on current localized content to be safe (needed for Response)
                 $dimensionContent->setLocation($location);
+
+                // FIX: $dimensionContent is detached/unmanaged here (see debug output).
+                // We must load the managed entity to persist the relation change to the DB.
+                if ($dimensionContent->getId()) {
+                    $managedContent = $this->entityManager->find(EventDimensionContent::class, $dimensionContent->getId());
+                    if ($managedContent) {
+                        $managedContent->setLocation($location);
+                    }
+                }
             }
         }
 
