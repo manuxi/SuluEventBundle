@@ -58,14 +58,10 @@
                     </params>
                 </property>
 
-                <property name="url" type="route" mandatory="true">
+                <property name="url" type="page_tree_route" mandatory="true">
                     <meta>
                         <title>sulu_admin.url</title>
                     </meta>
-                    <!--https://github.com/sulu/sulu/pull/5933-->
-                    <params>
-                        <param name="mode" value="leaf"/>
-                    </params>
                 </property>
 
                 <property name="startDate" type="datetime" colspan="6">
