@@ -22,12 +22,7 @@
             </join-columns>
         </one-to-one>
 
-        <field name="isRecurring" type="boolean" nullable="false" column="is_recurring">
-            <options>
-                <option name="default">false</option>
-            </options>
-        </field>
-
+        <field name="isRecurring" type="boolean" nullable="false" column="is_recurring"/>
         <field name="frequency" type="string" length="20" nullable="true"/>
 
         <field name="interval" type="integer" nullable="false">

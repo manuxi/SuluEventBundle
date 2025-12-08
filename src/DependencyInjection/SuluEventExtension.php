@@ -37,7 +37,7 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
             $config['routing']['route_schema']
         );
 
-        $loader = new YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
+        $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
         $loader->load('services.yaml');
         $loader->load('controller.yaml');
         $loader->load('services-calendar.yaml');
@@ -83,7 +83,7 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
             // Only prepend bundle defaults if project hasn't defined types
             // This allows projects to completely replace default types
             if (!$hasProjectTypes) {
-                $defaultConfigFile = __DIR__.'/../Resources/config/packages/sulu_event.yaml';
+                $defaultConfigFile = __DIR__ . '/../Resources/config/packages/sulu_event.yaml';
                 $defaultConfig = Yaml::parseFile($defaultConfigFile);
 
                 if (isset($defaultConfig['sulu_event'])) {
@@ -157,12 +157,20 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
                 [
                     'lists' => [
                         'directories' => [
-                            __DIR__.'/../Resources/config/lists',
+                            __DIR__ . '/../Resources/config/lists',
                         ],
                     ],
                     'forms' => [
                         'directories' => [
-                            __DIR__.'/../Resources/config/forms',
+                            __DIR__ . '/../Resources/config/forms',
+                        ],
+                    ],
+                    'templates' => [
+                        Event::TEMPLATE_TYPE => [
+                            'default_type' => Event::TEMPLATE_TYPE,
+                            'directories' => [
+                                __DIR__ . '/../Resources/config/templates',
+                            ],
                         ],
                     ],
                     'resources' => [
@@ -283,7 +291,7 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
 
         $container->loadFromExtension('framework', [
             'default_locale' => 'en',
-            'translator' => ['paths' => [__DIR__.'/../Resources/translations/']],
+            'translator' => ['paths' => [__DIR__ . '/../Resources/translations/']],
         ]);
     }
 }

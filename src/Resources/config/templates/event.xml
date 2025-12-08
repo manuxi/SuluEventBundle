@@ -1,9 +1,9 @@
 <?xml version="1.0" ?>
-<form xmlns="http://schemas.sulu.io/template/template"
+<template xmlns="http://schemas.sulu.io/template/template"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://schemas.sulu.io/template/template http://schemas.sulu.io/template/form-1.0.xsd"
+    xsi:schemaLocation="http://schemas.sulu.io/template/template http://schemas.sulu.io/template/template-1.0.xsd"
 >
-    <key>event_details</key>
+    <key>event</key>
 
     <properties>
         <section name="mandatory">
@@ -43,7 +43,7 @@
                     </params>
                 </property>
 
-                <property name="routePath" type="route" mandatory="true">
+                <property name="url" type="route" mandatory="true">
                     <meta>
                         <title>sulu_admin.url</title>
                     </meta>
@@ -64,7 +64,7 @@
                         <info_text>sulu_event.enddate_eq_startdate</info_text>
                     </meta>
                 </property>
-                <property name="location" type="single_location_selection" mandatory="true" colspan="6">
+                <property name="locationId" type="single_location_selection" mandatory="true" colspan="6">
                     <meta>
                         <title>sulu_event.location</title>
                     </meta>
@@ -144,4 +144,4 @@
             </properties>
         </section>
     </properties>
-</form>
+</template>

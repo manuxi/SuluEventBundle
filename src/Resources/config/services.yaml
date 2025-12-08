@@ -1,11 +1,24 @@
 services:
+    #_defaults:
+    #    autowire: true
+    #    autoconfigure: true
+    #    bind:
+            # Bind the environment parameter for all services
+    #        $environment: '%kernel.environment%'
+
+    # Auto-register all services from the bundle
+    #Manuxi\SuluEventBundle\:
+    #    resource: '../../*'
+    #    exclude: '../../{DependencyInjection,Entity,Tests,Resources,Twig}'
+
     # Admin Classes
     sulu_event.admin.event:
         class: Manuxi\SuluEventBundle\Admin\EventAdmin
         arguments:
             - '@sulu_admin.view_builder_factory'
+            - '@sulu_content.content_view_builder_factory'
             - '@sulu_security.security_checker'
-            - '@sulu_core.webspace.webspace_manager'
+            - '@sulu.core.localization_manager'
             - '@sulu_activity.activity_list_view_builder_factory'
         tags:
             - { name: sulu.admin }
@@ -146,13 +159,6 @@ services:
             - '@sulu_content.content_aggregator'
             - '@sulu_media.media_manager'
 
-    sulu_event.social_share_extension:
-        class: Manuxi\SuluEventBundle\Twig\SocialShareTwigExtension
-        arguments:
-            - '@sulu_event.social_share_generator'
-        tags:
-            - { name: twig.extension }
-
     # Sitemap Provider
     sulu_event.sitemap_provider:
         class: Manuxi\SuluEventBundle\Sitemap\EventSitemapProvider
@@ -244,3 +250,8 @@ services:
             - '@sulu_core.webspace.request_analyzer'
         tags:
             - { name: twig.extension }
+
+    sulu_event.event_normalizer:
+        class: Manuxi\SuluEventBundle\Content\Normalizer\EventNormalizer
+        tags:
+            - { name: sulu_content.normalizer }

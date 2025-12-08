@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Manuxi\SuluEventBundle\DataFixtures\Event;
 
 use Doctrine\Bundle\FixturesBundle\Fixture;
+use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 use Doctrine\Persistence\ObjectManager;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Sulu\Content\Application\ContentManager\ContentManagerInterface;
@@ -14,11 +15,16 @@ use Sulu\Content\Domain\Model\WorkflowInterface;
 /**
  * Sulu 3 compatible fixture for events using ContentManager.
  */
-class EventFixture extends Fixture
+class EventFixture extends Fixture implements FixtureGroupInterface
 {
     public function __construct(
         private readonly ContentManagerInterface $contentManager,
     ) {
+    }
+
+    public static function getGroups(): array
+    {
+        return ['events'];
     }
 
     public function load(ObjectManager $manager): void

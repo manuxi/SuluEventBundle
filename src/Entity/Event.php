@@ -22,7 +22,7 @@ class Event implements ContentRichEntityInterface
     public const FORM_KEY = 'event_details';
     public const LIST_KEY = 'events';
     public const SECURITY_CONTEXT = 'sulu.events.events';
-    public const TEMPLATE_TYPE = 'event_details';
+    public const TEMPLATE_TYPE = 'event';
 
     private ?int $id = null;
 

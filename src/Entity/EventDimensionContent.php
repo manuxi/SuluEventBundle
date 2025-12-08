@@ -31,6 +31,7 @@ use Sulu\Content\Domain\Model\WebspaceInterface;
 use Sulu\Content\Domain\Model\WebspaceTrait;
 use Sulu\Content\Domain\Model\WorkflowInterface;
 use Sulu\Content\Domain\Model\WorkflowTrait;
+use Symfony\Component\Serializer\Attribute\Ignore;
 
 /**
  * @implements DimensionContentInterface<Event>
@@ -65,6 +66,8 @@ class EventDimensionContent implements
     use LinkTrait;
 
     protected int $id;
+
+    #[Ignore]
     protected Event $event;
 
     protected ?string $type = 'default';

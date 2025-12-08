@@ -11,7 +11,6 @@ use Sulu\Bundle\HttpCacheBundle\CacheLifetime\CacheLifetimeResolverInterface;
 use Sulu\Content\Application\ContentAggregator\ContentAggregatorInterface;
 use Sulu\Content\Infrastructure\Sulu\Route\ContentRouteDefaultsProvider;
 use Sulu\Route\Application\Routing\Matcher\RouteDefaultsProviderInterface;
-use Sulu\Route\Domain\Model\Route;
 
 class EventRouteDefaultsProvider extends ContentRouteDefaultsProvider implements RouteDefaultsProviderInterface
 {
@@ -22,6 +21,11 @@ class EventRouteDefaultsProvider extends ContentRouteDefaultsProvider implements
         CacheLifetimeResolverInterface $cacheLifetimeResolver,
     ) {
         parent::__construct($entityManager, $contentAggregator, $metadataProviderRegistry, $cacheLifetimeResolver);
+    }
+
+    public static function getResourceKey(): string
+    {
+        return Event::RESOURCE_KEY;
     }
 
     public function supports($entityClass): bool

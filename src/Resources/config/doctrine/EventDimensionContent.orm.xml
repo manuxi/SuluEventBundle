@@ -51,21 +51,9 @@
 
         <!-- SEO TRAIT FIELDS -->
         <field name="seoData" type="json" nullable="true" column="seo_data"/>
-        <field name="seoNoIndex" type="boolean" nullable="false" column="seo_no_index">
-            <options>
-                <option name="default">false</option>
-            </options>
-        </field>
-        <field name="seoNoFollow" type="boolean" nullable="false" column="seo_no_follow">
-            <options>
-                <option name="default">false</option>
-            </options>
-        </field>
-        <field name="seoHideInSitemap" type="boolean" nullable="false" column="seo_hide_in_sitemap">
-            <options>
-                <option name="default">false</option>
-            </options>
-        </field>
+        <field name="seoNoIndex" type="boolean" nullable="false" column="seo_no_index"/>
+        <field name="seoNoFollow" type="boolean" nullable="false" column="seo_no_follow"/>
+        <field name="seoHideInSitemap" type="boolean" nullable="false" column="seo_hide_in_sitemap"/>
 
         <!-- EXCERPT TRAIT FIELDS -->
         <field name="excerptData" type="json" nullable="true" column="excerpt_data"/>
@@ -193,17 +181,8 @@
             </join-columns>
         </many-to-one>
 
-        <field name="showAuthor" type="boolean" column="show_author" nullable="true">
-            <options>
-                <option name="default">true</option>
-            </options>
-        </field>
-
-        <field name="showDate" type="boolean" column="show_date" nullable="true">
-            <options>
-                <option name="default">true</option>
-            </options>
-        </field>
+        <field name="showAuthor" type="boolean" column="show_author" nullable="true"/>
+        <field name="showDate" type="boolean" column="show_date" nullable="true"/>
 
         <!-- UNIQUE CONSTRAINT FOR DIMENSIONS -->
         <unique-constraints>

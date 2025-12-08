@@ -67,7 +67,7 @@ class Configuration implements ConfigurationInterface
                             ->scalarNode('repository')->defaultValue(EventRepository::class)->end()
                         ->end()
                     ->end()
-                    ->arrayNode('event_translation')
+                    ->arrayNode('event_dimension_content')
                         ->addDefaultsIfNotSet()
                         ->children()
                             ->scalarNode('model')->defaultValue(EventDimensionContent::class)->end()
