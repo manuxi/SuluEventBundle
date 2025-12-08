@@ -29,6 +29,14 @@
         </join>
     </joins>
 
+    <joins name="location">
+        <join>
+            <entity-name>locationEntity</entity-name>
+            <field-name>unlocalizedDimensionContent.location</field-name>
+            <method>LEFT</method>
+        </join>
+    </joins>
+
     <properties>
         <property name="id" translation="sulu_admin.id">
             <field-name>id</field-name>
@@ -70,6 +78,12 @@
             <field-name>type</field-name>
             <entity-name>unlocalizedDimensionContent</entity-name>
             <joins ref="unlocalizedDimensionContent"/>
+        </property>
+
+        <property name="location" translation="sulu_event.location" visibility="always">
+            <field-name>name</field-name>
+            <entity-name>locationEntity</entity-name>
+            <joins ref="location"/>
         </property>
 
         <property name="startDate" translation="sulu_event.start_date" type="datetime" visibility="always">

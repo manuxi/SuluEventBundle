@@ -8,6 +8,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use FOS\RestBundle\View\ViewHandlerInterface;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
+use Manuxi\SuluEventBundle\Entity\Location;
+use Sulu\Bundle\MediaBundle\Media\Manager\MediaManagerInterface;
 use Sulu\Component\Rest\AbstractRestController;
 use Sulu\Component\Rest\Exception\RestException;
 use Sulu\Component\Rest\ListBuilder\Doctrine\DoctrineListBuilder;
@@ -36,6 +38,7 @@ class EventController extends AbstractRestController
         private RestHelperInterface $restHelper,
         private ContentManagerInterface $contentManager,
         private EntityManagerInterface $entityManager,
+        private MediaManagerInterface $mediaManager,
     ) {
         parent::__construct($viewHandler, $tokenStorage);
     }
@@ -107,6 +110,7 @@ class EventController extends AbstractRestController
         $dimensionAttributes = $this->getDimensionAttributes($request);
 
         $dimensionContent = $this->contentManager->persist($event, $data, $dimensionAttributes);
+        $this->setCustomData($dimensionContent, $data);
 
         $this->entityManager->persist($event);
         $this->entityManager->flush();
@@ -234,6 +238,8 @@ class EventController extends AbstractRestController
 
         /** @var EventDimensionContent $dimensionContent */
         $dimensionContent = $this->contentManager->persist($event, $data, $dimensionAttributes);
+        $this->setCustomData($dimensionContent, $data);
+
         if (WorkflowInterface::WORKFLOW_PLACE_PUBLISHED === $dimensionContent->getWorkflowPlace()) {
             $dimensionContent = $this->contentManager->applyTransition(
                 $event,
@@ -317,6 +323,33 @@ class EventController extends AbstractRestController
     protected function getData(Request $request): array
     {
         return $request->request->all();
+    }
+
+    private function setCustomData(EventDimensionContent $dimensionContent, array $data): void
+    {
+        // Set Location
+        if (isset($data['locationId'])) {
+            $locationId = $data['locationId'];
+dump($locationId);
+            $location = $this->entityManager->getRepository(Location::class)->findOneBy(['id' => $locationId]);
+            $dimensionContent->setLocation($location);
+        }
+
+        // Set Author
+        if (isset($data['author'])) {
+            $authorId = $data['author'];
+            if (is_array($authorId) && isset($authorId['id'])) {
+                $authorId = $authorId['id'];
+            }
+            $author = $authorId ? $this->entityManager->getReference(\Sulu\Bundle\ContactBundle\Entity\Contact::class, $authorId) : null;
+            $dimensionContent->setAuthor($author);
+        }
+
+        // Set Authored Date
+        if (isset($data['authored'])) {
+            $authored = $data['authored'] ? new \DateTimeImmutable($data['authored']) : new \DateTimeImmutable();
+            $dimensionContent->setAuthored($authored);
+        }
     }
 
     protected function normalize(Event $event, EventDimensionContent $dimensionContent): array

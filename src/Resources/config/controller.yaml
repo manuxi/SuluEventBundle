@@ -10,6 +10,7 @@ services:
             - '@sulu_core.rest_helper'
             - '@sulu_content.content_manager'
             - '@doctrine.orm.entity_manager'
+            - '@sulu_media.media_manager'
         tags:
             - { name: controller.service_arguments }
             - { name: sulu.context, context: admin }
@@ -18,7 +19,7 @@ services:
     Manuxi\SuluEventBundle\Controller\Admin\LocationController:
         class: Manuxi\SuluEventBundle\Controller\Admin\LocationController
         arguments:
-            - '@sulu_event.repository.location'
+            - '@Manuxi\SuluEventBundle\Repository\LocationRepository'
             - '@doctrine.orm.entity_manager'
             - '@sulu_trash.trash_manager'
             - '@sulu_core.list_builder.field_descriptor_factory'

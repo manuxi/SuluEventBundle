@@ -116,22 +116,22 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
             );
         }
 
-        /*if ($container->hasExtension('sulu_route')) {
+
+
+        if ($container->hasExtension('sulu_seo')) {
             $container->prependExtensionConfig(
-                'sulu_route',
+                'sulu_seo',
                 [
-                    'mappings' => [
-                        Event::class => [
-                            'generator' => 'schema',
-                            'options' => [
-                                'route_schema' => '/{translator.trans("sulu_event.events")}/{object.getTitle()}',
+                    'content' => [
+                        'types' => [
+                            Event::TEMPLATE_TYPE => [
+                                'template_driver' => true,
                             ],
-                            'resource_key' => Event::RESOURCE_KEY,
                         ],
                     ],
                 ]
             );
-        }*/
+        }
 
         if ($container->hasExtension('sulu_media')) {
             $container->prependExtensionConfig(
@@ -147,9 +147,10 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
                             ],
                         ],
                     ],
-                ],
+                ]
             );
         }
+
 
         if ($container->hasExtension('sulu_admin')) {
             $container->prependExtensionConfig(

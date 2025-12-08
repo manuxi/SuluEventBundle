@@ -60,7 +60,7 @@ services:
         tags:
             - { name: doctrine.repository_service }
 
-    sulu_event.repository.location:
+    Manuxi\SuluEventBundle\Repository\LocationRepository:
         class: Manuxi\SuluEventBundle\Repository\LocationRepository
         arguments:
             - '@doctrine'
@@ -129,13 +129,9 @@ services:
 
     # Preview Object Provider
     sulu_event.preview_object_provider:
-        class: Sulu\Content\Infrastructure\Sulu\Preview\ContentObjectProvider
+        class: Manuxi\SuluEventBundle\Preview\EventObjectProvider
         arguments:
-            - '@sulu_admin.metadata_provider_registry'
-            - '@doctrine.orm.entity_manager'
-            - '@sulu_content.content_aggregator'
-            - '@sulu_content.content_data_mapper'
-            - Manuxi\SuluEventBundle\Entity\Event
+            - '@Manuxi\SuluEventBundle\Repository\EventRepository'
         tags:
             - { name: sulu.context, context: admin }
             - { name: sulu_preview.object_provider, provider-key: events }
@@ -238,6 +234,13 @@ services:
             - '@sulu_content.content_aggregator'
             - '@sulu_content.content_resolver'
             - '@sulu_core.webspace.request_analyzer'
+        tags:
+            - { name: twig.extension }
+
+    sulu_event.settings.twig_extension:
+        class: Manuxi\SuluEventBundle\Twig\EventSettingsTwigExtension
+        arguments:
+            - '@doctrine.orm.entity_manager'
         tags:
             - { name: twig.extension }
 

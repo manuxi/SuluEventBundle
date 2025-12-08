@@ -353,6 +353,8 @@ class EventDimensionContent implements
         $this->speaker = $dimensionContent->speaker;
         $this->showAuthor = $dimensionContent->showAuthor;
         $this->showDate = $dimensionContent->showDate;
+        $this->author = $dimensionContent->author;
+        $this->authored = $dimensionContent->authored;
     }
 
     public function setTemplateData(array $templateData): void
@@ -376,10 +378,6 @@ class EventDimensionContent implements
 
         if (\array_key_exists('phoneNumber', $templateData)) {
             $this->phoneNumber = \is_string($templateData['phoneNumber']) ? $templateData['phoneNumber'] : null;
-        }
-
-        if (\array_key_exists('location', $templateData)) {
-            $this->location = $templateData['location'] instanceof Location ? $templateData['location'] : null;
         }
 
         // Localized fields

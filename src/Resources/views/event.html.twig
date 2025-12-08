@@ -4,6 +4,9 @@
     {% if eventsSettings is not defined %}
         {% set eventsSettings = load_event_settings() %}
     {% endif %}
+
+    {% set event = event.dimensionContents[1] %}
+
     <div class="container">
         <div class="row">
             <div class="col-12 pb-3">
@@ -24,7 +27,7 @@
                             {% set timeframe = event.startDate|format_datetime('full', 'none', locale=app.request.getLocale()) %}
                         {% endif %}
                     {% endif %}
-                    {% set timeframe = timeframe ~ ' @ ' ~ event.location.name %}
+                    {#{% set timeframe = timeframe ~ ' @ ' ~ event.location.name %}#}
 
                     <h1 class="mb-2">{{ event.title }}</h1>
                     {% if event.subtitle %}
