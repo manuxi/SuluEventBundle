@@ -72,7 +72,7 @@ class EventAdmin extends Admin
 
         if ($this->securityChecker->hasPermission(Event::SECURITY_CONTEXT, PermissionTypes::LIVE)) {
             $editDropdownToolbarActions = [
-                new ToolbarAction('sulu_admin.save'), // Add Save to dropdown or alongside? usually dropdown replaces.
+                new ToolbarAction('sulu_admin.save'),
                 new ToolbarAction('sulu_admin.publish'),
                 new ToolbarAction('sulu_admin.set_unpublished'),
             ];
@@ -93,10 +93,10 @@ class EventAdmin extends Admin
         if ($this->securityChecker->hasPermission(Event::SECURITY_CONTEXT, PermissionTypes::EDIT)) {
             // List View
             $viewCollection->add(
-                $this->viewBuilderFactory->createListViewBuilder(static::LIST_VIEW, '/' . $resourceKey . '/:locale')
+                $this->viewBuilderFactory->createListViewBuilder(static::LIST_VIEW, '/'.$resourceKey.'/:locale')
                     ->setResourceKey($resourceKey)
                     ->setListKey($resourceKey)
-                    ->setTitle('sulu_event.' . $resourceKey)
+                    ->setTitle('sulu_event.'.$resourceKey)
                     ->addListAdapters(['table'])
                     ->addLocales($locales)
                     ->setDefaultLocale($locales[0])
@@ -107,7 +107,7 @@ class EventAdmin extends Admin
 
             // Add Tabs View
             $viewCollection->add(
-                $this->viewBuilderFactory->createResourceTabViewBuilder(static::ADD_TABS_VIEW, '/' . $resourceKey . '/:locale/add')
+                $this->viewBuilderFactory->createResourceTabViewBuilder(static::ADD_TABS_VIEW, '/'.$resourceKey.'/:locale/add')
                     ->setResourceKey($resourceKey)
                     ->addLocales($locales)
                     ->setBackView(static::LIST_VIEW)
@@ -115,35 +115,34 @@ class EventAdmin extends Admin
 
             // Edit Tabs View
             $viewCollection->add(
-                $this->viewBuilderFactory->createResourceTabViewBuilder(static::EDIT_TABS_VIEW, '/' . $resourceKey . '/:locale/:id')
+                $this->viewBuilderFactory->createResourceTabViewBuilder(static::EDIT_TABS_VIEW, '/'.$resourceKey.'/:locale/:id')
                     ->setResourceKey($resourceKey)
                     ->addLocales($locales)
                     ->setBackView(static::LIST_VIEW)
                     ->setTitleProperty('title')
             );
 
-            // Content Views (Details, SEO, Excerpt) - automatically created by ContentViewBuilderFactory
+            // Content Views (Details, SEO, Excerpt)
             $viewBuilders = $this->contentViewBuilderFactory->createViews(
                 Event::class,
                 static::EDIT_TABS_VIEW,
                 static::ADD_TABS_VIEW,
                 Event::SECURITY_CONTEXT,
-                [] // Do not add toolbar actions here (avoid duplication)
+                []
             );
 
             foreach ($viewBuilders as $viewBuilder) {
                 // Ensure toolbar actions are set (Workaround for missing Save button on SEO/Excerpt)
-                if (method_exists($viewBuilder, 'addToolbarActions')) {
+                if (method_exists($viewBuilder, 'addToolbarActions') && $viewBuilder->getName() === static::EDIT_FORM_DETAILS_VIEW) {
                     $viewBuilder->addToolbarActions($formToolbarActions);
                 }
                 $viewCollection->add($viewBuilder);
             }
 
-            // Additional custom tabs that are NOT part of content (Settings, Recurrence, Social)
             // Settings Tab
             $viewCollection->add(
                 $this->viewBuilderFactory
-                    ->createFormViewBuilder(static::EDIT_TABS_VIEW . '.settings', '/settings')
+                    ->createFormViewBuilder(static::EDIT_TABS_VIEW.'.settings', '/settings')
                     ->setResourceKey($resourceKey)
                     ->setFormKey('event_settings')
                     ->setTabTitle('sulu_event.settings.title')
@@ -155,7 +154,7 @@ class EventAdmin extends Admin
             // Social Media Tab
             $viewCollection->add(
                 $this->viewBuilderFactory
-                    ->createFormViewBuilder(static::EDIT_TABS_VIEW . '.social', '/social')
+                    ->createFormViewBuilder(static::EDIT_TABS_VIEW.'.social', '/social')
                     ->setResourceKey($resourceKey)
                     ->setFormKey('event_settings_social')
                     ->setTabTitle('sulu_event.social_media.title')
@@ -167,7 +166,7 @@ class EventAdmin extends Admin
             // Recurrence Tab
             $viewCollection->add(
                 $this->viewBuilderFactory
-                    ->createFormViewBuilder(static::EDIT_TABS_VIEW . '.recurrence', '/recurrence')
+                    ->createFormViewBuilder(static::EDIT_TABS_VIEW.'.recurrence', '/recurrence')
                     ->setResourceKey($resourceKey)
                     ->setFormKey('event_recurrence')
                     ->setTabTitle('sulu_event.recurrence.title')
@@ -176,9 +175,9 @@ class EventAdmin extends Admin
                     ->setParent(static::EDIT_TABS_VIEW)
             );
 
-            // Activity/Insights Tab (if available)
+            // Activity/Insights Tab
             if ($this->activityViewBuilderFactory->hasActivityListPermission()) {
-                $insightsResourceTabViewName = static::EDIT_TABS_VIEW . '.insights';
+                $insightsResourceTabViewName = static::EDIT_TABS_VIEW.'.insights';
 
                 $viewCollection->add(
                     $this->viewBuilderFactory
@@ -193,7 +192,7 @@ class EventAdmin extends Admin
                 $viewCollection->add(
                     $this->activityViewBuilderFactory
                         ->createActivityListViewBuilder(
-                            $insightsResourceTabViewName . '.activity',
+                            $insightsResourceTabViewName.'.activity',
                             '/activity',
                             Event::RESOURCE_KEY
                         )
@@ -203,7 +202,7 @@ class EventAdmin extends Admin
                 $viewCollection->add(
                     $this->viewBuilderFactory
                         ->createListViewBuilder(
-                            $insightsResourceTabViewName . '.versions',
+                            $insightsResourceTabViewName.'.versions',
                             '/versions'
                         )
                         ->setResourceKey($resourceKey)

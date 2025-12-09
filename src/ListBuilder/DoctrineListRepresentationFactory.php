@@ -76,6 +76,7 @@ class DoctrineListRepresentationFactory
         $list = $this->addImagesToListElements($list, $locale);
         $list = $this->addColorsToListElements($list);
         $list = $this->formatDateTimeElements($list, $locale);
+        $list = $this->addPublishStateToListElements($list);
 
         return new PaginatedRepresentation(
             $list,
@@ -433,6 +434,16 @@ class DoctrineListRepresentationFactory
         }
 
         return $listeElements;
+    }
+
+    private function addPublishStateToListElements(array $listElements): array
+    {
+        foreach ($listElements as $key => $element) {
+            $workflowPlace = $element['workflowPlace'] ?? null;
+            $listElements[$key]['publishedState'] = 'published' === $workflowPlace;
+        }
+
+        return $listElements;
     }
 
     /**

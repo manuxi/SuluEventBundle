@@ -190,7 +190,7 @@
             </field>
         </concatenation-property>
 
-        <property name="publishedState" translation="sulu_admin.state" visibility="no">
+        <property name="workflowPlace" translation="sulu_admin.state" visibility="no">
             <field-name>workflowPlace</field-name>
             <entity-name>dimensionContent</entity-name>
             <joins ref="dimensionContent"/>
