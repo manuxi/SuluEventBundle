@@ -102,16 +102,16 @@ class EventSitemapProvider implements SitemapProviderInterface
 
     private function getLocaleFromHost(string $host): ?string
     {
-        $portalInformations = $this->webspaceManager->findPortalInformationsByHostIncludingSubdomains(
+        $portalInformation = $this->webspaceManager->findPortalInformationsByHostIncludingSubdomains(
             $host,
             $this->environment
         );
 
-        if (0 === \count($portalInformations)) {
+        if (0 === \count($portalInformation)) {
             return null;
         }
 
-        return $portalInformations[0]->getLocale();
+        return reset($portalInformation)->getLocale();
     }
 
     /**
