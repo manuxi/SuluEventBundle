@@ -70,21 +70,9 @@ class EventAdmin extends Admin
             $listToolbarActions[] = new ToolbarAction('sulu_admin.add');
         }
 
-        if ($this->securityChecker->hasPermission(Event::SECURITY_CONTEXT, PermissionTypes::EDIT)) {
-            $formToolbarActions[] = new ToolbarAction('sulu_admin.save');
-        }
-
-        if ($this->securityChecker->hasPermission(Event::SECURITY_CONTEXT, PermissionTypes::DELETE)) {
-            $formToolbarActions[] = new ToolbarAction('sulu_admin.delete');
-            $listToolbarActions[] = new ToolbarAction('sulu_admin.delete');
-        }
-
-        if ($this->securityChecker->hasPermission(Event::SECURITY_CONTEXT, PermissionTypes::VIEW)) {
-            $listToolbarActions[] = new ToolbarAction('sulu_admin.export');
-        }
-
         if ($this->securityChecker->hasPermission(Event::SECURITY_CONTEXT, PermissionTypes::LIVE)) {
             $editDropdownToolbarActions = [
+                new ToolbarAction('sulu_admin.save'), // Add Save to dropdown or alongside? usually dropdown replaces.
                 new ToolbarAction('sulu_admin.publish'),
                 new ToolbarAction('sulu_admin.set_unpublished'),
             ];
@@ -98,6 +86,8 @@ class EventAdmin extends Admin
                 'su-cog',
                 $editDropdownToolbarActions
             );
+        } elseif ($this->securityChecker->hasPermission(Event::SECURITY_CONTEXT, PermissionTypes::EDIT)) {
+            $formToolbarActions[] = new ToolbarAction('sulu_admin.save');
         }
 
         if ($this->securityChecker->hasPermission(Event::SECURITY_CONTEXT, PermissionTypes::EDIT)) {
@@ -138,7 +128,7 @@ class EventAdmin extends Admin
                 static::EDIT_TABS_VIEW,
                 static::ADD_TABS_VIEW,
                 Event::SECURITY_CONTEXT,
-                $formToolbarActions
+                [] // Do not add toolbar actions here (avoid duplication)
             );
 
             foreach ($viewBuilders as $viewBuilder) {
@@ -214,8 +204,7 @@ class EventAdmin extends Admin
                     $this->viewBuilderFactory
                         ->createListViewBuilder(
                             $insightsResourceTabViewName . '.versions',
-                            '/versions',
-                            'events_versions'
+                            '/versions'
                         )
                         ->setResourceKey($resourceKey)
                         ->setListKey('events_versions')

@@ -11,6 +11,7 @@ services:
             - '@sulu_content.content_manager'
             - '@doctrine.orm.entity_manager'
             - '@sulu_media.media_manager'
+            - '@Manuxi\SuluEventBundle\ListBuilder\DoctrineListRepresentationFactory'
         tags:
             - { name: controller.service_arguments }
             - { name: sulu.context, context: admin }

@@ -376,11 +376,31 @@ class EventDimensionContent implements
         }
 
         if (\array_key_exists('startDate', $templateData)) {
-            $this->startDate = $templateData['startDate'] instanceof \DateTimeImmutable ? $templateData['startDate'] : null;
+            if ($templateData['startDate'] instanceof \DateTimeImmutable) {
+                $this->startDate = $templateData['startDate'];
+            } elseif (\is_string($templateData['startDate']) && !empty($templateData['startDate'])) {
+                try {
+                    $this->startDate = new \DateTimeImmutable($templateData['startDate']);
+                } catch (\Exception $e) {
+                    $this->startDate = null;
+                }
+            } else {
+                $this->startDate = null;
+            }
         }
 
         if (\array_key_exists('endDate', $templateData)) {
-            $this->endDate = $templateData['endDate'] instanceof \DateTimeImmutable ? $templateData['endDate'] : null;
+            if ($templateData['endDate'] instanceof \DateTimeImmutable) {
+                $this->endDate = $templateData['endDate'];
+            } elseif (\is_string($templateData['endDate']) && !empty($templateData['endDate'])) {
+                try {
+                    $this->endDate = new \DateTimeImmutable($templateData['endDate']);
+                } catch (\Exception $e) {
+                    $this->endDate = null;
+                }
+            } else {
+                $this->endDate = null;
+            }
         }
 
         if (\array_key_exists('email', $templateData)) {

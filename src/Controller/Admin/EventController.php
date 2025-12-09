@@ -39,6 +39,7 @@ class EventController extends AbstractRestController
         private ContentManagerInterface $contentManager,
         private EntityManagerInterface $entityManager,
         private MediaManagerInterface $mediaManager,
+        private \Manuxi\SuluEventBundle\ListBuilder\DoctrineListRepresentationFactory $doctrineListRepresentationFactory,
     ) {
         parent::__construct($viewHandler, $tokenStorage);
     }
@@ -52,22 +53,10 @@ class EventController extends AbstractRestController
     )]
     public function cgetAction(Request $request): Response
     {
-        /** @var DoctrineFieldDescriptorInterface[] $fieldDescriptors */
-        $fieldDescriptors = $this->fieldDescriptorFactory->getFieldDescriptors(Event::RESOURCE_KEY);
-
-        /** @var DoctrineListBuilder $listBuilder */
-        $listBuilder = $this->listBuilderFactory->create(Event::class);
-        $listBuilder->addSelectField($fieldDescriptors['locale']);
-        $listBuilder->addSelectField($fieldDescriptors['ghostLocale']);
-        $listBuilder->setParameter('locale', $request->query->get('locale'));
-        $this->restHelper->initializeListBuilder($listBuilder, $fieldDescriptors);
-
-        $listRepresentation = new PaginatedRepresentation(
-            $listBuilder->execute(),
+        $listRepresentation = $this->doctrineListRepresentationFactory->createDoctrineListRepresentation(
             Event::RESOURCE_KEY,
-            (int) $listBuilder->getCurrentPage(),
-            (int) $listBuilder->getLimit(),
-            $listBuilder->count()
+            [],
+            $request->query->all()
         );
 
         return $this->handleView($this->view($listRepresentation));

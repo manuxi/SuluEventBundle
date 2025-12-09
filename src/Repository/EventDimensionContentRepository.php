@@ -17,4 +17,18 @@ class EventDimensionContentRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, EventDimensionContent::class);
     }
+    public function findMissingLocaleByIds(array $ids, string $locale, int $localesCount = 0): array
+    {
+        if (empty($ids)) {
+            return [];
+        }
+
+        $qb = $this->createQueryBuilder('dimensionContent');
+        $qb->select('identity(dimensionContent.event) as event')
+            ->where($qb->expr()->in('dimensionContent.event', $ids))
+            ->andWhere('dimensionContent.locale = :locale')
+            ->setParameter('locale', $locale);
+
+        return $qb->getQuery()->getArrayResult();
+    }
 }

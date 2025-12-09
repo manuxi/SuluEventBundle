@@ -68,6 +68,20 @@ services:
         tags:
             - { name: doctrine.repository_service }
 
+    Manuxi\SuluEventBundle\ListBuilder\DoctrineListRepresentationFactory:
+        class: Manuxi\SuluEventBundle\ListBuilder\DoctrineListRepresentationFactory
+        arguments:
+            - '@sulu_core.rest_helper'
+            - '@sulu_core.list_rest_helper'
+            - '@sulu_core.doctrine_list_builder_factory'
+            - '@sulu_core.list_builder.field_descriptor_factory'
+            - '@sulu_core.webspace.webspace_manager'
+            - '@Manuxi\SuluEventBundle\Repository\EventDimensionContentRepository'
+            - '@sulu_media.media_manager'
+            - '@sulu_event.type_selection'
+            - '@translator.default'
+            - '%sulu_event.list_date_format%'
+
     # Routing
     Manuxi\SuluEventBundle\Routing\EventRouteDefaultsProvider:
         class: Manuxi\SuluEventBundle\Routing\EventRouteDefaultsProvider

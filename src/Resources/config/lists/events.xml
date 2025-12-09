@@ -37,8 +37,43 @@
         </join>
     </joins>
 
+    <joins name="creatorUser">
+        <join>
+            <entity-name>creatorUser</entity-name>
+            <field-name>dimensionContent.creator</field-name>
+        </join>
+    </joins>
+
+    <joins name="creatorContact" ref="creatorUser">
+        <join>
+            <entity-name>creatorContact</entity-name>
+            <field-name>creatorUser.contact</field-name>
+        </join>
+    </joins>
+
+    <joins name="changerUser">
+        <join>
+            <entity-name>changerUser</entity-name>
+            <field-name>dimensionContent.changer</field-name>
+        </join>
+    </joins>
+
+    <joins name="changerContact" ref="changerUser">
+        <join>
+            <entity-name>changerContact</entity-name>
+            <field-name>changerUser.contact</field-name>
+        </join>
+    </joins>
+
+    <joins name="authorContact">
+        <join>
+            <entity-name>authorContact</entity-name>
+            <field-name>dimensionContent.author</field-name>
+        </join>
+    </joins>
+
     <properties>
-        <property name="id" translation="sulu_admin.id">
+        <property name="id" translation="sulu_admin.id" visibility="no">
             <field-name>id</field-name>
             <entity-name>Manuxi\SuluEventBundle\Entity\Event</entity-name>
         </property>
@@ -62,22 +97,10 @@
             <transformer type="title"/>
         </case-property>
 
-        <property name="locale" translation="sulu_admin.locale" visibility="never">
-            <field-name>locale</field-name>
-            <entity-name>dimensionContent</entity-name>
-            <joins ref="dimensionContent"/>
-        </property>
-
-        <property name="ghostLocale" translation="sulu_admin.ghost_locale" visibility="never">
-            <field-name>locale</field-name>
-            <entity-name>ghostDimensionContent</entity-name>
-            <joins ref="ghostDimensionContent"/>
-        </property>
-
         <property name="type" translation="sulu_event.type" visibility="always">
             <field-name>type</field-name>
-            <entity-name>unlocalizedDimensionContent</entity-name>
-            <joins ref="unlocalizedDimensionContent"/>
+            <entity-name>dimensionContent</entity-name>
+            <joins ref="dimensionContent"/>
         </property>
 
         <property name="location" translation="sulu_event.location" visibility="always">
@@ -86,28 +109,28 @@
             <joins ref="location"/>
         </property>
 
-        <property name="startDate" translation="sulu_event.start_date" type="datetime" visibility="always">
+        <property name="startDate" translation="sulu_event.start_date" visibility="always">
             <field-name>startDate</field-name>
-            <entity-name>unlocalizedDimensionContent</entity-name>
-            <joins ref="unlocalizedDimensionContent"/>
+            <entity-name>dimensionContent</entity-name>
+            <joins ref="dimensionContent"/>
         </property>
 
-        <property name="endDate" translation="sulu_event.end_date" type="datetime" visibility="no">
+        <property name="endDate" translation="sulu_event.end_date" visibility="no">
             <field-name>endDate</field-name>
-            <entity-name>unlocalizedDimensionContent</entity-name>
-            <joins ref="unlocalizedDimensionContent"/>
+            <entity-name>dimensionContent</entity-name>
+            <joins ref="dimensionContent"/>
         </property>
 
         <property name="email" translation="sulu_event.email" visibility="no">
             <field-name>email</field-name>
-            <entity-name>unlocalizedDimensionContent</entity-name>
-            <joins ref="unlocalizedDimensionContent"/>
+            <entity-name>dimensionContent</entity-name>
+            <joins ref="dimensionContent"/>
         </property>
 
         <property name="phoneNumber" translation="sulu_event.phone_number" visibility="no">
             <field-name>phoneNumber</field-name>
-            <entity-name>unlocalizedDimensionContent</entity-name>
-            <joins ref="unlocalizedDimensionContent"/>
+            <entity-name>dimensionContent</entity-name>
+            <joins ref="dimensionContent"/>
         </property>
 
         <property name="subtitle" translation="sulu_event.subtitle" visibility="no">
@@ -116,23 +139,37 @@
             <joins ref="dimensionContent"/>
         </property>
 
-        <property name="showAuthor" translation="sulu_event.show_author" type="bool" visibility="no">
-            <field-name>showAuthor</field-name>
-            <entity-name>dimensionContent</entity-name>
-            <joins ref="dimensionContent"/>
-        </property>
+        <concatenation-property name="author" translation="sulu_event.author" visibility="yes" searchability="yes">
+            <field>
+                <field-name>firstName</field-name>
+                <entity-name>authorContact</entity-name>
+                <joins ref="authorContact"/>
+            </field>
+            <field>
+                <field-name>lastName</field-name>
+                <entity-name>authorContact</entity-name>
+                <joins ref="authorContact"/>
+            </field>
+        </concatenation-property>
 
-        <property name="showDate" translation="sulu_event.show_date" type="bool" visibility="no">
-            <field-name>showDate</field-name>
-            <entity-name>dimensionContent</entity-name>
-            <joins ref="dimensionContent"/>
-        </property>
-
-        <property name="created" translation="sulu_admin.created" type="datetime" visibility="no">
+        <property name="created" translation="sulu_admin.created" type="datetime" visibility="yes">
             <field-name>created</field-name>
             <entity-name>dimensionContent</entity-name>
             <joins ref="dimensionContent"/>
         </property>
+
+        <concatenation-property name="creator" translation="sulu_admin.creator" visibility="yes" searchability="yes">
+            <field>
+                <field-name>firstName</field-name>
+                <entity-name>creatorContact</entity-name>
+                <joins ref="creatorContact"/>
+            </field>
+            <field>
+                <field-name>lastName</field-name>
+                <entity-name>creatorContact</entity-name>
+                <joins ref="creatorContact"/>
+            </field>
+        </concatenation-property>
 
         <property name="changed" translation="sulu_admin.changed" type="datetime" visibility="no">
             <field-name>changed</field-name>
@@ -140,13 +177,26 @@
             <joins ref="dimensionContent"/>
         </property>
 
-        <property name="workflowPlace" translation="sulu_admin.state" visibility="always">
+        <concatenation-property name="changer" translation="sulu_admin.changer" visibility="no" searchability="yes">
+            <field>
+                <field-name>firstName</field-name>
+                <entity-name>changerContact</entity-name>
+                <joins ref="changerContact"/>
+            </field>
+            <field>
+                <field-name>lastName</field-name>
+                <entity-name>changerContact</entity-name>
+                <joins ref="changerContact"/>
+            </field>
+        </concatenation-property>
+
+        <property name="publishedState" translation="sulu_admin.state" visibility="no">
             <field-name>workflowPlace</field-name>
             <entity-name>dimensionContent</entity-name>
             <joins ref="dimensionContent"/>
         </property>
 
-        <property name="workflowPublished" translation="sulu_admin.published" type="datetime" visibility="no">
+        <property name="publishedAt" translation="sulu_admin.published" type="datetime" visibility="yes">
             <field-name>workflowPublished</field-name>
             <entity-name>dimensionContent</entity-name>
             <joins ref="dimensionContent"/>
