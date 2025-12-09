@@ -10,8 +10,8 @@ services:
             - '@sulu_core.rest_helper'
             - '@sulu_content.content_manager'
             - '@doctrine.orm.entity_manager'
-            - '@sulu_media.media_manager'
             - '@Manuxi\SuluEventBundle\ListBuilder\DoctrineListRepresentationFactory'
+            - '@sulu_activity.domain_event_collector'
         tags:
             - { name: controller.service_arguments }
             - { name: sulu.context, context: admin }

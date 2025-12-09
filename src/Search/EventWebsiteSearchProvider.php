@@ -39,6 +39,7 @@ class EventWebsiteSearchProvider implements ReindexProviderInterface
         foreach ($locales as $locale) {
             $total += $this->eventRepository->countPublished($locale);
         }
+
         return $total;
     }
 
@@ -47,10 +48,7 @@ class EventWebsiteSearchProvider implements ReindexProviderInterface
         $locales = $this->getLocales();
 
         foreach ($locales as $locale) {
-            $events = $this->eventRepository->findBy([
-                'locale' => $locale,
-                'stage' => DimensionContentInterface::STAGE_LIVE,
-            ]);
+            $events = $this->eventRepository->findAllByLocale($locale, DimensionContentInterface::STAGE_LIVE);
 
             foreach ($events as $event) {
                 /** @var EventDimensionContent $dimensionContent */

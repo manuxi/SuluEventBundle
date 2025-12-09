@@ -117,24 +117,18 @@ services:
     # Property Resolvers
     sulu_event.property_resolver.single_event_selection:
         class: Manuxi\SuluEventBundle\Content\PropertyResolver\SingleEventSelectionPropertyResolver
-        arguments:
-            - '@sulu_content.content_resolver'
         tags:
-            - { name: sulu_admin.property_resolver }
+            - { name: sulu_content.property_resolver }
 
     sulu_event.property_resolver.event_selection:
         class: Manuxi\SuluEventBundle\Content\PropertyResolver\EventSelectionPropertyResolver
-        arguments:
-            - '@sulu_content.content_resolver'
         tags:
-            - { name: sulu_admin.property_resolver }
+            - { name: sulu_content.property_resolver }
 
     sulu_event.property_resolver.event_calendar:
         class: Manuxi\SuluEventBundle\Content\PropertyResolver\EventCalendarPropertyResolver
-        arguments:
-            - '@sulu_content.content_resolver'
         tags:
-            - { name: sulu_admin.property_resolver }
+            - { name: sulu_content.property_resolver }
 
     sulu_event.property_resolver.single_location_selection:
         class: Manuxi\SuluEventBundle\Content\PropertyResolver\SingleLocationSelectionPropertyResolver
@@ -155,6 +149,12 @@ services:
             - '@Manuxi\SuluEventBundle\Repository\LocationRepository'
         tags:
             - { name: sulu_content.resource_loader, type: 'locations' }
+
+    # Property Merger
+    sulu_event.event_unlocalized_fields_merger:
+        class: Manuxi\SuluEventBundle\Content\Merger\EventUnlocalizedFieldsMerger
+        tags:
+            - { name: sulu_content.merger }
 
     # Preview Object Provider
     sulu_event.preview_object_provider:
@@ -227,7 +227,7 @@ services:
         class: Manuxi\SuluEventBundle\Link\LinkProvider
         arguments:
             - '@sulu_content.content_aggregator'
-            - '@doctrine.orm.entity_manager'
+            - '@Manuxi\SuluEventBundle\Repository\EventRepository'
             - '@translator.default'
         tags:
             - { name: sulu.link.provider, alias: event }

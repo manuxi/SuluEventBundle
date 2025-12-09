@@ -67,22 +67,6 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
             );
         }
 
-        if ($container->hasExtension('jms_serializer')) {
-            $container->prependExtensionConfig(
-                'jms_serializer',
-                [
-                    'metadata' => [
-                        'directories' => [
-                            'SuluEventBundle' => [
-                                'path' => __DIR__ . '/../Resources/config/serializer',
-                                'namespace_prefix' => 'Manuxi\SuluEventBundle\Entity',
-                            ],
-                        ],
-                    ],
-                ]
-            );
-        }
-
         if ($container->hasExtension('sulu_event')) {
             // Load all existing configs to check if project has defined types
             $configs = $container->getExtensionConfig('sulu_event');

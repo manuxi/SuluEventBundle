@@ -70,6 +70,15 @@ class EventAdmin extends Admin
             $listToolbarActions[] = new ToolbarAction('sulu_admin.add');
         }
 
+        if ($this->securityChecker->hasPermission(Event::SECURITY_CONTEXT, PermissionTypes::DELETE)) {
+            //$formToolbarActions[] = new ToolbarAction('sulu_admin.delete');
+            $listToolbarActions[] = new ToolbarAction('sulu_admin.delete');
+        }
+
+        if ($this->securityChecker->hasPermission(Event::SECURITY_CONTEXT, PermissionTypes::VIEW)) {
+            $listToolbarActions[] = new ToolbarAction('sulu_admin.export');
+        }
+
         if ($this->securityChecker->hasPermission(Event::SECURITY_CONTEXT, PermissionTypes::LIVE)) {
             $editDropdownToolbarActions = [
                 new ToolbarAction('sulu_admin.save'),

@@ -6,10 +6,17 @@ namespace Manuxi\SuluEventBundle\Controller\Admin;
 
 use Doctrine\ORM\EntityManagerInterface;
 use FOS\RestBundle\View\ViewHandlerInterface;
+use Manuxi\SuluEventBundle\Domain\Event\Event\CreatedEvent;
+use Manuxi\SuluEventBundle\Domain\Event\Event\ModifiedEvent;
+use Manuxi\SuluEventBundle\Domain\Event\Event\PublishedEvent;
+use Manuxi\SuluEventBundle\Domain\Event\Event\RemovedEvent;
+use Manuxi\SuluEventBundle\Domain\Event\Event\UnpublishedEvent;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
 use Manuxi\SuluEventBundle\Entity\Location;
-use Sulu\Bundle\MediaBundle\Media\Manager\MediaManagerInterface;
+use Manuxi\SuluEventBundle\ListBuilder\DoctrineListRepresentationFactory;
+use Sulu\Bundle\ActivityBundle\Application\Collector\DomainEventCollectorInterface;
+use Sulu\Bundle\ContactBundle\Entity\ContactInterface;
 use Sulu\Component\Rest\AbstractRestController;
 use Sulu\Component\Rest\Exception\RestException;
 use Sulu\Component\Rest\ListBuilder\Doctrine\DoctrineListBuilder;
@@ -38,8 +45,8 @@ class EventController extends AbstractRestController
         private RestHelperInterface $restHelper,
         private ContentManagerInterface $contentManager,
         private EntityManagerInterface $entityManager,
-        private MediaManagerInterface $mediaManager,
-        private \Manuxi\SuluEventBundle\ListBuilder\DoctrineListRepresentationFactory $doctrineListRepresentationFactory,
+        private DoctrineListRepresentationFactory $doctrineListRepresentationFactory,
+        private DomainEventCollectorInterface $domainEventCollector,
     ) {
         parent::__construct($viewHandler, $tokenStorage);
     }
@@ -104,6 +111,8 @@ class EventController extends AbstractRestController
         $this->entityManager->persist($event);
         $this->entityManager->flush();
 
+        $this->domainEventCollector->collect(new CreatedEvent($event, $data));
+
         if ('publish' === $request->query->get('action')) {
             $dimensionContent = $this->contentManager->applyTransition(
                 $event,
@@ -112,6 +121,7 @@ class EventController extends AbstractRestController
             );
 
             $this->entityManager->flush();
+            $this->domainEventCollector->collect(new PublishedEvent($event, $data));
         }
 
         return $this->handleView($this->view($this->normalize($event, $dimensionContent), 201));
@@ -153,6 +163,10 @@ class EventController extends AbstractRestController
 
                 $this->entityManager->flush();
 
+                // Assuming copy_locale modifies the event in the destination
+                // We could dispatch ModifiedEvent here but it requires context.
+                // For now, let's leave it or add specific events if needed.
+
                 return $this->handleView($this->view($this->normalize($event, $dimensionContent)));
 
             case 'unpublish':
@@ -163,6 +177,7 @@ class EventController extends AbstractRestController
                 );
 
                 $this->entityManager->flush();
+                $this->domainEventCollector->collect(new UnpublishedEvent($event, $request->query->all()));
 
                 return $this->handleView($this->view($this->normalize($event, $dimensionContent)));
 
@@ -202,7 +217,7 @@ class EventController extends AbstractRestController
                 return $this->handleView($this->view($this->normalize($event, $dimensionContent)));
 
             default:
-                throw new RestException('Unrecognized action: ' . $action);
+                throw new RestException('Unrecognized action: '.$action);
         }
     }
 
@@ -238,6 +253,7 @@ class EventController extends AbstractRestController
         }
 
         $this->entityManager->flush();
+        $this->domainEventCollector->collect(new ModifiedEvent($event, $data));
 
         if ('publish' === $request->query->get('action')) {
             $dimensionContent = $this->contentManager->applyTransition(
@@ -247,6 +263,7 @@ class EventController extends AbstractRestController
             );
 
             $this->entityManager->flush();
+            $this->domainEventCollector->collect(new PublishedEvent($event, $data));
         }
 
         return $this->handleView($this->view($this->normalize($event, $dimensionContent)));
@@ -262,9 +279,18 @@ class EventController extends AbstractRestController
     public function deleteAction(int $id): Response
     {
         /** @var Event $event */
-        $event = $this->entityManager->getReference(Event::class, $id);
+        $event = $this->entityManager->find(Event::class, $id);
+
+        if (!$event) {
+            throw new NotFoundHttpException();
+        }
+
+        $eventId = $event->getId();
+        // Trying to get a title if possible, otherwise empty
+        $eventTitle = '';
 
         $this->entityManager->remove($event);
+        $this->domainEventCollector->collect(new RemovedEvent($eventId, $eventTitle));
         $this->entityManager->flush();
 
         return new Response('', 204);
@@ -311,79 +337,120 @@ class EventController extends AbstractRestController
 
     protected function getData(Request $request): array
     {
-        if ($request->headers->get('Content-Type') === 'application/json') {
+        if ('application/json' === $request->headers->get('Content-Type')) {
             return $request->toArray();
         }
+
         return $request->request->all();
     }
 
     private function setCustomData(Event $event, EventDimensionContent $dimensionContent, array $data): void
     {
-        // Set Location (Unlocalized)
-        // Set Location (Unlocalized + Localized)
-        $locationId = null;
-        if (isset($data['locationId'])) {
-            $locationId = $data['locationId'];
-        } elseif (isset($data['location'])) {
-            $locationId = $data['location'];
+        $locale = $dimensionContent->getLocale();
+        $stage = $dimensionContent->getStage() ?? DimensionContentInterface::STAGE_DRAFT;
+
+        // Find the ACTUAL managed localized DimensionContent from the Event's collection
+        $localizedContent = null;
+        foreach ($event->getDimensionContents() as $dc) {
+            if ($dc->getLocale() === $locale && $dc->getStage() === $stage) {
+                $localizedContent = $dc;
+                break;
+            }
         }
 
+        // Find or create unlocalized content
+        $unlocalizedContent = null;
+        foreach ($event->getDimensionContents() as $dc) {
+            if (null === $dc->getLocale() && DimensionContentInterface::STAGE_DRAFT === $dc->getStage()) {
+                $unlocalizedContent = $dc;
+                break;
+            }
+        }
+
+        if (!$unlocalizedContent) {
+            $unlocalizedContent = new EventDimensionContent($event);
+            $unlocalizedContent->setStage(DimensionContentInterface::STAGE_DRAFT);
+            $event->addDimensionContent($unlocalizedContent);
+            $this->entityManager->persist($unlocalizedContent);
+        }
+
+        // === SET UNLOCALIZED FIELDS ON BOTH ===
+
+        // Location
+        $locationId = $data['locationId'] ?? $data['location'] ?? null;
         if (is_array($locationId) && isset($locationId['id'])) {
             $locationId = $locationId['id'];
         }
-
         if ($locationId) {
-            // Use find() to ensure entity exists and is loaded
             $location = $this->entityManager->find(Location::class, $locationId);
-
             if ($location) {
-
-                // Find or create unlocalized content
-                $unlocalizedContent = null;
-                foreach ($event->getDimensionContents() as $content) {
-                    if ($content->getLocale() === null && $content->getStage() === DimensionContentInterface::STAGE_DRAFT) {
-                        $unlocalizedContent = $content;
-                        break;
-                    }
-                }
-
-                if (!$unlocalizedContent) {
-                    $unlocalizedContent = new EventDimensionContent($event);
-                    $unlocalizedContent->setStage(DimensionContentInterface::STAGE_DRAFT);
-                    $event->addDimensionContent($unlocalizedContent);
-                    $this->entityManager->persist($unlocalizedContent);
-                }
-
                 $unlocalizedContent->setLocation($location);
-
-                // Also set on current localized content to be safe (needed for Response)
-                $dimensionContent->setLocation($location);
-
-                // FIX: $dimensionContent is detached/unmanaged here (see debug output).
-                // We must load the managed entity to persist the relation change to the DB.
-                if ($dimensionContent->getId()) {
-                    $managedContent = $this->entityManager->find(EventDimensionContent::class, $dimensionContent->getId());
-                    if ($managedContent) {
-                        $managedContent->setLocation($location);
-                    }
+                if ($localizedContent) {
+                    $localizedContent->setLocation($location);
                 }
             }
         }
 
-        // Set Author (Localized)
-        if (isset($data['author'])) {
-            $authorId = $data['author'];
-            if (is_array($authorId) && isset($authorId['id'])) {
-                $authorId = $authorId['id'];
+        // Type
+        if (isset($data['type'])) {
+            $unlocalizedContent->setType($data['type']);
+            if ($localizedContent) {
+                $localizedContent->setType($data['type']);
             }
-            $author = $authorId ? $this->entityManager->getReference(\Sulu\Bundle\ContactBundle\Entity\Contact::class, $authorId) : null;
-            $dimensionContent->setAuthor($author);
         }
 
-        // Set Authored Date (Localized)
-        if (isset($data['authored'])) {
-            $authored = $data['authored'] ? new \DateTimeImmutable($data['authored']) : new \DateTimeImmutable();
-            $dimensionContent->setAuthored($authored);
+        // StartDate
+        if (isset($data['startDate'])) {
+            $startDate = $data['startDate'] ? new \DateTimeImmutable($data['startDate']) : null;
+            $unlocalizedContent->setStartDate($startDate);
+            if ($localizedContent) {
+                $localizedContent->setStartDate($startDate);
+            }
+        }
+
+        // EndDate
+        if (isset($data['endDate'])) {
+            $endDate = $data['endDate'] ? new \DateTimeImmutable($data['endDate']) : null;
+            $unlocalizedContent->setEndDate($endDate);
+            if ($localizedContent) {
+                $localizedContent->setEndDate($endDate);
+            }
+        }
+
+        // Email
+        if (isset($data['email'])) {
+            $unlocalizedContent->setEmail($data['email']);
+            if ($localizedContent) {
+                $localizedContent->setEmail($data['email']);
+            }
+        }
+
+        // PhoneNumber
+        if (isset($data['phoneNumber'])) {
+            $unlocalizedContent->setPhoneNumber($data['phoneNumber']);
+            if ($localizedContent) {
+                $localizedContent->setPhoneNumber($data['phoneNumber']);
+            }
+        }
+
+        // === LOCALIZED FIELDS (only on localized content) ===
+
+        if ($localizedContent) {
+            // Author
+            if (isset($data['author'])) {
+                $authorId = $data['author'];
+                if (is_array($authorId) && isset($authorId['id'])) {
+                    $authorId = $authorId['id'];
+                }
+                $author = $authorId ? $this->entityManager->getReference(ContactInterface::class, $authorId) : null;
+                $localizedContent->setAuthor($author);
+            }
+
+            // Authored Date
+            if (isset($data['authored'])) {
+                $authored = $data['authored'] ? new \DateTimeImmutable($data['authored']) : new \DateTimeImmutable();
+                $localizedContent->setAuthored($authored);
+            }
         }
     }
 

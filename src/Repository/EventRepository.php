@@ -57,6 +57,17 @@ class EventRepository extends ServiceEntityRepository
         return $qb->getQuery()->getResult();
     }
 
+    public function findAllByLocale(string $locale, string $stage = DimensionContentInterface::STAGE_LIVE): array
+    {
+        $qb = $this->buildQueryBuilder(
+            ['locale' => $locale, 'stage' => $stage],
+            [], // sort
+            [self::GROUP_SELECT_EVENT_WEBSITE => true]
+        );
+
+        return $qb->getQuery()->getResult();
+    }
+
     /**
      * @param array{
      *     id?: int,
@@ -198,7 +209,6 @@ class EventRepository extends ServiceEntityRepository
 
     public function findRecurringEvents(): array
     {
-        // ✅ Use $this->createQueryBuilder() directly!
         $qb = $this->createQueryBuilder('event');
 
         // Join unlocalizedDimensionContent where recurrence exists
@@ -215,13 +225,11 @@ class EventRepository extends ServiceEntityRepository
 
     public function add(Event $event): void
     {
-        // ✅ Use getEntityManager() from parent!
         $this->getEntityManager()->persist($event);
     }
 
     public function remove(Event $event): void
     {
-        // ✅ Use getEntityManager() from parent!
         $this->getEntityManager()->remove($event);
     }
 
@@ -235,7 +243,6 @@ class EventRepository extends ServiceEntityRepository
         array $sortBys = [],
         array $selects = []
     ): QueryBuilder {
-        // ✅ Use $this->createQueryBuilder() directly!
         $queryBuilder = $this->createQueryBuilder('event');
 
         $this->applyContentJoin($queryBuilder, $filters, $sortBys, $selects);
@@ -354,11 +361,6 @@ class EventRepository extends ServiceEntityRepository
         if (isset($filters['types'])) {
             $queryBuilder->andWhere('unlocalizedDimensionContent.type IN (:types)');
             $queryBuilder->setParameter('types', $filters['types']);
-        }
-
-        if (isset($filters['templateKeys'])) {
-            $queryBuilder->andWhere('dimensionContent.templateKey IN (:templateKeys)');
-            $queryBuilder->setParameter('templateKeys', $filters['templateKeys']);
         }
 
         if (isset($filters['locationId'])) {

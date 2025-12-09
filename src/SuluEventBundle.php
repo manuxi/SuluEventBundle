@@ -10,9 +10,9 @@ use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 class SuluEventBundle extends Bundle
 {
-    public function build(ContainerBuilder $container): void
+/*    public function build(ContainerBuilder $container): void
     {
         parent::build($container);
         $container->addCompilerPass(new TemplatePathCompilerPass());
-    }
+    }*/
 }

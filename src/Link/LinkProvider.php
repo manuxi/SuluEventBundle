@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Link;
 
-use Doctrine\ORM\EntityManagerInterface;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
@@ -18,34 +17,11 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class LinkProvider implements LinkProviderInterface
 {
-    private ?EventRepository $eventRepository = null;
-
     public function __construct(
         private readonly ContentAggregatorInterface $contentAggregator,
-        private EntityManagerInterface $entityManager,
+        private EventRepository $eventRepository,
         private readonly TranslatorInterface $translator,
     ) {
-    }
-
-    private function getEventRepository(): EventRepository
-    {
-        if (null === $this->eventRepository) {
-            $repository = $this->entityManager->getRepository(Event::class);
-
-            // This should be our EventRepository because Event.orm.xml declares it
-            if (!$repository instanceof EventRepository) {
-                throw new \RuntimeException(
-                    sprintf(
-                        'Expected EventRepository, got %s',
-                        get_class($repository)
-                    )
-                );
-            }
-
-            $this->eventRepository = $repository;
-        }
-
-        return $this->eventRepository;
     }
 
     public function getConfigurationBuilder(): LinkConfigurationBuilder
@@ -72,9 +48,10 @@ class LinkProvider implements LinkProviderInterface
         ];
 
         $intIds = \array_map('intval', $hrefs);
-        $events = $this->getEventRepository()->findBy(['ids' => $intIds]);
+        $stage = $dimensionAttributes['stage'];
+        $result = $this->eventRepository->findByIds($intIds, $locale, $stage);
 
-        foreach ($events as $event) {
+        foreach ($result as $event) {
             /** @var EventDimensionContent $dimensionContent */
             $dimensionContent = $this->contentAggregator->aggregate($event, $dimensionAttributes);
 
