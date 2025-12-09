@@ -287,3 +287,11 @@ services:
         class: Manuxi\SuluEventBundle\Content\Normalizer\EventNormalizer
         tags:
             - { name: sulu_content.normalizer }
+
+    # Fixtures
+    Manuxi\SuluEventBundle\DataFixtures\Event\EventFixture:
+        class: Manuxi\SuluEventBundle\DataFixtures\Event\EventFixture
+        arguments:
+            - '@sulu_content.content_manager'
+        tags:
+            - { name: doctrine.fixture.orm }

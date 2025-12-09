@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<serializer-mapping>
+    <class name="Manuxi\SuluEventBundle\Entity\Event" exclusion-policy="all">
+        <property name="id" type="integer" expose="true" />
+        <virtual-property name="title" type="string" expression="object.getDimensionContent().getTitle()" />
+        <virtual-property name="subtitle" type="string" expression="object.getDimensionContent().getSubtitle()" />
+        <virtual-property name="type" type="string" expression="object.getDimensionContent().getType()" />
+        <virtual-property name="images" type="array" expression="object.getDimensionContent().getImages()" />
+        <virtual-property name="startDate" type="DateTimeImmutable" expression="object.getDimensionContent().getStartDate()" />
+        <virtual-property name="endDate" type="DateTimeImmutable" expression="object.getDimensionContent().getEndDate()" />
+        <virtual-property name="locationId" type="integer" expression="object.getDimensionContent().getLocationId()" />
+
+        <!-- Expose route path if available -->
+        <virtual-property name="url" type="string" expression="object.getDimensionContent() ? object.getDimensionContent().getUrl() : null" />
+    </class>
+</serializer-mapping>

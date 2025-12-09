@@ -128,7 +128,7 @@ class EventSmartContentProvider implements SmartContentProviderInterface
         foreach ($this->eventTypes as $key => $config) {
             $types[] = [
                 'type' => $key,
-                'title' => $config['name'],
+                'title' => $this->translator->trans($config['name'], [], 'admin'),
             ];
         }
 
@@ -169,7 +169,7 @@ class EventSmartContentProvider implements SmartContentProviderInterface
         );
         $this->addInternalFilters($queryBuilder, $filters, $alias);
 
-        $queryBuilder->select('COUNT(DISTINCT '.$alias.'.id)');
+        $queryBuilder->select('COUNT(DISTINCT ' . $alias . '.id)');
 
         return (int) $queryBuilder->getQuery()->getSingleScalarResult();
     }
@@ -204,18 +204,22 @@ class EventSmartContentProvider implements SmartContentProviderInterface
             $filters,
             $sortBys,
         );
-        $this->addInternalFilters($queryBuilder, $filters, $alias);
+        $dimensionContentAlias = $this->addInternalFilters($queryBuilder, $filters, $alias);
 
-        $queryBuilder->select('DISTINCT '.$alias.'.id as id');
+        $queryBuilder->select('DISTINCT ' . $alias . '.id as id');
+        $queryBuilder->addSelect($dimensionContentAlias . '.title');
+
         $this->smartContentQueryEnhancer->addOrderBySelects($queryBuilder);
-        $this->smartContentQueryEnhancer->addPagination($queryBuilder, $filters['offset'] ?? 0, $filters['limit']);
+        $limit = isset($filters['limit']) ? (int) $filters['limit'] : null;
+        $offset = isset($filters['offset']) ? (int) $filters['offset'] : 0;
+        $this->smartContentQueryEnhancer->addPagination($queryBuilder, $offset, $limit);
 
         /** @var array{id: int|string, title?: string}[] $queryResult */
         $queryResult = $queryBuilder->getQuery()->getArrayResult();
 
         /** @var array{id: string, title: string}[] $result */
         $result = \array_map(
-            static fn (array $item) => [
+            static fn(array $item) => [
                 'id' => (string) $item['id'],
                 'title' => (string) ($item['title'] ?? ''),
             ],
@@ -250,7 +254,8 @@ class EventSmartContentProvider implements SmartContentProviderInterface
             'tagOperator' => $filters['tagOperator'] ?? 'OR',
             'websiteTags' => $filters['websiteTags'] ?? [],
             'websiteTagOperator' => $filters['websiteTagOperator'] ?? 'OR',
-            'templateKeys' => $filters['types'] ?? [],
+            'templateKeys' => [], // Do NOT filter templateKeys by type (because templateKey is 'event')
+            'customTypes' => $filters['types'] ?? [], // Pass types as custom key
             'typesOperator' => $filters['typesOperator'] ?? 'OR',
             'locale' => $filters['locale'],
             'dataSource' => $filters['dataSource'] ?? null,
@@ -276,24 +281,45 @@ class EventSmartContentProvider implements SmartContentProviderInterface
      * IMPORTANT: This method is called AFTER dimensionContentQueryEnhancer->addFilters()
      * which already joins filterDimensionContent. We need to join unlocalizedDimensionContent
      * separately for startDate/endDate/type which are stored unlocalized.
+     *
+     * @return string The alias of the dimension content join
      */
-    protected function addInternalFilters(QueryBuilder $queryBuilder, array $filters, string $alias): void
+    protected function addInternalFilters(QueryBuilder $queryBuilder, array $filters, string $alias): string
     {
-        // Join unlocalizedDimensionContent for type, startDate, endDate
-        $stage = $filters['stage'] ?? DimensionContentInterface::STAGE_LIVE;
+        // Find the alias of the joined dimension content (added by DimensionContentQueryEnhancer)
+        // to avoid a duplicate join.
+        $dimensionContentAlias = null;
+        $joins = $queryBuilder->getDQLPart('join');
 
-        $queryBuilder->leftJoin(
-            $alias . '.dimensionContents',
-            'unlocalizedDimensionContent',
-            'WITH',
-            'unlocalizedDimensionContent.locale IS NULL 
-             AND unlocalizedDimensionContent.stage = :unlocalized_stage 
-             AND unlocalizedDimensionContent.version = :unlocalized_version'
-        );
-        $queryBuilder->setParameter('unlocalized_stage', $stage);
-        $queryBuilder->setParameter('unlocalized_version', DimensionContentInterface::CURRENT_VERSION);
+        if (isset($joins[$alias])) {
+            foreach ($joins[$alias] as $join) {
+                if ($join->getJoin() === $alias . '.dimensionContents') {
+                    $dimensionContentAlias = $join->getAlias();
+                    break;
+                }
+            }
+        }
 
-        $this->addTypeFilters($queryBuilder, $filters['templateKeys'] ?? [], 'unlocalizedDimensionContent');
+        if (!$dimensionContentAlias) {
+            // Fallback if no join exists
+            $dimensionContentAlias = 'localizedDimensionContent';
+            $stage = $filters['stage'] ?? DimensionContentInterface::STAGE_LIVE;
+            $locale = $filters['locale'];
+
+            $queryBuilder->innerJoin(
+                $alias . '.dimensionContents',
+                $dimensionContentAlias,
+                'WITH',
+                $dimensionContentAlias . '.locale = :locale
+                 AND ' . $dimensionContentAlias . '.stage = :stage'
+            );
+            $queryBuilder->setParameter('locale', $locale);
+            $queryBuilder->setParameter('stage', $stage);
+        }
+
+        $this->addTypeFilters($queryBuilder, $filters['customTypes'] ?? [], $dimensionContentAlias);
+
+        return $dimensionContentAlias;
     }
 
     /**
@@ -311,7 +337,7 @@ class EventSmartContentProvider implements SmartContentProviderInterface
         $configurableTypes = \array_intersect($types, \array_keys($this->eventTypes));
 
         if (!empty($configurableTypes)) {
-            $queryBuilder->andWhere($alias.'.type IN (:eventTypes)')
+            $queryBuilder->andWhere($alias . '.type IN (:eventTypes)')
                 ->setParameter('eventTypes', $configurableTypes);
         }
 
@@ -325,15 +351,15 @@ class EventSmartContentProvider implements SmartContentProviderInterface
         // Use unlocalizedDimensionContent alias for startDate/endDate!
         if ($hasPending) {
             $queryBuilder->andWhere(
-                '('.$alias.'.endDate IS NOT NULL AND '.$alias.'.endDate >= :now) OR '.
-                '('.$alias.'.endDate IS NULL AND '.$alias.'.startDate >= :todayStart)'
+                '(' . $alias . '.endDate IS NOT NULL AND ' . $alias . '.endDate >= :now) OR ' .
+                '(' . $alias . '.endDate IS NULL AND ' . $alias . '.startDate >= :todayStart)'
             );
             $queryBuilder->setParameter('now', $now);
             $queryBuilder->setParameter('todayStart', $todayStart);
         } elseif ($hasExpired) {
             $queryBuilder->andWhere(
-                '('.$alias.'.endDate IS NOT NULL AND '.$alias.'.endDate < :now) OR '.
-                '('.$alias.'.endDate IS NULL AND '.$alias.'.startDate < :todayStart)'
+                '(' . $alias . '.endDate IS NOT NULL AND ' . $alias . '.endDate < :now) OR ' .
+                '(' . $alias . '.endDate IS NULL AND ' . $alias . '.startDate < :todayStart)'
             );
             $queryBuilder->setParameter('now', $now);
             $queryBuilder->setParameter('todayStart', $todayStart);

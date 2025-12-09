@@ -46,6 +46,17 @@ class EventRepository extends ServiceEntityRepository
         return $this->find($id);
     }
 
+    public function findByIds(array $ids, string $locale, string $stage = DimensionContentInterface::STAGE_LIVE): array
+    {
+        $qb = $this->buildQueryBuilder(
+            ['ids' => $ids, 'locale' => $locale, 'stage' => $stage],
+            [], // sort
+            [self::GROUP_SELECT_EVENT_WEBSITE => true]
+        );
+
+        return $qb->getQuery()->getResult();
+    }
+
     /**
      * @param array{
      *     id?: int,
@@ -133,8 +144,15 @@ class EventRepository extends ServiceEntityRepository
             'event.dimensionContents',
             'unlocalizedDimensionContent',
             'WITH',
-            'unlocalizedDimensionContent.locale IS NULL AND unlocalizedDimensionContent.stage = :stage'
+            'unlocalizedDimensionContent.stage = :stage'
         );
+
+        if (isset($filters['locale'])) {
+            $qb->andWhere('unlocalizedDimensionContent.locale = :locale');
+            $qb->setParameter('locale', $filters['locale']);
+        } else {
+            $qb->andWhere('unlocalizedDimensionContent.locale IS NULL');
+        }
         $qb->setParameter('stage', DimensionContentInterface::STAGE_LIVE);
 
         if (isset($filters['start'])) {
@@ -162,8 +180,15 @@ class EventRepository extends ServiceEntityRepository
             'event.dimensionContents',
             'unlocalizedDimensionContent',
             'WITH',
-            'unlocalizedDimensionContent.locale IS NULL AND unlocalizedDimensionContent.stage = :stage'
+            'unlocalizedDimensionContent.stage = :stage'
         );
+
+        if (isset($filters['locale'])) {
+            $qb->andWhere('unlocalizedDimensionContent.locale = :locale');
+            $qb->setParameter('locale', $filters['locale']);
+        } else {
+            $qb->andWhere('unlocalizedDimensionContent.locale IS NULL');
+        }
         $qb->setParameter('stage', DimensionContentInterface::STAGE_LIVE);
 
         $qb->orderBy('unlocalizedDimensionContent.startDate', 'ASC');
@@ -275,21 +300,37 @@ class EventRepository extends ServiceEntityRepository
         $version = $filters['version'] ?? DimensionContentInterface::CURRENT_VERSION;
 
         // Always join unlocalizedDimensionContent for non-localized fields (type, startDate, endDate, etc.)
+        // Always join unlocalizedDimensionContent for non-localized fields (type, startDate, endDate, etc.)
+        // Refactored: Use localized content if locale is provided (since live data has no null-locale rows)
         $queryBuilder->leftJoin(
             'event.dimensionContents',
             'unlocalizedDimensionContent',
             'WITH',
-            'unlocalizedDimensionContent.locale IS NULL AND unlocalizedDimensionContent.stage = :stage AND unlocalizedDimensionContent.version = :version'
+            'unlocalizedDimensionContent.stage = :stage AND unlocalizedDimensionContent.version = :version'
         );
+
+        if ($locale) {
+            $queryBuilder->andWhere('unlocalizedDimensionContent.locale = :locale');
+            $queryBuilder->setParameter('locale', $locale);
+        } else {
+            $queryBuilder->andWhere('unlocalizedDimensionContent.locale IS NULL');
+        }
         $queryBuilder->setParameter('stage', $stage);
         $queryBuilder->setParameter('version', $version);
 
         if ($locale) {
+            $queryBuilder->leftJoin(
+                'event.dimensionContents',
+                'dimensionContent',
+                'WITH',
+                'dimensionContent.stage = :stage AND dimensionContent.locale = :locale'
+            );
+            $queryBuilder->addSelect('dimensionContent');
             // Join dimensionContent for localized fields (title, text, etc.)
             $this->dimensionContentQueryEnhancer->addSelects(
                 $queryBuilder,
                 EventDimensionContent::class,
-                'event',
+                ['locale' => $locale, 'stage' => $stage],
                 $selects
             );
         }
@@ -385,14 +426,14 @@ class EventRepository extends ServiceEntityRepository
 
         if ($hasPending) {
             $queryBuilder->andWhere(
-                '(unlocalizedDimensionContent.endDate IS NOT NULL AND unlocalizedDimensionContent.endDate >= :now) OR '.
+                '(unlocalizedDimensionContent.endDate IS NOT NULL AND unlocalizedDimensionContent.endDate >= :now) OR ' .
                 '(unlocalizedDimensionContent.endDate IS NULL AND unlocalizedDimensionContent.startDate >= :todayStart)'
             );
             $queryBuilder->setParameter('now', $now);
             $queryBuilder->setParameter('todayStart', $todayStart);
         } elseif ($hasExpired) {
             $queryBuilder->andWhere(
-                '(unlocalizedDimensionContent.endDate IS NOT NULL AND unlocalizedDimensionContent.endDate < :now) OR '.
+                '(unlocalizedDimensionContent.endDate IS NOT NULL AND unlocalizedDimensionContent.endDate < :now) OR ' .
                 '(unlocalizedDimensionContent.endDate IS NULL AND unlocalizedDimensionContent.startDate < :todayStart)'
             );
             $queryBuilder->setParameter('now', $now);

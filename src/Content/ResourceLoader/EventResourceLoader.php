@@ -7,6 +7,7 @@ namespace Manuxi\SuluEventBundle\Content\ResourceLoader;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
 use Sulu\Content\Application\ResourceLoader\Loader\ResourceLoaderInterface;
+use Sulu\Content\Domain\Model\DimensionContentInterface;
 
 class EventResourceLoader implements ResourceLoaderInterface
 {
@@ -30,7 +31,8 @@ class EventResourceLoader implements ResourceLoaderInterface
 
         $intIds = \array_map('intval', $ids);
 
-        $result = $this->eventRepository->findBy(['ids' => $intIds]);
+        $stage = $params['stage'] ?? DimensionContentInterface::STAGE_LIVE;
+        $result = $this->eventRepository->findByIds($intIds, $locale, $stage);
 
         $mappedResult = [];
         foreach ($result as $event) {
