@@ -257,19 +257,24 @@ class EventReferenceRefresher implements ReferenceRefresherInterface
                     }
 
                     $dimensionContentCollection = new DimensionContentCollection(
-                        \array_filter([
+                        new ArrayCollection(\array_filter([
                             $unlocalizedDimensionContent,
                             $localizedDimensionContent,
-                        ]),
-                        new ArrayCollection([
-                            ['locale' => null, 'stage' => $stage],
-                            ['locale' => $locale, 'stage' => $stage],
-                        ]),
+                        ])),
+                        ['locale' => $locale, 'stage' => $stage],
+                        EventDimensionContent::class
                     );
 
                     /** @var EventDimensionContent $merged */
                     $merged = $this->contentMerger->merge($dimensionContentCollection);
 
+                    if (null === $merged->getLocale()) {
+                        $merged->setLocale($locale);
+                    }
+
+                    if (empty($merged->getTemplateKey())) {
+                        $merged->setTemplateKey('event');
+                    }
                     yield $merged;
                 }
             }

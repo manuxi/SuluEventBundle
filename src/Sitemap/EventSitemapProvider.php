@@ -117,13 +117,11 @@ class EventSitemapProvider implements SitemapProviderInterface
             return null;
         }
 
-        return $portalInformations[0]->getLocale();
+        return \reset($portalInformations)->getLocale();
     }
 
     /**
      * Find published events for sitemap.
-     *
-     * Sulu 3 Standard: All fields (localized + unlocalized) are in locale-specific entries.
      *
      * @return array<array{id: int, locale: string, slug: string, lastModified: \DateTimeInterface|null}>
      */
@@ -223,9 +221,6 @@ class EventSitemapProvider implements SitemapProviderInterface
         return $result;
     }
 
-    /**
-     * Count published events for pagination.
-     */
     private function countEvents(string $locale): int
     {
         $queryBuilder = $this->entityRepository->createQueryBuilder('event');
@@ -249,7 +244,6 @@ class EventSitemapProvider implements SitemapProviderInterface
         $queryBuilder->setParameter('hide', false);
         $queryBuilder->setParameter('published', WorkflowInterface::WORKFLOW_PLACE_PUBLISHED);
 
-        // Only count events that actually have published content
         $queryBuilder->andWhere('dimensionContent.id IS NOT NULL');
 
         return (int) $queryBuilder->getQuery()->getSingleScalarResult();

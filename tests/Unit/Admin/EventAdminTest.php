@@ -14,27 +14,31 @@ use Sulu\Bundle\AdminBundle\Admin\View\ViewBuilderFactoryInterface;
 use Sulu\Bundle\AdminBundle\Admin\View\ViewCollection;
 use Sulu\Component\Security\Authorization\PermissionTypes;
 use Sulu\Component\Security\Authorization\SecurityCheckerInterface;
-use Sulu\Component\Webspace\Manager\WebspaceManagerInterface;
+use Sulu\Component\Localization\Manager\LocalizationManagerInterface;
+use Sulu\Content\Infrastructure\Sulu\Admin\ContentViewBuilderFactoryInterface;
 
 class EventAdminTest extends TestCase
 {
     private EventAdmin $eventAdmin;
 
     private ViewBuilderFactoryInterface|MockObject $viewBuilderFactory;
+    private ContentViewBuilderFactoryInterface|MockObject $contentViewBuilderFactory;
     private SecurityCheckerInterface|MockObject $securityChecker;
-    private WebspaceManagerInterface|MockObject $webspaceManager;
+    private LocalizationManagerInterface|MockObject $localizationManager;
 
     protected function setUp(): void
     {
         $this->viewBuilderFactory = $this->createMock(ViewBuilderFactoryInterface::class);
+        $this->contentViewBuilderFactory = $this->createMock(ContentViewBuilderFactoryInterface::class);
         $this->securityChecker = $this->createMock(SecurityCheckerInterface::class);
-        $this->webspaceManager = $this->createMock(WebspaceManagerInterface::class);
+        $this->localizationManager = $this->createMock(LocalizationManagerInterface::class);
         $activityViewBuilderFactory = $this->createMock(ActivityViewBuilderFactoryInterface::class);
 
         $this->eventAdmin = new EventAdmin(
             $this->viewBuilderFactory,
+            $this->contentViewBuilderFactory,
             $this->securityChecker,
-            $this->webspaceManager,
+            $this->localizationManager,
             $activityViewBuilderFactory,
         );
     }
@@ -136,7 +140,8 @@ class EventAdminTest extends TestCase
         $locales = ['en', 'de'];
 
         $this->mockSecurityCheckerForViews();
-        $this->mockWebspaceManager($locales);
+        $this->mockLocalizationManager($locales);
+        $this->mockContentViewBuilderFactory();
         $this->mockViewBuilders($viewCollection, $locales);
 
         // Act
@@ -154,7 +159,8 @@ class EventAdminTest extends TestCase
         $locales = ['en', 'de', 'fr', 'es'];
 
         $this->mockSecurityCheckerForViews();
-        $this->mockWebspaceManager($locales);
+        $this->mockLocalizationManager($locales);
+        $this->mockContentViewBuilderFactory();
         $this->mockViewBuilders($viewCollection, $locales);
 
         // Act
@@ -164,81 +170,7 @@ class EventAdminTest extends TestCase
         $this->assertTrue(true);
     }
 
-    public function testConfigureViewsAddsSeoTab(): void
-    {
-        // Arrange
-        $viewCollection = $this->createMock(ViewCollection::class);
-        $locales = ['en'];
 
-        $this->mockSecurityCheckerForViews();
-        $this->mockWebspaceManager($locales);
-
-        // Verify that SEO view is created
-        $this->viewBuilderFactory
-            ->method('createPreviewFormViewBuilder')
-            ->willReturnCallback(function ($name) {
-                $builder = $this->createMock(\Sulu\Bundle\AdminBundle\Admin\View\PreviewFormViewBuilder::class);
-                $builder->method('setResourceKey')->willReturnSelf();
-                $builder->method('setFormKey')->willReturnSelf();
-                $builder->method('setTabTitle')->willReturnSelf();
-                $builder->method('addToolbarActions')->willReturnSelf();
-                $builder->method('setPreviewCondition')->willReturnSelf();
-                $builder->method('setTitleVisible')->willReturnSelf();
-                $builder->method('setTabOrder')->willReturnSelf();
-                $builder->method('setParent')->willReturnSelf();
-                $builder->method('disablePreviewWebspaceChooser')->willReturnSelf();
-
-                if (EventAdmin::EDIT_FORM_VIEW_SEO === $name) {
-                    $this->assertEquals(EventAdmin::EDIT_FORM_VIEW_SEO, $name);
-                }
-
-                return $builder;
-            });
-
-        // Act
-        $this->eventAdmin->configureViews($viewCollection);
-
-        // Assert
-        $this->assertTrue(true);
-    }
-
-    public function testConfigureViewsAddsExcerptTab(): void
-    {
-        // Arrange
-        $viewCollection = $this->createMock(ViewCollection::class);
-        $locales = ['en'];
-
-        $this->mockSecurityCheckerForViews();
-        $this->mockWebspaceManager($locales);
-
-        // Verify that Excerpt view is created
-        $this->viewBuilderFactory
-            ->method('createPreviewFormViewBuilder')
-            ->willReturnCallback(function ($name) {
-                $builder = $this->createMock(\Sulu\Bundle\AdminBundle\Admin\View\PreviewFormViewBuilder::class);
-                $builder->method('setResourceKey')->willReturnSelf();
-                $builder->method('setFormKey')->willReturnSelf();
-                $builder->method('setTabTitle')->willReturnSelf();
-                $builder->method('addToolbarActions')->willReturnSelf();
-                $builder->method('setPreviewCondition')->willReturnSelf();
-                $builder->method('setTitleVisible')->willReturnSelf();
-                $builder->method('setTabOrder')->willReturnSelf();
-                $builder->method('setParent')->willReturnSelf();
-                $builder->method('disablePreviewWebspaceChooser')->willReturnSelf();
-
-                if (EventAdmin::EDIT_FORM_VIEW_EXCERPT === $name) {
-                    $this->assertEquals(EventAdmin::EDIT_FORM_VIEW_EXCERPT, $name);
-                }
-
-                return $builder;
-            });
-
-        // Act
-        $this->eventAdmin->configureViews($viewCollection);
-
-        // Assert
-        $this->assertTrue(true);
-    }
 
     public function testConfigureViewsAddsSettingsTab(): void
     {
@@ -247,25 +179,24 @@ class EventAdminTest extends TestCase
         $locales = ['en'];
 
         $this->mockSecurityCheckerForViews();
-        $this->mockWebspaceManager($locales);
+        $this->mockLocalizationManager($locales);
+        $this->mockContentViewBuilderFactory();
 
         // Verify that Settings view is created
         $this->viewBuilderFactory
-            ->method('createPreviewFormViewBuilder')
+            ->method('createFormViewBuilder')
             ->willReturnCallback(function ($name) {
-                $builder = $this->createMock(\Sulu\Bundle\AdminBundle\Admin\View\PreviewFormViewBuilder::class);
+                $builder = $this->createMock(\Sulu\Bundle\AdminBundle\Admin\View\FormViewBuilder::class);
                 $builder->method('setResourceKey')->willReturnSelf();
                 $builder->method('setFormKey')->willReturnSelf();
                 $builder->method('setTabTitle')->willReturnSelf();
                 $builder->method('addToolbarActions')->willReturnSelf();
-                $builder->method('setPreviewCondition')->willReturnSelf();
-                $builder->method('setTitleVisible')->willReturnSelf();
+                $builder->method('setEditView')->willReturnSelf();
                 $builder->method('setTabOrder')->willReturnSelf();
                 $builder->method('setParent')->willReturnSelf();
-                $builder->method('disablePreviewWebspaceChooser')->willReturnSelf();
 
-                if (EventAdmin::EDIT_FORM_VIEW_SETTINGS === $name) {
-                    $this->assertEquals(EventAdmin::EDIT_FORM_VIEW_SETTINGS, $name);
+                if ('sulu_event.event.edit_tabs.settings' === $name) {
+                    $this->assertEquals('sulu_event.event.edit_tabs.settings', $name);
                 }
 
                 return $builder;
@@ -283,18 +214,8 @@ class EventAdminTest extends TestCase
         // Assert
         $this->assertEquals('sulu_event.events', EventAdmin::NAV_ITEM);
         $this->assertEquals('sulu_event.event.list', EventAdmin::LIST_VIEW);
-        $this->assertEquals('sulu_event.event.add_form', EventAdmin::ADD_FORM_VIEW);
-        $this->assertEquals('sulu_event.event.add_form.details', EventAdmin::ADD_FORM_DETAILS_VIEW);
-        $this->assertEquals('sulu_event.event.edit_form', EventAdmin::EDIT_FORM_VIEW);
+        $this->assertEquals('sulu_event.event.edit_tabs', EventAdmin::EDIT_FORM_VIEW);
         $this->assertEquals('sulu_event.event.edit_form.details', EventAdmin::EDIT_FORM_DETAILS_VIEW);
-        $this->assertEquals('sulu.modules.events', EventAdmin::SECURITY_CONTEXT);
-        $this->assertEquals('sulu_event.edit_form.seo', EventAdmin::EDIT_FORM_VIEW_SEO);
-        $this->assertEquals('sulu_event.edit_form.excerpt', EventAdmin::EDIT_FORM_VIEW_EXCERPT);
-        $this->assertEquals('sulu_event.event.edit_form.settings', EventAdmin::EDIT_FORM_VIEW_SETTINGS);
-        $this->assertEquals('sulu_event.event.edit_form.activity', EventAdmin::EDIT_FORM_VIEW_ACTIVITY);
-
-        $this->assertEquals('sulu_event.event.edit_form.recurrence', EventAdmin::EDIT_FORM_VIEW_RECURRENCE);
-        $this->assertEquals('sulu_event.event.edit_form.social', EventAdmin::EDIT_FORM_VIEW_SOCIAL);
     }
 
     /**
@@ -311,14 +232,21 @@ class EventAdminTest extends TestCase
     }
 
     /**
-     * Helper: Mock webspace manager with locales.
+     * Helper: Mock localization manager with locales.
      */
-    private function mockWebspaceManager(array $locales): void
+    private function mockLocalizationManager(array $locales): void
     {
-        $this->webspaceManager
+        $this->localizationManager
             ->expects($this->atLeastOnce())
-            ->method('getAllLocales')
+            ->method('getLocales')
             ->willReturn($locales);
+    }
+
+    private function mockContentViewBuilderFactory(): void
+    {
+        $this->contentViewBuilderFactory
+            ->method('createViews')
+            ->willReturn([]);
     }
 
     /**

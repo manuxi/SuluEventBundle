@@ -12,7 +12,7 @@ use Manuxi\SuluEventBundle\Entity\Location;
 /**
  * Fixture for creating sample locations.
  *
- * Usage: bin/console doctrine:fixtures:load --group=locations
+ * Usage: bin/console doctrine:fixtures:load --group=locations --append
  */
 class LocationFixture extends Fixture implements FixtureGroupInterface
 {
