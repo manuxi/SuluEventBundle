@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Domain\Event\Config;
 
-
 use Manuxi\SuluEventBundle\Entity\EventSettings;
 use Sulu\Bundle\ActivityBundle\Domain\Event\DomainEvent;
 
@@ -34,12 +33,12 @@ abstract class AbstractEvent extends DomainEvent
 
     public function getResourceId(): string
     {
-        return (string)$this->event->getId();
+        return (string) $this->event->getId();
     }
 
     public function getResourceTitle(): ?string
     {
-        return "Event Settings";
+        return 'Event Settings';
     }
 
     public function getResourceSecurityContext(): ?string

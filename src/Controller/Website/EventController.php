@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace Manuxi\SuluEventBundle\Controller\Website;
 
 use Manuxi\SuluEventBundle\Entity\Event;
+use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
 use Sulu\Bundle\PreviewBundle\Preview\Preview;
 use Sulu\Bundle\WebsiteBundle\Resolver\TemplateAttributeResolverInterface;
 use Sulu\Component\Webspace\Manager\WebspaceManagerInterface;
+use Sulu\Content\Application\ContentAggregator\ContentAggregatorInterface;
+use Sulu\Content\Domain\Model\DimensionContentInterface;
 use Sulu\Route\Domain\Repository\RouteRepositoryInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,6 +25,7 @@ class EventController
         private readonly RouteRepositoryInterface $routeRepository,
         private readonly WebspaceManagerInterface $webspaceManager,
         private readonly RequestStack $requestStack,
+        private readonly ContentAggregatorInterface $contentAggregator,
     ) {
     }
 
@@ -34,13 +38,22 @@ class EventController
         $request = $this->requestStack->getCurrentRequest();
         $locale = $request ? $request->getLocale() : 'en';
 
-        // Resolve the correct DimensionContent for the current locale
-        $content = null;
-        foreach ($event->getDimensionContents() as $dimensionContent) {
-            if ($dimensionContent->getLocale() === $locale) {
-                $content = $dimensionContent;
-                break;
-            }
+        // Use ContentAggregator to properly resolve DimensionContent
+        // This handles merging unlocalized + localized content correctly
+        $stage = $preview ? DimensionContentInterface::STAGE_DRAFT : DimensionContentInterface::STAGE_LIVE;
+
+        /** @var EventDimensionContent|null $content */
+        $content = $this->contentAggregator->aggregate(
+            $event,
+            [
+                'locale' => $locale,
+                'stage' => $stage,
+            ]
+        );
+
+        if (!$content || !$content->getTitle()) {
+            // Fallback: Try to find directly in collection (for preview with injected content)
+            $content = $this->findDimensionContentInCollection($event, $locale, $stage);
         }
 
         if (!$content) {
@@ -70,6 +83,30 @@ class EventController
         }
 
         return new Response($content);
+    }
+
+    /**
+     * Fallback method to find DimensionContent in the Event's collection.
+     * Used when ContentAggregator doesn't return content (e.g., during preview).
+     */
+    private function findDimensionContentInCollection(Event $event, string $locale, string $stage): ?EventDimensionContent
+    {
+        foreach ($event->getDimensionContents() as $dimensionContent) {
+            if ($dimensionContent->getLocale() === $locale && $dimensionContent->getStage() === $stage) {
+                return $dimensionContent;
+            }
+        }
+
+        // Try draft stage if live not found
+        if ($stage === DimensionContentInterface::STAGE_LIVE) {
+            foreach ($event->getDimensionContents() as $dimensionContent) {
+                if ($dimensionContent->getLocale() === $locale && $dimensionContent->getStage() === DimensionContentInterface::STAGE_DRAFT) {
+                    return $dimensionContent;
+                }
+            }
+        }
+
+        return null;
     }
 
     protected function getLocalizationsArrayForEntity(Event $event): array

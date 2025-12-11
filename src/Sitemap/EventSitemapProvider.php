@@ -45,26 +45,32 @@ class EventSitemapProvider implements SitemapProviderInterface
         $result = [];
         foreach ($events as $eventData) {
             $eventId = (string) $eventData['id'];
-            $locale = $eventData['locale'];
+            $eventLocale = $eventData['locale'];
             $slug = $eventData['slug'];
             $lastModified = $eventData['lastModified'];
 
+            if (empty($slug)) {
+                continue;
+            }
+
             $sitemapUrl = new SitemapUrl(
-                $scheme.'://'.$host.$slug,
-                $locale,
-                $locale,
+                $scheme . '://' . $host . $slug,
+                $eventLocale,
+                $eventLocale,
                 $lastModified,
             );
 
             // Add alternate links for other locales
             if (isset($alternateRoutes[$eventId])) {
                 foreach ($alternateRoutes[$eventId] as $alternateLocale => $alternateSlug) {
-                    $sitemapUrl->addAlternateLink(
-                        new SitemapAlternateLink(
-                            $scheme.'://'.$host.$alternateSlug,
-                            $alternateLocale,
-                        )
-                    );
+                    if ($alternateLocale !== $eventLocale && !empty($alternateSlug)) {
+                        $sitemapUrl->addAlternateLink(
+                            new SitemapAlternateLink(
+                                $scheme . '://' . $host . $alternateSlug,
+                                $alternateLocale,
+                            )
+                        );
+                    }
                 }
             }
 
@@ -102,56 +108,60 @@ class EventSitemapProvider implements SitemapProviderInterface
 
     private function getLocaleFromHost(string $host): ?string
     {
-        $portalInformation = $this->webspaceManager->findPortalInformationsByHostIncludingSubdomains(
+        $portalInformations = $this->webspaceManager->findPortalInformationsByHostIncludingSubdomains(
             $host,
             $this->environment
         );
 
-        if (0 === \count($portalInformation)) {
+        if (0 === \count($portalInformations)) {
             return null;
         }
 
-        return reset($portalInformation)->getLocale();
+        return $portalInformations[0]->getLocale();
     }
 
     /**
-     * @return array<array{id: int, locale: string, slug: string, lastModified: \DateTimeInterface}>
+     * Find published events for sitemap.
+     *
+     * Sulu 3 Standard: All fields (localized + unlocalized) are in locale-specific entries.
+     *
+     * @return array<array{id: int, locale: string, slug: string, lastModified: \DateTimeInterface|null}>
      */
     private function findEvents(string $locale, int $limit, int $offset): array
     {
         $queryBuilder = $this->entityRepository->createQueryBuilder('event');
 
-        $queryBuilder->andWhere('1 = 1');
-
-        // Join localized dimension content
-        $queryBuilder->distinct()->leftJoin('event.dimensionContents', 'dimensionContent', 'WITH', '
-            dimensionContent.locale = :locale
-            AND dimensionContent.stage = :stage
-            AND dimensionContent.version = :version
-            AND dimensionContent.seoHideInSitemap = :hide
-            AND dimensionContent.workflowPlace = :published
-        ')
-            ->leftJoin('dimensionContent.route', 'route')
-            ->setParameter('locale', $locale)
-            ->setParameter('stage', DimensionContentInterface::STAGE_LIVE)
-            ->setParameter('version', DimensionContentInterface::CURRENT_VERSION)
-            ->setParameter('hide', false)
-            ->setParameter('published', WorkflowInterface::WORKFLOW_PLACE_PUBLISHED);
-
-        // Join unlocalized dimension content for lastModified
+        // Join localized dimension content (all fields are here in Sulu 3 Standard)
         $queryBuilder->leftJoin(
             'event.dimensionContents',
-            'unlocalizedDimensionContent',
+            'dimensionContent',
             'WITH',
-            'unlocalizedDimensionContent.locale IS NULL 
-             AND unlocalizedDimensionContent.stage = :stage 
-             AND unlocalizedDimensionContent.version = :version'
+            'dimensionContent.locale = :locale
+             AND dimensionContent.stage = :stage
+             AND dimensionContent.version = :version
+             AND (dimensionContent.seoHideInSitemap = :hide OR dimensionContent.seoHideInSitemap IS NULL)
+             AND dimensionContent.workflowPlace = :published'
         );
 
-        $queryBuilder->select('dimensionContent.locale');
-        $queryBuilder->addSelect('route.slug');
-        $queryBuilder->addSelect('event.id');
-        $queryBuilder->addSelect('dimensionContent.changed as lastModified');
+        // Join route for slug
+        $queryBuilder->leftJoin('dimensionContent.route', 'route');
+
+        $queryBuilder->setParameter('locale', $locale);
+        $queryBuilder->setParameter('stage', DimensionContentInterface::STAGE_LIVE);
+        $queryBuilder->setParameter('version', DimensionContentInterface::CURRENT_VERSION);
+        $queryBuilder->setParameter('hide', false);
+        $queryBuilder->setParameter('published', WorkflowInterface::WORKFLOW_PLACE_PUBLISHED);
+
+        // Only get events that have dimension content (INNER JOIN behavior)
+        $queryBuilder->andWhere('dimensionContent.id IS NOT NULL');
+
+        // Select fields
+        $queryBuilder->select([
+            'event.id AS id',
+            'dimensionContent.locale AS locale',
+            'route.slug AS slug',
+            'dimensionContent.changed AS lastModified',
+        ]);
 
         $queryBuilder->orderBy('route.slug', 'ASC');
         $queryBuilder->setFirstResult($offset);
@@ -161,67 +171,86 @@ class EventSitemapProvider implements SitemapProviderInterface
     }
 
     /**
+     * Get alternate routes for all events in other locales.
+     *
      * @return array<string, array<string, string>>
      */
-    private function getAlternateRoutes(string $locale): array
+    private function getAlternateRoutes(string $currentLocale): array
     {
         $queryBuilder = $this->entityRepository->createQueryBuilder('event');
 
-        $queryBuilder->andWhere('1 = 1');
+        // Get routes for ALL locales (not just the current one)
+        $queryBuilder->leftJoin(
+            'event.dimensionContents',
+            'dimensionContent',
+            'WITH',
+            'dimensionContent.locale IS NOT NULL
+             AND dimensionContent.stage = :stage
+             AND dimensionContent.version = :version
+             AND (dimensionContent.seoHideInSitemap = :hide OR dimensionContent.seoHideInSitemap IS NULL)
+             AND dimensionContent.workflowPlace = :published'
+        );
 
-        $queryBuilder->distinct()->leftJoin('event.dimensionContents', 'dimensionContent', 'WITH', '
-            dimensionContent.locale != :locale
-            AND dimensionContent.locale IS NOT NULL
-            AND dimensionContent.stage = :stage
-            AND dimensionContent.version = :version
-            AND dimensionContent.seoHideInSitemap = :hide
-            AND dimensionContent.workflowPlace = :published
-        ')
-            ->leftJoin('dimensionContent.route', 'route')
-            ->setParameter('locale', $locale)
-            ->setParameter('stage', DimensionContentInterface::STAGE_LIVE)
-            ->setParameter('version', DimensionContentInterface::CURRENT_VERSION)
-            ->setParameter('hide', false)
-            ->setParameter('published', WorkflowInterface::WORKFLOW_PLACE_PUBLISHED);
+        $queryBuilder->leftJoin('dimensionContent.route', 'route');
 
-        $queryBuilder->select('dimensionContent.locale');
-        $queryBuilder->addSelect('route.slug');
-        $queryBuilder->addSelect('event.id');
+        $queryBuilder->setParameter('stage', DimensionContentInterface::STAGE_LIVE);
+        $queryBuilder->setParameter('version', DimensionContentInterface::CURRENT_VERSION);
+        $queryBuilder->setParameter('hide', false);
+        $queryBuilder->setParameter('published', WorkflowInterface::WORKFLOW_PLACE_PUBLISHED);
+
+        // Only events with routes
+        $queryBuilder->andWhere('route.slug IS NOT NULL');
+
+        $queryBuilder->select([
+            'event.id AS id',
+            'dimensionContent.locale AS locale',
+            'route.slug AS slug',
+        ]);
 
         $result = [];
-        foreach ($queryBuilder->getQuery()->getResult() as $alternateRoute) {
-            $eventId = (string) $alternateRoute['id'];
-            $locale = $alternateRoute['locale'];
-            $slug = $alternateRoute['slug'];
+        foreach ($queryBuilder->getQuery()->getResult() as $row) {
+            $eventId = (string) $row['id'];
+            $rowLocale = $row['locale'];
+            $slug = $row['slug'];
 
             if (!isset($result[$eventId])) {
                 $result[$eventId] = [];
             }
 
-            $result[$eventId][$locale] = $slug;
+            $result[$eventId][$rowLocale] = $slug;
         }
 
         return $result;
     }
 
+    /**
+     * Count published events for pagination.
+     */
     private function countEvents(string $locale): int
     {
         $queryBuilder = $this->entityRepository->createQueryBuilder('event');
 
         $queryBuilder->select('COUNT(DISTINCT event.id)');
 
-        $queryBuilder->distinct()->leftJoin('event.dimensionContents', 'dimensionContent', 'WITH', '
-            dimensionContent.locale = :locale
-            AND dimensionContent.stage = :stage
-            AND dimensionContent.version = :version
-            AND dimensionContent.seoHideInSitemap = :hide
-            AND dimensionContent.workflowPlace = :published
-        ')
-            ->setParameter('locale', $locale)
-            ->setParameter('stage', DimensionContentInterface::STAGE_LIVE)
-            ->setParameter('version', DimensionContentInterface::CURRENT_VERSION)
-            ->setParameter('hide', false)
-            ->setParameter('published', WorkflowInterface::WORKFLOW_PLACE_PUBLISHED);
+        $queryBuilder->leftJoin(
+            'event.dimensionContents',
+            'dimensionContent',
+            'WITH',
+            'dimensionContent.locale = :locale
+             AND dimensionContent.stage = :stage
+             AND dimensionContent.version = :version
+             AND (dimensionContent.seoHideInSitemap = :hide OR dimensionContent.seoHideInSitemap IS NULL)
+             AND dimensionContent.workflowPlace = :published'
+        );
+
+        $queryBuilder->setParameter('locale', $locale);
+        $queryBuilder->setParameter('stage', DimensionContentInterface::STAGE_LIVE);
+        $queryBuilder->setParameter('version', DimensionContentInterface::CURRENT_VERSION);
+        $queryBuilder->setParameter('hide', false);
+        $queryBuilder->setParameter('published', WorkflowInterface::WORKFLOW_PLACE_PUBLISHED);
+
+        // Only count events that actually have published content
+        $queryBuilder->andWhere('dimensionContent.id IS NOT NULL');
 
         return (int) $queryBuilder->getQuery()->getSingleScalarResult();
     }

@@ -38,12 +38,12 @@ abstract class AbstractEvent extends DomainEvent
 
     public function getResourceId(): string
     {
-        return (string)$this->event->getId();
+        return (string) $this->event->getId();
     }
 
     public function getResourceTitle(): ?string
     {
-        return $this->event->getTitle();
+        return $this->payload['title'] ?? null;
     }
 
     public function getResourceSecurityContext(): ?string

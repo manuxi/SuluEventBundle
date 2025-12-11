@@ -33,9 +33,9 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  *     locale: string,
  *     dataSource: string|null,
  *     limit: int|null,
- *     offset: int,
  *     includeSubFolders: bool,
  *     excludeDuplicates: bool,
+ *     offset?: int,
  *     stage?: string,
  * }
  * @phpstan-type EventSmartContentCountFilters array{
@@ -85,7 +85,6 @@ class EventSmartContentProvider implements SmartContentProviderInterface
         if (null === $this->eventRepository) {
             $repository = $this->entityManager->getRepository(Event::class);
 
-            // This should be our EventRepository because Event.orm.xml declares it
             if (!$repository instanceof EventRepository) {
                 throw new \RuntimeException(
                     sprintf(
@@ -121,8 +120,8 @@ class EventSmartContentProvider implements SmartContentProviderInterface
     protected function getTypes(): array
     {
         $types = [
-            ['type' => 'pending', 'title' => $this->translator->trans('sulu_event.pending', [], 'admin')],
-            ['type' => 'expired', 'title' => $this->translator->trans('sulu_event.expired', [], 'admin')],
+            ['type' => 'pending', 'title' => $this->translator->trans('sulu_event.filter.pending', [], 'admin')],
+            ['type' => 'expired', 'title' => $this->translator->trans('sulu_event.filter.expired', [], 'admin')],
         ];
 
         foreach ($this->eventTypes as $key => $config) {
@@ -141,9 +140,9 @@ class EventSmartContentProvider implements SmartContentProviderInterface
             ['column' => 'title', 'title' => $this->translator->trans('sulu_event.title', [], 'admin')],
             ['column' => 'startDate', 'title' => $this->translator->trans('sulu_event.start_date', [], 'admin')],
             ['column' => 'endDate', 'title' => $this->translator->trans('sulu_event.end_date', [], 'admin')],
-            ['column' => 'workflowPublished', 'title' => $this->translator->trans('sulu_admin.published', [], 'admin')],
-            ['column' => 'created', 'title' => $this->translator->trans('sulu_admin.created', [], 'admin')],
-            ['column' => 'changed', 'title' => $this->translator->trans('sulu_admin.changed', [], 'admin')],
+            ['column' => 'workflowPublished', 'title' => $this->translator->trans('sulu_event.published', [], 'admin')],
+            ['column' => 'created', 'title' => $this->translator->trans('sulu_event.created_date', [], 'admin')],
+            ['column' => 'changed', 'title' => $this->translator->trans('sulu_event.changed_date', [], 'admin')],
         ];
     }
 
@@ -254,8 +253,8 @@ class EventSmartContentProvider implements SmartContentProviderInterface
             'tagOperator' => $filters['tagOperator'] ?? 'OR',
             'websiteTags' => $filters['websiteTags'] ?? [],
             'websiteTagOperator' => $filters['websiteTagOperator'] ?? 'OR',
-            'templateKeys' => [], // Do NOT filter templateKeys by type (because templateKey is 'event')
-            'customTypes' => $filters['types'] ?? [], // Pass types as custom key
+            'templateKeys' => [],
+            'customTypes' => $filters['types'] ?? [],
             'typesOperator' => $filters['typesOperator'] ?? 'OR',
             'locale' => $filters['locale'],
             'dataSource' => $filters['dataSource'] ?? null,
@@ -278,16 +277,14 @@ class EventSmartContentProvider implements SmartContentProviderInterface
     /**
      * Add internal filters for event types (pending/expired) and custom event types.
      *
-     * IMPORTANT: This method is called AFTER dimensionContentQueryEnhancer->addFilters()
-     * which already joins filterDimensionContent. We need to join unlocalizedDimensionContent
-     * separately for startDate/endDate/type which are stored unlocalized.
+     * Sulu 3 Standard: All fields are in localized DimensionContent.
+     * The DimensionContentQueryEnhancer already joins dimensionContent,
+     * so we use that alias for filtering.
      *
      * @return string The alias of the dimension content join
      */
     protected function addInternalFilters(QueryBuilder $queryBuilder, array $filters, string $alias): string
     {
-        // Find the alias of the joined dimension content (added by DimensionContentQueryEnhancer)
-        // to avoid a duplicate join.
         $dimensionContentAlias = null;
         $joins = $queryBuilder->getDQLPart('join');
 
@@ -301,8 +298,7 @@ class EventSmartContentProvider implements SmartContentProviderInterface
         }
 
         if (!$dimensionContentAlias) {
-            // Fallback if no join exists
-            $dimensionContentAlias = 'localizedDimensionContent';
+            $dimensionContentAlias = 'dimensionContent';
             $stage = $filters['stage'] ?? DimensionContentInterface::STAGE_LIVE;
             $locale = $filters['locale'];
 
@@ -310,8 +306,7 @@ class EventSmartContentProvider implements SmartContentProviderInterface
                 $alias . '.dimensionContents',
                 $dimensionContentAlias,
                 'WITH',
-                $dimensionContentAlias . '.locale = :locale
-                 AND ' . $dimensionContentAlias . '.stage = :stage'
+                $dimensionContentAlias . '.locale = :locale AND ' . $dimensionContentAlias . '.stage = :stage'
             );
             $queryBuilder->setParameter('locale', $locale);
             $queryBuilder->setParameter('stage', $stage);
@@ -348,7 +343,6 @@ class EventSmartContentProvider implements SmartContentProviderInterface
         $now = new \DateTime();
         $todayStart = (clone $now)->setTime(0, 0, 0);
 
-        // Use unlocalizedDimensionContent alias for startDate/endDate!
         if ($hasPending) {
             $queryBuilder->andWhere(
                 '(' . $alias . '.endDate IS NOT NULL AND ' . $alias . '.endDate >= :now) OR ' .

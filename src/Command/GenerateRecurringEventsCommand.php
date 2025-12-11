@@ -61,11 +61,12 @@ class GenerateRecurringEventsCommand extends Command
 
         $io->title('Generating Recurring Events');
 
-        // Find all recurring events
-        $recurringEvents = $this->eventRepository->findRecurringEvents();
+        // Find all recurring events (now requires locale)
+        $recurringEvents = $this->eventRepository->findRecurringEvents($locale);
 
         if (empty($recurringEvents)) {
             $io->info('No recurring events found.');
+
             return Command::SUCCESS;
         }
 
@@ -79,44 +80,40 @@ class GenerateRecurringEventsCommand extends Command
         $rangeEnd = new \DateTimeImmutable("+{$lookahead} days");
 
         foreach ($recurringEvents as $event) {
-            // Get unlocalizedDimensionContent for recurrence, startDate, endDate
-            $unlocalizedDimensionContent = $this->getUnlocalizedDimensionContent($event);
-
-            if (!$unlocalizedDimensionContent) {
-                $io->warning(sprintf('No unlocalized dimension content for event #%d', $event->getId()));
-                $errors++;
-                continue;
-            }
-
-            $recurrence = $unlocalizedDimensionContent->getRecurrence();
-            if (!$recurrence || !$recurrence->getIsRecurring()) {
-                continue;
-            }
-
-            // Get title from localized dimension content for display
+            // Get merged dimension content (includes all fields)
+            /** @var EventDimensionContent $dimensionContent */
             $dimensionContent = $this->contentManager->resolve($event, [
                 'locale' => $locale,
                 'stage' => DimensionContentInterface::STAGE_LIVE,
             ]);
 
-            $title = $dimensionContent instanceof EventDimensionContent
-                ? $dimensionContent->getTitle()
-                : 'Event #' . $event->getId();
+            if (!$dimensionContent instanceof EventDimensionContent) {
+                $io->warning(sprintf('Could not resolve dimension content for event #%d', $event->getId()));
+                $errors++;
+                continue;
+            }
+
+            $recurrence = $dimensionContent->getRecurrence();
+            if (!$recurrence || !$recurrence->getIsRecurring()) {
+                continue;
+            }
+
+            $title = $dimensionContent->getTitle() ?? 'Event #' . $event->getId();
 
             $io->writeln(sprintf('Processing: %s (ID: %d)', $title, $event->getId()));
 
             try {
-                // Generate occurrences - NOW with unlocalizedDimensionContent!
+                // Generate occurrences
                 $occurrences = $this->recurrenceGenerator->generateOccurrences(
                     $recurrence,
-                    $unlocalizedDimensionContent,  // ✅ NEW: Must pass this!
+                    $dimensionContent,
                     $rangeStart,
                     $rangeEnd
                 );
 
                 foreach ($occurrences as $occurrenceDate) {
                     // Check if occurrence already exists
-                    if ($this->occurrenceExists($event, $occurrenceDate)) {
+                    if ($this->occurrenceExists($event, $occurrenceDate, $locale)) {
                         $skipped++;
                         continue;
                     }
@@ -124,7 +121,7 @@ class GenerateRecurringEventsCommand extends Command
                     // Create new event for this occurrence
                     $newEvent = $this->createEventOccurrence(
                         $event,
-                        $unlocalizedDimensionContent,
+                        $dimensionContent,
                         $occurrenceDate,
                         $locale
                     );
@@ -151,22 +148,25 @@ class GenerateRecurringEventsCommand extends Command
     }
 
     /**
-     * Check if occurrence already exists for this date
+     * Check if occurrence already exists for this date.
      */
-    private function occurrenceExists(Event $parentEvent, \DateTimeInterface $date): bool
+    private function occurrenceExists(Event $parentEvent, \DateTimeInterface $date, string $locale): bool
     {
-        // Check if there's any event with same parent and start date
-        $events = $this->eventRepository->findBy([]);
+        $events = $this->eventRepository->findByFilters(['locale' => $locale]);
 
         foreach ($events as $event) {
-            $unlocalizedDimensionContent = $this->getUnlocalizedDimensionContent($event);
-            if (!$unlocalizedDimensionContent) {
+            /** @var EventDimensionContent $dimensionContent */
+            $dimensionContent = $this->contentManager->resolve($event, [
+                'locale' => $locale,
+                'stage' => DimensionContentInterface::STAGE_DRAFT,
+            ]);
+
+            if (!$dimensionContent instanceof EventDimensionContent) {
                 continue;
             }
 
-            $startDate = $unlocalizedDimensionContent->getStartDate();
+            $startDate = $dimensionContent->getStartDate();
             if ($startDate && $startDate->format('Y-m-d') === $date->format('Y-m-d')) {
-                // Found existing occurrence
                 return true;
             }
         }
@@ -175,22 +175,22 @@ class GenerateRecurringEventsCommand extends Command
     }
 
     /**
-     * Create new event occurrence based on parent event
+     * Create new event occurrence based on parent event.
      */
     private function createEventOccurrence(
         Event $parentEvent,
-        EventDimensionContent $parentUnlocalizedDimensionContent,
+        EventDimensionContent $parentDimensionContent,
         \DateTimeInterface $occurrenceDate,
         string $locale
     ): Event {
         // Create new event entity
         $newEvent = new Event();
         $this->entityManager->persist($newEvent);
-        $this->entityManager->flush(); // Need ID for ContentManager
+        $this->entityManager->flush();
 
         // Calculate duration from parent event
-        $parentStartDate = $parentUnlocalizedDimensionContent->getStartDate();
-        $parentEndDate = $parentUnlocalizedDimensionContent->getEndDate();
+        $parentStartDate = $parentDimensionContent->getStartDate();
+        $parentEndDate = $parentDimensionContent->getEndDate();
 
         $duration = null;
         if ($parentStartDate && $parentEndDate) {
@@ -198,32 +198,22 @@ class GenerateRecurringEventsCommand extends Command
         }
 
         // Calculate new end date
-        $newStartDate = \DateTimeImmutable::createFromMutable($occurrenceDate);
+        $newStartDate = \DateTimeImmutable::createFromInterface($occurrenceDate);
         $newEndDate = $duration ? $newStartDate->add($duration) : null;
 
-        // Get parent localized content
-        $parentDimensionContent = $this->contentManager->resolve($parentEvent, [
-            'locale' => $locale,
-            'stage' => DimensionContentInterface::STAGE_LIVE,
-        ]);
-
-        if (!$parentDimensionContent instanceof EventDimensionContent) {
-            throw new \RuntimeException('Could not resolve parent dimension content');
-        }
-
-        // Build data array from parent
+        // Build data array from parent (all fields from merged dimensionContent)
         $data = [
             'title' => $parentDimensionContent->getTitle(),
             'subtitle' => $parentDimensionContent->getSubtitle(),
             'summary' => $parentDimensionContent->getSummary(),
             'text' => $parentDimensionContent->getText(),
             'footer' => $parentDimensionContent->getFooter(),
-            'type' => $parentUnlocalizedDimensionContent->getType(),
+            'type' => $parentDimensionContent->getType(),
             'startDate' => $newStartDate->format('Y-m-d H:i:s'),
             'endDate' => $newEndDate?->format('Y-m-d H:i:s'),
-            'email' => $parentUnlocalizedDimensionContent->getEmail(),
-            'phoneNumber' => $parentUnlocalizedDimensionContent->getPhoneNumber(),
-            'location' => $parentUnlocalizedDimensionContent->getLocation()?->getId(),
+            'email' => $parentDimensionContent->getEmail(),
+            'phoneNumber' => $parentDimensionContent->getPhoneNumber(),
+            'location' => $parentDimensionContent->getLocation()?->getId(),
             'showAuthor' => $parentDimensionContent->getShowAuthor(),
             'showDate' => $parentDimensionContent->getShowDate(),
         ];
@@ -266,22 +256,5 @@ class GenerateRecurringEventsCommand extends Command
         $this->entityManager->flush();
 
         return $newEvent;
-    }
-
-    /**
-     * Get unlocalized dimension content from event
-     */
-    private function getUnlocalizedDimensionContent(Event $event): ?EventDimensionContent
-    {
-        foreach ($event->getDimensionContents() as $dc) {
-            if ($dc->getLocale() === null
-                && $dc->getStage() === DimensionContentInterface::STAGE_DRAFT
-                && $dc->getVersion() === DimensionContentInterface::CURRENT_VERSION
-            ) {
-                return $dc;
-            }
-        }
-
-        return null;
     }
 }

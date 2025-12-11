@@ -12,6 +12,8 @@ services:
             - '@doctrine.orm.entity_manager'
             - '@Manuxi\SuluEventBundle\ListBuilder\DoctrineListRepresentationFactory'
             - '@sulu_activity.domain_event_collector'
+            - '@sulu_trash.trash_manager'
+            - '@logger'
         tags:
             - { name: controller.service_arguments }
             - { name: sulu.context, context: admin }
@@ -54,10 +56,10 @@ services:
             - '@sulu_route.route_repository'
             - '@sulu_core.webspace.webspace_manager'
             - '@request_stack'
+            - '@sulu_content.content_aggregator'
         tags:
             - { name: controller.service_arguments }
             - { name: sulu.context, context: website }
-        public: true
 
     # Feed Services
     Manuxi\SuluEventBundle\Controller\Website\FeedController:

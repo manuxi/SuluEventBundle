@@ -11,33 +11,24 @@
         </join>
     </joins>
 
-    <joins name="unlocalizedDimensionContent">
-        <join>
-            <entity-name>unlocalizedDimensionContent</entity-name>
-            <field-name>Manuxi\SuluEventBundle\Entity\Event.dimensionContents</field-name>
-            <method>LEFT</method>
-            <condition>unlocalizedDimensionContent.locale IS NULL AND unlocalizedDimensionContent.stage = 'draft' AND unlocalizedDimensionContent.version = 0</condition>
-        </join>
-    </joins>
-
-    <joins name="ghostDimensionContent" ref="unlocalizedDimensionContent">
+    <joins name="ghostDimensionContent">
         <join>
             <entity-name>ghostDimensionContent</entity-name>
             <field-name>Manuxi\SuluEventBundle\Entity\Event.dimensionContents</field-name>
             <method>LEFT</method>
-            <condition>dimensionContent.locale IS NULL AND ghostDimensionContent.locale = unlocalizedDimensionContent.ghostLocale AND ghostDimensionContent.stage = 'draft' AND dimensionContent IS NULL</condition>
+            <condition>ghostDimensionContent.locale = dimensionContent.ghostLocale AND ghostDimensionContent.stage = 'draft' AND ghostDimensionContent.version = 0 AND dimensionContent.locale IS NULL</condition>
         </join>
     </joins>
 
-    <joins name="location">
+    <joins name="location" ref="dimensionContent">
         <join>
             <entity-name>locationEntity</entity-name>
-            <field-name>unlocalizedDimensionContent.location</field-name>
+            <field-name>dimensionContent.location</field-name>
             <method>LEFT</method>
         </join>
     </joins>
 
-    <joins name="creatorUser">
+    <joins name="creatorUser" ref="dimensionContent">
         <join>
             <entity-name>creatorUser</entity-name>
             <field-name>dimensionContent.creator</field-name>
@@ -51,7 +42,7 @@
         </join>
     </joins>
 
-    <joins name="changerUser">
+    <joins name="changerUser" ref="dimensionContent">
         <join>
             <entity-name>changerUser</entity-name>
             <field-name>dimensionContent.changer</field-name>
@@ -65,7 +56,7 @@
         </join>
     </joins>
 
-    <joins name="authorContact">
+    <joins name="authorContact" ref="dimensionContent">
         <join>
             <entity-name>authorContact</entity-name>
             <field-name>dimensionContent.author</field-name>
@@ -115,20 +106,8 @@
             <joins ref="dimensionContent"/>
         </property>
 
-        <property name="endDate" translation="sulu_event.end_date" visibility="no">
+        <property name="endDate" translation="sulu_event.end_date" visibility="always">
             <field-name>endDate</field-name>
-            <entity-name>dimensionContent</entity-name>
-            <joins ref="dimensionContent"/>
-        </property>
-
-        <property name="email" translation="sulu_event.email" visibility="no">
-            <field-name>email</field-name>
-            <entity-name>dimensionContent</entity-name>
-            <joins ref="dimensionContent"/>
-        </property>
-
-        <property name="phoneNumber" translation="sulu_event.phone_number" visibility="no">
-            <field-name>phoneNumber</field-name>
             <entity-name>dimensionContent</entity-name>
             <joins ref="dimensionContent"/>
         </property>
@@ -152,13 +131,13 @@
             </field>
         </concatenation-property>
 
-        <property name="created" translation="sulu_admin.created" type="datetime" visibility="yes">
+        <property name="created" translation="sulu_admin.created" type="datetime" visibility="no">
             <field-name>created</field-name>
             <entity-name>dimensionContent</entity-name>
             <joins ref="dimensionContent"/>
         </property>
 
-        <concatenation-property name="creator" translation="sulu_admin.creator" visibility="yes" searchability="yes">
+        <concatenation-property name="creator" translation="sulu_admin.creator" visibility="no" searchability="yes">
             <field>
                 <field-name>firstName</field-name>
                 <entity-name>creatorContact</entity-name>

@@ -14,9 +14,6 @@ use Sulu\Content\Application\ContentAggregator\ContentAggregatorInterface;
 use Sulu\Content\Domain\Model\DimensionContentInterface;
 use Sulu\Content\Domain\Model\WorkflowInterface;
 
-/**
- * Provides ONLY published events for website search.
- */
 class EventWebsiteSearchProvider implements ReindexProviderInterface
 {
     public function __construct(
@@ -33,7 +30,6 @@ class EventWebsiteSearchProvider implements ReindexProviderInterface
 
     public function total(): ?int
     {
-        // Sum of all published events across all locales
         $locales = $this->getLocales();
         $total = 0;
         foreach ($locales as $locale) {
@@ -97,16 +93,23 @@ class EventWebsiteSearchProvider implements ReindexProviderInterface
             $dimensionContent->getFooter(),
         ]);
 
+        // All fields (including unlocalized) are now in the merged dimensionContent
+        $location = $dimensionContent->getLocation();
+        $locationName = $location?->getName();
+
         return [
-            'id' => 'event-'.$event->getId().'-'.$locale,
+            'id' => 'event-' . $event->getId() . '-' . $locale,
             'resourceKey' => Event::RESOURCE_KEY,
             'resourceId' => (string) $event->getId(),
             'locale' => $locale,
             'webspaces' => [],
             'title' => $dimensionContent->getTitle() ?? '',
             'url' => $dimensionContent->getRoute()?->getSlug() ?? '',
-            'content' => $content,
-            'mediaId' => $dimensionContent->getImage()?->getId(),
+            'content' => implode(' ', $content),
+            'type' => $dimensionContent->getType(),
+            'startDate' => $dimensionContent->getStartDate()?->format('c'),
+            'endDate' => $dimensionContent->getEndDate()?->format('c'),
+            'location' => $locationName,
         ];
     }
 }

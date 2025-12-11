@@ -156,11 +156,28 @@ services:
         tags:
             - { name: sulu_content.merger }
 
+    # DataMapper for Location (single_location_selection)
+    #sulu_event.location_data_mapper:
+    #    class: Manuxi\SuluEventBundle\Content\DataMapper\LocationDataMapper
+    #    arguments:
+    #        - '@doctrine.orm.entity_manager'
+    #    tags:
+    #        - { name: sulu_content.data_mapper }
+
+    # DataMapper for unlocalized event
+    sulu_event.event_unlocalized_data_mapper:
+        class: Manuxi\SuluEventBundle\Content\DataMapper\EventUnlocalizedDataMapper
+        arguments:
+            - '@doctrine.orm.entity_manager'
+        tags:
+            - { name: sulu_content.data_mapper }
+
     # Preview Object Provider
     sulu_event.preview_object_provider:
         class: Manuxi\SuluEventBundle\Preview\EventObjectProvider
         arguments:
             - '@Manuxi\SuluEventBundle\Repository\EventRepository'
+            - '@sulu_content.content_aggregator'
         tags:
             - { name: sulu.context, context: admin }
             - { name: sulu_preview.object_provider, provider-key: events }

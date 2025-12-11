@@ -13,9 +13,6 @@ use Sulu\Component\Webspace\Manager\WebspaceManagerInterface;
 use Sulu\Content\Application\ContentAggregator\ContentAggregatorInterface;
 use Sulu\Content\Domain\Model\DimensionContentInterface;
 
-/**
- * Provides ALL events (draft + published) for admin search.
- */
 class EventAdminSearchProvider implements ReindexProviderInterface
 {
     public function __construct(
@@ -40,7 +37,7 @@ class EventAdminSearchProvider implements ReindexProviderInterface
         $locales = $this->getLocales();
 
         foreach ($locales as $locale) {
-            $events = $this->eventRepository->findBy([]);
+            $events = $this->eventRepository->findAll();
 
             foreach ($events as $event) {
                 /** @var EventDimensionContent $dimensionContent */
@@ -84,16 +81,23 @@ class EventAdminSearchProvider implements ReindexProviderInterface
             $dimensionContent->getFooter(),
         ]);
 
+        // All fields (including unlocalized) are now in the merged dimensionContent
+        $location = $dimensionContent->getLocation();
+        $locationName = $location?->getName();
+
         return [
-            'id' => 'event-'.$event->getId().'-'.$locale,
+            'id' => 'event-' . $event->getId() . '-' . $locale . '-draft',
             'resourceKey' => Event::RESOURCE_KEY,
             'resourceId' => (string) $event->getId(),
             'locale' => $locale,
-            'securityContext' => Event::SECURITY_CONTEXT,
+            'webspaces' => [],
             'title' => $dimensionContent->getTitle() ?? '',
-            'content' => $content,
-            'mediaId' => $dimensionContent->getImage()?->getId(),
-            'workflowPlace' => $dimensionContent->getWorkflowPlace(),
+            'url' => $dimensionContent->getRoute()?->getSlug() ?? '',
+            'content' => implode(' ', $content),
+            'type' => $dimensionContent->getType(),
+            'startDate' => $dimensionContent->getStartDate()?->format('c'),
+            'endDate' => $dimensionContent->getEndDate()?->format('c'),
+            'location' => $locationName,
         ];
     }
 }

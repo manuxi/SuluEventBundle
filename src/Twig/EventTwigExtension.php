@@ -32,7 +32,6 @@ class EventTwigExtension extends AbstractExtension
         if (null === $this->eventRepository) {
             $repository = $this->entityManager->getRepository(Event::class);
 
-            // This should be our EventRepository because Event.orm.xml declares it
             if (!$repository instanceof EventRepository) {
                 throw new \RuntimeException(
                     sprintf(
@@ -57,6 +56,8 @@ class EventTwigExtension extends AbstractExtension
     }
 
     /**
+     * Resolve a single event by ID.
+     *
      * @param array<string, string> $properties
      *
      * @return array<string, mixed>|null
@@ -86,18 +87,26 @@ class EventTwigExtension extends AbstractExtension
             ]
         );
 
+        if (!$dimensionContent->getTitle()) {
+            return null;
+        }
+
         return $this->contentResolver->resolve($dimensionContent, $properties);
     }
 
     /**
+     * Get multiple events with filters.
+     *
+     * @param array<string, mixed> $filters
      * @param array<string, string> $properties
      *
      * @return array<int, array<string, mixed>>
      */
     public function getEvents(
-        int $limit = 8,
+        array $filters = [],
+        array $properties = [],
         ?string $locale = null,
-        array $properties = []
+        int $limit = 10
     ): array {
         if (null === $locale) {
             $localization = $this->requestAnalyzer->getCurrentLocalization();
@@ -107,15 +116,13 @@ class EventTwigExtension extends AbstractExtension
             $locale = $localization->getLocale();
         }
 
-        $events = $this->getEventRepository()->findBy(
-            [
-                'locale' => $locale,
-                'stage' => DimensionContentInterface::STAGE_LIVE,
-                'limit' => $limit,
-            ]
-        );
+        $filters['locale'] = $locale;
+        $filters['stage'] = DimensionContentInterface::STAGE_LIVE;
+        $filters['limit'] = $limit;
 
-        $resolvedEvents = [];
+        $events = $this->getEventRepository()->findByFilters($filters);
+        $result = [];
+
         foreach ($events as $event) {
             /** @var EventDimensionContent $dimensionContent */
             $dimensionContent = $this->contentAggregator->aggregate(
@@ -127,9 +134,13 @@ class EventTwigExtension extends AbstractExtension
                 ]
             );
 
-            $resolvedEvents[] = $this->contentResolver->resolve($dimensionContent, $properties);
+            if (!$dimensionContent->getTitle()) {
+                continue;
+            }
+
+            $result[] = $this->contentResolver->resolve($dimensionContent, $properties);
         }
 
-        return $resolvedEvents;
+        return $result;
     }
 }

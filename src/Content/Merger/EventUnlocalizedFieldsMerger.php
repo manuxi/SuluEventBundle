@@ -41,5 +41,13 @@ class EventUnlocalizedFieldsMerger implements MergerInterface
         if (null !== $sourceObject->getPhoneNumber()) {
             $targetObject->setPhoneNumber($sourceObject->getPhoneNumber());
         }
+
+        if (null !== $sourceObject->getSocialSettings()) {
+            $targetObject->setSocialSettings($sourceObject->getSocialSettings());
+        }
+
+        if (null !== $sourceObject->getRecurrence()) {
+            $targetObject->setRecurrence($sourceObject->getRecurrence());
+        }
     }
 }

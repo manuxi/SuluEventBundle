@@ -26,7 +26,7 @@ class FeedController extends AbstractController
     #[Route('/events/feed.{_format}', name: 'sulu_event.feed', requirements: ['_format' => 'rss|atom'])]
     public function feedAction(string $_locale, string $_format): Response
     {
-        $events = $this->eventRepository->findBy([]);
+        $events = $this->eventRepository->findAll();
 
         // Resolve dimension content for each event
         $resolvedEvents = [];

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Controller\Website;
 
-use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
 use Manuxi\SuluEventBundle\Service\EventTypeSelect;
@@ -104,7 +103,9 @@ class CalendarApiController extends AbstractController
 
     private function transformEventsForFullCalendar(array $events, string $locale): array
     {
-        return array_map(function (Event $event) use ($locale) {
+        $result = [];
+
+        foreach ($events as $event) {
             /** @var EventDimensionContent $dimensionContent */
             $dimensionContent = $this->contentAggregator->aggregate(
                 $event,
@@ -114,47 +115,34 @@ class CalendarApiController extends AbstractController
                 ]
             );
 
-            // Get unlocalized dimension content for non-localized fields
-            /** @var EventDimensionContent|null $unlocalizedDimensionContent */
-            $unlocalizedDimensionContent = null;
-            foreach ($event->getDimensionContents() as $dc) {
-                if (null === $dc->getLocale()
-                    && DimensionContentInterface::STAGE_LIVE === $dc->getStage()
-                    && DimensionContentInterface::CURRENT_VERSION === $dc->getVersion()
-                ) {
-                    $unlocalizedDimensionContent = $dc;
-                    break;
-                }
+            // All fields (localized + unlocalized) are merged into dimensionContent
+            if (!$dimensionContent->getStartDate()) {
+                continue;
             }
 
-            if (!$unlocalizedDimensionContent) {
-                return null;
-            }
-
-            $isAllDay = $this->isAllDayEvent($unlocalizedDimensionContent);
-
-            $typeColor = $this->eventTypeSelect->getColor($unlocalizedDimensionContent->getType() ?? 'default');
-            $typeName = $this->eventTypeSelect->getTypeName($unlocalizedDimensionContent->getType() ?? 'default');
+            $isAllDay = $this->isAllDayEvent($dimensionContent);
+            $typeColor = $this->eventTypeSelect->getColor($dimensionContent->getType() ?? 'default');
+            $typeName = $this->eventTypeSelect->getTypeName($dimensionContent->getType() ?? 'default');
 
             $calendarEvent = [
                 'id' => $event->getId(),
                 'title' => $dimensionContent->getTitle() ?? '',
-                'start' => $unlocalizedDimensionContent->getStartDate()->format('c'),
+                'start' => $dimensionContent->getStartDate()->format('c'),
                 'allDay' => $isAllDay,
                 'url' => $dimensionContent->getRoute()?->getSlug() ?? '',
                 'extendedProps' => [
-                    'type' => $unlocalizedDimensionContent->getType() ?? 'default',
+                    'type' => $dimensionContent->getType() ?? 'default',
                     'typeName' => $typeName,
                     'typeColor' => $typeColor,
                 ],
             ];
 
-            if ($unlocalizedDimensionContent->getEndDate()) {
-                $calendarEvent['end'] = $unlocalizedDimensionContent->getEndDate()->format('c');
+            if ($dimensionContent->getEndDate()) {
+                $calendarEvent['end'] = $dimensionContent->getEndDate()->format('c');
             }
 
-            if ($unlocalizedDimensionContent->getLocation()) {
-                $calendarEvent['extendedProps']['location'] = $unlocalizedDimensionContent->getLocation()->getName();
+            if ($dimensionContent->getLocation()) {
+                $calendarEvent['extendedProps']['location'] = $dimensionContent->getLocation()->getName();
             }
 
             if ($dimensionContent->getSummary()) {
@@ -164,8 +152,10 @@ class CalendarApiController extends AbstractController
             $calendarEvent['backgroundColor'] = $typeColor;
             $calendarEvent['borderColor'] = $typeColor;
 
-            return $calendarEvent;
-        }, $events);
+            $result[] = $calendarEvent;
+        }
+
+        return $result;
     }
 
     private function isAllDayEvent(EventDimensionContent $dimensionContent): bool
