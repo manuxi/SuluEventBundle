@@ -137,8 +137,7 @@ class EventSitemapProvider implements SitemapProviderInterface
             'dimensionContent.locale = :locale
              AND dimensionContent.stage = :stage
              AND dimensionContent.version = :version
-             AND (dimensionContent.seoHideInSitemap = :hide OR dimensionContent.seoHideInSitemap IS NULL)
-             AND dimensionContent.workflowPlace = :published'
+             AND (dimensionContent.seoHideInSitemap = :hide OR dimensionContent.seoHideInSitemap IS NULL)'
         );
 
         // Join route for slug
@@ -148,7 +147,6 @@ class EventSitemapProvider implements SitemapProviderInterface
         $queryBuilder->setParameter('stage', DimensionContentInterface::STAGE_LIVE);
         $queryBuilder->setParameter('version', DimensionContentInterface::CURRENT_VERSION);
         $queryBuilder->setParameter('hide', false);
-        $queryBuilder->setParameter('published', WorkflowInterface::WORKFLOW_PLACE_PUBLISHED);
 
         // Only get events that have dimension content (INNER JOIN behavior)
         $queryBuilder->andWhere('dimensionContent.id IS NOT NULL');
@@ -183,10 +181,9 @@ class EventSitemapProvider implements SitemapProviderInterface
             'dimensionContent',
             'WITH',
             'dimensionContent.locale IS NOT NULL
-             AND dimensionContent.stage = :stage
-             AND dimensionContent.version = :version
-             AND (dimensionContent.seoHideInSitemap = :hide OR dimensionContent.seoHideInSitemap IS NULL)
-             AND dimensionContent.workflowPlace = :published'
+              AND dimensionContent.stage = :stage
+              AND dimensionContent.version = :version
+              AND (dimensionContent.seoHideInSitemap = :hide OR dimensionContent.seoHideInSitemap IS NULL)'
         );
 
         $queryBuilder->leftJoin('dimensionContent.route', 'route');
@@ -194,7 +191,6 @@ class EventSitemapProvider implements SitemapProviderInterface
         $queryBuilder->setParameter('stage', DimensionContentInterface::STAGE_LIVE);
         $queryBuilder->setParameter('version', DimensionContentInterface::CURRENT_VERSION);
         $queryBuilder->setParameter('hide', false);
-        $queryBuilder->setParameter('published', WorkflowInterface::WORKFLOW_PLACE_PUBLISHED);
 
         // Only events with routes
         $queryBuilder->andWhere('route.slug IS NOT NULL');
@@ -234,15 +230,13 @@ class EventSitemapProvider implements SitemapProviderInterface
             'dimensionContent.locale = :locale
              AND dimensionContent.stage = :stage
              AND dimensionContent.version = :version
-             AND (dimensionContent.seoHideInSitemap = :hide OR dimensionContent.seoHideInSitemap IS NULL)
-             AND dimensionContent.workflowPlace = :published'
+             AND (dimensionContent.seoHideInSitemap = :hide OR dimensionContent.seoHideInSitemap IS NULL)'
         );
 
         $queryBuilder->setParameter('locale', $locale);
         $queryBuilder->setParameter('stage', DimensionContentInterface::STAGE_LIVE);
         $queryBuilder->setParameter('version', DimensionContentInterface::CURRENT_VERSION);
         $queryBuilder->setParameter('hide', false);
-        $queryBuilder->setParameter('published', WorkflowInterface::WORKFLOW_PLACE_PUBLISHED);
 
         $queryBuilder->andWhere('dimensionContent.id IS NOT NULL');
 
