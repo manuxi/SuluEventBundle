@@ -6,18 +6,14 @@ namespace Manuxi\SuluEventBundle\Entity;
 
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use JMS\Serializer\Annotation as Serializer;
 use Manuxi\SuluEventBundle\Repository\LocationRepository;
-use Manuxi\SuluSharedToolsBundle\Entity\Traits\ImageTrait;
-use Manuxi\SuluSharedToolsBundle\Entity\Traits\LinkTrait;
 use Sulu\Bundle\MediaBundle\Entity\MediaInterface;
 
 #[ORM\Entity(repositoryClass: LocationRepository::class)]
 #[ORM\Table(name: 'app_location')]
 class Location
 {
-    use ImageTrait;
-    use LinkTrait;
-
     public const RESOURCE_KEY = 'locations';
     public const FORM_KEY = 'location_details';
     public const LIST_KEY = 'locations';
@@ -57,12 +53,19 @@ class Location
     #[ORM\Column(type: Types::STRING, length: 50, nullable: true)]
     private ?string $phoneNumber = null;
 
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $link = null;
+
     #[ORM\ManyToOne(targetEntity: MediaInterface::class)]
     #[ORM\JoinColumn(onDelete: 'SET NULL')]
     private ?MediaInterface $pdf = null;
 
     #[ORM\Column(type: Types::JSON, nullable: true)]
     private ?array $location = null;
+
+    #[ORM\ManyToOne(targetEntity: MediaInterface::class)]
+    #[ORM\JoinColumn(onDelete: 'SET NULL')]
+    private ?MediaInterface $image = null;
 
     #[ORM\Column(type: Types::JSON, nullable: true)]
     private ?array $images = null;
@@ -176,6 +179,7 @@ class Location
     public function setEmail(?string $email): self
     {
         $this->email = $email;
+
         return $this;
     }
 
@@ -187,6 +191,7 @@ class Location
     public function setPhoneNumber(?string $phoneNumber): self
     {
         $this->phoneNumber = $phoneNumber;
+
         return $this;
     }
 
@@ -198,6 +203,7 @@ class Location
     public function setPdf(?MediaInterface $pdf): self
     {
         $this->pdf = $pdf;
+
         return $this;
     }
 
@@ -209,6 +215,32 @@ class Location
     public function setLocation(?array $location): self
     {
         $this->location = $location;
+
+        return $this;
+    }
+
+    public function getImage(): ?MediaInterface
+    {
+        return $this->image;
+    }
+
+    #[Serializer\VirtualProperty]
+    #[Serializer\SerializedName('image')]
+    public function getImageData(): ?array
+    {
+        if ($image = $this->getImage()) {
+            return [
+                'id' => $image->getId(),
+            ];
+        }
+
+        return null;
+    }
+
+    public function setImage(?MediaInterface $image): self
+    {
+        $this->image = $image;
+
         return $this;
     }
 
@@ -220,6 +252,7 @@ class Location
     public function setImages(?array $images): self
     {
         $this->images = $images;
+
         return $this;
     }
 
@@ -231,5 +264,16 @@ class Location
     public function getLongitude(): ?float
     {
         return $this->location['long'] ?? null;
+    }
+
+    public function getLink(): ?array
+    {
+        return $this->link;
+    }
+
+    public function setLink(?array $link): self
+    {
+        $this->link = $link;
+        return $this;
     }
 }

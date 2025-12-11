@@ -180,21 +180,6 @@ class EventDimensionContent implements
         return $this;
     }
 
-
-
-    #[Serializer\VirtualProperty]
-    #[Serializer\SerializedName("locationId")]
-    #[Serializer\Type("int")]
-    #[Serializer\Groups(["default", "admin", "fullEvent", "partialEvent"])]
-    public function getLocationId(): ?int
-    {
-        if ($this->location) {
-            return $this->location->getId();
-        }
-
-        return (int) ($this->templateData['locationId'] ?? null) ?: null;
-    }
-
     public function getSocialSettings(): ?EventSocialSettings
     {
         return $this->socialSettings;

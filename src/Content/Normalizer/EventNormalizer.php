@@ -32,20 +32,19 @@ class EventNormalizer implements NormalizerInterface
 
         $location = $object->getLocation();
         if (null !== $location) {
-            $normalizedData['locationId'] = $location->getId();
+            //$normalizedData['locationId'] = $location->getId();
 
             if (isset($normalizedData['location']) && \is_array($normalizedData['location'])) {
                 $normalizedData['location']['id'] = $location->getId();
             }
         } else {
-            $normalizedData['locationId'] = null;
+            //$normalizedData['locationId'] = null;
         }
 
         $speaker = $object->getSpeaker();
         if (null !== $speaker) {
             $normalizedData['speakerId'] = $speaker->getId();
 
-            // Enhance speaker object with ID if it exists
             if (isset($normalizedData['speaker']) && \is_array($normalizedData['speaker'])) {
                 $normalizedData['speaker']['id'] = $speaker->getId();
             }

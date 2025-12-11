@@ -156,14 +156,6 @@ services:
         tags:
             - { name: sulu_content.merger }
 
-    # DataMapper for Location (single_location_selection)
-    #sulu_event.location_data_mapper:
-    #    class: Manuxi\SuluEventBundle\Content\DataMapper\LocationDataMapper
-    #    arguments:
-    #        - '@doctrine.orm.entity_manager'
-    #    tags:
-    #        - { name: sulu_content.data_mapper }
-
     # DataMapper for unlocalized event
     sulu_event.event_unlocalized_data_mapper:
         class: Manuxi\SuluEventBundle\Content\DataMapper\EventUnlocalizedDataMapper
@@ -171,6 +163,14 @@ services:
             - '@doctrine.orm.entity_manager'
         tags:
             - { name: sulu_content.data_mapper }
+
+    # DataMapper for automatically setting author to current user's contact when creating events
+    Manuxi\SuluEventBundle\Content\DataMapper\AutoAuthorDataMapper:
+        class: Manuxi\SuluEventBundle\Content\DataMapper\AutoAuthorDataMapper
+        arguments:
+            - '@security.helper'
+        tags:
+            - { name: sulu_content.data_mapper, priority: -50 }
 
     # Preview Object Provider
     sulu_event.preview_object_provider:
@@ -200,6 +200,17 @@ services:
         arguments:
             - '@sulu_content.content_aggregator'
             - '@sulu_media.media_manager'
+
+    # Tracks references for "Where used" functionality
+    Manuxi\SuluEventBundle\Reference\EventReferenceRefresher:
+        class: Manuxi\SuluEventBundle\Reference\EventReferenceRefresher
+        arguments:
+            - '@doctrine.orm.entity_manager'
+            - '@Sulu\Bundle\ReferenceBundle\Domain\Repository\ReferenceRepositoryInterface'
+            - '@sulu_content.content_view_resolver'
+            - '@sulu_content.content_merger'
+        tags:
+            - { name: sulu_reference.refresher }
 
     # Sitemap Provider
     sulu_event.sitemap_provider:

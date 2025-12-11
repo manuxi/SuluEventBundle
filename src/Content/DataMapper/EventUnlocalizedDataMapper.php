@@ -43,15 +43,11 @@ class EventUnlocalizedDataMapper implements DataMapperInterface
         EventDimensionContent $localizedContent,
         array $data,
     ): void {
-        if (!\array_key_exists('locationId', $data) && !\array_key_exists('location', $data)) {
+        if (!\array_key_exists('location', $data)) {
             return;
         }
 
-        $locationId = $this->extractLocationId($data['locationId'] ?? null);
-
-        if (null === $locationId && isset($data['location'])) {
-            $locationId = $this->extractLocationId($data['location']);
-        }
+        $locationId = $this->extractLocationId($data['location']);
 
         if (null !== $locationId) {
             $location = $this->entityManager->find(Location::class, $locationId);
@@ -134,7 +130,7 @@ class EventUnlocalizedDataMapper implements DataMapperInterface
 
     private function extractLocationId(mixed $value): ?int
     {
-        if (null === $value || '' === $value) {
+        if (null === $value) {
             return null;
         }
 
@@ -146,7 +142,6 @@ class EventUnlocalizedDataMapper implements DataMapperInterface
             return (int) $value;
         }
 
-        // Object with 'id' property
         if (\is_array($value) && isset($value['id'])) {
             return (int) $value['id'];
         }
