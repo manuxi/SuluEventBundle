@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Entity;
 
+use JMS\Serializer\Annotation as Serializer;
 use Sulu\Bundle\ContactBundle\Entity\ContactInterface;
 use Sulu\Bundle\MediaBundle\Entity\MediaInterface;
 use Sulu\Content\Domain\Model\AuditableInterface;
@@ -28,7 +29,6 @@ use Sulu\Content\Domain\Model\TaxonomyTrait;
 use Sulu\Content\Domain\Model\TemplateInterface;
 use Sulu\Content\Domain\Model\TemplateTrait;
 use Sulu\Content\Domain\Model\WebspaceInterface;
-use JMS\Serializer\Annotation as Serializer;
 use Sulu\Content\Domain\Model\WebspaceTrait;
 use Sulu\Content\Domain\Model\WorkflowInterface;
 use Sulu\Content\Domain\Model\WorkflowTrait;
@@ -37,19 +37,7 @@ use Symfony\Component\Serializer\Attribute\Ignore;
 /**
  * @implements DimensionContentInterface<Event>
  */
-class EventDimensionContent implements
-    DimensionContentInterface,
-    ExcerptInterface,
-    TaxonomyInterface,
-    SeoInterface,
-    TemplateInterface,
-    RoutableInterface,
-    WorkflowInterface,
-    AuthorInterface,
-    WebspaceInterface,
-    ShadowInterface,
-    AuditableInterface,
-    LinkInterface
+class EventDimensionContent implements DimensionContentInterface, ExcerptInterface, TaxonomyInterface, SeoInterface, TemplateInterface, RoutableInterface, WorkflowInterface, AuthorInterface, WebspaceInterface, ShadowInterface, AuditableInterface, LinkInterface
 {
     use AuthorTrait;
     use DimensionContentTrait;
@@ -122,6 +110,7 @@ class EventDimensionContent implements
     public function setType(?string $type): self
     {
         $this->type = $type;
+
         return $this;
     }
 
@@ -133,6 +122,7 @@ class EventDimensionContent implements
     public function setStartDate(?\DateTimeImmutable $startDate): self
     {
         $this->startDate = $startDate;
+
         return $this;
     }
 
@@ -144,6 +134,7 @@ class EventDimensionContent implements
     public function setEndDate(?\DateTimeImmutable $endDate): self
     {
         $this->endDate = $endDate;
+
         return $this;
     }
 
@@ -155,6 +146,7 @@ class EventDimensionContent implements
     public function setEmail(?string $email): self
     {
         $this->email = $email;
+
         return $this;
     }
 
@@ -166,6 +158,7 @@ class EventDimensionContent implements
     public function setPhoneNumber(?string $phoneNumber): self
     {
         $this->phoneNumber = $phoneNumber;
+
         return $this;
     }
 
@@ -177,7 +170,21 @@ class EventDimensionContent implements
     public function setLocation(?Location $location): self
     {
         $this->location = $location;
+
         return $this;
+    }
+
+    #[Serializer\VirtualProperty]
+    #[Serializer\SerializedName('locationId')]
+    #[Serializer\Type('int')]
+    #[Serializer\Groups(['default', 'admin', 'fullEvent', 'partialEvent'])]
+    public function getLocationId(): ?int
+    {
+        if ($this->location) {
+            return $this->location->getId();
+        }
+
+        return (int) ($this->templateData['locationId'] ?? null) ?: null;
     }
 
     public function getSocialSettings(): ?EventSocialSettings
@@ -188,6 +195,7 @@ class EventDimensionContent implements
     public function setSocialSettings(?EventSocialSettings $socialSettings): self
     {
         $this->socialSettings = $socialSettings;
+
         return $this;
     }
 
@@ -199,6 +207,7 @@ class EventDimensionContent implements
     public function setRecurrence(?EventRecurrence $recurrence): self
     {
         $this->recurrence = $recurrence;
+
         return $this;
     }
 
@@ -210,6 +219,7 @@ class EventDimensionContent implements
     public function setTitle(?string $title): self
     {
         $this->title = $title;
+
         return $this;
     }
 
@@ -221,6 +231,7 @@ class EventDimensionContent implements
     public function setSubtitle(?string $subtitle): self
     {
         $this->subtitle = $subtitle;
+
         return $this;
     }
 
@@ -232,6 +243,7 @@ class EventDimensionContent implements
     public function setSummary(?string $summary): self
     {
         $this->summary = $summary;
+
         return $this;
     }
 
@@ -243,6 +255,7 @@ class EventDimensionContent implements
     public function setText(?string $text): self
     {
         $this->text = $text;
+
         return $this;
     }
 
@@ -254,6 +267,7 @@ class EventDimensionContent implements
     public function setFooter(?string $footer): self
     {
         $this->footer = $footer;
+
         return $this;
     }
 
@@ -265,6 +279,7 @@ class EventDimensionContent implements
     public function setImage(?MediaInterface $image): self
     {
         $this->image = $image;
+
         return $this;
     }
 
@@ -276,6 +291,7 @@ class EventDimensionContent implements
     public function setImages(?array $images): self
     {
         $this->images = $images;
+
         return $this;
     }
 
@@ -287,6 +303,7 @@ class EventDimensionContent implements
     public function setPdf(?MediaInterface $pdf): self
     {
         $this->pdf = $pdf;
+
         return $this;
     }
 
@@ -298,6 +315,7 @@ class EventDimensionContent implements
     public function setSpeaker(?ContactInterface $speaker): self
     {
         $this->speaker = $speaker;
+
         return $this;
     }
 
@@ -309,6 +327,7 @@ class EventDimensionContent implements
     public function setShowAuthor(?bool $showAuthor): self
     {
         $this->showAuthor = $showAuthor;
+
         return $this;
     }
 
@@ -320,6 +339,7 @@ class EventDimensionContent implements
     public function setShowDate(?bool $showDate): self
     {
         $this->showDate = $showDate;
+
         return $this;
     }
 

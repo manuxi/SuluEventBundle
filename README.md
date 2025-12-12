@@ -117,10 +117,12 @@ Detailed documentation in the [docs/](docs/) directory.
 - [Recurring Events](docs/recurrence.en.md) - Recurring event patterns
 - [Feeds/iCal](docs/feeds-ical.en.md) - Feeds and iCal handling
 - [Locations](docs/locations.en.md) - Locations that are assigned to events
-- [Custom Event Types](docs/event-types.en.md) - Event types can be set by yourself
+- [Sitemap](docs/sitemap.en.md) - Sitemap
+- [Custom Event Types](docs/event-types.en.md) - Own Event types for categorization
 - [List View](docs/list-view.en.md) - List View Tweaks
 - [List Transformer](docs/list-transformer.en.md) - Type transformer for lists
 - [Settings](docs/settings.en.md) - Settings
+- [Fixtures](docs/fixtures.en.md) - Sample Events
 
 ## 👩‍🍳 Contributing
 

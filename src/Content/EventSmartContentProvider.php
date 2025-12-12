@@ -274,15 +274,6 @@ class EventSmartContentProvider implements SmartContentProviderInterface
         return $mappedFilters;
     }
 
-    /**
-     * Add internal filters for event types (pending/expired) and custom event types.
-     *
-     * Sulu 3 Standard: All fields are in localized DimensionContent.
-     * The DimensionContentQueryEnhancer already joins dimensionContent,
-     * so we use that alias for filtering.
-     *
-     * @return string The alias of the dimension content join
-     */
     protected function addInternalFilters(QueryBuilder $queryBuilder, array $filters, string $alias): string
     {
         $dimensionContentAlias = null;

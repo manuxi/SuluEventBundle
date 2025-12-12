@@ -13,7 +13,6 @@ use Sulu\Bundle\WebsiteBundle\Sitemap\SitemapProviderInterface;
 use Sulu\Bundle\WebsiteBundle\Sitemap\SitemapUrl;
 use Sulu\Component\Webspace\Manager\WebspaceManagerInterface;
 use Sulu\Content\Domain\Model\DimensionContentInterface;
-use Sulu\Content\Domain\Model\WorkflowInterface;
 
 class EventSitemapProvider implements SitemapProviderInterface
 {
@@ -54,7 +53,7 @@ class EventSitemapProvider implements SitemapProviderInterface
             }
 
             $sitemapUrl = new SitemapUrl(
-                $scheme . '://' . $host . $slug,
+                $scheme.'://'.$host.$slug,
                 $eventLocale,
                 $eventLocale,
                 $lastModified,
@@ -66,7 +65,7 @@ class EventSitemapProvider implements SitemapProviderInterface
                     if ($alternateLocale !== $eventLocale && !empty($alternateSlug)) {
                         $sitemapUrl->addAlternateLink(
                             new SitemapAlternateLink(
-                                $scheme . '://' . $host . $alternateSlug,
+                                $scheme.'://'.$host.$alternateSlug,
                                 $alternateLocale,
                             )
                         );
@@ -129,7 +128,7 @@ class EventSitemapProvider implements SitemapProviderInterface
     {
         $queryBuilder = $this->entityRepository->createQueryBuilder('event');
 
-        // Join localized dimension content (all fields are here in Sulu 3 Standard)
+        // Join localized dimension content
         $queryBuilder->leftJoin(
             'event.dimensionContents',
             'dimensionContent',

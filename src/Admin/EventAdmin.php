@@ -26,7 +26,7 @@ class EventAdmin extends Admin
     public const ADD_TABS_VIEW = 'sulu_event.event.add_tabs';
     public const EDIT_TABS_VIEW = 'sulu_event.event.edit_tabs';
 
-    // Backward compatibility - used in SuluEventExtension
+    // Backward compatibility
     public const EDIT_FORM_VIEW = self::EDIT_TABS_VIEW;
 
     public const EDIT_FORM_DETAILS_VIEW = 'sulu_event.event.edit_form.details';
@@ -141,7 +141,6 @@ class EventAdmin extends Admin
             );
 
             foreach ($viewBuilders as $viewBuilder) {
-                // Ensure toolbar actions are set (Workaround for missing Save button on SEO/Excerpt)
                 if (method_exists($viewBuilder, 'addToolbarActions') && $viewBuilder->getName() === static::EDIT_FORM_DETAILS_VIEW) {
                     $viewBuilder->addToolbarActions($formToolbarActions);
                 }

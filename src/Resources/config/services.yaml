@@ -164,6 +164,13 @@ services:
         tags:
             - { name: sulu_content.data_mapper }
 
+    Manuxi\SuluEventBundle\Content\DataMapper\LocationDataMapper:
+        class: Manuxi\SuluEventBundle\Content\DataMapper\LocationDataMapper
+        arguments:
+            - '@doctrine.orm.entity_manager'
+        tags:
+            - { name: sulu_content.data_mapper, priority: 10 }
+
     # DataMapper for automatically setting author to current user's contact when creating events
     Manuxi\SuluEventBundle\Content\DataMapper\AutoAuthorDataMapper:
         class: Manuxi\SuluEventBundle\Content\DataMapper\AutoAuthorDataMapper
@@ -321,5 +328,10 @@ services:
         class: Manuxi\SuluEventBundle\DataFixtures\Event\EventFixture
         arguments:
             - '@sulu_content.content_manager'
+        tags:
+            - { name: doctrine.fixture.orm }
+
+    Manuxi\SuluEventBundle\DataFixtures\Location\LocationFixture:
+        class: Manuxi\SuluEventBundle\DataFixtures\Location\LocationFixture
         tags:
             - { name: doctrine.fixture.orm }

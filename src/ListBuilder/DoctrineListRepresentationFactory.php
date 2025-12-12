@@ -50,6 +50,10 @@ class DoctrineListRepresentationFactory
             $listBuilder->addSelectField($fieldDescriptors['endDate']);
         }
 
+        if (isset($fieldDescriptors['publishedState'])) {
+            $listBuilder->addSelectField($fieldDescriptors['publishedState']);
+        }
+
         foreach ($parameters as $key => $value) {
             $listBuilder->setParameter($key, $value);
         }
@@ -439,8 +443,12 @@ class DoctrineListRepresentationFactory
     private function addPublishStateToListElements(array $listElements): array
     {
         foreach ($listElements as $key => $element) {
-            $workflowPlace = $element['workflowPlace'] ?? null;
-            $listElements[$key]['publishedState'] = 'published' === $workflowPlace;
+            $workflowPlace = $element['publishedState'] ?? $element['workflowPlace'] ?? null;
+            $listElements[$key]['published'] = 'published' === $workflowPlace;
+            // Ensure publishedState is present if not already
+            if (!isset($listElements[$key]['publishedState'])) {
+                $listElements[$key]['publishedState'] = $workflowPlace;
+            }
         }
 
         return $listElements;

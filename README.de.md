@@ -118,10 +118,12 @@ Detaillierte Dokumentation im [docs/](docs/) Verzeichnis.
 - [Wiederkehrende Events](docs/recurrence.de.md) - Wiederholende Event-Muster
 - [Feeds/iCal](docs/feeds-ical.de.md) - Feeds und iCal Handling
 - [Standorte](docs/locations.de.md) - Standorte, die Events zugeordnet werden
-- [Eigene Event-Types](docs/event-types.de.md) - Event-Types können selber konfiguriert werden
+- [Sitemap](docs/sitemap.de.md) - Sitemaps
+- [Eigene Event-Types](docs/event-types.de.md) - Event-Types selber konfigurieren
 - [Listenansicht](docs/list-view.de.md) - Listen-Ansicht-Tweaks
 - [List-Transformer](docs/list-transformer.de.md) - Typ-Transformer für Listen
 - [Settings](docs/settings.de.md) - Einstellungen
+- [Fixtures](docs/fixtures.de.md) - Beispiel-Veranstaltungen
 
 ## 👩‍🍳 Mitwirken
 

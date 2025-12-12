@@ -12,6 +12,7 @@ use Manuxi\SuluEventBundle\Entity\Location;
 use Sulu\Content\Application\ContentManager\ContentManagerInterface;
 use Sulu\Content\Domain\Model\DimensionContentInterface;
 use Sulu\Content\Domain\Model\WorkflowInterface;
+use Sulu\Route\Domain\Model\Route;
 
 /**
  * Sulu 3 compatible fixture for events using ContentManager.
@@ -83,12 +84,25 @@ class EventFixture extends Fixture implements FixtureGroupInterface
 
     private function createLocations(ObjectManager $manager): void
     {
+        // Check for existing locations first
+        $repository = $manager->getRepository(Location::class);
+        $existingLocations = $repository->findAll();
+
+        if (count($existingLocations) > 0) {
+            $this->locations = $existingLocations;
+            echo "Using " . count($existingLocations) . " existing locations.\n";
+            return;
+        }
+
         $locationData = [
             ['name' => 'Convention Center', 'street' => 'Main Street', 'number' => '100', 'postalCode' => '10001', 'city' => 'New York', 'countryCode' => 'US'],
             ['name' => 'Tech Hub', 'street' => 'Innovation Way', 'number' => '42', 'postalCode' => '94105', 'city' => 'San Francisco', 'countryCode' => 'US'],
             ['name' => 'Business Park', 'street' => 'Corporate Drive', 'number' => '500', 'postalCode' => '60601', 'city' => 'Chicago', 'countryCode' => 'US'],
             ['name' => 'University Hall', 'street' => 'Academic Lane', 'number' => '1', 'postalCode' => '02138', 'city' => 'Cambridge', 'countryCode' => 'US'],
             ['name' => 'Creative Space', 'street' => 'Art District', 'number' => '25', 'postalCode' => '90012', 'city' => 'Los Angeles', 'countryCode' => 'US'],
+            ['name' => 'River Side Hall', 'street' => 'Scenic Route', 'number' => '9', 'postalCode' => '78701', 'city' => 'Austin', 'countryCode' => 'US'],
+            ['name' => 'Mountain View Center', 'street' => 'Peak Road', 'number' => '33', 'postalCode' => '80302', 'city' => 'Boulder', 'countryCode' => 'US'],
+            ['name' => 'Harbor Point', 'street' => 'Ocean Drive', 'number' => '12', 'postalCode' => '02210', 'city' => 'Boston', 'countryCode' => 'US'],
         ];
 
         foreach ($locationData as $data) {
@@ -117,17 +131,59 @@ class EventFixture extends Fixture implements FixtureGroupInterface
         // Select a location (cycle through available locations)
         $location = $this->locations[$index % count($this->locations)];
 
-        // Determine dates (mix of past and future)
-        $daysOffset = $index * 3 - 30; // Spread over -30 to +45 days roughly
-        $startDate = (new \DateTimeImmutable())->modify(sprintf('%+d days', $daysOffset));
-        $endDate = $startDate->modify('+2 days');
+        // Determine dates (Now + 0 to 730 days)
+        $currentYear = (int) date('Y');
+        $daysOffset = mt_rand(0, 730);
+
+        $baseDate = (new \DateTimeImmutable())->modify(sprintf('+%d days', $daysOffset));
+
+        // Get Homepage URL for parent
+        $homeRoute = $manager->getRepository(Route::class)->findOneBy(['slug' => '/']);
+        $homeUuid = $homeRoute ? $homeRoute->getResourceId() : '00000000-0000-0000-0000-000000000000';
+
+        // Vary times
+        $hour = 8 + ($index % 10); // Start times between 08:00 and 17:00
+        $minute = ($index % 2) * 30; // 00 or 30
+
+        $startDate = $baseDate->setTime($hour, $minute);
+
+        // End date logic
+        if ($index % 3 === 0) {
+            // Multi-day event
+            $endDate = $startDate->modify('+2 days')->setTime(17, 0);
+        } elseif ($index % 3 === 1) {
+            // Full day (handled by time, but let's say same day late)
+            $endDate = $startDate->setTime($hour + 4, 30);
+        } else {
+            // Same day, short event
+            $endDate = $startDate->modify('+2 hours');
+        }
+
+        // Base Title with Year (of the event start date)
+        $eventYear = $startDate->format('Y');
+        $titleWithYear = $baseTitle . ' ' . $eventYear;
+
+        // Better subtitles
+        $subtitles = [
+            'Unlock the future of ' . $type,
+            'Connect, Collaborate, Create',
+            'Where innovation meets execution',
+            'The ultimate gathering for ' . $type . ' enthusiasts',
+            'Defining the new standard in ' . $type,
+            'Strategies for success in the modern era',
+            'Deep dive into emerging trends',
+            'Scaling your potential',
+            'A masterclass in ' . $type . ' excellence',
+            'Transforming ideas into reality'
+        ];
+        $subtitle = $subtitles[$index % count($subtitles)];
 
         // English Content
         $this->contentManager->persist($event, [
-            'title' => $baseTitle . ' 2025',
-            'subtitle' => 'The ' . $type . ' for professionals',
+            'title' => $titleWithYear,
+            'subtitle' => $subtitle,
             'summary' => 'Join us for ' . $baseTitle . ', a premier event in the industry.',
-            'text' => '<p>This is the full description for <strong>' . $baseTitle . '</strong>. '
+            'text' => '<p>This is the full description for <strong>' . $titleWithYear . '</strong>. '
                 . 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. '
                 . 'Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>',
             'footer' => 'For more information, contact us.',
@@ -139,6 +195,7 @@ class EventFixture extends Fixture implements FixtureGroupInterface
             'phoneNumber' => '+1 555 123 4567',
             'showAuthor' => false,
             'showDate' => true,
+            'url' => ['page' => ['path' => '/', 'uuid' => $homeUuid], 'suffix' => '/' . str_replace(' ', '-', strtolower($titleWithYear))],
             'seo' => [
                 'title' => $baseTitle . ' - Official',
                 'description' => 'Official page for ' . $baseTitle,
@@ -162,10 +219,10 @@ class EventFixture extends Fixture implements FixtureGroupInterface
 
         // German Content
         $this->contentManager->persist($event, [
-            'title' => $baseTitle . ' 2025',
-            'subtitle' => 'Das ' . $this->translateType($type) . ' für Fachleute',
+            'title' => $titleWithYear,
+            'subtitle' => 'Das ' . $this->translateType($type) . ' Event, das Sie nicht verpassen sollten',
             'summary' => 'Begleiten Sie uns bei ' . $baseTitle . ', einer erstklassigen Veranstaltung der Branche.',
-            'text' => '<p>Dies ist die vollständige Beschreibung für <strong>' . $baseTitle . '</strong>. '
+            'text' => '<p>Dies ist die vollständige Beschreibung für <strong>' . $titleWithYear . '</strong>. '
                 . 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. '
                 . 'Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>',
             'footer' => 'Für weitere Informationen kontaktieren Sie uns.',
@@ -177,6 +234,7 @@ class EventFixture extends Fixture implements FixtureGroupInterface
             'phoneNumber' => '+1 555 123 4567',
             'showAuthor' => false,
             'showDate' => true,
+            'url' => ['page' => ['path' => '/', 'uuid' => $homeUuid], 'suffix' => '/de/' . str_replace(' ', '-', strtolower($titleWithYear))],
             'seo' => [
                 'title' => $baseTitle . ' - Offiziell',
                 'description' => 'Offizielle Seite für ' . $baseTitle,
@@ -198,6 +256,9 @@ class EventFixture extends Fixture implements FixtureGroupInterface
             'stage' => DimensionContentInterface::STAGE_DRAFT,
         ]);
 
+        // Flush content to ensure it can be loaded for transition
+        $manager->flush();
+
         // Publish most events, leave some as draft
         if ($index % 5 !== 0) { // Every 5th event stays draft
             foreach (['en', 'de'] as $locale) {
@@ -211,6 +272,7 @@ class EventFixture extends Fixture implements FixtureGroupInterface
                         WorkflowInterface::WORKFLOW_TRANSITION_PUBLISH
                     );
                 } catch (\Exception $e) {
+                    echo "Error publishing event: " . $e->getMessage() . "\n";
                     // Log but continue - some events may fail to publish
                     // This is acceptable for fixture data
                 }

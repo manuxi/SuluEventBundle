@@ -1,0 +1,51 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Manuxi\SuluEventBundle\Tests\Unit\Content\Normalizer;
+
+use Manuxi\SuluEventBundle\Content\Normalizer\EventNormalizer;
+use Manuxi\SuluEventBundle\Entity\Event;
+use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
+use Manuxi\SuluEventBundle\Entity\Location;
+use PHPUnit\Framework\TestCase;
+
+class EventNormalizerTest extends TestCase
+{
+    public function testEnhanceLocatonId(): void
+    {
+        $normalizer = new EventNormalizer();
+        $event = $this->createMock(Event::class);
+        $event->method('getId')->willReturn(123);
+
+        $location = $this->createMock(Location::class);
+        $location->method('getId')->willReturn(456);
+
+        $dimensionContent = $this->createMock(EventDimensionContent::class);
+        $dimensionContent->method('getResource')->willReturn($event);
+        $dimensionContent->method('getLocation')->willReturn($location);
+
+        $normalizedData = [];
+        $result = $normalizer->enhance($dimensionContent, $normalizedData);
+
+        $this->assertEquals(123, $result['id']);
+        $this->assertEquals(456, $result['location']);
+    }
+
+    public function testEnhanceNoLocation(): void
+    {
+        $normalizer = new EventNormalizer();
+        $event = $this->createMock(Event::class);
+        $event->method('getId')->willReturn(123);
+
+        $dimensionContent = $this->createMock(EventDimensionContent::class);
+        $dimensionContent->method('getResource')->willReturn($event);
+        $dimensionContent->method('getLocation')->willReturn(null);
+
+        $normalizedData = [];
+        $result = $normalizer->enhance($dimensionContent, $normalizedData);
+
+        $this->assertEquals(123, $result['id']);
+        $this->assertNull($result['location']);
+    }
+}

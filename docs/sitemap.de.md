@@ -7,7 +7,7 @@ Das SuluEventBundle integriert sich automatisch in die Sulu Sitemap. Events werd
 Der `EventSitemapProvider` sammelt alle Events, die:
 - Veröffentlicht sind
 - Der aktuellen Webspace-Sprache entsprechen
-- Nicht im SEO-Tab ausgeblendet wurden ("In Sitemap verstecken" nicht aktiv)
+- Nicht im SEO-Tab ausgeblendet wurden ("In Sitemap verstecken")
 
 Die URLs werden basierend auf dem Routing generiert.
 

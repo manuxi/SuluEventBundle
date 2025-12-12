@@ -214,11 +214,6 @@ class EventRepository extends ServiceEntityRepository
         return $qb->getQuery()->getResult();
     }
 
-    /**
-     * Find events for iCal export.
-     *
-     * @param array{locale: string} $filters
-     */
     public function findForIcal(array $filters): array
     {
         Assert::keyExists($filters, 'locale', 'locale is required for findForIcal');
@@ -342,8 +337,6 @@ class EventRepository extends ServiceEntityRepository
         $stage = $filters['stage'] ?? DimensionContentInterface::STAGE_DRAFT;
         $version = $filters['version'] ?? DimensionContentInterface::CURRENT_VERSION;
 
-        // Join dimensionContent for all fields (localized + unlocalized)
-        // Sulu 3 Standard: All fields are stored in localized entries
         $queryBuilder->leftJoin(
             'event.dimensionContents',
             'dimensionContent',
@@ -361,7 +354,6 @@ class EventRepository extends ServiceEntityRepository
 
         $queryBuilder->addSelect('dimensionContent');
 
-        // Use DimensionContentQueryEnhancer for additional selects if needed
         if (!empty($selects)) {
             $this->dimensionContentQueryEnhancer->addSelects(
                 $queryBuilder,

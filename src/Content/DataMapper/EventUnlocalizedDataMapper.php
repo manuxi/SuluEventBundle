@@ -41,13 +41,18 @@ class EventUnlocalizedDataMapper implements DataMapperInterface
     private function mapLocation(
         EventDimensionContent $unlocalizedContent,
         EventDimensionContent $localizedContent,
-        array $data,
+        array $data
     ): void {
-        if (!\array_key_exists('location', $data)) {
+
+        if (!\array_key_exists('locationId', $data) && !\array_key_exists('location', $data)) {
             return;
         }
 
-        $locationId = $this->extractLocationId($data['location']);
+        $locationId = $this->extractLocationId($data['locationId'] ?? null);
+
+        if (null === $locationId && isset($data['location'])) {
+            $locationId = $this->extractLocationId($data['location']);
+        }
 
         if (null !== $locationId) {
             $location = $this->entityManager->find(Location::class, $locationId);
@@ -56,6 +61,7 @@ class EventUnlocalizedDataMapper implements DataMapperInterface
                 $localizedContent->setLocation($location);
             }
         } else {
+            // Explicit null - clear the location
             $unlocalizedContent->setLocation(null);
             $localizedContent->setLocation(null);
         }
@@ -64,7 +70,7 @@ class EventUnlocalizedDataMapper implements DataMapperInterface
     private function mapType(
         EventDimensionContent $unlocalizedContent,
         EventDimensionContent $localizedContent,
-        array $data,
+        array $data
     ): void {
         if (!\array_key_exists('type', $data)) {
             return;
@@ -78,7 +84,7 @@ class EventUnlocalizedDataMapper implements DataMapperInterface
     private function mapDates(
         EventDimensionContent $unlocalizedContent,
         EventDimensionContent $localizedContent,
-        array $data,
+        array $data
     ): void {
         if (\array_key_exists('startDate', $data)) {
             $startDate = $data['startDate'] ? new \DateTimeImmutable($data['startDate']) : null;
@@ -96,7 +102,7 @@ class EventUnlocalizedDataMapper implements DataMapperInterface
     private function mapContactInfo(
         EventDimensionContent $unlocalizedContent,
         EventDimensionContent $localizedContent,
-        array $data,
+        array $data
     ): void {
         if (\array_key_exists('email', $data)) {
             $email = $data['email'];
@@ -130,7 +136,7 @@ class EventUnlocalizedDataMapper implements DataMapperInterface
 
     private function extractLocationId(mixed $value): ?int
     {
-        if (null === $value) {
+        if (null === $value || '' === $value) {
             return null;
         }
 
@@ -142,6 +148,7 @@ class EventUnlocalizedDataMapper implements DataMapperInterface
             return (int) $value;
         }
 
+        // Object with 'id' property
         if (\is_array($value) && isset($value['id'])) {
             return (int) $value['id'];
         }
