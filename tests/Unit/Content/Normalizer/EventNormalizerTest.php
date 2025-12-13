@@ -12,7 +12,7 @@ use PHPUnit\Framework\TestCase;
 
 class EventNormalizerTest extends TestCase
 {
-    public function testEnhanceLocatonId(): void
+    public function testEnhanceLocationId(): void
     {
         $normalizer = new EventNormalizer();
         $event = $this->createMock(Event::class);
@@ -29,7 +29,8 @@ class EventNormalizerTest extends TestCase
         $result = $normalizer->enhance($dimensionContent, $normalizedData);
 
         $this->assertEquals(123, $result['id']);
-        $this->assertEquals(456, $result['location']);
+        $this->assertEquals(456, $result['locationId']);
+        $this->assertEquals(456, $result['location']['id']);
     }
 
     public function testEnhanceNoLocation(): void
@@ -46,6 +47,7 @@ class EventNormalizerTest extends TestCase
         $result = $normalizer->enhance($dimensionContent, $normalizedData);
 
         $this->assertEquals(123, $result['id']);
+        $this->assertNull($result['locationId']);
         $this->assertNull($result['location']);
     }
 }

@@ -34,11 +34,14 @@ class EventNormalizer implements NormalizerInterface
         if (null !== $location) {
             $normalizedData['locationId'] = $location->getId();
 
-            if (isset($normalizedData['location']) && \is_array($normalizedData['location'])) {
-                $normalizedData['location']['id'] = $location->getId();
+            if (!isset($normalizedData['location']) || !\is_array($normalizedData['location'])) {
+                $normalizedData['location'] = [];
             }
+
+            $normalizedData['location']['id'] = $location->getId();
         } else {
             $normalizedData['locationId'] = null;
+            $normalizedData['location'] = null;
         }
 
         $speaker = $object->getSpeaker();
