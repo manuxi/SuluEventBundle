@@ -49,5 +49,17 @@ class EventUnlocalizedFieldsMerger implements MergerInterface
         if (null !== $sourceObject->getRecurrence()) {
             $targetObject->setRecurrence($sourceObject->getRecurrence());
         }
+
+        if (null !== $sourceObject->getImage()) {
+            $targetObject->setImage($sourceObject->getImage());
+        }
+
+        if (null !== $sourceObject->getPdf()) {
+            $targetObject->setPdf($sourceObject->getPdf());
+        }
+
+        if (null !== $sourceObject->getSpeaker()) {
+            $targetObject->setSpeaker($sourceObject->getSpeaker());
+        }
     }
 }

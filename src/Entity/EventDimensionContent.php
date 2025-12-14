@@ -284,6 +284,7 @@ class EventDimensionContent implements DimensionContentInterface, ExcerptInterfa
         return $this;
     }
 
+    #[Serializer\Groups(['default', 'admin', 'fullEvent', 'partialEvent'])]
     public function getImage(): ?MediaInterface
     {
         return $this->image;
@@ -296,6 +297,7 @@ class EventDimensionContent implements DimensionContentInterface, ExcerptInterfa
         return $this;
     }
 
+    #[Serializer\Groups(['default', 'admin', 'fullEvent', 'partialEvent'])]
     public function getImages(): ?array
     {
         return $this->images ?? [];
@@ -308,6 +310,7 @@ class EventDimensionContent implements DimensionContentInterface, ExcerptInterfa
         return $this;
     }
 
+    #[Serializer\Groups(['default', 'admin', 'fullEvent', 'partialEvent'])]
     public function getPdf(): ?MediaInterface
     {
         return $this->pdf;
@@ -320,6 +323,7 @@ class EventDimensionContent implements DimensionContentInterface, ExcerptInterfa
         return $this;
     }
 
+    #[Serializer\Groups(['default', 'admin', 'fullEvent', 'partialEvent'])]
     public function getSpeaker(): ?ContactInterface
     {
         return $this->speaker;
@@ -468,6 +472,14 @@ class EventDimensionContent implements DimensionContentInterface, ExcerptInterfa
 
         if (\array_key_exists('showDate', $templateData)) {
             $this->showDate = \is_bool($templateData['showDate']) ? $templateData['showDate'] : null;
+        }
+
+        if (\array_key_exists('image', $templateData)) {
+            $this->image = $templateData['image'] instanceof MediaInterface ? $templateData['image'] : null;
+        }
+
+        if (\array_key_exists('pdf', $templateData)) {
+            $this->pdf = $templateData['pdf'] instanceof MediaInterface ? $templateData['pdf'] : null;
         }
 
         $this->parentSetTemplateData($templateData);

@@ -346,7 +346,12 @@ class EventController extends AbstractRestController
 
     protected function getDimensionAttributes(Request $request): array
     {
-        return $request->query->all();
+        $attributes = $request->query->all();
+        if (!isset($attributes['stage'])) {
+            $attributes['stage'] = DimensionContentInterface::STAGE_DRAFT;
+        }
+
+        return $attributes;
     }
 
     protected function getData(Request $request): array

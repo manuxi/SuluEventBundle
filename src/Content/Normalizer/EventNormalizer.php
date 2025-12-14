@@ -16,7 +16,14 @@ class EventNormalizer implements NormalizerInterface
             return [];
         }
 
-        return ['event'];
+        return [
+            'event',
+            'image',
+            'pdf',
+            'speaker',
+            'author',
+            'location',
+        ];
     }
 
     public function enhance(object $object, array $normalizedData): array
@@ -27,6 +34,10 @@ class EventNormalizer implements NormalizerInterface
 
         /** @var Event $event */
         $event = $object->getResource();
+
+        if (!$event) {
+            return $normalizedData;
+        }
 
         $normalizedData['id'] = $event->getId();
 
@@ -57,6 +68,38 @@ class EventNormalizer implements NormalizerInterface
         if (null !== $author) {
             $normalizedData['authorId'] = $author->getId();
         }
+
+        $image = $object->getImage();
+        if (null !== $image) {
+            if (!isset($normalizedData['image']) || !\is_array($normalizedData['image'])) {
+                $normalizedData['image'] = [];
+            }
+            $normalizedData['image']['id'] = $image->getId();
+        }
+
+        $pdf = $object->getPdf();
+        if (null !== $pdf) {
+            if (!isset($normalizedData['pdf']) || !\is_array($normalizedData['pdf'])) {
+                $normalizedData['pdf'] = [];
+            }
+            $normalizedData['pdf']['id'] = $pdf->getId();
+        }
+
+        /*
+        $image = $object->getImage();
+        if (null !== $image) {
+            $normalizedData['image'] = ['id' => $image->getId()];
+        } else {
+            $normalizedData['image'] = null;
+        }
+
+        $pdf = $object->getPdf();
+        if (null !== $pdf) {
+            $normalizedData['pdf'] = ['id' => $pdf->getId()];
+        } else {
+            $normalizedData['pdf'] = null;
+        }
+        */
 
         return $normalizedData;
     }

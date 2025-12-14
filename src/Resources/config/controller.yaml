@@ -13,7 +13,6 @@ services:
             - '@Manuxi\SuluEventBundle\ListBuilder\DoctrineListRepresentationFactory'
             - '@sulu_activity.domain_event_collector'
             - '@sulu_trash.trash_manager'
-            - '@logger'
         tags:
             - { name: controller.service_arguments }
             - { name: sulu.context, context: admin }

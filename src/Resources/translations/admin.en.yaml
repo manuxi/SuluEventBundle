@@ -6,8 +6,9 @@ sulu_event:
     # General event properties
     id: "Id"
     name: "Name"
-    title: "Name of the Event"
+    title: "Title"
     subtitle: "Subtitle"
+    abstract: "Abstract"
     summary: "Introduction"
     text: "Text"
     details: "Content (Blocks)"
@@ -47,17 +48,30 @@ sulu_event:
     hero:
         image: "Hero-Image"
 
-    # Section headers in the event form
+    # Section headers in event form
     header:
         address: "Address"
         main: "Date, Time & Place"
         text: "Invitation"
         content: "Content"
+        content_date: "Date & Location"
+        content_main: "Textual content"
+        links: "Links & Infos"
         additional: "Additional Options"
         mandatory: "Mandatory Fields"
         optional: "Optional Fields"
         change_author: "Modify Author Information"
         created_changed: "Created and Modify Information"
+
+    # Togglers in event form
+    toggle:
+        date: "Date"
+        links: "Links"
+        optional: "optional"
+
+    # Form titles
+    form:
+        title: "Name of the Event"
 
     # General terms for events
     event: "Event"
@@ -69,6 +83,7 @@ sulu_event:
     enable_event: "Enable event"
 
     # Location related translations
+    speaker: "Speaker"
     location: "Location"
     locations: "Locations"
     no_location_selected: "No location selected"
@@ -352,7 +367,7 @@ sulu_event:
     rss_feed: "RSS Feed"
     atom_feed: "Atom Feed"
 
-# Namespace for activity log translations
+# activity Bundle
 sulu_activity:
     # Resource types
     resource:

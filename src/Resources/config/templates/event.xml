@@ -1,68 +1,112 @@
 <?xml version="1.0" ?>
 <template xmlns="http://schemas.sulu.io/template/template"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://schemas.sulu.io/template/template http://schemas.sulu.io/template/template-1.0.xsd"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://schemas.sulu.io/template/template http://schemas.sulu.io/template/template-1.0.xsd"
 >
     <key>event</key>
 
-    <areas>
-        <area key="seo">
-            <meta>
-                <title lang="en">SEO</title>
-                <title lang="de">SEO</title>
-            </meta>
-        </area>
-        <area key="excerpt">
-            <meta>
-                <title lang="en">Excerpt</title>
-                <title lang="de">Auszug</title>
-            </meta>
-        </area>
-    </areas>
-
     <properties>
-        <section name="mandatory">
+        <section name="header_container" colspan="12">
             <meta>
                 <title>sulu_event.header.content</title>
             </meta>
             <properties>
-                <property name="title" type="text_line" mandatory="true">
-                    <meta>
-                        <title>sulu_event.title</title>
-                    </meta>
-                    <params>
-                        <param name="headline" value="true"/>
-                    </params>
-                    <tag name="sulu.rlp.part"/>
-                </property>
+                <section name="image_section" colspan="4">
+                    <properties>
+                        <property name="image" type="single_media_upload" colspan="12">
+                            <params>
+                                <!--<param name="skin" value="round"/>-->
+                                <param name="empty_icon" value="su-image"/>
+                                <param name="image_size" value="sulu-400x400-inset" />
+                                <param
+                                        name="collection_id"
+                                        type="expression"
+                                        value="service('sulu_media.system_collections.manager').getSystemCollection('sulu_event.events')"
+                                />
+                            </params>
+                        </property>
+                    </properties>
+                </section>
 
-                <property name="subtitle" type="text_line" colspan="6">
-                    <meta>
-                        <title>sulu_event.subtitle</title>
-                    </meta>
-                </property>
+                <section name="content_section" colspan="8">
+                    <properties>
 
-                <property name="type" type="single_select" mandatory="true" colspan="6">
-                    <meta>
-                        <title>sulu_event.event_type</title>
-                    </meta>
-                    <params>
-                        <param name="default_value"
-                               type="expression"
-                               value="service('sulu_event.type_selection').getDefaultValue()"
-                        />
-                        <param name="values"
-                               type="expression"
-                               value="service('sulu_event.type_selection').getValues()"
-                        />
-                    </params>
-                </property>
+                        <property name="title" type="text_line" mandatory="true">
+                            <meta>
+                                <title>sulu_event.form.title</title>
+                            </meta>
+                            <params>
+                                <param name="headline" value="true"/>
+                            </params>
+                            <tag name="sulu.rlp.part"/>
+                        </property>
 
-                <property name="url" type="page_tree_route" mandatory="true">
-                    <meta>
-                        <title>sulu_admin.url</title>
-                    </meta>
-                </property>
+                        <property name="subtitle" type="text_line">
+                            <meta>
+                                <title>sulu_event.subtitle</title>
+                            </meta>
+                        </property>
+
+                        <property name="url" type="page_tree_route" mandatory="true">
+                            <meta>
+                                <title>sulu_admin.url</title>
+                            </meta>
+                        </property>
+
+                        <property name="type" type="single_select" mandatory="true" colspan="6">
+                            <meta>
+                                <title>sulu_event.event_type</title>
+                            </meta>
+                            <params>
+                                <param name="default_value"
+                                       type="expression"
+                                       value="service('sulu_event.type_selection').getDefaultValue()"
+                                />
+                                <param name="values"
+                                       type="expression"
+                                       value="service('sulu_event.type_selection').getValues()"
+                                />
+                            </params>
+                        </property>
+
+                        <property name="toggle_date" type="checkbox" colspan="2">
+                            <meta>
+                                <title>sulu_event.toggle.date</title>
+                            </meta>
+                            <params>
+                                <param name="type" value="toggler"/>
+                                <param name="default_value" value="true"/>
+                            </params>
+                        </property>
+                        <property name="toggle_links" type="checkbox" colspan="2">
+                            <meta>
+                                <title>sulu_event.toggle.links</title>
+                            </meta>
+                            <params>
+                                <param name="type" value="toggler"/>
+                                <param name="default_value" value="false"/>
+                            </params>
+                        </property>
+                        <property name="toggle_optional" type="checkbox" colspan="2">
+                            <meta>
+                                <title>sulu_event.toggle.optional</title>
+                            </meta>
+                            <params>
+                                <param name="type" value="toggler"/>
+                                <param name="default_value" value="false"/>
+                            </params>
+                        </property>
+
+                    </properties>
+                </section>
+            </properties>
+        </section>
+
+        <section name="date_content" visibleCondition="__parent.toggle_date == true">
+            <meta>
+                <title>sulu_event.header.content_date</title>
+            </meta>
+            <properties>
 
                 <property name="startDate" type="datetime" colspan="6">
                     <meta>
@@ -80,43 +124,140 @@
                         <title>sulu_event.location</title>
                     </meta>
                 </property>
-                <property name="image" type="single_media_selection" colspan="6">
+                <property name="speaker" type="single_contact_selection" colspan="6">
                     <meta>
-                        <title>sulu_event.hero.image</title>
-                    </meta>
-                    <params>
-                        <param name="types" value="image"/>
-                    </params>
-                </property>
-
-                <property name="summary" type="text_area">
-                    <meta>
-                        <title>sulu_event.summary</title>
+                        <title>sulu_event.speaker</title>
                     </meta>
                 </property>
-                <property name="text" type="text_editor" mandatory="true">
-                    <meta>
-                        <title>sulu_event.text</title>
-                    </meta>
-                </property>
-
             </properties>
         </section>
 
-        <section name="additional">
+        <section name="main_content" colspan="12">
             <meta>
-                <title>sulu_event.header.additional</title>
+                <title>sulu_event.header.content_main</title>
             </meta>
             <properties>
-                <property name="images" type="media_selection">
+                <property name="summary" type="text_area">
                     <meta>
-                        <title>sulu_event.gallery</title>
+                        <title>sulu_event.abstract</title>
                     </meta>
-                    <params>
-                        <param name="types" value="image"/>
-                    </params>
                 </property>
 
+                <block name="details" default-type="abstract_text" minOccurs="0">
+                    <meta>
+                        <title>sulu_event.details</title>
+                    </meta>
+                    <types>
+                        <type name="text">
+                            <meta>
+                                <title>sulu_event.block.text</title>
+                            </meta>
+                            <properties>
+                                <property name="text" type="text_editor" />
+                            </properties>
+                        </type>
+                        <type name="abstract_text">
+                            <meta>
+                                <title>sulu_event.block.abstract_text</title>
+                            </meta>
+                            <properties>
+                                <property name="abstract" type="text_area">
+                                    <meta>
+                                        <title>sulu_event.abstract</title>
+                                    </meta>
+                                </property>
+                                <property name="text" type="text_editor">
+                                    <meta>
+                                        <title>sulu_event.text</title>
+                                    </meta>
+                                </property>
+                            </properties>
+                        </type>
+                        <type name="abstract_text_image">
+                            <meta>
+                                <title>sulu_event.block.abstract_text_image</title>
+                            </meta>
+                            <properties>
+                                <property name="abstract" type="text_area">
+                                    <meta>
+                                        <title>sulu_event.abstract</title>
+                                    </meta>
+                                </property>
+                                <property name="text" type="text_editor">
+                                    <meta>
+                                        <title>sulu_event.text</title>
+                                    </meta>
+                                </property>
+                                <property name="image" type="single_media_selection">
+                                    <meta>
+                                        <title>sulu_event.image</title>
+                                    </meta>
+                                    <params>
+                                        <param name="types" value="image"/>
+                                    </params>
+                                </property>
+                            </properties>
+                        </type>
+                        <type name="title_text_image">
+                            <meta>
+                                <title>sulu_event.block.title_text_image</title>
+                            </meta>
+                            <properties>
+                                <property name="title" type="text_line">
+                                    <meta>
+                                        <title>sulu_event.title</title>
+                                    </meta>
+                                </property>
+                                <property name="text" type="text_editor">
+                                    <meta>
+                                        <title>sulu_event.text</title>
+                                    </meta>
+                                </property>
+                                <property name="image" type="single_media_selection">
+                                    <meta>
+                                        <title>sulu_event.image</title>
+                                    </meta>
+                                    <params>
+                                        <param name="types" value="image"/>
+                                    </params>
+                                </property>
+                            </properties>
+                        </type>
+                        <type name="title_text_gallery">
+                            <meta>
+                                <title>sulu_event.block.title_text_gallery</title>
+                            </meta>
+                            <properties>
+                                <property name="title" type="text_line">
+                                    <meta>
+                                        <title>sulu_event.title</title>
+                                    </meta>
+                                </property>
+                                <property name="text" type="text_editor">
+                                    <meta>
+                                        <title>sulu_event.text</title>
+                                    </meta>
+                                </property>
+                                <property name="images" type="media_selection">
+                                    <meta>
+                                        <title>sulu_event.images</title>
+                                    </meta>
+                                    <params>
+                                        <param name="types" value="image"/>
+                                    </params>
+                                </property>
+                            </properties>
+                        </type>
+                    </types>
+                </block>
+            </properties>
+        </section>
+
+        <section name="links" visibleCondition="__parent.toggle_links == true">
+            <meta>
+                <title>sulu_event.header.links</title>
+            </meta>
+            <properties>
                 <property name="link" type="link" colspan="6">
                     <meta>
                         <title>sulu_event.link</title>
@@ -146,25 +287,26 @@
                         <title>sulu_event.phone</title>
                     </meta>
                 </property>
+            </properties>
+        </section>
+
+        <section name="additional" visibleCondition="__parent.toggle_optional == true">
+            <meta>
+                <title>sulu_event.header.additional</title>
+            </meta>
+            <properties>
+                <property name="images" type="media_selection">
+                    <meta>
+                        <title>sulu_event.gallery</title>
+                    </meta>
+                    <params>
+                        <param name="types" value="image"/>
+                    </params>
+                </property>
 
                 <property name="footer" type="text_editor">
                     <meta>
                         <title>sulu_event.footer</title>
-                    </meta>
-                </property>
-
-                <property name="author" type="single_contact_selection" colspan="6">
-                    <meta>
-                        <title>sulu_event.author</title>
-                    </meta>
-                    <params>
-                        <param name="resource_key" value="contacts"/>
-                        <param name="adapter" value="contact_selection"/>
-                    </params>
-                </property>
-                <property name="authored" type="datetime" colspan="6">
-                    <meta>
-                        <title>sulu_event.authored</title>
                     </meta>
                 </property>
             </properties>

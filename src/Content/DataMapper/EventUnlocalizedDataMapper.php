@@ -8,6 +8,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
 use Manuxi\SuluEventBundle\Entity\Location;
 use Sulu\Bundle\ContactBundle\Entity\ContactInterface;
+use Sulu\Bundle\MediaBundle\Entity\Media;
 use Sulu\Content\Application\ContentDataMapper\DataMapper\DataMapperInterface;
 use Sulu\Content\Domain\Model\DimensionContentInterface;
 
@@ -35,8 +36,79 @@ class EventUnlocalizedDataMapper implements DataMapperInterface
         $this->mapType($unlocalizedDimensionContent, $localizedDimensionContent, $data);
         $this->mapDates($unlocalizedDimensionContent, $localizedDimensionContent, $data);
         $this->mapContactInfo($unlocalizedDimensionContent, $localizedDimensionContent, $data);
+        $this->mapImage($unlocalizedDimensionContent, $localizedDimensionContent, $data);
         $this->mapAuthor($localizedDimensionContent, $data);
+        $this->mapSpeaker($localizedDimensionContent, $data);
+        $this->mapPdf($localizedDimensionContent, $data);
     }
+
+    private function mapImage(
+        EventDimensionContent $unlocalizedContent,
+        EventDimensionContent $localizedContent,
+        array $data,
+    ): void {
+        if (!\array_key_exists('image', $data)) {
+            return;
+        }
+
+        $imageId = $data['image'];
+
+        if (\is_array($imageId) && isset($imageId['id'])) {
+            $imageId = $imageId['id'];
+        }
+
+        $image = null;
+        if ($imageId) {
+            $image = $this->entityManager->getReference(
+                Media::class,
+                $imageId
+            );
+        }
+
+        $unlocalizedContent->setImage($image);
+        $localizedContent->setImage($image);
+    }
+
+    private function mapSpeaker(EventDimensionContent $localizedContent, array $data): void
+    {
+        if (!\array_key_exists('speaker', $data)) {
+            return;
+        }
+
+        $speakerId = $data['speaker'];
+
+        if (\is_array($speakerId) && isset($speakerId['id'])) {
+            $speakerId = $speakerId['id'];
+        }
+
+        if ($speakerId) {
+            $speaker = $this->entityManager->getReference(ContactInterface::class, $speakerId);
+            $localizedContent->setSpeaker($speaker);
+        } else {
+            $localizedContent->setSpeaker(null);
+        }
+    }
+
+    private function mapPdf(EventDimensionContent $localizedContent, array $data): void
+    {
+        if (!\array_key_exists('pdf', $data)) {
+            return;
+        }
+
+        $pdfId = $data['pdf'];
+
+        if (\is_array($pdfId) && isset($pdfId['id'])) {
+            $pdfId = $pdfId['id'];
+        }
+
+        if ($pdfId) {
+            $pdf = $this->entityManager->getReference(Media::class, $pdfId);
+            $localizedContent->setPdf($pdf);
+        } else {
+            $localizedContent->setPdf(null);
+        }
+    }
+
 
     private function mapLocation(
         EventDimensionContent $unlocalizedContent,

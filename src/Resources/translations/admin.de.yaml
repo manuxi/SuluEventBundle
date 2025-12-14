@@ -6,8 +6,9 @@ sulu_event:
     # General event properties
     id: "Id"
     name: "Name"
-    title: "Name der Veranstaltung"
+    title: "Titel"
     subtitle: "Untertitel"
+    abstract: "Zusammenfassung"
     summary: "Einleitung"
     text: "Text"
     details: "Inhalt (Blocks)"
@@ -53,11 +54,33 @@ sulu_event:
         main: "Datum, Uhrzeit & Ort"
         text: "Einladung"
         content: "Inhalt"
+        content_date: "Datum & Ort"
+        content_main: "Textinhalte"
+        links: "Links & Infos"
         additional: "Zusätzliche Optionen"
         mandatory: "Verpflichtende Felder"
         optional: "Optionale Felder"
         change_author: "Verfassungsdatum/Autor"
         created_changed: "Erstellungs- und Änderungsinformationen"
+
+    # Togglers in the event form
+    toggle:
+        date: "Datum"
+        links: "Links"
+        optional: "optional"
+
+    # Block titles
+    block:
+        text: "Text"
+        abstract_text: "Zusammenfassung & Text"
+        abstract_text_image: "Zusammenfassung, Text, Bild"
+        abstract_text_images: "Zusammenfassung, Text, Bilder"
+        title_text_image: "Titel, Text, Bild"
+        title_text_gallery: "Titel, Text, Galerie"
+
+    # Form titles
+    form:
+        title: "Name der Veranstaltung"
 
     # General terms for events
     event: "Veranstaltung"
@@ -69,6 +92,7 @@ sulu_event:
     enable_event: "Veranstaltung aktivieren"
 
     # Location related translations
+    speaker: "Sprecher"
     location: "Veranstaltungsort"
     locations: "Veranstaltungsorte"
     select_location: "Veranstaltungsort wählen"
