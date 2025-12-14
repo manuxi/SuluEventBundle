@@ -11,7 +11,7 @@ sulu_event:
     abstract: "Zusammenfassung"
     summary: "Einleitung"
     text: "Text"
-    details: "Inhalt (Blocks)"
+    details: "Zusätzlicher Inhalt (Blocks)"
     footer: "Fußnoten, Quellennachweise..."
     notes: "Anmerkungen"
     image: "Bild"
@@ -67,7 +67,7 @@ sulu_event:
     toggle:
         date: "Datum"
         links: "Links"
-        optional: "optional"
+        additional: "Optionen"
 
     # Block titles
     block:

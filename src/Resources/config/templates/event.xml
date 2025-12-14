@@ -17,7 +17,7 @@
                             <params>
                                 <!--<param name="skin" value="round"/>-->
                                 <param name="empty_icon" value="su-image"/>
-                                <param name="image_size" value="sulu-400x400-inset" />
+                                <param name="image_size" value="sulu-400x400" />
                                 <param
                                         name="collection_id"
                                         type="expression"
@@ -87,9 +87,9 @@
                                 <param name="default_value" value="false"/>
                             </params>
                         </property>
-                        <property name="toggle_optional" type="checkbox" colspan="2">
+                        <property name="toggle_additional" type="checkbox" colspan="2">
                             <meta>
-                                <title>sulu_event.toggle.optional</title>
+                                <title>sulu_event.toggle.additional</title>
                             </meta>
                             <params>
                                 <param name="type" value="toggler"/>
@@ -140,6 +140,12 @@
                 <property name="summary" type="text_area">
                     <meta>
                         <title>sulu_event.abstract</title>
+                    </meta>
+                </property>
+
+                <property name="text" type="text_editor" mandatory="true">
+                    <meta>
+                        <title>sulu_event.text</title>
                     </meta>
                 </property>
 
@@ -290,7 +296,7 @@
             </properties>
         </section>
 
-        <section name="additional" visibleCondition="__parent.toggle_optional == true">
+        <section name="additional" visibleCondition="__parent.toggle_additional == true">
             <meta>
                 <title>sulu_event.header.additional</title>
             </meta>

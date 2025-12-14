@@ -11,7 +11,7 @@ sulu_event:
     abstract: "Abstract"
     summary: "Introduction"
     text: "Text"
-    details: "Content (Blocks)"
+    details: "Additional Content (Blocks)"
     footer: "Footnotes, Source Citations..."
     notes: "Notes"
     image: "Image"
@@ -67,7 +67,7 @@ sulu_event:
     toggle:
         date: "Date"
         links: "Links"
-        optional: "optional"
+        additional: "Options"
 
     # Form titles
     form:

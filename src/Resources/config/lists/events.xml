@@ -63,6 +63,13 @@
         </join>
     </joins>
 
+    <joins name="image" ref="dimensionContent">
+        <join>
+            <entity-name>Sulu\Bundle\MediaBundle\Entity\Media</entity-name>
+            <field-name>dimensionContent.image</field-name>
+        </join>
+    </joins>
+
     <properties>
         <property name="id" translation="sulu_admin.id" visibility="no">
             <field-name>id</field-name>
@@ -72,6 +79,13 @@
         <property name="version" visibility="never">
             <field-name>version</field-name>
             <entity-name>dimensionContent</entity-name>
+        </property>
+
+        <property name="image" visibility="always" translation="sulu_event.image" sortable="false">
+            <field-name>id</field-name>
+            <entity-name>Sulu\Bundle\MediaBundle\Entity\Media</entity-name>
+            <joins ref="image"/>
+            <transformer type="thumbnails"/>
         </property>
 
         <case-property name="title" translation="sulu_admin.title" visibility="always" searchability="yes">
@@ -169,7 +183,7 @@
             </field>
         </concatenation-property>
 
-        <property name="publishedState" type="string" visibility="never">
+        <property name="publishedState" type="bool" visibility="yes" translation="sulu_event.published">
             <field-name>workflowPlace</field-name>
             <entity-name>dimensionContent</entity-name>
             <joins ref="dimensionContent"/>

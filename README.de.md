@@ -14,7 +14,7 @@ Es ermöglicht die Erstellung und Verwaltung von Events mit detaillierten Inform
 Erweiterte Funktionen wie wiederkehrende Termine, ein Kalender-Frontend, iCal-Export und Social-Media-Integration sind ebenfalls enthalten.
 Dieses Bundle basiert auf dem [Sulu Workshop](https://github.com/sulu/sulu-workshop) und wurde im Laufe der Zeit mit immer mehr Features ausgestattet.
 
-![img.png](docs/img/event-details.de.png)
+![Form template events.png](docs/img/template-event.de.png)
 
 ## ✨ Features
 

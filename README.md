@@ -13,12 +13,12 @@ It enables the creation and management of events with detailed information, loca
 Advanced features such as recurring events, a calendar frontend, iCal export and social media integration are also included.
 This bundle is based on the [Sulu Workshop](https://github.com/sulu/sulu-workshop) and has been equipped with more and more features over time.
 
-![img.png](docs/img/event-details.en.png)
+![img.png](docs/img/template-event.en.png)
 
 ## ✨ Features
 
 ### 📅 Event Management
-- **Extensive Event Details** - Title, subtitle, summary, text, and more
+- **Extensive Event Details** - Title, subtitle, summary, text, blocks, and more
 - **Date & Time** - Flexible start/end dates
 - **Locations** - Separate location management with address details
 - **Media Integration** - Hero images, image galleries, PDF attachments
@@ -26,7 +26,7 @@ This bundle is based on the [Sulu Workshop](https://github.com/sulu/sulu-worksho
 - **Multilingual** - Full translation support
 - **Author Management** - Assign contacts as event authors
 - **Settings** - Extensive configuration options
-- **More** - Trash, automations, etc.
+- **More** - Trash, references, sitemaps, etc.
 
 ### 🔄 Advanced Features
 - **Recurring Events** - Daily, weekly, monthly, yearly patterns with exceptions
