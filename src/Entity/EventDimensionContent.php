@@ -72,6 +72,7 @@ class EventDimensionContent implements DimensionContentInterface, ExcerptInterfa
     protected ?string $subtitle = null;
     protected ?string $summary = null;
     protected ?string $text = null;
+    protected ?array $details = null;
     protected ?string $footer = null;
     protected ?MediaInterface $image = null;
     protected ?array $images = null;
@@ -259,6 +260,18 @@ class EventDimensionContent implements DimensionContentInterface, ExcerptInterfa
         return $this;
     }
 
+    public function getDetails(): ?array
+    {
+        return $this->details;
+    }
+
+    public function setDetails(?array $details): self
+    {
+        $this->details = $details;
+
+        return $this;
+    }
+
     public function getFooter(): ?string
     {
         return $this->footer;
@@ -431,6 +444,10 @@ class EventDimensionContent implements DimensionContentInterface, ExcerptInterfa
 
         if (\array_key_exists('text', $templateData)) {
             $this->text = \is_string($templateData['text']) ? $templateData['text'] : null;
+        }
+
+        if (\array_key_exists('details', $templateData)) {
+            $this->details = \is_array($templateData['details']) ? $templateData['details'] : null;
         }
 
         if (\array_key_exists('footer', $templateData)) {

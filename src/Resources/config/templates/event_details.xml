@@ -43,14 +43,10 @@
                     </params>
                 </property>
 
-                <property name="routePath" type="route" mandatory="true">
+                <property name="url" type="page_tree_route" mandatory="true">
                     <meta>
                         <title>sulu_admin.url</title>
                     </meta>
-                    <!--https://github.com/sulu/sulu/pull/5933-->
-                    <params>
-                        <param name="mode" value="leaf"/>
-                    </params>
                 </property>
 
                 <property name="startDate" type="datetime" colspan="6">
@@ -83,12 +79,106 @@
                         <title>sulu_event.summary</title>
                     </meta>
                 </property>
-                <property name="text" type="text_editor" mandatory="true">
-                    <meta>
-                        <title>sulu_event.text</title>
-                    </meta>
-                </property>
 
+                <block name="details" default-type="title_text" minOccurs="0">
+                    <meta>
+                        <title>sulu_event.details</title>
+                    </meta>
+                    <types>
+                        <type name="text">
+                            <meta>
+                                <title lang="en">Text</title>
+                                <title lang="de">Text</title>
+                            </meta>
+                            <properties>
+                                <property name="text" type="text_editor">
+                                    <meta>
+                                        <title lang="en">Text</title>
+                                        <title lang="de">Text</title>
+                                    </meta>
+                                </property>
+                            </properties>
+                        </type>
+                        <type name="title_text">
+                            <meta>
+                                <title lang="en">Title + Text</title>
+                                <title lang="de">Titel + Text</title>
+                            </meta>
+                            <properties>
+                                <property name="title" type="text_line">
+                                    <meta>
+                                        <title lang="en">Title</title>
+                                        <title lang="de">Titel</title>
+                                    </meta>
+                                </property>
+                                <property name="text" type="text_editor">
+                                    <meta>
+                                        <title lang="en">Text</title>
+                                        <title lang="de">Text</title>
+                                    </meta>
+                                </property>
+                            </properties>
+                        </type>
+                        <type name="title_text_image">
+                            <meta>
+                                <title lang="en">Title + Text + Image</title>
+                                <title lang="de">Titel + Text + Bild</title>
+                            </meta>
+                            <properties>
+                                <property name="title" type="text_line">
+                                    <meta>
+                                        <title lang="en">Title</title>
+                                        <title lang="de">Titel</title>
+                                    </meta>
+                                </property>
+                                <property name="text" type="text_editor">
+                                    <meta>
+                                        <title lang="en">Text</title>
+                                        <title lang="de">Text</title>
+                                    </meta>
+                                </property>
+                                <property name="image" type="single_media_selection">
+                                    <meta>
+                                        <title lang="en">Image</title>
+                                        <title lang="de">Bild</title>
+                                    </meta>
+                                    <params>
+                                        <param name="types" value="image"/>
+                                    </params>
+                                </property>
+                            </properties>
+                        </type>
+                        <type name="title_text_gallery">
+                            <meta>
+                                <title lang="en">Title + Text + Gallery</title>
+                                <title lang="de">Titel + Text + Galerie</title>
+                            </meta>
+                            <properties>
+                                <property name="title" type="text_line">
+                                    <meta>
+                                        <title lang="en">Title</title>
+                                        <title lang="de">Titel</title>
+                                    </meta>
+                                </property>
+                                <property name="text" type="text_editor">
+                                    <meta>
+                                        <title lang="en">Text</title>
+                                        <title lang="de">Text</title>
+                                    </meta>
+                                </property>
+                                <property name="images" type="media_selection">
+                                    <meta>
+                                        <title lang="en">Images</title>
+                                        <title lang="de">Bilder</title>
+                                    </meta>
+                                    <params>
+                                        <param name="types" value="image"/>
+                                    </params>
+                                </property>
+                            </properties>
+                        </type>
+                    </types>
+                </block>
             </properties>
         </section>
 

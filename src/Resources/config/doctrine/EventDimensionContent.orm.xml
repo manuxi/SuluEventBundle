@@ -159,6 +159,7 @@
         <field name="subtitle" type="string" length="255" nullable="true"/>
         <field name="summary" type="text" nullable="true"/>
         <field name="text" type="text" nullable="true"/>
+        <field name="details" type="json" nullable="true"/>
         <field name="footer" type="text" nullable="true"/>
 
         <many-to-one field="image" target-entity="Sulu\Bundle\MediaBundle\Entity\Media">
