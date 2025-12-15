@@ -7,7 +7,9 @@ namespace Manuxi\SuluEventBundle\Twig;
 use Doctrine\ORM\EntityManagerInterface;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
+use Manuxi\SuluEventBundle\Entity\Location;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
+use Manuxi\SuluEventBundle\Repository\LocationRepository;
 use Sulu\Component\Webspace\Analyzer\RequestAnalyzerInterface;
 use Sulu\Content\Application\ContentAggregator\ContentAggregatorInterface;
 use Sulu\Content\Application\ContentResolver\ContentResolverInterface;
@@ -18,6 +20,7 @@ use Twig\TwigFunction;
 class EventTwigExtension extends AbstractExtension
 {
     private ?EventRepository $eventRepository = null;
+    private ?LocationRepository $locationRepository = null;
 
     public function __construct(
         private EntityManagerInterface $entityManager,
@@ -33,12 +36,7 @@ class EventTwigExtension extends AbstractExtension
             $repository = $this->entityManager->getRepository(Event::class);
 
             if (!$repository instanceof EventRepository) {
-                throw new \RuntimeException(
-                    sprintf(
-                        'Expected EventRepository, got %s',
-                        get_class($repository)
-                    )
-                );
+                throw new \RuntimeException(sprintf('Expected EventRepository, got %s', get_class($repository)));
             }
 
             $this->eventRepository = $repository;
@@ -47,12 +45,31 @@ class EventTwigExtension extends AbstractExtension
         return $this->eventRepository;
     }
 
+    private function getLocationRepository(): LocationRepository
+    {
+        if (null === $this->locationRepository) {
+            $repository = $this->entityManager->getRepository(Location::class);
+            if (!$repository instanceof LocationRepository) {
+                throw new \RuntimeException(sprintf('Expected LocationRepository, got %s', \get_class($repository)));
+            }
+            $this->locationRepository = $repository;
+        }
+
+        return $this->locationRepository;
+    }
+
     public function getFunctions(): array
     {
         return [
+            new TwigFunction('sulu_resolve_location', [$this, 'resolveLocation']),
             new TwigFunction('sulu_resolve_event', [$this, 'resolveEvent']),
             new TwigFunction('sulu_get_events', [$this, 'getEvents']),
         ];
+    }
+
+    public function resolveLocation(int $id): ?Location
+    {
+        return $this->getLocationRepository()->find($id);
     }
 
     /**
@@ -97,7 +114,7 @@ class EventTwigExtension extends AbstractExtension
     /**
      * Get multiple events with filters.
      *
-     * @param array<string, mixed> $filters
+     * @param array<string, mixed>  $filters
      * @param array<string, string> $properties
      *
      * @return array<int, array<string, mixed>>
@@ -106,7 +123,7 @@ class EventTwigExtension extends AbstractExtension
         array $filters = [],
         array $properties = [],
         ?string $locale = null,
-        int $limit = 10
+        int $limit = 10,
     ): array {
         if (null === $locale) {
             $localization = $this->requestAnalyzer->getCurrentLocalization();

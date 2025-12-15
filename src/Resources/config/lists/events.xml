@@ -183,10 +183,9 @@
             </field>
         </concatenation-property>
 
-        <property name="publishedState" type="bool" visibility="yes" translation="sulu_event.published">
+        <property name="publishedState" type="string" visibility="never">
             <field-name>workflowPlace</field-name>
             <entity-name>dimensionContent</entity-name>
-            <joins ref="dimensionContent"/>
         </property>
 
         <property name="publishedAt" translation="sulu_admin.published" type="datetime" visibility="yes">

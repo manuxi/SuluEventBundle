@@ -48,6 +48,8 @@
         <field name="authored" type="datetime_immutable" nullable="true"/>
 
         <!-- WORKFLOW TRAIT FIELDS -->
+        <field name="workflowPlace" type="string" length="32" nullable="true" column="workflowPlace"/>
+        <field name="workflowPublished" type="datetime_immutable" nullable="true" column="workflowPublished"/>
 
         <!-- SEO TRAIT FIELDS -->
         <field name="seoData" type="json" nullable="true" column="seo_data"/>

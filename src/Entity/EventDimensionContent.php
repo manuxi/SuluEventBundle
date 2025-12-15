@@ -388,6 +388,9 @@ class EventDimensionContent implements DimensionContentInterface, ExcerptInterfa
         $this->showDate = $dimensionContent->showDate;
         $this->author = $dimensionContent->author;
         $this->authored = $dimensionContent->authored;
+
+        $this->workflowPlace = $dimensionContent->workflowPlace;
+        $this->workflowPublished = $dimensionContent->workflowPublished;
     }
 
     public function setTemplateData(array $templateData): void
