@@ -7,9 +7,9 @@ name: Symfony
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "2.x", "3.x" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "2.x", "3.x" ]
 
 permissions:
   contents: read
@@ -45,3 +45,4 @@ jobs:
       env:
         DATABASE_URL: sqlite:///%kernel.project_dir%/data/database.sqlite
       run: vendor/bin/phpunit
+
