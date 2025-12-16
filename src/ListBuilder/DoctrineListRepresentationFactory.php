@@ -36,9 +36,13 @@ class DoctrineListRepresentationFactory
         string $resourceKey,
         array $filters = [],
         array $parameters = [],
+        ?string $listKey = null,
     ): PaginatedRepresentation {
+
+        $listKey = $listKey ?? $resourceKey;
+
         /** @var DoctrineFieldDescriptor[] $fieldDescriptors */
-        $fieldDescriptors = $this->fieldDescriptorFactory->getFieldDescriptors($resourceKey);
+        $fieldDescriptors = $this->fieldDescriptorFactory->getFieldDescriptors($listKey);
 
         $listBuilder = $this->listBuilderFactory->create($fieldDescriptors['id']->getEntityName());
         $this->restHelper->initializeListBuilder($listBuilder, $fieldDescriptors);
@@ -52,6 +56,12 @@ class DoctrineListRepresentationFactory
 
         if (isset($fieldDescriptors['publishedState'])) {
             $listBuilder->addSelectField($fieldDescriptors['publishedState']);
+        }
+        if (isset($fieldDescriptors['published'])) {
+            $listBuilder->addSelectField($fieldDescriptors['published']);
+        }
+        if (isset($fieldDescriptors['livePublished'])) {
+            $listBuilder->addSelectField($fieldDescriptors['livePublished']);
         }
 
         foreach ($parameters as $key => $value) {
@@ -80,7 +90,7 @@ class DoctrineListRepresentationFactory
         $list = $this->addImagesToListElements($list, $locale);
         $list = $this->addColorsToListElements($list);
         $list = $this->formatDateTimeElements($list, $locale);
-        $list = $this->addPublishStateToListElements($list);
+        $list = $this->addPublishStateToListElements($list, $listKey);
 
         return new PaginatedRepresentation(
             $list,
@@ -151,8 +161,8 @@ class DoctrineListRepresentationFactory
                 continue;
             }
 
-            $startIsFullDay = $startDateObj->format('H:i:s') === '00:00:00';
-            $endIsFullDay = $endDateObj && $endDateObj->format('H:i:s') === '00:00:00';
+            $startIsFullDay = '00:00:00' === $startDateObj->format('H:i:s');
+            $endIsFullDay = $endDateObj && '00:00:00' === $endDateObj->format('H:i:s');
             $isSameDay = $endDateObj && $startDateObj->format('Y-m-d') === $endDateObj->format('Y-m-d');
 
             if ($isSameDay && $startIsFullDay && $endIsFullDay) {
@@ -162,7 +172,7 @@ class DoctrineListRepresentationFactory
                 $listElements[$key]['startDate'] = $startDateObj->format($dateFormat);
 
                 $startMinute = (int) $startDateObj->format('i');
-                if ($startMinute === 0) {
+                if (0 === $startMinute) {
                     $startTime = $startDateObj->format('H');
                     $endTime = $endDateObj->format('H:i');
                     $listElements[$key]['endDate'] = sprintf('%s-%s %s', $startTime, $endTime, $hourLabel);
@@ -199,6 +209,7 @@ class DoctrineListRepresentationFactory
 
         return $listElements;
     }
+
     private function formatWithClockFormatX(array $listElements, ?string $locale): array
     {
         $dateFormat = $this->translator->trans('sulu_event.date_format', [], 'admin', $locale);
@@ -269,7 +280,7 @@ class DoctrineListRepresentationFactory
             if ($isSameDay && !$startIsFullDay && !$endIsFullDay && $endDateObj) {
                 $listElements[$key]['startDate'] = $startDateObj->format($dateFormat);
                 $timeOfDayLabel = $this->getTimeOfDayLabel($startDateObj, $endDateObj, $locale);
-                $listElements[$key]['endDate'] = $timeOfDayLabel ?? ($startDateObj->format('H:i') . '-' . $endDateObj->format('H:i'));
+                $listElements[$key]['endDate'] = $timeOfDayLabel ?? ($startDateObj->format('H:i').'-'.$endDateObj->format('H:i'));
             } elseif ($isSameDay && $startIsFullDay && $endIsFullDay) {
                 $listElements[$key]['startDate'] = $startDateObj->format($dateFormat);
                 $listElements[$key]['endDate'] = $this->translator->trans('sulu_event.all_day', [], 'admin', $locale);
@@ -298,7 +309,6 @@ class DoctrineListRepresentationFactory
                     $listElements[$key]['endDate'] = '';
                 }
             }
-
         }
 
         return $listElements;
@@ -440,15 +450,21 @@ class DoctrineListRepresentationFactory
         return $listeElements;
     }
 
-    private function addPublishStateToListElements(array $listElements): array
+    private function addPublishStateToListElements(array $listElements, ?string $listKey = null): array
     {
         foreach ($listElements as $key => $element) {
-            $workflowPlace = $element['publishedState'] ?? $element['workflowPlace'] ?? null;
-            $listElements[$key]['published'] = 'published' === $workflowPlace;
-            // Ensure publishedState is present if not already
-            if (!isset($listElements[$key]['publishedState'])) {
-                $listElements[$key]['publishedState'] = $workflowPlace;
+
+            if ('events_published' === $listKey) {
+                $listElements[$key]['publishedState'] = true;
+                continue;
             }
+
+            if (empty($element['published']) && !empty($element['livePublished'])) {
+                $listElements[$key]['published'] = $element['livePublished'];
+            }
+
+            $workflowPlace = $element['publishedState'] ?? $element['workflowPlace'] ?? null;
+            $listElements[$key]['publishedState'] = 'published' === $workflowPlace;
         }
 
         return $listElements;
@@ -481,5 +497,4 @@ class DoctrineListRepresentationFactory
 
         return null;
     }
-
 }

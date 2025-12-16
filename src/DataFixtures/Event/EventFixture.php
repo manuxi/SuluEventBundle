@@ -10,6 +10,7 @@ use Doctrine\Persistence\ObjectManager;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\Location;
 use Sulu\Content\Application\ContentManager\ContentManagerInterface;
+use Sulu\Content\Application\ContentWorkflow\ContentWorkflowInterface;
 use Sulu\Content\Domain\Model\DimensionContentInterface;
 use Sulu\Content\Domain\Model\WorkflowInterface;
 use Sulu\Route\Domain\Model\Route;
@@ -26,6 +27,7 @@ class EventFixture extends Fixture implements FixtureGroupInterface
 
     public function __construct(
         private readonly ContentManagerInterface $contentManager,
+        private readonly ContentWorkflowInterface $contentWorkflow,
     ) {
     }
 
@@ -263,12 +265,9 @@ class EventFixture extends Fixture implements FixtureGroupInterface
         if ($index % 5 !== 0) { // Every 5th event stays draft
             foreach (['en', 'de'] as $locale) {
                 try {
-                    $this->contentManager->applyTransition(
+                    $this->contentWorkflow->apply(
                         $event,
-                        [
-                            'locale' => $locale,
-                            'stage' => DimensionContentInterface::STAGE_DRAFT,
-                        ],
+                        ['locale' => $locale],
                         WorkflowInterface::WORKFLOW_TRANSITION_PUBLISH
                     );
                 } catch (\Exception $e) {

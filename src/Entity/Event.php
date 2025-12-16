@@ -21,6 +21,8 @@ class Event implements ContentRichEntityInterface
     public const RESOURCE_KEY = 'events';
     public const FORM_KEY = 'event_details';
     public const LIST_KEY = 'events';
+    public const LIST_KEY_PUBLISHED = 'events_published';
+
     public const SECURITY_CONTEXT = 'sulu.events.events';
     public const TEMPLATE_TYPE = 'event';
 

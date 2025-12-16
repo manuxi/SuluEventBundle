@@ -240,6 +240,10 @@ class EventSmartContentProvider implements SmartContentProviderInterface
         ];
 
         return \array_merge($dimensionAttributes, $filters);
+
+        /*return \array_merge($filters, [
+            'stage' => DimensionContentInterface::STAGE_LIVE,
+        ]);*/
     }
 
     protected function mapFilters(array $filters): array

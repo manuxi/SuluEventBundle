@@ -25,6 +25,7 @@ use Sulu\Component\Rest\ListBuilder\Metadata\FieldDescriptorFactoryInterface;
 use Sulu\Component\Rest\ListBuilder\PaginatedRepresentation;
 use Sulu\Component\Rest\RestHelperInterface;
 use Sulu\Content\Application\ContentManager\ContentManagerInterface;
+use Sulu\Content\Application\ContentWorkflow\ContentWorkflowInterface;
 use Sulu\Content\Domain\Model\DimensionContentInterface;
 use Sulu\Content\Domain\Model\WorkflowInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -47,6 +48,7 @@ class EventController extends AbstractRestController
         private DoctrineListRepresentationFactory $doctrineListRepresentationFactory,
         private DomainEventCollectorInterface $domainEventCollector,
         private TrashManagerInterface $trashManager,
+        private ContentWorkflowInterface $contentWorkflow,
     ) {
         parent::__construct($viewHandler, $tokenStorage);
     }
@@ -60,10 +62,21 @@ class EventController extends AbstractRestController
     )]
     public function cgetAction(Request $request): Response
     {
+
+        // Use events_published list for selection overlays
+        $listKey = null;
+        if ($request->query->has('selectedIds')) {
+            $listKey = Event::LIST_KEY_PUBLISHED;
+        }
+
+        $filters = [];
+        $parameters = $request->query->all();
+
         $listRepresentation = $this->doctrineListRepresentationFactory->createDoctrineListRepresentation(
             Event::RESOURCE_KEY,
-            [],
-            $request->query->all()
+            $filters,
+            $parameters,
+            $listKey
         );
 
         return $this->handleView($this->view($listRepresentation));
@@ -115,12 +128,13 @@ class EventController extends AbstractRestController
         $this->domainEventCollector->collect(new CreatedEvent($event, $data));
 
         if ('publish' === $request->query->get('action')) {
-            $dimensionContent = $this->contentManager->applyTransition(
+            $this->contentWorkflow->apply(
                 $event,
-                $dimensionAttributes,
+                ['locale' => $dimensionAttributes['locale']],
                 WorkflowInterface::WORKFLOW_TRANSITION_PUBLISH
             );
-
+            // Reload dimension content after transition
+            $dimensionContent = $this->contentManager->resolve($event, $dimensionAttributes);
             $this->entityManager->flush();
             $this->domainEventCollector->collect(new PublishedEvent($event, $data));
         }
@@ -167,11 +181,12 @@ class EventController extends AbstractRestController
                 return $this->handleView($this->view($this->normalize($event, $dimensionContent)));
 
             case 'unpublish':
-                $dimensionContent = $this->contentManager->applyTransition(
+                $this->contentWorkflow->apply(
                     $event,
-                    $dimensionAttributes,
+                    ['locale' => $dimensionAttributes['locale']],
                     WorkflowInterface::WORKFLOW_TRANSITION_UNPUBLISH
                 );
+                $dimensionContent = $this->contentManager->resolve($event, $dimensionAttributes);
 
                 $this->entityManager->flush();
                 $payload = $request->query->all();
@@ -181,11 +196,12 @@ class EventController extends AbstractRestController
                 return $this->handleView($this->view($this->normalize($event, $dimensionContent)));
 
             case 'remove_draft':
-                $dimensionContent = $this->contentManager->applyTransition(
+                $this->contentWorkflow->apply(
                     $event,
-                    $dimensionAttributes,
+                    ['locale' => $dimensionAttributes['locale']],
                     WorkflowInterface::WORKFLOW_TRANSITION_REMOVE_DRAFT
                 );
+                $dimensionContent = $this->contentManager->resolve($event, $dimensionAttributes);
 
                 $this->entityManager->flush();
 
@@ -248,23 +264,25 @@ class EventController extends AbstractRestController
         $dimensionContent = $this->contentManager->persist($event, $data, $dimensionAttributes);
 
         if (WorkflowInterface::WORKFLOW_PLACE_PUBLISHED === $dimensionContent->getWorkflowPlace()) {
-            $dimensionContent = $this->contentManager->applyTransition(
+            $this->contentWorkflow->apply(
                 $event,
-                $dimensionAttributes,
+                ['locale' => $dimensionAttributes['locale']],
                 WorkflowInterface::WORKFLOW_TRANSITION_CREATE_DRAFT
             );
+            $dimensionContent = $this->contentManager->resolve($event, $dimensionAttributes);
         }
 
         $this->entityManager->flush();
         $this->domainEventCollector->collect(new ModifiedEvent($event, $data));
 
         if ('publish' === $request->query->get('action')) {
-            $dimensionContent = $this->contentManager->applyTransition(
+            $this->contentWorkflow->apply(
                 $event,
-                $dimensionAttributes,
+                ['locale' => $dimensionAttributes['locale']],
                 WorkflowInterface::WORKFLOW_TRANSITION_PUBLISH
             );
-
+            // Reload dimension content after transition
+            $dimensionContent = $this->contentManager->resolve($event, $dimensionAttributes);
             $this->entityManager->flush();
             $this->domainEventCollector->collect(new PublishedEvent($event, $data));
         }

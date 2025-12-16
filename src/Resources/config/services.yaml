@@ -328,6 +328,7 @@ services:
         class: Manuxi\SuluEventBundle\DataFixtures\Event\EventFixture
         arguments:
             - '@sulu_content.content_manager'
+            - '@sulu_content.content_workflow'
         tags:
             - { name: doctrine.fixture.orm }
 

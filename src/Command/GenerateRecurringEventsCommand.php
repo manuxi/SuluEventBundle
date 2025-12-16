@@ -10,6 +10,7 @@ use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
 use Manuxi\SuluEventBundle\Service\RecurrenceGenerator;
 use Sulu\Content\Application\ContentManager\ContentManagerInterface;
+use Sulu\Content\Application\ContentWorkflow\ContentWorkflowInterface;
 use Sulu\Content\Domain\Model\DimensionContentInterface;
 use Sulu\Content\Domain\Model\WorkflowInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -30,6 +31,7 @@ class GenerateRecurringEventsCommand extends Command
         private readonly RecurrenceGenerator $recurrenceGenerator,
         private readonly EntityManagerInterface $entityManager,
         private readonly ContentManagerInterface $contentManager,
+        private ContentWorkflowInterface $contentWorkflow,
     ) {
         parent::__construct();
     }
@@ -244,12 +246,9 @@ class GenerateRecurringEventsCommand extends Command
         ]);
 
         // Publish immediately
-        $this->contentManager->applyTransition(
+        $this->contentWorkflow->apply(
             $newEvent,
-            [
-                'locale' => $locale,
-                'stage' => DimensionContentInterface::STAGE_DRAFT,
-            ],
+            ['locale' => $locale],
             WorkflowInterface::WORKFLOW_TRANSITION_PUBLISH
         );
 

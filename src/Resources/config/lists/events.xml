@@ -11,6 +11,15 @@
         </join>
     </joins>
 
+    <joins name="liveDimensionContent">
+        <join>
+            <entity-name>liveDimensionContent</entity-name>
+            <field-name>Manuxi\SuluEventBundle\Entity\Event.dimensionContents</field-name>
+            <method>LEFT</method>
+            <condition>liveDimensionContent.locale = :locale AND liveDimensionContent.stage = 'live'</condition>
+        </join>
+    </joins>
+
     <joins name="ghostDimensionContent">
         <join>
             <entity-name>ghostDimensionContent</entity-name>
@@ -192,6 +201,13 @@
             <field-name>workflowPublished</field-name>
             <entity-name>dimensionContent</entity-name>
             <joins ref="dimensionContent"/>
+        </property>
+
+        <property name="livePublished" type="date" visibility="never">
+            <field-name>workflowPublished</field-name>
+            <entity-name>dimensionContent</entity-name>
+            <joins ref="liveDimensionContent"/>
+            <transformer type="datetime"/>
         </property>
     </properties>
 </list>

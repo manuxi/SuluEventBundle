@@ -1,0 +1,69 @@
+<?xml version="1.0" ?>
+<list xmlns="http://schemas.sulu.io/list-builder/list">
+    <key>events_published</key>
+
+    <joins name="dimensionContent">
+        <join>
+            <entity-name>dimensionContent</entity-name>
+            <field-name>Manuxi\SuluEventBundle\Entity\Event.dimensionContents</field-name>
+            <method>INNER</method>
+            <condition>dimensionContent.locale = :locale AND dimensionContent.stage = 'live' AND dimensionContent.version = 0</condition>
+        </join>
+    </joins>
+
+    <joins name="location" ref="dimensionContent">
+        <join>
+            <entity-name>locationEntity</entity-name>
+            <field-name>dimensionContent.location</field-name>
+            <method>LEFT</method>
+        </join>
+    </joins>
+
+    <properties>
+        <property name="id" translation="sulu_admin.id" visibility="no">
+            <field-name>id</field-name>
+            <entity-name>Manuxi\SuluEventBundle\Entity\Event</entity-name>
+        </property>
+
+        <property name="title" visibility="always" searchability="yes" translation="sulu_event.title">
+            <field-name>title</field-name>
+            <entity-name>dimensionContent</entity-name>
+            <joins ref="dimensionContent"/>
+        </property>
+
+        <property name="startDate" translation="sulu_event.start_date" type="datetime" visibility="yes">
+            <field-name>startDate</field-name>
+            <entity-name>dimensionContent</entity-name>
+            <joins ref="dimensionContent"/>
+        </property>
+
+        <property name="endDate" translation="sulu_event.end_date" type="datetime" visibility="no">
+            <field-name>endDate</field-name>
+            <entity-name>dimensionContent</entity-name>
+            <joins ref="dimensionContent"/>
+        </property>
+
+        <property name="type" translation="sulu_event.type" visibility="yes">
+            <field-name>type</field-name>
+            <entity-name>dimensionContent</entity-name>
+            <joins ref="dimensionContent"/>
+        </property>
+
+        <property name="locationName" translation="sulu_event.location" visibility="yes">
+            <field-name>name</field-name>
+            <entity-name>locationEntity</entity-name>
+            <joins ref="location"/>
+        </property>
+
+        <property name="locale" translation="sulu_admin.locale" visibility="never">
+            <field-name>locale</field-name>
+            <entity-name>dimensionContent</entity-name>
+        </property>
+
+        <property name="stage" visibility="never">
+            <field-name>stage</field-name>
+            <entity-name>dimensionContent</entity-name>
+            <joins ref="dimensionContent"/>
+        </property>
+    </properties>
+</list>
