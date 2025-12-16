@@ -11,7 +11,6 @@ sulu_event:
     abstract: "Abstract"
     summary: "Introduction"
     text: "Text"
-    details: "Additional Content (Blocks)"
     footer: "Footnotes, Source Citations..."
     notes: "Notes"
     image: "Image"
@@ -56,6 +55,8 @@ sulu_event:
         content: "Content"
         content_date: "Date & Location"
         content_main: "Textual content"
+        content_other: "Other"
+        content_blocks: "Content Blocks"
         links: "Links & Infos"
         additional: "Additional Options"
         mandatory: "Mandatory Fields"
@@ -68,6 +69,17 @@ sulu_event:
         date: "Date"
         links: "Links"
         additional: "Options"
+
+    # Block titles
+    block:
+        text: "Text"
+        abstract_text: "Abstract, Text"
+        abstract_text_image: "Abstract, Text, Image"
+        abstract_text_images: "Abstract, Text, Gallery"
+        title_text: "Title, Text"
+        title_text_image: "Title, Text, Image"
+        title_text_images: "Title, Text, Gallery"
+        event_item: "Agenda Item"
 
     # Form titles
     form:
@@ -139,6 +151,9 @@ sulu_event:
         networking: "Networking"
         presentation: "Presentation"
         celebration: "Celebration"
+
+    settings:
+        title: "Other"
 
     # Configuration settings for events
     config:

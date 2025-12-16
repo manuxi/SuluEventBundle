@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<properties xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xmlns="http://schemas.sulu.io/template/template"
+            xsi:schemaLocation="http://schemas.sulu.io/template/template http://schemas.sulu.io/template/template-1.0.xsd">
+    <block name="event_item" default-type="event_item">
+        <types>
+            <type name="event_item">
+                <meta>
+                    <title>sulu_event.block.event_item</title>
+                </meta>
+                <properties>
+                    <property name="title" type="text_line" mandatory="true">
+                        <meta>
+                            <title>sulu_event.title</title>
+                        </meta>
+                    </property>
+                    <property name="startDate" type="datetime" colspan="6">
+                        <meta>
+                            <title>sulu_event.start_date</title>
+                        </meta>
+                    </property>
+                    <property name="endDate" type="datetime" colspan="6">
+                        <meta>
+                            <title>sulu_event.end_date</title>
+                        </meta>
+                    </property>
+                    <property name="abstract" type="text_area">
+                        <meta>
+                            <title>sulu_event.abstract</title>
+                        </meta>
+                    </property>
+                    <property name="text" type="text_editor">
+                        <meta>
+                            <title>sulu_event.text</title>
+                        </meta>
+                    </property>
+                    <property name="location" type="single_location_selection" colspan="6">
+                        <meta>
+                            <title>sulu_event.location</title>
+                        </meta>
+                    </property>
+                    <property name="speaker" type="single_contact_selection" colspan="6">
+                        <meta>
+                            <title>sulu_event.speaker</title>
+                        </meta>
+                    </property>
+                </properties>
+            </type>
+        </types>
+    </block>
+</properties>

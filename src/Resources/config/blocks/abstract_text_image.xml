@@ -2,16 +2,16 @@
 <properties xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xmlns="http://schemas.sulu.io/template/template"
             xsi:schemaLocation="http://schemas.sulu.io/template/template http://schemas.sulu.io/template/template-1.0.xsd">
-    <block name="title_text_image" default-type="title_text_image">
+    <block name="abstract_text" default-type="abstract_text">
         <types>
-            <type name="title_text_image">
+            <type name="abstract_text_image">
                 <meta>
-                    <title>sulu_event.block.title_text_image</title>
+                    <title>sulu_event.block.abstract_text_image</title>
                 </meta>
                 <properties>
-                    <property name="title" type="text_line">
+                    <property name="abstract" type="text_area">
                         <meta>
-                            <title>sulu_event.title</title>
+                            <title>sulu_event.abstract</title>
                         </meta>
                     </property>
                     <property name="text" type="text_editor">

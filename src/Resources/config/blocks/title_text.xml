@@ -1,28 +1,26 @@
-<?xml version="1.0" ?>
-<template xmlns="http://schemas.sulu.io/template/template"
-          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-          xsi:schemaLocation="http://schemas.sulu.io/template/template http://schemas.sulu.io/template/template-1.0.xsd">
-
-    <key>title_text</key>
-
-    <meta>
-        <title lang="en">Title + Text</title>
-        <title lang="de">Titel + Text</title>
-    </meta>
-
-    <properties>
-        <property name="title" type="text_line">
-            <meta>
-                <title lang="en">Title</title>
-                <title lang="de">Titel</title>
-            </meta>
-        </property>
-
-        <property name="text" type="text_editor">
-            <meta>
-                <title lang="en">Text</title>
-                <title lang="de">Text</title>
-            </meta>
-        </property>
-    </properties>
-</template>
+<?xml version="1.0" encoding="utf-8"?>
+<properties xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xmlns="http://schemas.sulu.io/template/template"
+            xsi:schemaLocation="http://schemas.sulu.io/template/template http://schemas.sulu.io/template/template-1.0.xsd">
+    <block name="title_text" default-type="title_text">
+        <types>
+            <type name="title_text">
+                <meta>
+                    <title>sulu_event.block.title_text</title>
+                </meta>
+                <properties>
+                    <property name="title" type="text_line">
+                        <meta>
+                            <title>sulu_event.title</title>
+                        </meta>
+                    </property>
+                    <property name="text" type="text_editor">
+                        <meta>
+                            <title>sulu_event.text</title>
+                        </meta>
+                    </property>
+                </properties>
+            </type>
+        </types>
+    </block>
+</properties>

@@ -11,7 +11,6 @@ sulu_event:
     abstract: "Zusammenfassung"
     summary: "Einleitung"
     text: "Text"
-    details: "Zusätzlicher Inhalt (Blocks)"
     footer: "Fußnoten, Quellennachweise..."
     notes: "Anmerkungen"
     image: "Bild"
@@ -56,6 +55,8 @@ sulu_event:
         content: "Inhalt"
         content_date: "Datum & Ort"
         content_main: "Textinhalte"
+        content_other: "Weiteres"
+        content_blocks: "Inhaltsblöcke"
         links: "Links & Infos"
         additional: "Zusätzliche Optionen"
         mandatory: "Verpflichtende Felder"
@@ -72,11 +73,13 @@ sulu_event:
     # Block titles
     block:
         text: "Text"
-        abstract_text: "Zusammenfassung & Text"
-        abstract_text_image: "Zusammenfassung, Text, Bild"
-        abstract_text_images: "Zusammenfassung, Text, Bilder"
+        title_text: "Titel, Text"
         title_text_image: "Titel, Text, Bild"
-        title_text_gallery: "Titel, Text, Galerie"
+        title_text_images: "Titel, Text, Galerie"
+        abstract_text: "Zusammenfassung, Text"
+        abstract_text_image: "Zusammenfassung, Text, Bild"
+        abstract_text_images: "Zusammenfassung, Text, Galerie"
+        event_item: "Programmpunkt"
 
     # Form titles
     form:
