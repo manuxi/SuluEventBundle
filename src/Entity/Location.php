@@ -195,6 +195,7 @@ class Location
         return $this;
     }
 
+    #[Serializer\Groups(['default', 'admin', 'locations', 'location_details'])]
     public function getPdf(): ?MediaInterface
     {
         return $this->pdf;
@@ -219,22 +220,10 @@ class Location
         return $this;
     }
 
+    #[Serializer\Groups(['default', 'admin', 'locations', 'location_details'])]
     public function getImage(): ?MediaInterface
     {
         return $this->image;
-    }
-
-    #[Serializer\VirtualProperty]
-    #[Serializer\SerializedName('image')]
-    public function getImageData(): ?array
-    {
-        if ($image = $this->getImage()) {
-            return [
-                'id' => $image->getId(),
-            ];
-        }
-
-        return null;
     }
 
     public function setImage(?MediaInterface $image): self
@@ -243,6 +232,8 @@ class Location
 
         return $this;
     }
+
+
 
     public function getImages(): ?array
     {
@@ -275,5 +266,25 @@ class Location
     {
         $this->link = $link;
         return $this;
+    }
+
+    #[Serializer\VirtualProperty]
+    #[Serializer\SerializedName('avatar')]
+    public function getAvatar(): ?array
+    {
+        if ($image = $this->getImage()) {
+            return [
+                'id' => $image->getId(),
+            ];
+        }
+
+        return null;
+    }
+
+    #[Serializer\VirtualProperty]
+    #[Serializer\SerializedName('fullName')]
+    public function getFullName(): ?string
+    {
+        return $this->getName();
     }
 }

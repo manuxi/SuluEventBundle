@@ -76,6 +76,7 @@
         <join>
             <entity-name>Sulu\Bundle\MediaBundle\Entity\Media</entity-name>
             <field-name>dimensionContent.image</field-name>
+            <method>LEFT</method>
         </join>
     </joins>
 

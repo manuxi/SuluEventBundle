@@ -13,7 +13,7 @@
             <entity-name>Manuxi\SuluEventBundle\Entity\Location</entity-name>
         </property>
 
-        <property name="image" visibility="always" translation="sulu_event.image" type="thumbnails" sortable="false">
+        <property name="image" visibility="always" translation="sulu_event.image" sortable="false">
             <field-name>id</field-name>
             <entity-name>Sulu\Bundle\MediaBundle\Entity\Media</entity-name>
             <joins>
@@ -22,27 +22,38 @@
                     <field-name>Manuxi\SuluEventBundle\Entity\Location.image</field-name>
                 </join>
             </joins>
+            <transformer type="thumbnails"/>
         </property>
 
-        <property name="street" visibility="yes" searchability="yes" translation="sulu_contact.street">
+        <property name="street" visibility="no" searchability="yes" translation="sulu_contact.street">
             <field-name>street</field-name>
             <entity-name>Manuxi\SuluEventBundle\Entity\Location</entity-name>
         </property>
 
-        <property name="number" visibility="yes" searchability="yes" translation="sulu_contact.number">
+        <property name="number" visibility="no" searchability="yes" translation="sulu_contact.number">
             <field-name>number</field-name>
             <entity-name>Manuxi\SuluEventBundle\Entity\Location</entity-name>
         </property>
 
-        <property name="postalCode" visibility="yes" searchability="yes" translation="sulu_contact.zip">
+        <concatenation-property name="addressLine" translation="sulu_contact.address_line" sortable="false" glue=" " visibility="always" >
+            <field property-ref="street"/>
+            <field property-ref="number"/>
+        </concatenation-property>
+
+        <property name="postalCode" visibility="no" searchability="yes" translation="sulu_contact.zip">
             <field-name>postalCode</field-name>
             <entity-name>Manuxi\SuluEventBundle\Entity\Location</entity-name>
         </property>
 
-        <property name="city" visibility="yes" searchability="yes" translation="sulu_contact.city">
+        <property name="city" visibility="no" searchability="yes" translation="sulu_contact.city">
             <field-name>city</field-name>
             <entity-name>Manuxi\SuluEventBundle\Entity\Location</entity-name>
         </property>
+
+        <concatenation-property name="zipCity" translation="sulu_contact.city" sortable="false" glue=" " visibility="always">
+            <field property-ref="postalCode"/>
+            <field property-ref="city"/>
+        </concatenation-property>
 
         <property name="state" visibility="yes" searchability="yes" translation="sulu_contact.state">
             <field-name>state</field-name>

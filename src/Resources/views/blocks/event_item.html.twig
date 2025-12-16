@@ -1,0 +1,51 @@
+<div class="block-event-item item py-3">
+    {% if content.title is not empty %}
+        <h3 class="mb-3">{{ content.title }}</h3>
+    {% endif %}
+
+    <div class="event-meta mb-3">
+        {% if content.startDate is not empty %}
+            <span class="badge bg-primary">
+                {{ content.startDate|format_datetime('full', 'short', locale=app.request.locale) }}
+                {% if content.endDate is not empty %}
+                     - {{ content.endDate|format_datetime('full', 'short', locale=app.request.locale) }}
+                {% endif %}
+            </span>
+        {% endif %}
+
+        {% if content.location is defined and content.location is not empty %}
+            {# single_location_selection sometimes returns an ID or an array depending on resolution. 
+               However, in blocks, it usually returns the ID(s) or we need to resolve it. 
+               Assuming standard expansion, or if it's just an ID we might need a twig extension to load it.
+               But often in Sulu preview it works if configured correctly. 
+               For now, let's assume it returns an array with 'name' if expanded, or we might need to adjust.
+            #}
+            {% if content.location.name is defined %}
+                 <span class="badge bg-secondary">
+                    <i class="fa fa-map-marker"></i> {{ content.location.name }}
+                 </span>
+            {% endif %}
+        {% endif %}
+    </div>
+
+    {% if content.abstract is not empty %}
+        <div class="abstract lead mb-3">
+            {{ content.abstract|raw }}
+        </div>
+    {% endif %}
+
+    {% if content.text is not empty %}
+        <div class="text mb-3">
+            {{ content.text|raw }}
+        </div>
+    {% endif %}
+
+     {% if content.speaker is defined and content.speaker is not empty %}
+        <div class="speaker mt-3 p-3 bg-light rounded">
+             <strong>{{ 'sulu_event.speaker'|trans }}:</strong>
+             {% if content.speaker.firstName is defined %}
+                {{ content.speaker.firstName }} {{ content.speaker.lastName }}
+             {% endif %}
+        </div>
+    {% endif %}
+</div>

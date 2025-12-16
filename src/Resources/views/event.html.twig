@@ -9,23 +9,40 @@
         <div class="row">
             <div class="col-12 pb-3">
                 <div class="title">
-                    {% set startTimeShort = event.startDate|date('H:i') %}
+                    {% set timeframe = '' %}
+                    {% if event.startDate %}
+                        {% set startTimeShort = event.startDate|date('H:i') %}
 
-                    {% if event.endDate %}
-                        {% set endTimeShort = event.endDate|date('H:i') %}
-                        {% if startTimeShort == "00:00" and endTimeShort == "00:00" %}
-                            {% set timeframe = event.startDate|format_datetime('full', 'none', locale=app.request.getLocale()) ~ ' - ' ~ event.endDate|format_datetime('full', 'none', locale=app.request.getLocale()) %}
+                        {% if event.endDate %}
+                            {% set endTimeShort = event.endDate|date('H:i') %}
+                            {% if startTimeShort == "00:00" and endTimeShort == "00:00" %}
+                                {% set timeframe = event.startDate|format_datetime('full', 'none', locale=app.request.getLocale()) ~ ' - ' ~ event.endDate|format_datetime('full', 'none', locale=app.request.getLocale()) %}
+                            {% else %}
+                                {% set timeframe = event.startDate|format_datetime('full', 'short', locale=app.request.getLocale()) ~ ' - ' ~ event.endDate|format_datetime('full', 'short', locale=app.request.getLocale()) %}
+                            {% endif %}
                         {% else %}
-                            {% set timeframe = event.startDate|format_datetime('full', 'short', locale=app.request.getLocale()) ~ ' - ' ~ event.endDate|format_datetime('full', 'short', locale=app.request.getLocale()) %}
-                        {% endif %}
-                    {% else %}
-                        {% if startTimeShort != "00:00" %}
-                            {% set timeframe = event.startDate|format_datetime('full', 'short', locale=app.request.getLocale())  %}
-                        {% else %}
-                            {% set timeframe = event.startDate|format_datetime('full', 'none', locale=app.request.getLocale()) %}
+                            {% if startTimeShort != "00:00" %}
+                                {% set timeframe = event.startDate|format_datetime('full', 'short', locale=app.request.getLocale())  %}
+                            {% else %}
+                                {% set timeframe = event.startDate|format_datetime('full', 'none', locale=app.request.getLocale()) %}
+                            {% endif %}
                         {% endif %}
                     {% endif %}
-                    {% set timeframe = timeframe ~ ' @ ' ~ event.location.name %}
+
+                    {% if event.location %}
+                        {% if timeframe %}
+                            {% set timeframe = timeframe ~ ' @ ' ~ event.location.name %}
+                        {% else %}
+                            {% set timeframe = event.location.name %}
+                        {% endif %}
+                    {% endif %}
+
+                    {% if event.image %}
+                        {% set eventImage = sulu_resolve_media(event.image.id, app.request.locale) %}
+                        {% if eventImage %}
+                            <img src="{{ eventImage.thumbnails['sulu-400x400'] }}" class="img-fluid rounded mb-4 w-100 object-fit-cover" style="max-height: 400px;" alt="{{ event.title }}">
+                        {% endif %}
+                    {% endif %}
 
                     <h1 class="mb-2">{{ event.title }}</h1>
                     {% if event.subtitle %}
@@ -46,7 +63,9 @@
                         {% endfor %}
                     {% endif %}
 
-                    <h3 class="h4 mb-4">{{ timeframe }}</h3>
+                    {% if timeframe %}
+                        <h3 class="h4 mb-4">{{ timeframe }}</h3>
+                    {% endif %}
                     {% if event.summary %}
                         <p class="mb-4 fw-bold fst-italic">{{ event.summary }}</p>
                     {% endif %}
@@ -54,7 +73,42 @@
 
                 <div class="content pb-3">
                     {{ event.text|raw }}
+
+                    {% if event.details is defined and event.details is not empty %}
+                        {% for block in event.details %}
+                            {% include '@SuluEvent/blocks/' ~ block.type ~ '.html.twig' with { 'content': block } only %}
+                        {% endfor %}
+                    {% endif %}
                 </div>
+
+                {% if event.location %}
+                    <div class="location-container mt-5 pt-4 border-top">
+                        <h3 class="mb-3">{{ 'sulu_event.location'|trans }}</h3>
+                        <div class="row">
+                            <div class="col-md-4">
+                                {% if event.location.image %}
+                                    {% set locationImage = sulu_resolve_media(event.location.image.id, app.request.locale) %}
+                                    {% if locationImage %}
+                                        <img src="{{ locationImage.thumbnails['sulu-400x400'] }}" class="img-fluid rounded mb-3" alt="{{ event.location.name }}">
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                            <div class="col-md-8">
+                                <h4 class="mb-2">{{ event.location.name }}</h4>
+                                <p>
+                                    {{ event.location.street }} {{ event.location.number }}<br>
+                                    {{ event.location.postalCode }} {{ event.location.city }}
+                                </p>
+                                {% if event.location.notes %}
+                                    <p class="text-muted">{{ event.location.notes }}</p>
+                                {% endif %}
+                                {% if event.location.link %}
+                                    <a href="{{ event.location.link.url|default('') }}" target="_blank" class="btn btn-outline-primary btn-sm mt-2">{{ 'sulu_event.action.website'|trans }}</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
             </div>
             <div class="col-12 py-3 bg-light text-dark">
                 <div class="footer mb-5">
@@ -100,9 +154,6 @@
 
                 </div>
 
-            </div>
-            <div class="col-12 pb-3">
-                {{ dump() }}
             </div>
         </div>
     </div>

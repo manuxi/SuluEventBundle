@@ -209,12 +209,12 @@
                     </params>
                 </property>
 
-                <property name="email" type="text_line" colspan="6">
+                <property name="email" type="email" colspan="6">
                     <meta>
                         <title>sulu_event.email</title>
                     </meta>
                 </property>
-                <property name="phoneNumber" type="text_line" colspan="6">
+                <property name="phoneNumber" type="phone" colspan="6">
                     <meta>
                         <title>sulu_event.phone</title>
                     </meta>

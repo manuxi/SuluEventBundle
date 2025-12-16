@@ -1,0 +1,25 @@
+<div class="block-title-text-gallery item py-3">
+    {% if content.title is not empty %}
+        <h3 class="mb-3">{{ content.title }}</h3>
+    {% endif %}
+
+    {% if content.text is not empty %}
+        <div class="text mb-3">
+            {{ content.text|raw }}
+        </div>
+    {% endif %}
+
+    {% if content.images is defined and content.images is not empty %}
+        <div class="gallery row">
+            {% for image in content.images %}
+                 <div class="col-6 col-md-3 mb-3">
+                    <a href="{{ image.url }}" data-lightbox="gallery-{{ content.title|slugify }}">
+                         {% if image.thumbnails is defined %}
+                            <img src="{{ image.thumbnails['400x400'] }}" class="img-fluid rounded shadow-sm" alt="{{ image.title|default('') }}">
+                        {% endif %}
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>

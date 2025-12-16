@@ -1,0 +1,21 @@
+<div class="block-title-text-images item py-3">
+    {% if content.title is not empty %}
+        <h3 class="mb-3">{{ content.title }}</h3>
+    {% endif %}
+
+    {% if content.text is not empty %}
+        <div class="text mb-3">
+            {{ content.text|raw }}
+        </div>
+    {% endif %}
+
+    {% if content.images is not empty %}
+        <div class="row">
+            {% for image in content.images %}
+                <div class="col-md-4 mb-3">
+                    <img src="{{ image.thumbnails['400x400'] }}" class="img-fluid rounded" alt="{{ image.title|default('') }}">
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>

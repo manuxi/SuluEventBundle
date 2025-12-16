@@ -157,6 +157,9 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
                                 'events' => [
                                     'meta_title' => ['en' => 'Events', 'de' => 'Veranstaltungen'],
                                 ],
+                                'locations' => [
+                                    'meta_title' => ['en' => 'Locations', 'de' => 'Veranstaltungsorte'],
+                                ],
                             ],
                         ],
                     ],

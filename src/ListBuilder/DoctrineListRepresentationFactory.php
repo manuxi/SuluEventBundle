@@ -54,6 +54,10 @@ class DoctrineListRepresentationFactory
             $listBuilder->addSelectField($fieldDescriptors['endDate']);
         }
 
+        if (isset($fieldDescriptors['image'])) {
+            $listBuilder->addSelectField($fieldDescriptors['image']);
+        }
+
         if (isset($fieldDescriptors['publishedState'])) {
             $listBuilder->addSelectField($fieldDescriptors['publishedState']);
         }

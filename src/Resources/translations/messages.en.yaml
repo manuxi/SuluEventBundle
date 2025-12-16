@@ -1,6 +1,8 @@
 sulu_event:
-    events: Events
-
+    events: "Events"
+    location: "Location"
+    action:
+        website: "Visit Website"
 search:
     index:
         abbreviations: "Events"

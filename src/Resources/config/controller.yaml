@@ -28,6 +28,7 @@ services:
             - '@sulu_core.list_builder.field_descriptor_factory'
             - '@sulu_core.doctrine_list_builder_factory'
             - '@sulu_core.rest_helper'
+            - '@sulu_media.media_manager'
             - '@fos_rest.view_handler.default'
             - '@security.token_storage'
         tags:

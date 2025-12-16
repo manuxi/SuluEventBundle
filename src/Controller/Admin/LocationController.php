@@ -9,6 +9,7 @@ use FOS\RestBundle\View\ViewHandlerInterface;
 use Manuxi\SuluEventBundle\Entity\Location;
 use Manuxi\SuluEventBundle\Repository\LocationRepository;
 use Sulu\Bundle\MediaBundle\Entity\MediaInterface;
+use Sulu\Bundle\MediaBundle\Media\Manager\MediaManagerInterface;
 use Sulu\Bundle\TrashBundle\Application\TrashManager\TrashManagerInterface;
 use Sulu\Component\Rest\AbstractRestController;
 use Sulu\Component\Rest\ListBuilder\Doctrine\DoctrineListBuilderFactoryInterface;
@@ -34,6 +35,7 @@ class LocationController extends AbstractRestController
         private readonly FieldDescriptorFactoryInterface $fieldDescriptorFactory,
         private readonly DoctrineListBuilderFactoryInterface $listBuilderFactory,
         private readonly RestHelperInterface $restHelper,
+        private readonly MediaManagerInterface $mediaManager,
         ViewHandlerInterface $viewHandler,
         TokenStorageInterface $tokenStorage,
     ) {
@@ -49,12 +51,19 @@ class LocationController extends AbstractRestController
     )]
     public function cgetAction(Request $request): Response
     {
+        $locale = $request->query->get('locale', 'en');
+
         $fieldDescriptors = $this->fieldDescriptorFactory->getFieldDescriptors(Location::RESOURCE_KEY);
         $listBuilder = $this->listBuilderFactory->create(Location::class);
         $this->restHelper->initializeListBuilder($listBuilder, $fieldDescriptors);
 
+        $listElements = $listBuilder->execute();
+
+        // Resolve thumbnail URLs
+        $listElements = $this->addImagesToListElements($listElements, $locale);
+
         $listRepresentation = new PaginatedRepresentation(
-            $listBuilder->execute(),
+            $listElements,
             Location::RESOURCE_KEY,
             (int) $listBuilder->getCurrentPage(),
             (int) $listBuilder->getLimit(),
@@ -64,6 +73,29 @@ class LocationController extends AbstractRestController
         return $this->handleView($this->view($listRepresentation));
     }
 
+    private function addImagesToListElements(array $listElements, string $locale): array
+    {
+        $ids = array_filter(array_column($listElements, 'image'));
+
+        if (empty($ids)) {
+            return $listElements;
+        }
+
+        $images = $this->mediaManager->getFormatUrls($ids, $locale);
+
+        foreach ($listElements as $key => $element) {
+            if (
+                \array_key_exists('image', $element)
+                && $element['image']
+                && \array_key_exists($element['image'], $images)
+            ) {
+                $listElements[$key]['image'] = $images[$element['image']];
+            }
+        }
+
+        return $listElements;
+    }
+
     #[Route(
         '/locations/{id}.{_format}',
         name: 'sulu_event.get_location',
@@ -71,7 +103,7 @@ class LocationController extends AbstractRestController
         defaults: ['_format' => 'json'],
         methods: ['GET']
     )]
-    public function getAction(int $id): Response
+    public function getAction(int $id, Request $request): Response
     {
         $location = $this->locationRepository->find($id);
 
@@ -79,7 +111,49 @@ class LocationController extends AbstractRestController
             throw new NotFoundHttpException();
         }
 
-        return $this->handleView($this->view($location));
+        $apiLocation = $this->resolveLocationMedia($location, $request->query->get('locale'));
+
+        return $this->handleView($this->view($apiLocation));
+    }
+
+    private function resolveLocationMedia(Location $location, ?string $locale): array
+    {
+        $data = [
+            'id' => $location->getId(),
+            'name' => $location->getName(),
+            'street' => $location->getStreet(),
+            'number' => $location->getNumber(),
+            'postalCode' => $location->getPostalCode(),
+            'city' => $location->getCity(),
+            'state' => $location->getState(),
+            'countryCode' => $location->getCountryCode(),
+            'notes' => $location->getNotes(),
+            'email' => $location->getEmail(),
+            'phoneNumber' => $location->getPhoneNumber(),
+            'link' => $location->getLink(),
+            'location' => $location->getLocation(),
+            'images' => $location->getImages(),
+        ];
+
+        if ($image = $location->getImage()) {
+            try {
+                $apiMedia = $this->mediaManager->getById($image->getId(), $locale ?? 'en');
+                $data['image'] = $apiMedia;
+            } catch (\Exception $e) {
+                $data['image'] = ['id' => $image->getId()];
+            }
+        }
+
+        if ($pdf = $location->getPdf()) {
+            try {
+                $apiMedia = $this->mediaManager->getById($pdf->getId(), $locale ?? 'en');
+                $data['pdf'] = $apiMedia;
+            } catch (\Exception $e) {
+                $data['pdf'] = ['id' => $pdf->getId()];
+            }
+        }
+
+        return $data;
     }
 
     #[Route(
@@ -97,7 +171,9 @@ class LocationController extends AbstractRestController
         $this->entityManager->persist($location);
         $this->entityManager->flush();
 
-        return $this->handleView($this->view($location, 201));
+        $apiLocation = $this->resolveLocationMedia($location, $request->query->get('locale'));
+
+        return $this->handleView($this->view($apiLocation, 201));
     }
 
     #[Route(
@@ -119,7 +195,9 @@ class LocationController extends AbstractRestController
 
         $this->entityManager->flush();
 
-        return $this->handleView($this->view($location));
+        $apiLocation = $this->resolveLocationMedia($location, $request->query->get('locale'));
+
+        return $this->handleView($this->view($apiLocation));
     }
 
     #[Route(
@@ -158,14 +236,21 @@ class LocationController extends AbstractRestController
         $entity->setPhoneNumber($data['phoneNumber'] ?? null);
         $entity->setLocation($data['location'] ?? null);
         $entity->setImages($data['images'] ?? null);
+        $entity->setLink($data['link'] ?? null);
 
-        if (isset($data['image']) && is_array($data['image']) && isset($data['image']['id'])) {
-            $image = $this->entityManager->getReference(MediaInterface::class, $data['image']['id']);
+        if (array_key_exists('image', $data)) {
+            $image = null;
+            if (isset($data['image']['id'])) {
+                $image = $this->entityManager->getReference(MediaInterface::class, $data['image']['id']);
+            }
             $entity->setImage($image);
         }
 
-        if (isset($data['pdf']) && is_array($data['pdf']) && isset($data['pdf']['id'])) {
-            $pdf = $this->entityManager->getReference(MediaInterface::class, $data['pdf']['id']);
+        if (array_key_exists('pdf', $data)) {
+            $pdf = null;
+            if (isset($data['pdf']['id'])) {
+                $pdf = $this->entityManager->getReference(MediaInterface::class, $data['pdf']['id']);
+            }
             $entity->setPdf($pdf);
         }
     }

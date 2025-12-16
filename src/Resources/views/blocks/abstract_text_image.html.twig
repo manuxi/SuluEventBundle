@@ -1,0 +1,31 @@
+<div class="block-abstract-text-image item py-3">
+    <div class="row">
+        <div class="col-md-4">
+             {% if content.image is defined and content.image is not empty %}
+                {# Helper to handle both array (from detailed resolution) and single object #}
+                {% if content.image.thumbnails is defined %}
+                     <img src="{{ content.image.thumbnails['400x400'] }}" class="img-fluid rounded mb-3" alt="{{ content.image.title|default('') }}">
+                {% elseif content.image is iterable and content.image|length > 0 %}
+                    {# Handle if it comes as an array of media items #}
+                    {% set img = content.image|first %}
+                    {% if img.thumbnails is defined %}
+                        <img src="{{ img.thumbnails['400x400'] }}" class="img-fluid rounded mb-3" alt="{{ img.title|default('') }}">
+                    {% endif %}
+                {% endif %}
+            {% endif %}
+        </div>
+        <div class="col-md-8">
+            {% if content.abstract is not empty %}
+                <div class="abstract lead mb-3">
+                    {{ content.abstract|raw }}
+                </div>
+            {% endif %}
+
+            {% if content.text is not empty %}
+                <div class="text">
+                    {{ content.text|raw }}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>

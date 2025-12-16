@@ -1,0 +1,13 @@
+<div class="block-abstract-text item py-3">
+    {% if content.abstract is not empty %}
+        <div class="abstract lead mb-3">
+            {{ content.abstract|raw }}
+        </div>
+    {% endif %}
+
+    {% if content.text is not empty %}
+        <div class="text">
+            {{ content.text|raw }}
+        </div>
+    {% endif %}
+</div>
