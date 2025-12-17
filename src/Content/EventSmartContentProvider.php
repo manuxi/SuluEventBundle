@@ -6,6 +6,7 @@ namespace Manuxi\SuluEventBundle\Content;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
+use Manuxi\SuluEventBundle\Admin\EventAdmin;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
@@ -86,12 +87,7 @@ class EventSmartContentProvider implements SmartContentProviderInterface
             $repository = $this->entityManager->getRepository(Event::class);
 
             if (!$repository instanceof EventRepository) {
-                throw new \RuntimeException(
-                    sprintf(
-                        'Expected EventRepository, got %s',
-                        get_class($repository)
-                    )
-                );
+                throw new \RuntimeException(sprintf('Expected EventRepository, got %s', get_class($repository)));
             }
 
             $this->eventRepository = $repository;
@@ -114,7 +110,8 @@ class EventSmartContentProvider implements SmartContentProviderInterface
             ->enablePagination()
             ->enablePresentAs()
             ->enableSorting($this->getSorting())
-            ->enableTypes($this->getTypes());
+            ->enableTypes($this->getTypes())
+            ->enableView(EventAdmin::EDIT_TABS_VIEW, ['id' => 'id']);
     }
 
     protected function getTypes(): array
@@ -148,7 +145,7 @@ class EventSmartContentProvider implements SmartContentProviderInterface
 
     /**
      * @param EventSmartContentCountFilters $filters
-     * @param array<string, mixed> $params
+     * @param array<string, mixed>          $params
      */
     public function countBy(array $filters, array $params = []): int
     {
@@ -168,7 +165,7 @@ class EventSmartContentProvider implements SmartContentProviderInterface
         );
         $this->addInternalFilters($queryBuilder, $filters, $alias);
 
-        $queryBuilder->select('COUNT(DISTINCT ' . $alias . '.id)');
+        $queryBuilder->select('COUNT(DISTINCT '.$alias.'.id)');
 
         return (int) $queryBuilder->getQuery()->getSingleScalarResult();
     }
@@ -205,8 +202,11 @@ class EventSmartContentProvider implements SmartContentProviderInterface
         );
         $dimensionContentAlias = $this->addInternalFilters($queryBuilder, $filters, $alias);
 
-        $queryBuilder->select('DISTINCT ' . $alias . '.id as id');
-        $queryBuilder->addSelect($dimensionContentAlias . '.title');
+        $queryBuilder->select('DISTINCT '.$alias.'.id as id');
+        $queryBuilder->addSelect($dimensionContentAlias.'.title');
+/*        $queryBuilder->addSelect($dimensionContentAlias.'.type');
+        $queryBuilder->addSelect($dimensionContentAlias.'.startDate');
+        $queryBuilder->addSelect($dimensionContentAlias.'.endDate');*/
 
         $this->smartContentQueryEnhancer->addOrderBySelects($queryBuilder);
         $limit = isset($filters['limit']) ? (int) $filters['limit'] : null;
@@ -216,12 +216,36 @@ class EventSmartContentProvider implements SmartContentProviderInterface
         /** @var array{id: int|string, title?: string}[] $queryResult */
         $queryResult = $queryBuilder->getQuery()->getArrayResult();
 
-        /** @var array{id: string, title: string}[] $result */
+        /** @var array{id: string, title: string, type: string}[] $result */
         $result = \array_map(
-            static fn(array $item) => [
-                'id' => (string) $item['id'],
-                'title' => (string) ($item['title'] ?? ''),
-            ],
+            function (array $item) {
+                /*
+                $type = $item['type'] ?? 'default';
+                $translationKey = $this->eventTypes[$type]['name'] ?? 'sulu_event.type.default';
+
+                $startDate = $item['startDate'] ?? null;
+                $endDate = $item['endDate'] ?? null;
+                $dateString = '';
+
+                if ($startDate instanceof \DateTimeInterface) {
+                    $startStr = $startDate->format('d.m.Y');
+                    $dateString = $startStr;
+
+                    if ($endDate instanceof \DateTimeInterface) {
+                        $endStr = $endDate->format('d.m.Y');
+                        if ($startStr !== $endStr) {
+                            $dateString .= ' - '.$endStr;
+                        }
+                    }
+                }*/
+
+                return [
+                    'id' => (string) $item['id'],
+                    'title' => (string) ($item['title'] ?? ''),
+                    //'date' => $dateString,
+                    //'type' => $this->translator->trans($translationKey, [], 'admin'),
+                ];
+            },
             $queryResult
         );
 
@@ -285,7 +309,7 @@ class EventSmartContentProvider implements SmartContentProviderInterface
 
         if (isset($joins[$alias])) {
             foreach ($joins[$alias] as $join) {
-                if ($join->getJoin() === $alias . '.dimensionContents') {
+                if ($join->getJoin() === $alias.'.dimensionContents') {
                     $dimensionContentAlias = $join->getAlias();
                     break;
                 }
@@ -298,10 +322,10 @@ class EventSmartContentProvider implements SmartContentProviderInterface
             $locale = $filters['locale'];
 
             $queryBuilder->innerJoin(
-                $alias . '.dimensionContents',
+                $alias.'.dimensionContents',
                 $dimensionContentAlias,
                 'WITH',
-                $dimensionContentAlias . '.locale = :locale AND ' . $dimensionContentAlias . '.stage = :stage'
+                $dimensionContentAlias.'.locale = :locale AND '.$dimensionContentAlias.'.stage = :stage'
             );
             $queryBuilder->setParameter('locale', $locale);
             $queryBuilder->setParameter('stage', $stage);
@@ -327,7 +351,7 @@ class EventSmartContentProvider implements SmartContentProviderInterface
         $configurableTypes = \array_intersect($types, \array_keys($this->eventTypes));
 
         if (!empty($configurableTypes)) {
-            $queryBuilder->andWhere($alias . '.type IN (:eventTypes)')
+            $queryBuilder->andWhere($alias.'.type IN (:eventTypes)')
                 ->setParameter('eventTypes', $configurableTypes);
         }
 
@@ -340,15 +364,15 @@ class EventSmartContentProvider implements SmartContentProviderInterface
 
         if ($hasPending) {
             $queryBuilder->andWhere(
-                '(' . $alias . '.endDate IS NOT NULL AND ' . $alias . '.endDate >= :now) OR ' .
-                '(' . $alias . '.endDate IS NULL AND ' . $alias . '.startDate >= :todayStart)'
+                '('.$alias.'.endDate IS NOT NULL AND '.$alias.'.endDate >= :now) OR '.
+                '('.$alias.'.endDate IS NULL AND '.$alias.'.startDate >= :todayStart)'
             );
             $queryBuilder->setParameter('now', $now);
             $queryBuilder->setParameter('todayStart', $todayStart);
         } elseif ($hasExpired) {
             $queryBuilder->andWhere(
-                '(' . $alias . '.endDate IS NOT NULL AND ' . $alias . '.endDate < :now) OR ' .
-                '(' . $alias . '.endDate IS NULL AND ' . $alias . '.startDate < :todayStart)'
+                '('.$alias.'.endDate IS NOT NULL AND '.$alias.'.endDate < :now) OR '.
+                '('.$alias.'.endDate IS NULL AND '.$alias.'.startDate < :todayStart)'
             );
             $queryBuilder->setParameter('now', $now);
             $queryBuilder->setParameter('todayStart', $todayStart);

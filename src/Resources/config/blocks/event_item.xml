@@ -14,6 +14,11 @@
                             <title>sulu_event.title</title>
                         </meta>
                     </property>
+                    <property name="subtitle" type="text_line">
+                        <meta>
+                            <title>sulu_event.subtitle</title>
+                        </meta>
+                    </property>
                     <property name="startDate" type="datetime" colspan="6">
                         <meta>
                             <title>sulu_event.start_date</title>

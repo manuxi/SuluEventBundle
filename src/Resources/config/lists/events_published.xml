@@ -50,10 +50,9 @@
             <field-name>startDate</field-name>
             <entity-name>dimensionContent</entity-name>
             <joins ref="dimensionContent"/>
-            <transformer type="datetime"/>
         </property>
 
-        <property name="endDate" translation="sulu_event.end_date" type="datetime" visibility="no">
+        <property name="endDate" translation="sulu_event.end_date" visibility="yes">
             <field-name>endDate</field-name>
             <entity-name>dimensionContent</entity-name>
             <joins ref="dimensionContent"/>
