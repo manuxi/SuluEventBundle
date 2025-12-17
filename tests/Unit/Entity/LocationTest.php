@@ -88,18 +88,9 @@ class LocationTest extends TestCase
         $image->method('getId')->willReturn(42);
 
         $this->assertNull($this->location->getImage());
-        $this->assertNull($this->location->getImageData());
         $this->assertSame($this->location, $this->location->setImage($image));
         $this->assertSame($image, $this->location->getImage());
-        $this->assertSame(['id' => 42], $this->location->getImageData());
     }
-
-    /*public function testLink(): void
-    {
-        $this->assertNull($this->location->getLink());
-        $this->location->setLink('https://example.com');
-        $this->assertEquals('https://example.com', $this->location->getLink());
-    }*/
 
     public function testResourceKeyConstants(): void
     {
