@@ -204,9 +204,11 @@ class EventSmartContentProvider implements SmartContentProviderInterface
 
         $queryBuilder->select('DISTINCT '.$alias.'.id as id');
         $queryBuilder->addSelect($dimensionContentAlias.'.title');
-/*        $queryBuilder->addSelect($dimensionContentAlias.'.type');
+        $queryBuilder->addSelect($dimensionContentAlias . '.workflowPlace');
+        $queryBuilder->addSelect($dimensionContentAlias . '.workflowPublished');
+        $queryBuilder->addSelect($dimensionContentAlias.'.type');
         $queryBuilder->addSelect($dimensionContentAlias.'.startDate');
-        $queryBuilder->addSelect($dimensionContentAlias.'.endDate');*/
+        $queryBuilder->addSelect($dimensionContentAlias.'.endDate');
 
         $this->smartContentQueryEnhancer->addOrderBySelects($queryBuilder);
         $limit = isset($filters['limit']) ? (int) $filters['limit'] : null;
@@ -219,7 +221,8 @@ class EventSmartContentProvider implements SmartContentProviderInterface
         /** @var array{id: string, title: string, type: string}[] $result */
         $result = \array_map(
             function (array $item) {
-                /*
+
+                $dateFormat = $this->translator->trans('sulu_event.date_format', [], 'admin');
                 $type = $item['type'] ?? 'default';
                 $translationKey = $this->eventTypes[$type]['name'] ?? 'sulu_event.type.default';
 
@@ -228,21 +231,23 @@ class EventSmartContentProvider implements SmartContentProviderInterface
                 $dateString = '';
 
                 if ($startDate instanceof \DateTimeInterface) {
-                    $startStr = $startDate->format('d.m.Y');
+                    $startStr = $startDate->format($dateFormat);
                     $dateString = $startStr;
 
                     if ($endDate instanceof \DateTimeInterface) {
-                        $endStr = $endDate->format('d.m.Y');
+                        $endStr = $endDate->format($dateFormat);
                         if ($startStr !== $endStr) {
                             $dateString .= ' - '.$endStr;
                         }
                     }
-                }*/
+                }
 
                 return [
                     'id' => (string) $item['id'],
                     'title' => (string) ($item['title'] ?? ''),
-                    //'date' => $dateString,
+                    'date' => $dateString,
+                    'publishedState' => 'published' === ($item['workflowPlace'] ?? ''),
+                    'published' => $item['workflowPublished'] ?? null,
                     //'type' => $this->translator->trans($translationKey, [], 'admin'),
                 ];
             },

@@ -337,8 +337,12 @@ services:
         tags:
             - { name: twig.extension }
 
+    # Normalizer
     sulu_event.event_normalizer:
         class: Manuxi\SuluEventBundle\Content\Normalizer\EventNormalizer
+        arguments:
+            - '@translator'
+            - '@sulu_event.type_selection'
         tags:
             - { name: sulu_content.normalizer }
 

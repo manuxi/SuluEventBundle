@@ -225,6 +225,7 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
                                         'list_key' => Event::LIST_KEY_PUBLISHED,
                                         'display_properties' => [
                                             'title',
+                                            'date',
                                         ],
                                         'icon' => 'su-calendar',
                                         'label' => 'sulu_event.event_selection_label',
@@ -249,6 +250,7 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
                                         'list_key' => Event::LIST_KEY_PUBLISHED,
                                         'display_properties' => [
                                             'title',
+                                            'date'
                                         ],
                                         'icon' => 'su-calendar',
                                         'empty_text' => 'sulu_event.no_event_selected',

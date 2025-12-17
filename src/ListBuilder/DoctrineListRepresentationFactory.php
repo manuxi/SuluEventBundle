@@ -38,7 +38,6 @@ class DoctrineListRepresentationFactory
         array $parameters = [],
         ?string $listKey = null,
     ): PaginatedRepresentation {
-
         $listKey = $listKey ?? $resourceKey;
 
         /** @var DoctrineFieldDescriptor[] $fieldDescriptors */
@@ -93,6 +92,7 @@ class DoctrineListRepresentationFactory
         $list = $this->addGhostLocaleToListElements($list, $locale);
         $list = $this->addImagesToListElements($list, $locale);
         $list = $this->addColorsToListElements($list);
+        $list = $this->addDateToListElements($list, $locale);
         $list = $this->formatDateTimeElements($list, $locale);
         $list = $this->addPublishStateToListElements($list, $listKey);
 
@@ -208,56 +208,6 @@ class DoctrineListRepresentationFactory
                 } else {
                     $listElements[$key]['endDate'] = '';
                 }
-            }
-        }
-
-        return $listElements;
-    }
-
-    private function formatWithClockFormatX(array $listElements, ?string $locale): array
-    {
-        $dateFormat = $this->translator->trans('sulu_event.date_format', [], 'admin', $locale);
-        $hourLabel = $this->translator->trans('sulu_event.hour_label', [], 'admin', $locale);
-
-        foreach ($listElements as $key => $element) {
-            $startDate = $element['startDate'] ?? null;
-            $endDate = $element['endDate'] ?? null;
-
-            if (!$startDate instanceof \DateTimeImmutable) {
-                continue;
-            }
-
-            $startIsFullDay = '00:00:00' === $startDate->format('H:i:s');
-            $endIsFullDay = $endDate instanceof \DateTimeImmutable && '00:00:00' === $endDate->format('H:i:s');
-            $isSameDay = $endDate instanceof \DateTimeImmutable && $startDate->format('Y-m-d') === $endDate->format('Y-m-d');
-
-            // WICHTIG: Überschreibe mit String!
-            if ($isSameDay && $startIsFullDay && $endIsFullDay) {
-                $listElements[$key]['startDate'] = $startDate->format($dateFormat);
-                $listElements[$key]['endDate'] = $this->translator->trans('sulu_event.all_day', [], 'admin', $locale);
-            } elseif ($isSameDay && !$startIsFullDay && !$endIsFullDay && $endDate instanceof \DateTimeImmutable) {
-                $listElements[$key]['startDate'] = $startDate->format($dateFormat);
-
-                $startMinute = (int) $startDate->format('i');
-                if (0 === $startMinute) {
-                    $startTime = $startDate->format('H');
-                    $endTime = $endDate->format('H:i');
-                    $listElements[$key]['endDate'] = sprintf('%s-%s %s', $startTime, $endTime, $hourLabel);
-                } else {
-                    $startTime = $startDate->format('H:i');
-                    $endTime = $endDate->format('H:i');
-                    $listElements[$key]['endDate'] = sprintf('%s-%s %s', $startTime, $endTime, $hourLabel);
-                }
-            } elseif (!$endDate) {
-                $listElements[$key]['startDate'] = $startDate->format($dateFormat);
-                if ($startIsFullDay) {
-                    $listElements[$key]['endDate'] = $this->translator->trans('sulu_event.all_day', [], 'admin', $locale);
-                } else {
-                    $listElements[$key]['endDate'] = sprintf('%s %s', $startDate->format('H:i'), $hourLabel);
-                }
-            } else {
-                $listElements[$key]['startDate'] = $startDate->format($dateFormat);
-                $listElements[$key]['endDate'] = $endDate->format($dateFormat);
             }
         }
 
@@ -457,7 +407,6 @@ class DoctrineListRepresentationFactory
     private function addPublishStateToListElements(array $listElements, ?string $listKey = null): array
     {
         foreach ($listElements as $key => $element) {
-
             if ('events_published' === $listKey) {
                 $listElements[$key]['publishedState'] = true;
                 continue;
@@ -500,5 +449,31 @@ class DoctrineListRepresentationFactory
         }
 
         return null;
+    }
+
+    private function addDateToListElements(array $listElements, ?string $locale): array
+    {
+        $dateFormat = $this->translator->trans('sulu_event.date_format', [], 'admin', $locale);
+
+        foreach ($listElements as $key => $element) {
+            $startDate = $this->ensureDateTime($element['startDate'] ?? null);
+            $endDate = $this->ensureDateTime($element['endDate'] ?? null);
+
+            if (!$startDate) {
+                continue;
+            }
+
+            $dateString = $startDate->format($dateFormat);
+            if ($endDate) {
+                $endStr = $endDate->format($dateFormat);
+                if ($dateString !== $endStr) {
+                    $dateString .= ' - '.$endStr;
+                }
+            }
+
+            $listElements[$key]['date'] = $dateString;
+        }
+
+        return $listElements;
     }
 }

@@ -6,10 +6,18 @@ namespace Manuxi\SuluEventBundle\Content\Normalizer;
 
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
+use Manuxi\SuluEventBundle\Service\EventTypeSelect;
 use Sulu\Content\Application\ContentNormalizer\Normalizer\NormalizerInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class EventNormalizer implements NormalizerInterface
 {
+    public function __construct(
+        private TranslatorInterface $translator,
+        private EventTypeSelect $eventTypeSelect,
+    ) {
+    }
+
     public function getIgnoredAttributes(object $object): array
     {
         if (!$object instanceof EventDimensionContent) {
@@ -40,6 +48,28 @@ class EventNormalizer implements NormalizerInterface
         }
 
         $normalizedData['id'] = $event->getId();
+
+        // Add formatted date
+        $dateString = '';
+        $startDate = $object->getStartDate();
+        $endDate = $object->getEndDate();
+        $locale = $object->getLocale();
+        $dateFormat = $this->translator->trans('sulu_event.date_format', [], 'admin', $locale);
+
+        if ($startDate) {
+            $dateString = $startDate->format($dateFormat);
+            if ($endDate) {
+                $endStr = $endDate->format($dateFormat);
+                if ($dateString !== $endStr) {
+                    $dateString .= ' - ' . $endStr;
+                }
+            }
+        }
+        $normalizedData['date'] = $dateString;
+
+        // Add translated type name
+        $type = $object->getType() ?? 'default';
+        $normalizedData['typeName'] = $this->eventTypeSelect->getTypeName($type);
 
         $location = $object->getLocation();
         if (null !== $location) {
@@ -84,22 +114,6 @@ class EventNormalizer implements NormalizerInterface
             }
             $normalizedData['pdf']['id'] = $pdf->getId();
         }
-
-        /*
-        $image = $object->getImage();
-        if (null !== $image) {
-            $normalizedData['image'] = ['id' => $image->getId()];
-        } else {
-            $normalizedData['image'] = null;
-        }
-
-        $pdf = $object->getPdf();
-        if (null !== $pdf) {
-            $normalizedData['pdf'] = ['id' => $pdf->getId()];
-        } else {
-            $normalizedData['pdf'] = null;
-        }
-        */
 
         return $normalizedData;
     }
