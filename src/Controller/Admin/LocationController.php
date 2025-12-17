@@ -133,6 +133,7 @@ class LocationController extends AbstractRestController
             'link' => $location->getLink(),
             'location' => $location->getLocation(),
             'images' => $location->getImages(),
+            'premises' => $location->getPremises(),
         ];
 
         if ($image = $location->getImage()) {
@@ -237,6 +238,7 @@ class LocationController extends AbstractRestController
         $entity->setLocation($data['location'] ?? null);
         $entity->setImages($data['images'] ?? null);
         $entity->setLink($data['link'] ?? null);
+        $entity->setPremises($data['premises'] ?? null);
 
         if (array_key_exists('image', $data)) {
             $image = null;

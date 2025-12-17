@@ -19,10 +19,25 @@
         </join>
     </joins>
 
+    <joins name="image" ref="dimensionContent">
+        <join>
+            <entity-name>Sulu\Bundle\MediaBundle\Entity\Media</entity-name>
+            <field-name>dimensionContent.image</field-name>
+            <method>LEFT</method>
+        </join>
+    </joins>
+
     <properties>
         <property name="id" translation="sulu_admin.id" visibility="no">
             <field-name>id</field-name>
             <entity-name>Manuxi\SuluEventBundle\Entity\Event</entity-name>
+        </property>
+
+        <property name="image" visibility="always" translation="sulu_event.image" sortable="false">
+            <field-name>id</field-name>
+            <entity-name>Sulu\Bundle\MediaBundle\Entity\Media</entity-name>
+            <joins ref="image"/>
+            <transformer type="thumbnails"/>
         </property>
 
         <property name="title" visibility="always" searchability="yes" translation="sulu_event.title">
@@ -31,10 +46,11 @@
             <joins ref="dimensionContent"/>
         </property>
 
-        <property name="startDate" translation="sulu_event.start_date" type="datetime" visibility="yes">
+        <property name="startDate" translation="sulu_event.start_date" visibility="yes">
             <field-name>startDate</field-name>
             <entity-name>dimensionContent</entity-name>
             <joins ref="dimensionContent"/>
+            <transformer type="datetime"/>
         </property>
 
         <property name="endDate" translation="sulu_event.end_date" type="datetime" visibility="no">

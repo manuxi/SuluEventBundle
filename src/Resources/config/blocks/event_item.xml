@@ -34,10 +34,16 @@
                             <title>sulu_event.text</title>
                         </meta>
                     </property>
-                    <property name="location" type="single_location_selection" colspan="6">
+                    <property name="location" type="single_select" colspan="6">
                         <meta>
                             <title>sulu_event.location</title>
                         </meta>
+                        <params>
+                            <param name="values"
+                                   type="expression"
+                                   value="service('sulu_event.location_premises_selection').getValues()"
+                            />
+                        </params>
                     </property>
                     <property name="speaker" type="single_contact_selection" colspan="6">
                         <meta>

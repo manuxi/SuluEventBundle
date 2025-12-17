@@ -1,0 +1,46 @@
+<?xml version="1.0" ?>
+<form xmlns="http://schemas.sulu.io/template/template"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://schemas.sulu.io/template/template http://schemas.sulu.io/template/form-1.0.xsd"
+>
+    <key>location_contact</key>
+
+    <properties>
+        <section name="links">
+            <meta>
+                <title>sulu_event.header.links</title>
+            </meta>
+            <properties>
+                <property name="link" type="link" colspan="6">
+                    <meta>
+                        <title>sulu_event.link</title>
+                    </meta>
+                    <params>
+                        <param name="enable_anchor" value="true"/>
+                        <param name="enable_attributes" value="true"/>
+                    </params>
+                </property>
+
+                <property name="pdf" type="single_media_selection" colspan="6">
+                    <meta>
+                        <title>sulu_event.pdf</title>
+                    </meta>
+                    <params>
+                        <param name="types" value="document"/>
+                    </params>
+                </property>
+
+                <property name="email" type="email" colspan="6">
+                    <meta>
+                        <title>sulu_event.email</title>
+                    </meta>
+                </property>
+                <property name="phoneNumber" type="phone" colspan="6">
+                    <meta>
+                        <title>sulu_event.phone</title>
+                    </meta>
+                </property>
+            </properties>
+        </section>
+    </properties>
+</form>

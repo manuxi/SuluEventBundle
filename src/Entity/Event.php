@@ -19,7 +19,7 @@ class Event implements ContentRichEntityInterface
     use ContentRichEntityTrait;
 
     public const RESOURCE_KEY = 'events';
-    public const FORM_KEY = 'event_details';
+    public const FORM_KEY = 'event_detailed';
     public const LIST_KEY = 'events';
     public const LIST_KEY_PUBLISHED = 'events_published';
 

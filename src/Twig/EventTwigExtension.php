@@ -61,9 +61,10 @@ class EventTwigExtension extends AbstractExtension
     public function getFunctions(): array
     {
         return [
-            new TwigFunction('sulu_resolve_location', [$this, 'resolveLocation']),
-            new TwigFunction('sulu_resolve_event', [$this, 'resolveEvent']),
             new TwigFunction('sulu_get_events', [$this, 'getEvents']),
+            new TwigFunction('sulu_resolve_event', [$this, 'resolveEvent']),
+            new TwigFunction('sulu_resolve_location', [$this, 'resolveLocation']),
+            new TwigFunction('sulu_resolve_location_room', [$this, 'resolveLocationWithRoom']),
         ];
     }
 
@@ -109,6 +110,20 @@ class EventTwigExtension extends AbstractExtension
         }
 
         return $this->contentResolver->resolve($dimensionContent, $properties);
+    }
+
+    public function resolveLocationWithRoom(string $value): array
+    {
+        $parts = explode('_', $value, 2);
+        $locationId = (int) $parts[0];
+        $roomName = $parts[1] ?? null;
+
+        $location = $this->getLocationRepository()->find($locationId);
+
+        return [
+            'location' => $location,
+            'room' => $roomName,
+        ];
     }
 
     /**

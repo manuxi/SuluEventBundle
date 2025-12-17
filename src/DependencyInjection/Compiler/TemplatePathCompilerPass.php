@@ -22,7 +22,7 @@ class TemplatePathCompilerPass implements CompilerPassInterface
 
         $definition->addMethodCall('addPath', [
             $templatePath,
-            Event::TEMPLATE_TYPE // 'event_details'
+            Event::TEMPLATE_TYPE
         ]);
     }
 }

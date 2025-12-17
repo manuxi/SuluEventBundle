@@ -24,6 +24,7 @@
 
         <field name="location" type="json" nullable="true"/>
         <field name="images" type="json" nullable="true"/>
+        <field name="premises" type="json" nullable="true"/>
 
         <!-- PDF Field -->
         <many-to-one field="pdf" target-entity="Sulu\Bundle\MediaBundle\Entity\MediaInterface">

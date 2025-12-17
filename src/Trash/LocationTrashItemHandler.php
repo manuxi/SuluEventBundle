@@ -57,6 +57,7 @@ class LocationTrashItemHandler implements
             // Additional
             'link' => $resource->getLink(),
             'location' => $resource->getLocation(), // coordinates
+            'premises' => $resource->getPremises(),
             'notes' => $resource->getNotes(),
 
             // Media
@@ -88,54 +89,58 @@ class LocationTrashItemHandler implements
         // Basic address
         $location->setName($data['name']);
 
-        if (isset($data['street'])) {
+        if (array_key_exists('street', $data)) {
             $location->setStreet($data['street']);
         }
 
-        if (isset($data['number'])) {
+        if (array_key_exists('number', $data)) {
             $location->setNumber($data['number']);
         }
 
-        if (isset($data['postalCode'])) {
+        if (array_key_exists('postalCode', $data)) {
             $location->setPostalCode($data['postalCode']);
         }
 
-        if (isset($data['city'])) {
+        if (array_key_exists('city', $data)) {
             $location->setCity($data['city']);
         }
 
-        if (isset($data['state'])) {
+        if (array_key_exists('state', $data)) {
             $location->setState($data['state']);
         }
 
-        if (isset($data['countryCode'])) {
+        if (array_key_exists('countryCode', $data)) {
             $location->setCountryCode($data['countryCode']);
         }
 
         // Contact info
-        if (isset($data['email'])) {
+        if (array_key_exists('email', $data)) {
             $location->setEmail($data['email']);
         }
 
-        if (isset($data['phoneNumber'])) {
+        if (array_key_exists('phoneNumber', $data)) {
             $location->setPhoneNumber($data['phoneNumber']);
         }
 
         // Additional
-        if (isset($data['link'])) {
+        if (array_key_exists('link', $data)) {
             $location->setLink($data['link']);
         }
 
-        if (isset($data['location'])) {
+        if (array_key_exists('location', $data)) {
             $location->setLocation($data['location']);
         }
 
-        if (isset($data['notes'])) {
+        if (array_key_exists('premises', $data)) {
+            $location->setPremises($data['premises']);
+        }
+
+        if (array_key_exists('notes', $data)) {
             $location->setNotes($data['notes']);
         }
 
         // Media - image
-        if (isset($data['imageId'])) {
+        if (array_key_exists('imageId', $data) && $data['imageId']) {
             $image = $this->entityManager->find(MediaInterface::class, $data['imageId']);
             if ($image) {
                 $location->setImage($image);
@@ -143,12 +148,12 @@ class LocationTrashItemHandler implements
         }
 
         // Media - images (gallery)
-        if (isset($data['images'])) {
+        if (array_key_exists('images', $data)) {
             $location->setImages($data['images']);
         }
 
         // Media - PDF
-        if (isset($data['pdfId'])) {
+        if (array_key_exists('pdfId', $data) && $data['pdfId']) {
             $pdf = $this->entityManager->find(MediaInterface::class, $data['pdfId']);
             if ($pdf) {
                 $location->setPdf($pdf);

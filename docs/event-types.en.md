@@ -40,7 +40,7 @@ sulu_event:
 
 ## Usage
 
-### Admin Form (event_details.xml)
+### Admin Form (event|event_basic|event_detailed.xml)
 
 ```xml
 <property name="type" type="single_select">

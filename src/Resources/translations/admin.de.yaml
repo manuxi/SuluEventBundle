@@ -23,6 +23,7 @@ sulu_event:
     email: "E-Mail"
     phone: "Telefonnummer"
     gallery: "Bilder-Galerie"
+    supplement: "Ergänzung"
 
     # Publishing and state management
     publish: "veröffentlichen"
@@ -58,6 +59,7 @@ sulu_event:
         content_other: "Weiteres"
         content_blocks: "Inhaltsblöcke"
         links: "Links & Infos"
+        premises: "Räumlichkeiten"
         additional: "Zusätzliche Optionen"
         mandatory: "Verpflichtende Felder"
         optional: "Optionale Felder"
@@ -80,6 +82,12 @@ sulu_event:
         abstract_text_image: "Zusammenfassung, Text, Bild"
         abstract_text_images: "Zusammenfassung, Text, Galerie"
         event_item: "Programmpunkt"
+
+    # Template names
+    template:
+        basic: "Basic"
+        detailed: "Ausführlich"
+        session: "Multi-Session"
 
     # Form titles
     form:

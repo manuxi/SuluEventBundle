@@ -114,6 +114,13 @@ services:
             - '%sulu_event.default_type%'
         public: true
 
+    # LocationPremises Service
+    sulu_event.location_premises_selection:
+        class: Manuxi\SuluEventBundle\Service\LocationPremisesSelection
+        arguments:
+            - '@Manuxi\SuluEventBundle\Repository\LocationRepository'
+        public: true
+
     # Property Resolvers
     sulu_event.property_resolver.single_event_selection:
         class: Manuxi\SuluEventBundle\Content\PropertyResolver\SingleEventSelectionPropertyResolver
@@ -288,6 +295,18 @@ services:
         tags:
             - { name: sulu_trash.store_trash_item_handler }
             - { name: sulu_trash.restore_trash_item_handler }
+            - { name: sulu_trash.restore_configuration_provider }
+
+    Manuxi\SuluEventBundle\Trash\LocationTrashItemHandler:
+        class: Manuxi\SuluEventBundle\Trash\LocationTrashItemHandler
+        arguments:
+            - '@sulu_trash.trash_item_repository'
+            - '@doctrine.orm.entity_manager'
+            - '@sulu_trash.doctrine_restore_helper'
+            - '@sulu_activity.domain_event_collector'
+        tags:
+            - { name: sulu_trash.store_trash_item_handler, alias: locations }
+            - { name: sulu_trash.restore_trash_item_handler, alias: locations }
             - { name: sulu_trash.restore_configuration_provider }
 
     # Twig Extensions

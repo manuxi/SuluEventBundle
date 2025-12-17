@@ -70,6 +70,9 @@ class Location
     #[ORM\Column(type: Types::JSON, nullable: true)]
     private ?array $images = null;
 
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $premises = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -233,8 +236,6 @@ class Location
         return $this;
     }
 
-
-
     public function getImages(): ?array
     {
         return $this->images ?? [];
@@ -243,6 +244,19 @@ class Location
     public function setImages(?array $images): self
     {
         $this->images = $images;
+
+        return $this;
+    }
+
+    #[Serializer\Groups(['default', 'admin', 'locations', 'location_details'])]
+    public function getPremises(): ?array
+    {
+        return $this->premises;
+    }
+
+    public function setPremises(?array $premises): self
+    {
+        $this->premises = $premises;
 
         return $this;
     }

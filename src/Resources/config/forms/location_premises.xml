@@ -1,0 +1,40 @@
+<?xml version="1.0" ?>
+<form xmlns="http://schemas.sulu.io/template/template"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://schemas.sulu.io/template/template http://schemas.sulu.io/template/form-1.0.xsd"
+>
+    <key>location_premises</key>
+
+    <properties>
+        <section name="premises">
+            <meta>
+                <title>sulu_event.header.premises</title>
+            </meta>
+            <properties>
+                <block name="premises" default-type="room" minOccurs="0">
+                    <types>
+                        <type name="room">
+                            <meta>
+                                <title>sulu_event.header.premises</title>
+                            </meta>
+                            <properties>
+                                <property name="name" type="text_line" mandatory="true" colspan="6">
+                                    <meta>
+                                        <title>sulu_admin.name</title>
+                                    </meta>
+                                    <tag name="sulu.block_preview" priority="2048"/>
+                                </property>
+                                <property name="supplement" type="text_line" colspan="6">
+                                    <meta>
+                                        <title>sulu_event.supplement</title>
+                                    </meta>
+                                    <tag name="sulu.block_preview" priority="1024"/>
+                                </property>
+                            </properties>
+                        </type>
+                    </types>
+                </block>
+            </properties>
+        </section>
+    </properties>
+</form>

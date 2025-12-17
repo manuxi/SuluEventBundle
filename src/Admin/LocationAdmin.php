@@ -23,8 +23,12 @@ class LocationAdmin extends Admin
     public const LIST_VIEW = 'sulu_event.location.list';
     public const ADD_FORM_VIEW = 'sulu_event.location.add_form';
     public const ADD_FORM_DETAILS_VIEW = 'sulu_event.location.add_form.details';
+    public const ADD_FORM_CONTACT_VIEW = 'sulu_event.location.add_form.contact';
+    public const ADD_FORM_PREMISES_VIEW = 'sulu_event.location.add_form.premises';
     public const EDIT_FORM_VIEW = 'sulu_event.location.edit_form';
     public const EDIT_FORM_DETAILS_VIEW = 'sulu_event.location.edit_form.details';
+    public const EDIT_FORM_CONTACT_VIEW = 'sulu_event.location.edit_form.contact';
+    public const EDIT_FORM_PREMISES_VIEW = 'sulu_event.location.edit_form.premises';
 
     public function __construct(
         private ViewBuilderFactoryInterface $viewBuilderFactory,
@@ -95,6 +99,24 @@ class LocationAdmin extends Admin
                 ->setParent(static::ADD_FORM_VIEW);
             $viewCollection->add($addDetailsFormView);
 
+            $addContactFormView = $this->viewBuilderFactory->createFormViewBuilder(self::ADD_FORM_CONTACT_VIEW, '/contact')
+                ->setResourceKey(Location::RESOURCE_KEY)
+                ->setFormKey('location_contact')
+                ->setTabTitle('sulu_contact.contact_details')
+                ->setEditView(static::EDIT_FORM_VIEW)
+                ->addToolbarActions([new ToolbarAction('sulu_admin.save')])
+                ->setParent(static::ADD_FORM_VIEW);
+            $viewCollection->add($addContactFormView);
+
+            $addPremisesFormView = $this->viewBuilderFactory->createFormViewBuilder(self::ADD_FORM_PREMISES_VIEW, '/premises')
+                ->setResourceKey(Location::RESOURCE_KEY)
+                ->setFormKey('location_premises')
+                ->setTabTitle('sulu_event.header.premises')
+                ->setEditView(static::EDIT_FORM_VIEW)
+                ->addToolbarActions([new ToolbarAction('sulu_admin.save')])
+                ->setParent(static::ADD_FORM_VIEW);
+            $viewCollection->add($addPremisesFormView);
+
             $editFormView = $this->viewBuilderFactory->createResourceTabViewBuilder(static::EDIT_FORM_VIEW, '/locations/:id')
                 ->setResourceKey(Location::RESOURCE_KEY)
                 ->setBackView(static::LIST_VIEW)
@@ -108,6 +130,22 @@ class LocationAdmin extends Admin
                 ->addToolbarActions($formToolbarActions)
                 ->setParent(static::EDIT_FORM_VIEW);
             $viewCollection->add($editDetailsFormView);
+
+            $editContactFormView = $this->viewBuilderFactory->createFormViewBuilder(static::EDIT_FORM_CONTACT_VIEW, '/contact')
+                ->setResourceKey(Location::RESOURCE_KEY)
+                ->setFormKey('location_contact')
+                ->setTabTitle('sulu_contact.contact_details')
+                ->addToolbarActions($formToolbarActions)
+                ->setParent(static::EDIT_FORM_VIEW);
+            $viewCollection->add($editContactFormView);
+
+            $editPremisesFormView = $this->viewBuilderFactory->createFormViewBuilder(static::EDIT_FORM_PREMISES_VIEW, '/premises')
+                ->setResourceKey(Location::RESOURCE_KEY)
+                ->setFormKey('location_premises')
+                ->setTabTitle('sulu_event.header.premises')
+                ->addToolbarActions($formToolbarActions)
+                ->setParent(static::EDIT_FORM_VIEW);
+            $viewCollection->add($editPremisesFormView);
         }
     }
 }

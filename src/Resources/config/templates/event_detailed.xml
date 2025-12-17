@@ -4,9 +4,9 @@
           xmlns:xi="http://www.w3.org/2001/XInclude"
           xsi:schemaLocation="http://schemas.sulu.io/template/template http://schemas.sulu.io/template/template-1.0.xsd"
 >
-    <key>event</key>
+    <key>event_detailed</key>
     <meta>
-        <title>sulu_event.template.session</title>
+        <title>sulu_event.template.detailed</title>
     </meta>
     <properties>
         <section name="header_container" colspan="12">
@@ -166,9 +166,19 @@
                 <title>sulu_event.header.content_blocks</title>
             </meta>
             <properties>
-                <block name="details" default-type="event_item" minOccurs="0">
+                <block name="details" default-type="abstract_text" minOccurs="0">
                     <types>
-                        <xi:include href="../blocks/event_item.xml"
+                        <xi:include href="../blocks/title_text.xml"
+                                    xpointer="xmlns(sulu=http://schemas.sulu.io/template/template)xpointer(/sulu:properties/sulu:block/sulu:types/*)"/>
+                        <xi:include href="../blocks/title_text_image.xml"
+                                    xpointer="xmlns(sulu=http://schemas.sulu.io/template/template)xpointer(/sulu:properties/sulu:block/sulu:types/*)"/>
+                        <xi:include href="../blocks/title_text_images.xml"
+                                    xpointer="xmlns(sulu=http://schemas.sulu.io/template/template)xpointer(/sulu:properties/sulu:block/sulu:types/*)"/>
+                        <xi:include href="../blocks/abstract_text.xml"
+                                    xpointer="xmlns(sulu=http://schemas.sulu.io/template/template)xpointer(/sulu:properties/sulu:block/sulu:types/*)"/>
+                        <xi:include href="../blocks/abstract_text_image.xml"
+                                    xpointer="xmlns(sulu=http://schemas.sulu.io/template/template)xpointer(/sulu:properties/sulu:block/sulu:types/*)"/>
+                        <xi:include href="../blocks/abstract_text_images.xml"
                                     xpointer="xmlns(sulu=http://schemas.sulu.io/template/template)xpointer(/sulu:properties/sulu:block/sulu:types/*)"/>
                     </types>
                 </block>
