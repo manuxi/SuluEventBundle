@@ -1,8 +1,13 @@
 sulu_event:
     events: "Events"
     location: "Location"
+    speaker: "Speaker"
+    hour_label: ""
     action:
         website: "Visit Website"
+    salutation:
+        male: "Mr."
+        female: "Mrs."
 search:
     index:
         abbreviations: "Events"

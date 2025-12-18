@@ -103,7 +103,7 @@ sulu_event:
     enable_event: "Veranstaltung aktivieren"
 
     # Location related translations
-    speaker: "Sprecher"
+    speaker: "Referent"
     location: "Veranstaltungsort"
     locations: "Veranstaltungsorte"
     select_location: "Veranstaltungsort wählen"

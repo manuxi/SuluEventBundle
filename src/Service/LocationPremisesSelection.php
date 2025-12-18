@@ -33,8 +33,8 @@ class LocationPremisesSelection
                         // Value format: "LocationID_PremiseName"
                         // Display: "Location Name » Premise Name"
                         $values[] = [
-                            'name' => $location->getName() . ' » ' . $premise['name'],
-                            'value' => $location->getId() . '_' . $premise['name'],
+                            'title' => $location->getName() . ' » ' . $premise['name'],
+                            'name' => $location->getId() . '_' . $premise['name'],
                         ];
                     }
                 }
