@@ -27,6 +27,7 @@ class EventNormalizer implements NormalizerInterface
         return [
             'event',
             'image',
+            'images',
             'pdf',
             'speaker',
             'author',
@@ -105,6 +106,15 @@ class EventNormalizer implements NormalizerInterface
                 $normalizedData['image'] = [];
             }
             $normalizedData['image']['id'] = $image->getId();
+        }
+
+        $images = $object->getImages();
+        if (empty($images)) {
+            $normalizedData['images'] = ['ids' => []];
+        } elseif (!isset($images['ids'])) {
+            $normalizedData['images'] = ['ids' => $images];
+        } else {
+            $normalizedData['images'] = $images;
         }
 
         $pdf = $object->getPdf();
