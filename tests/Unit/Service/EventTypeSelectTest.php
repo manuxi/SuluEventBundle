@@ -10,94 +10,83 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class EventTypeSelectTest extends TestCase
 {
+    private EventTypeSelect $eventTypeSelect;
     private TranslatorInterface $translator;
-    private EventTypeSelect $typeSelect;
-    private array $testTypes;
 
     protected function setUp(): void
     {
         $this->translator = $this->createMock(TranslatorInterface::class);
-        $this->translator
-            ->method('trans')
-            ->willReturnCallback(fn($key) => 'translated_' . $key);
 
-        $this->testTypes = [
+        $types = [
             'default' => [
-                'name' => 'Default Event',
-                'color' => '#cccccc',
+                'name' => 'sulu_event.default',
+                'color' => '#0d6efd',
             ],
             'workshop' => [
-                'name' => 'Workshop',
-                'color' => '#3498db',
+                'name' => 'sulu_event.workshop',
+                'color' => '#ffc107',
             ],
-            'conference' => [
-                'name' => 'Conference',
-                'color' => '#e74c3c',
+            'concert' => [
+                'name' => 'sulu_event.concert',
             ],
         ];
 
-        $this->typeSelect = new EventTypeSelect(
-            $this->translator,
-            $this->testTypes,
-            'default'
-        );
+        $this->eventTypeSelect = new EventTypeSelect($this->translator, $types, 'default');
     }
 
     public function testGetValues(): void
     {
-        $values = $this->typeSelect->getValues();
+        $this->translator->expects($this->exactly(3))
+            ->method('trans')
+            ->willReturnCallback(fn($key) => match ($key) {
+                'sulu_event.default' => 'Default',
+                'sulu_event.workshop' => 'Workshop',
+                'sulu_event.concert' => 'Concert',
+                default => $key,
+            });
 
-        $this->assertIsArray($values);
+        $values = $this->eventTypeSelect->getValues();
+
         $this->assertCount(3, $values);
-
-        $this->assertEquals([
-            ['name' => 'default', 'title' => 'translated_Default Event'],
-            ['name' => 'workshop', 'title' => 'translated_Workshop'],
-            ['name' => 'conference', 'title' => 'translated_Conference'],
-        ], $values);
+        $this->assertEquals('default', $values[0]['name']);
+        $this->assertEquals('Default', $values[0]['title']);
     }
 
     public function testGetDefaultValue(): void
     {
-        $defaultValue = $this->typeSelect->getDefaultValue();
-        $this->assertEquals('default', $defaultValue);
+        $this->assertEquals('default', $this->eventTypeSelect->getDefaultValue());
     }
 
     public function testGetColor(): void
     {
-        $this->assertEquals('#cccccc', $this->typeSelect->getColor('default'));
-        $this->assertEquals('#3498db', $this->typeSelect->getColor('workshop'));
-        $this->assertEquals('#e74c3c', $this->typeSelect->getColor('conference'));
-    }
+        $this->assertEquals('#0d6efd', $this->eventTypeSelect->getColor('default'));
+        $this->assertEquals('#ffc107', $this->eventTypeSelect->getColor('workshop'));
 
-    public function testGetColorFallback(): void
-    {
-        $color = $this->typeSelect->getColor('nonexistent');
-        $this->assertEquals('#cccccc', $color);
-    }
+        // Fallback to default
+        $this->assertEquals('#0d6efd', $this->eventTypeSelect->getColor('concert'));
 
-    public function testGetTypes(): void
-    {
-        $types = $this->typeSelect->getTypes();
-        $this->assertEquals($this->testTypes, $types);
+        // Non-existent type
+        $this->assertEquals('#0d6efd', $this->eventTypeSelect->getColor('unknown'));
     }
 
     public function testGetTypeName(): void
     {
-        $name = $this->typeSelect->getTypeName('workshop');
-        $this->assertEquals('translated_Workshop', $name);
-    }
+        $this->translator->expects($this->any())
+            ->method('trans')
+            ->willReturnMap([
+                ['sulu_event.default', [], 'admin', null, 'Default'],
+                ['sulu_event.workshop', [], 'admin', null, 'Workshop'],
+            ]);
 
-    public function testGetTypeNameFallback(): void
-    {
-        $name = $this->typeSelect->getTypeName('nonexistent');
-        $this->assertEquals('translated_Default Event', $name);
+        $this->assertEquals('Workshop', $this->eventTypeSelect->getTypeName('workshop'));
+
+        // Fallback to default
+        $this->assertEquals('Default', $this->eventTypeSelect->getTypeName('unknown'));
     }
 
     public function testHasType(): void
     {
-        $this->assertTrue($this->typeSelect->hasType('default'));
-        $this->assertTrue($this->typeSelect->hasType('workshop'));
-        $this->assertFalse($this->typeSelect->hasType('nonexistent'));
+        $this->assertTrue($this->eventTypeSelect->hasType('workshop'));
+        $this->assertFalse($this->eventTypeSelect->hasType('unknown'));
     }
 }

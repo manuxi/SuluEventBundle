@@ -61,7 +61,7 @@ class SettingsAdminTest extends TestCase
         // Assert
         $this->assertIsArray($contexts);
         $this->assertArrayHasKey('Sulu', $contexts);
-        $this->assertArrayHasKey('Events', $contexts['Sulu']); // Changed from 'Event' to 'Events'
+        $this->assertArrayHasKey('Events', $contexts['Sulu']);
         $this->assertArrayHasKey(EventSettings::SECURITY_CONTEXT, $contexts['Sulu']['Events']);
     }
 
@@ -69,7 +69,7 @@ class SettingsAdminTest extends TestCase
     {
         // Act
         $contexts = $this->settingsAdmin->getSecurityContexts();
-        $permissions = $contexts['Sulu']['Events'][EventSettings::SECURITY_CONTEXT]; // Changed from 'Event' to 'Events'
+        $permissions = $contexts['Sulu']['Events'][EventSettings::SECURITY_CONTEXT];
 
         // Assert
         $this->assertCount(2, $permissions);
@@ -81,7 +81,7 @@ class SettingsAdminTest extends TestCase
     {
         // Act
         $contexts = $this->settingsAdmin->getSecurityContexts();
-        $permissions = $contexts['Sulu']['Events'][EventSettings::SECURITY_CONTEXT]; // Changed from 'Event' to 'Events'
+        $permissions = $contexts['Sulu']['Events'][EventSettings::SECURITY_CONTEXT];
 
         // Assert
         $this->assertNotContains(PermissionTypes::ADD, $permissions);
@@ -204,7 +204,7 @@ class SettingsAdminTest extends TestCase
 
         // Expect: 1 tab view + 3 form views (General, Calendar, Breadcrumbs)
         $viewCollection
-            ->expects($this->exactly(4)) // Changed from 2 to 4
+            ->expects($this->exactly(4))
             ->method('add');
 
         // Act
