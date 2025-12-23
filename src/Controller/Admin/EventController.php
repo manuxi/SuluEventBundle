@@ -92,7 +92,8 @@ class EventController extends AbstractRestController
     public function getAction(Request $request, int $id): Response
     {
         /** @var Event|null $event */
-        $event = $this->entityManager->getRepository(Event::class)->findOneBy(['id' => $id]);
+        //$event = $this->entityManager->getRepository(Event::class)->findOneBy(['id' => $id]);
+        $event = $this->entityManager->getRepository(Event::class)->findById((int) $id);
 
         if (!$event) {
             throw new NotFoundHttpException();
@@ -152,7 +153,8 @@ class EventController extends AbstractRestController
     public function postTriggerAction(string $id, Request $request): Response
     {
         /** @var Event|null $event */
-        $event = $this->entityManager->getRepository(Event::class)->findOneBy(['id' => $id]);
+        //$event = $this->entityManager->getRepository(Event::class)->findOneBy(['id' => $id]);
+        $event = $this->entityManager->getRepository(Event::class)->findById((int) $id);
 
         if (!$event) {
             throw new NotFoundHttpException();
@@ -251,7 +253,8 @@ class EventController extends AbstractRestController
     public function putAction(Request $request, int $id): Response
     {
         /** @var Event|null $event */
-        $event = $this->entityManager->getRepository(Event::class)->findOneBy(['id' => $id]);
+        //$event = $this->entityManager->getRepository(Event::class)->findOneBy(['id' => $id]);
+        $event = $this->entityManager->getRepository(Event::class)->findById((int) $id);
 
         if (!$event) {
             throw new NotFoundHttpException();
@@ -300,7 +303,8 @@ class EventController extends AbstractRestController
     public function deleteAction(Request $request, int $id): Response
     {
         /** @var Event $event */
-        $event = $this->entityManager->find(Event::class, $id);
+        //$event = $this->entityManager->find(Event::class, $id);
+        $event = $this->entityManager->getRepository(Event::class)->findById((int) $id);
 
         if (!$event) {
             throw new NotFoundHttpException();

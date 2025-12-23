@@ -43,7 +43,14 @@ class EventRepository extends ServiceEntityRepository
 
     public function findById(int $id): ?Event
     {
-        return $this->find($id);
+        //return $this->find($id);
+        $qb = $this->createQueryBuilder('event')
+            ->leftJoin('event.dimensionContents', 'dimensionContent')
+            ->addSelect('dimensionContent')
+            ->where('event.id = :id')
+            ->setParameter('id', $id);
+
+        return $qb->getQuery()->getOneOrNullResult();
     }
 
     public function findByIds(array $ids, string $locale, string $stage = DimensionContentInterface::STAGE_LIVE): array
