@@ -13,7 +13,7 @@ It enables the creation and management of events with detailed information, loca
 Advanced features such as recurring events, a calendar frontend, iCal export and social media integration are also included.
 This bundle is based on the [Sulu Workshop](https://github.com/sulu/sulu-workshop) and has been equipped with more and more features over time.
 
-![img.png](docs/img/template-event.en.png)
+![img.png](docs/img/template.multi-session.en.png)
 
 ## ✨ Features
 

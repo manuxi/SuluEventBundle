@@ -10,7 +10,7 @@ Standorte werden im Sulu-Admin-Panel unter **Events > Standorte** verwaltet.
 
 ### Standort-Eigenschaften
 
-![img.png](img/locations.de.png)
+![Location Form](img/locations.de.png)
 
 - **Name**: Anzeigename des Standorts
 - **Straße**: Straßenadresse
@@ -199,3 +199,25 @@ Für korrektes Event-Markup Standortdaten einbeziehen:
 }
 </script>
 ```
+
+### Standort-Räumlichkeiten
+
+![Location Premises](img/locations.premises.de.png)
+
+Zu jedem Standort können Räumlichkeiten angelegt werden. Diese können in den Blocks des Multi-Session-Template gewählt werden, um einen Programmpunkt einem Raum zuweisen zu können.
+
+```xml
+<property name="location" type="single_select" colspan="6">
+    <meta>
+        <title>sulu_event.location</title>
+    </meta>
+    <params>
+        <param name="values"
+               type="expression"
+               value="service('sulu_event.location_premises_selection').getValues()"
+        />
+    </params>
+</property>
+```
+
+![Location Premises Selection](img/locations.premises.selection.en.png)

@@ -1,0 +1,5 @@
+sulu_admin:
+    templates:
+        event:
+            directories:
+                - "%kernel.project_dir%/config/templates/events"

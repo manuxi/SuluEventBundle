@@ -185,7 +185,7 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
                         Event::TEMPLATE_TYPE => [
                             'default_type' => Event::TEMPLATE_TYPE,
                             'directories' => [
-                                __DIR__.'/../Resources/config/templates',
+                                __DIR__.'/../Resources/config/templates/events',
                             ],
                         ],
                     ],

@@ -10,7 +10,7 @@ Locations are managed in the Sulu admin panel under **Events > Locations**.
 
 ### Location Properties
 
-![img.png](img/locations.en.png)
+![Location Properties](img/locations.en.png)
 
 - **Name**: Display name of the location
 - **Street**: Street address
@@ -209,3 +209,25 @@ For proper event markup, include location data:
 </script>
 ```
 
+### Location Premises Properties
+
+![Location Premises Properties](img/locations.premises.en.png)
+
+Premises can be created for each location. These can be selected in the blocks of the multi-session template in order to assign a agenda item to a room.
+
+
+```xml
+<property name="location" type="single_select" colspan="6">
+    <meta>
+        <title>sulu_event.location</title>
+    </meta>
+    <params>
+        <param name="values"
+               type="expression"
+               value="service('sulu_event.location_premises_selection').getValues()"
+        />
+    </params>
+</property>
+```
+
+![Location Premises Selection](img/locations.premises.selection.en.png)

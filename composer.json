@@ -20,7 +20,7 @@
         "ext-simplexml": "*",
         "php": "^8.2",
         "doctrine/doctrine-bundle": "^2.13",
-        "sulu/sulu": "^3.0",
+        "sulu/sulu": "3.0.0",
         "symfony/config": "^6.2 | ^7.0",
         "symfony/dependency-injection": "^6.2 | ^7.0",
         "symfony/framework-bundle": "^6.2 | ^7.0",
