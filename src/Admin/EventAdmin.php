@@ -206,21 +206,6 @@ class EventAdmin extends Admin
                         )
                         ->setParent($insightsResourceTabViewName)
                 );
-
-                $viewCollection->add(
-                    $this->viewBuilderFactory
-                        ->createListViewBuilder(
-                            $insightsResourceTabViewName.'.versions',
-                            '/versions'
-                        )
-                        ->setResourceKey($resourceKey)
-                        ->setListKey('events_versions')
-                        ->setTabTitle('sulu_admin.versions')
-                        ->addListAdapters(['table'])
-                        ->disableSelection()
-                        ->addAdapterOptions(['table' => ['show_header' => true]])
-                        ->setParent($insightsResourceTabViewName)
-                );
             }
         }
     }

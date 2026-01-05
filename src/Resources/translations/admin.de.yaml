@@ -430,4 +430,5 @@ sulu_activity:
             modified: "{userFullName} hat die Einstellungen für Veranstaltungen geändert."
 
 sulu_admin:
-    smart_content_label: "{count, plural, =1{# Veranstaltung ausgewählt} other{# Veranstaltungen ausgewählt}}"
+    version: "Version"
+    smart_content_label: "{count, plural, =1{# Event selected} other{# Events selected}}"

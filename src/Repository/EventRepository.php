@@ -41,9 +41,24 @@ class EventRepository extends ServiceEntityRepository
         parent::__construct($registry, Event::class);
     }
 
+    public function findAll(): array
+    {
+        $queryBuilder = $this->createQueryBuilder('event')
+            ->leftJoin('event.dimensionContents', 'dimensionContent')
+            ->addSelect('dimensionContent');
+
+        return $queryBuilder->getQuery()->getResult();
+    }
+
     public function findById(int $id): ?Event
     {
-        return $this->find($id);
+        $queryBuilder = $this->createQueryBuilder('event')
+            ->leftJoin('event.dimensionContents', 'dimensionContent')
+            ->addSelect('dimensionContent')
+            ->where('event.id = :id')
+            ->setParameter('id', $id);
+
+        return $queryBuilder->getQuery()->getOneOrNullResult();
     }
 
     public function findByIds(array $ids, string $locale, string $stage = DimensionContentInterface::STAGE_LIVE): array

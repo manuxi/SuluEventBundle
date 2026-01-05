@@ -36,7 +36,6 @@ class EventSitemapProviderTest extends TestCase
         );
     }
 
-    /*
     public function testBuild(): void
     {
         $portalInfo = $this->createMock(PortalInformation::class);
@@ -112,14 +111,12 @@ class EventSitemapProviderTest extends TestCase
         $this->assertEquals('de', $alternateLinks['de']->getLocale());
         $this->assertEquals('http://localhost/event-1-de', $alternateLinks['de']->getHref());
     }
-    */
 
     public function testGetAlias(): void
     {
         $this->assertEquals('events', $this->provider->getAlias());
     }
 
-    /*
     public function testGetMaxPage(): void
     {
         $portalInfo = $this->createMock(PortalInformation::class);
@@ -146,5 +143,4 @@ class EventSitemapProviderTest extends TestCase
         // PAGE_SIZE is 10000. 15000 / 10000 = 1.5 => ceil => 2
         $this->assertEquals(2, $maxPage);
     }
-    */
 }

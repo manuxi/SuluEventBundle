@@ -416,3 +416,7 @@ sulu_activity:
         # Settings activities
         event_settings:
             modified: "{userFullName} modified the settings for events."
+
+sulu_admin:
+    version: "Version"
+    smart_content_label: "{count, plural, =1{# Veranstaltung ausgewählt} other{# Veranstaltungen ausgewählt}}"
