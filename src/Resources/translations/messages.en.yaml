@@ -3,6 +3,12 @@ sulu_event:
     location: "Location"
     speaker: "Speaker"
     hour_label: ""
+    clock: ""
+    from: "from"
+    to: "to"
+    until: "until"
+    at: "At"
+    footer: "Footer"
     action:
         website: "Visit Website"
     salutation:

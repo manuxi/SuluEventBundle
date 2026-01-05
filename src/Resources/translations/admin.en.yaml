@@ -3,6 +3,7 @@ sulu_event:
     # Formats
     date_format: 'm/d/Y'
     datetime_format: 'm/d/Y h:i A'
+
     # General event properties
     id: "Id"
     name: "Name"

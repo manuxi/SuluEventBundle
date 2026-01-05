@@ -3,6 +3,12 @@ sulu_event:
     location: "Veranstaltungsort"
     speaker: "Referent/in"
     hour_label: "Uhr"
+    clock: "Uhr"
+    from: "von"
+    to: "bis"
+    until: "bis"
+    at: "Im"
+    footer: "Fußnoten"
     action:
         website: "Website besuchen"
     salutation:

@@ -1,4 +1,4 @@
-<div class="block-event-item item py-3 clearfix">
+<div class="block-event-item item clearfix">
     {% if content.tags is defined and content.tags is not empty %}
         <div class="float-end">
             {% for tag in content.tags %}
@@ -17,30 +17,34 @@
     {% endif %}
 
     <div class="event-meta mb-2">
-        {% if content.startDate is not empty %}
-            <span class="badge bg-secondary">
-                {% if content.startDate|date('Ymd') == content.endDate|date('Ymd') %}
+        {%- if content.startDate is not empty -%}
+            {#<span class="badge bg-secondary">#}
+            <h3 class="h5 mb-3 text-muted">
+                {%- if content.startDate|date('Ymd') == content.endDate|date('Ymd') -%}
                     {{ content.startDate|format_datetime('long', 'none', locale=app.request.locale) }}
                     {{ content.startDate|format_datetime('none', 'short', locale=app.request.locale) }}
-                    {% if content.endDate is not empty %}
-                        - {{ content.endDate|format_datetime('none', 'short', locale=app.request.locale) }} {{ 'sulu_event.hour_label'|trans }}
-                    {% endif %}
-                {% else %}
+                    {%- if content.endDate is not empty -%}
+                        {{ ' ' ~ 'sulu_event.until'|trans ~ ' ' }}
+                        {{ content.endDate|format_datetime('none', 'short', locale=app.request.locale) }} {{ 'sulu_event.hour_label'|trans }}
+                    {%- endif -%}
+                {%- else -%}
                     {{ content.startDate|format_datetime('full', 'short', locale=app.request.locale) }}
-                    {% if content.endDate is not empty %}
-                        - {{ content.endDate|format_datetime('full', 'short', locale=app.request.locale) }}
-                    {% endif %}
-                {% endif %}
+                    {%- if content.endDate is not empty -%}
+                        {{ ' ' ~ 'sulu_event.until'|trans ~ ' ' }}
+                        {{ content.endDate|format_datetime('full', 'short', locale=app.request.locale) }}
+                    {%- endif -%}
+                {%- endif -%}
 
-                {% if locationData and locationData.room %}
+                {%- if locationData and locationData.room -%}
                     , {{ locationData.room }}
-                {% endif %}
-            </span>
-        {% endif %}
+                {%- endif -%}
+            </h3>
+            {#</span>#}
+        {%- endif -%}
     </div>
 
     {% if content.abstract|default %}
-        <div class="abstract lead mb-3">
+        <div class="fw-bold fst-italic abstract mb-3">
             {{ content.abstract|raw }}
         </div>
     {% endif %}

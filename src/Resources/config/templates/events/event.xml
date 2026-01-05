@@ -168,7 +168,7 @@
             <properties>
                 <block name="details" default-type="event_item" minOccurs="0">
                     <types>
-                        <xi:include href="../blocks/event_item.xml"
+                        <xi:include href="../includes/events/blocks/event_item.xml"
                                     xpointer="xmlns(sulu=http://schemas.sulu.io/template/template)xpointer(/sulu:properties/sulu:block/sulu:types/*)"/>
                     </types>
                 </block>

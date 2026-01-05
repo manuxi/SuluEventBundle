@@ -5,155 +5,187 @@
         {% set eventsSettings = load_event_settings() %}
     {% endif %}
 
-    <div class="container">
+    {% set timeframe = '' %}
+    {% if event.startDate %}
+        {% set startDay = event.startDate|format_datetime('full', 'none', locale=app.request.getLocale()) %}
+        {% set startTime = event.startDate|format_datetime('none', 'short', locale=app.request.getLocale()) %}
+
+        {% if event.endDate %}
+            {% set endDay = event.endDate|format_datetime('full', 'none', locale=app.request.getLocale()) %}
+
+            {% set endTime = event.endDate|format_datetime('none', 'short', locale=app.request.getLocale()) %}
+
+            {% if startDay == endDay %}
+                {# Same Day: "Montag, 1. Dezember 2025 von 15:00 bis 20:00 Uhr" #}
+                {% set timeframe = startDay ~ ' ' ~ 'sulu_event.from'|trans ~ ' ' ~ startTime ~ ' ' ~ 'sulu_event.to'|trans ~ ' ' ~ endTime ~ ' ' ~ 'sulu_event.clock'|trans %}
+            {% else %}
+                {% set startDayShort = event.startDate|format_datetime('long', 'none', locale=app.request.getLocale()) %}
+                {% set endDayShort = event.endDate|format_datetime('long', 'none', locale=app.request.getLocale()) %}
+                {# Multi Day: "Montag, 1. Dezember 2025 08:00 Uhr bis Mittwoch, 3. Dezember 2025 17:15 Uhr" #}
+                {% set timeframe = startDayShort ~ ', ' ~ startTime ~ ' ' ~ 'sulu_event.clock'|trans ~ ' ' ~ 'sulu_event.until'|trans ~ ' ' ~ endDayShort ~ ', ' ~ endTime ~ ' ' ~ 'sulu_event.clock'|trans %}
+            {% endif %}
+        {% else %}
+            {# Open End or Single Point: "Montag, 1. Dezember 2025 ab 15:00 Uhr" #}
+            {% set timeframe = startDay ~ ' ' ~ 'sulu_event.from'|trans ~ ' ' ~ startTime ~ ' ' ~ 'sulu_event.clock'|trans %}
+        {% endif %}
+    {% endif %}
+
+    <div class="container pt-3">
         <div class="row">
             <div class="col-12 pb-3">
-                <div class="title">
-                    {% set timeframe = '' %}
-                    {% if event.startDate %}
-                        {% set startTimeShort = event.startDate|date('H:i') %}
-
-                        {% if event.endDate %}
-                            {% set endTimeShort = event.endDate|date('H:i') %}
-                            {% if startTimeShort == "00:00" and endTimeShort == "00:00" %}
-                                {% set timeframe = event.startDate|format_datetime('full', 'none', locale=app.request.getLocale()) ~ ' - ' ~ event.endDate|format_datetime('full', 'none', locale=app.request.getLocale()) %}
-                            {% else %}
-                                {% set timeframe = event.startDate|format_datetime('full', 'short', locale=app.request.getLocale()) ~ ' - ' ~ event.endDate|format_datetime('full', 'short', locale=app.request.getLocale()) %}
-                            {% endif %}
-                        {% else %}
-                            {% if startTimeShort != "00:00" %}
-                                {% set timeframe = event.startDate|format_datetime('full', 'short', locale=app.request.getLocale())  %}
-                            {% else %}
-                                {% set timeframe = event.startDate|format_datetime('full', 'none', locale=app.request.getLocale()) %}
-                            {% endif %}
+                <div class="event-container">
+                    <div class="card mb-3">
+                        {% set eventImage = '' %}
+                        {% if event.image %}
+                            {% set eventImage = sulu_resolve_media(event.image.id, app.request.locale) %}
+                        {% elseif event.location.image %}
+                            {% set eventImage = sulu_resolve_media(event.location.image.id, app.request.locale) %}
                         {% endif %}
-                    {% endif %}
-
-                    {% if event.location %}
-                        {% if timeframe %}
-                            {% set timeframe = timeframe ~ ' @ ' ~ event.location.name %}
-                        {% else %}
-                            {% set timeframe = event.location.name %}
-                        {% endif %}
-                    {% endif %}
-
-                    {% if event.image %}
-                        {% set eventImage = sulu_resolve_media(event.image.id, app.request.locale) %}
                         {% if eventImage %}
-                            <img src="{{ eventImage.thumbnails['sulu-400x400'] }}" class="img-fluid rounded mb-4 w-100 object-fit-cover" style="max-height: 400px;" alt="{{ event.title }}">
+                            <img src="{{ eventImage.thumbnails['sulu-400x400'] }}" class="card-img-top img-fluid rounded-top mb-4 w-100 object-fit-cover" style="max-height:240px;" alt="{{ event.title }}">
                         {% endif %}
-                    {% endif %}
 
-                    <h1 class="mb-2">{{ event.title }}</h1>
-                    {% if event.subtitle %}
-                        <h2 class="h3 mb-4">{{ event.subtitle }}</h2>
-                    {% endif %}
+                        <div class="card-body p{% if event.details|default %}t{% else %}y{% endif %}-0">
+                            <h1 class="h2 mb-2">{{ event.title }}</h1>
+                            {% if event.subtitle %}
+                                <h2 class="h4 mb-2">{{ event.subtitle }}</h2>
+                            {% endif %}
+                            {% if event.location %}
+                                <h3 class="h5 mb-3 text-muted">{{ 'sulu_event.at'|trans }} {{ event.location.name }}</h3>
+                            {% endif %}
 
-                    {% if eventsSettings.toggleTags and event.excerptTags %}
-                        {% set summaryMargin = "my-4" %}
-                        {% for tag in event.excerptTags %}
-                            <span class="badge text-bg-{{ eventsSettings.tagsColor|default('light') }} shadow">{{ tag }}</span>
-                        {% endfor %}
-                    {% endif %}
+                            {% if eventsSettings.toggleTags and event.excerptTags %}
+                                {% set summaryMargin = "my-4" %}
+                                {% for tag in event.excerptTags %}
+                                    <span class="badge text-bg-{{ eventsSettings.tagsColor|default('light') }} shadow">{{ tag }}</span>
+                                {% endfor %}
+                            {% endif %}
 
-                    {% if eventsSettings.toggleCategories and event.excerptCategories %}
-                        {% set summaryMargin = "my-4" %}
-                        {% for category in extension.excerpt.categories_named %}
-                            <span class="badge text-bg-{{ eventsSettings.categoriesColor|default('light') }} shadow" {% if eventsSettings.categoriesColor|default %}style="background-color:{{ eventsSettings.categoriesColor }}!important{% endif %}">{{ category.translation }}</span>
-                        {% endfor %}
-                    {% endif %}
+                            {% if eventsSettings.toggleCategories and event.excerptCategories %}
+                                {% set summaryMargin = "my-4" %}
+                                {% for category in extension.excerpt.categories_named %}
+                                    <span class="badge text-bg-{{ eventsSettings.categoriesColor|default('light') }} shadow" {% if eventsSettings.categoriesColor|default %}style="background-color:{{ eventsSettings.categoriesColor }}!important{% endif %}">{{ category.translation }}</span>
+                                {% endfor %}
+                            {% endif %}
 
-                    {% if timeframe %}
-                        <h3 class="h4 mb-4">{{ timeframe }}</h3>
-                    {% endif %}
-                    {% if event.summary %}
-                        <p class="mb-4 fw-bold fst-italic">{{ event.summary }}</p>
-                    {% endif %}
-                </div>
+                            {% if timeframe %}
+                                <h3 class="h5 mb-3 text-muted">{{ timeframe|raw }}</h3>
+                            {% endif %}
+                            {% if event.summary %}
+                                <p class="mb-4 fw-bold fst-italic">{{ event.summary }}</p>
+                            {% endif %}
 
-                <div class="content pb-3">
-                    {{ event.text|raw }}
+                            {{ event.text|raw }}
 
-                    {% if event.details is defined and event.details is not empty %}
-                        {% for block in event.details %}
-                            {% include '@SuluEvent/blocks/' ~ block.type ~ '.html.twig' with { 'content': block } only %}
-                        {% endfor %}
-                    {% endif %}
+                            {% if event.details|default %}
+                                {% for block in event.details %}
+                                    <hr class="my-4">
+                                    {% include '@SuluEvent/blocks/' ~ block.type ~ '.html.twig' with { 'content': block } only %}
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
 
                 {% if event.location %}
-                    <div class="location-container mt-5 pt-4 border-top">
-                        <h3 class="mb-3">{{ 'sulu_event.location'|trans }}</h3>
-                        <div class="row">
-                            <div class="col-md-4">
+                    <div class="location-container">
+                        <div class="card mb-3">
+                            <div class="row g-0">
                                 {% if event.location.image %}
                                     {% set locationImage = sulu_resolve_media(event.location.image.id, app.request.locale) %}
                                     {% if locationImage %}
-                                        <img src="{{ locationImage.thumbnails['sulu-400x400'] }}" class="img-fluid rounded mb-3" alt="{{ event.location.name }}">
+                                        <div class="col-3 col-md-4">
+                                            <img src="{{ locationImage.thumbnails['sulu-400x400'] }}" class="img-fluid rounded-start w-100 h-100 object-fit-cover" alt="{{ event.location.name }}">
+                                        </div>
                                     {% endif %}
                                 {% endif %}
-                            </div>
-                            <div class="col-md-8">
-                                <h4 class="mb-2">{{ event.location.name }}</h4>
-                                <p>
-                                    {{ event.location.street }} {{ event.location.number }}<br>
-                                    {{ event.location.postalCode }} {{ event.location.city }}
-                                </p>
-                                {% if event.location.notes %}
-                                    <p class="text-muted">{{ event.location.notes }}</p>
-                                {% endif %}
-                                {% if event.location.link %}
-                                    <a href="{{ event.location.link.url|default('') }}" target="_blank" class="btn btn-outline-primary btn-sm mt-2">{{ 'sulu_event.action.website'|trans }}</a>
-                                {% endif %}
+
+                                <div class="col-9 col-md-{% if locationImage %}8{% else %}12{% endif %}">
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ event.location.name }}</h5>
+
+                                        {% if event.location.street|default or event.location.number|default or event.location.postalCode|default or event.location.city|default %}
+                                            <address class="card-text">
+                                                {{ event.location.street }} {{ event.location.number }}{% if event.location.street|default or event.location.number|default %}<br>{% endif %}
+                                                {{ event.location.postalCode }} {{ event.location.city }}
+                                            </address>
+                                        {% endif %}
+                                        {% if event.location.notes %}
+                                            <p class="card-text text-muted">{{ event.location.notes|raw }}</p>
+                                        {% endif %}
+                                        {% if event.location.link %}
+                                            <p class="card-text">
+                                                <a href="{{ event.location.link.url|default('') }}" target="_blank" class="btn btn-outline-primary btn-sm mt-2">
+                                                    {{ 'sulu_event.action.website'|trans }}
+                                                </a>
+                                            </p>
+                                        {% endif %}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 {% endif %}
-            </div>
-            <div class="col-12 py-3 bg-light text-dark">
-                <div class="footer mb-5">
 
-                    {% if event.footer %}
-                        {{ event.footer|raw }}
-                    {% endif %}
+                {% if event.socialSettings.enableSocialShare|default %}
+                    <div class="footer-container">
+                        <div class="card mb-3">
+                            <div class="row g-0">
+                                <div class="col-12">
+                                    <div class="card-body">
+                                        <div class="social-share">
+                                            <h3>{{ 'sulu_event.feed.share_event'|trans }}</h3>
 
-                    {% if event.socialSettings.enableSocialShare|default %}
-                        <div class="social-share">
-                            <h3>{{ 'sulu_event.feed.share_event'|trans }}</h3>
+                                            {% set shareLinks = event_social_shares(event, app.request.locale) %}
 
-                            {% set shareLinks = event_social_shares(event, app.request.locale) %}
+                                            <div class="share-buttons">
+                                                {% if 'facebook' in event.socialSettings.socialPlatforms %}
+                                                    <a href="{{ shareLinks.facebook }}" target="_blank" class="btn btn-facebook">
+                                                        <i class="fab fa-facebook"></i> Share
+                                                    </a>
+                                                {% endif %}
 
-                            <div class="share-buttons">
-                                {% if 'facebook' in event.socialSettings.socialPlatforms %}
-                                    <a href="{{ shareLinks.facebook }}" target="_blank" class="btn btn-facebook">
-                                        <i class="fab fa-facebook"></i> Share
-                                    </a>
-                                {% endif %}
+                                                {% if 'twitter' in event.socialSettings.socialPlatforms %}
+                                                    <a href="{{ shareLinks.twitter }}" target="_blank" class="btn btn-twitter">
+                                                        <i class="fab fa-twitter"></i> Tweet
+                                                    </a>
+                                                {% endif %}
 
-                                {% if 'twitter' in event.socialSettings.socialPlatforms %}
-                                    <a href="{{ shareLinks.twitter }}" target="_blank" class="btn btn-twitter">
-                                        <i class="fab fa-twitter"></i> Tweet
-                                    </a>
-                                {% endif %}
+                                                {# ... other platforms #}
+                                            </div>
+                                        </div>
 
-                                {# ... other platforms #}
+                                        {# Social Media Profile Links (Follow us) #}
+                                        <div class="social-profiles">
+                                            <h4>{{ 'Follow us'|trans }}</h4>
+                                            {% if event.socialSettings.facebookUrl %}
+                                                <a href="{{ event.socialSettings.facebookUrl }}" target="_blank">
+                                                    <i class="fab fa-facebook"></i>
+                                                </a>
+                                            {% endif %}
+                                            {# ... other profiles #}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+                    </div>
+                {% endif %}
 
-                        {# Social Media Profile Links (Follow us) #}
-                        <div class="social-profiles">
-                            <h4>{{ 'Follow us'|trans }}</h4>
-                            {% if event.socialSettings.facebookUrl %}
-                                <a href="{{ event.socialSettings.facebookUrl }}" target="_blank">
-                                    <i class="fab fa-facebook"></i>
-                                </a>
-                            {% endif %}
-                            {# ... other profiles #}
+                {% if event.footer|default %}
+                    <div class="footer-container">
+                        <div class="card mb-3 bg-light text-dark">
+                            <div class="row g-0">
+                                <div class="col-12">
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ 'sulu_event.footer'|trans }}</h5>
+                                        <p class="card-text text-muted">{{ event.footer|raw }}</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    {% endif %}
-
-                </div>
-
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>

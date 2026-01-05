@@ -168,17 +168,17 @@
             <properties>
                 <block name="details" default-type="abstract_text" minOccurs="0">
                     <types>
-                        <xi:include href="../blocks/title_text.xml"
+                        <xi:include href="../includes/events/blocks/title_text.xml"
                                     xpointer="xmlns(sulu=http://schemas.sulu.io/template/template)xpointer(/sulu:properties/sulu:block/sulu:types/*)"/>
-                        <xi:include href="../blocks/title_text_image.xml"
+                        <xi:include href="../includes/events/blocks/title_text_image.xml"
                                     xpointer="xmlns(sulu=http://schemas.sulu.io/template/template)xpointer(/sulu:properties/sulu:block/sulu:types/*)"/>
-                        <xi:include href="../blocks/title_text_images.xml"
+                        <xi:include href="../includes/events/blocks/title_text_images.xml"
                                     xpointer="xmlns(sulu=http://schemas.sulu.io/template/template)xpointer(/sulu:properties/sulu:block/sulu:types/*)"/>
-                        <xi:include href="../blocks/abstract_text.xml"
+                        <xi:include href="../includes/events/blocks/abstract_text.xml"
                                     xpointer="xmlns(sulu=http://schemas.sulu.io/template/template)xpointer(/sulu:properties/sulu:block/sulu:types/*)"/>
-                        <xi:include href="../blocks/abstract_text_image.xml"
+                        <xi:include href="../includes/events/blocks/abstract_text_image.xml"
                                     xpointer="xmlns(sulu=http://schemas.sulu.io/template/template)xpointer(/sulu:properties/sulu:block/sulu:types/*)"/>
-                        <xi:include href="../blocks/abstract_text_images.xml"
+                        <xi:include href="../includes/events/blocks/abstract_text_images.xml"
                                     xpointer="xmlns(sulu=http://schemas.sulu.io/template/template)xpointer(/sulu:properties/sulu:block/sulu:types/*)"/>
                     </types>
                 </block>
