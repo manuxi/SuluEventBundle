@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Tests\Unit\Sitemap;
 
-use Doctrine\ORM\AbstractQuery;
+use Doctrine\ORM\Query;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\QueryBuilder;
@@ -46,7 +46,7 @@ class EventSitemapProviderTest extends TestCase
 
         // Mock QueryBuilder for findEvents and getAlternateRoutes
         $queryBuilder1 = $this->createMock(QueryBuilder::class);
-        $query1 = $this->createMock(AbstractQuery::class);
+        $query1 = $this->createMock(Query::class);
         $queryBuilder1->method('leftJoin')->willReturnSelf();
         $queryBuilder1->method('setParameter')->willReturnSelf();
         $queryBuilder1->method('andWhere')->willReturnSelf();
@@ -57,7 +57,7 @@ class EventSitemapProviderTest extends TestCase
         $queryBuilder1->method('getQuery')->willReturn($query1);
 
         $queryBuilder2 = $this->createMock(QueryBuilder::class);
-        $query2 = $this->createMock(AbstractQuery::class);
+        $query2 = $this->createMock(Query::class);
         $queryBuilder2->method('leftJoin')->willReturnSelf();
         $queryBuilder2->method('setParameter')->willReturnSelf();
         $queryBuilder2->method('andWhere')->willReturnSelf();
@@ -126,7 +126,7 @@ class EventSitemapProviderTest extends TestCase
             ->willReturn([$portalInfo]);
 
         $queryBuilder = $this->createMock(QueryBuilder::class);
-        $query = $this->createMock(AbstractQuery::class);
+        $query = $this->createMock(Query::class);
 
         $this->repository->method('createQueryBuilder')->willReturn($queryBuilder);
 
