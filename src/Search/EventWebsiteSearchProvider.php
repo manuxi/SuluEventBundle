@@ -47,6 +47,17 @@ class EventWebsiteSearchProvider implements ReindexProviderInterface
             $events = $this->eventRepository->findAllByLocale($locale, DimensionContentInterface::STAGE_LIVE);
 
             foreach ($events as $event) {
+                $hasLiveContent = false;
+                foreach ($event->getDimensionContents() as $content) {
+                    if ($content->getLocale() === $locale && DimensionContentInterface::STAGE_LIVE === $content->getStage()) {
+                        $hasLiveContent = true;
+                        break;
+                    }
+                }
+
+                if (!$hasLiveContent) {
+                    continue;
+                }
                 /** @var EventDimensionContent $dimensionContent */
                 $dimensionContent = $this->contentAggregator->aggregate(
                     $event,
@@ -57,12 +68,10 @@ class EventWebsiteSearchProvider implements ReindexProviderInterface
                     ]
                 );
 
-                // Only published events
                 if (WorkflowInterface::WORKFLOW_PLACE_PUBLISHED !== $dimensionContent->getWorkflowPlace()) {
                     continue;
                 }
 
-                // Skip if no content for this locale
                 if (!$dimensionContent->getTitle()) {
                     continue;
                 }

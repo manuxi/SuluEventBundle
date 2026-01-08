@@ -114,6 +114,11 @@ services:
             - '%sulu_event.default_type%'
         public: true
 
+    # Country Code Select Service
+    sulu_event.country_code_select:
+        class: Manuxi\SuluEventBundle\Service\CountryCodeSelect
+        public: true
+
     # LocationPremises Service
     sulu_event.location_premises_selection:
         class: Manuxi\SuluEventBundle\Service\LocationPremisesSelection
