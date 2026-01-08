@@ -27,7 +27,6 @@ class EventObjectProvider implements PreviewDefaultsProviderInterface
             return [];
         }
 
-        // Resolve the DimensionContent for the requested locale
         $dimensionContent = $this->contentAggregator->aggregate(
             $event,
             [
@@ -43,7 +42,7 @@ class EventObjectProvider implements PreviewDefaultsProviderInterface
         return [
             '_controller' => 'Manuxi\SuluEventBundle\Controller\Website\EventController::indexAction',
             'event' => $event,
-            'dimensionContent' => $dimensionContent,
+            'object' => $dimensionContent,
         ];
     }
 

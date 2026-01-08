@@ -97,8 +97,8 @@ php bin/console doctrine:schema:update --force
 ### Create your first event
 
 1. Navigate to **Events** in the Sulu admin navigation
-2. Click on **Add event**
-3. First, create at least one **Location**
+2. First, create at least one **Location**
+3. Then click on **Add event**
 4. Then create your event with all the details
 5. Configure social media settings (optional)
 6. Set up recurrence patterns (optional)

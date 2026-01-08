@@ -98,8 +98,8 @@ php bin/console doctrine:schema:update --force
 ### Erstes Event erstellen
 
 1. Navigiere zu **Events** in der Sulu-Admin-Navigation
-2. Klicke auf **Event hinzufügen**
-3. Erstelle zuerst mindestens einen **Veranstaltungsort**
+2. Erstelle zuerst mindestens einen **Veranstaltungsort**
+3. Dann klicke auf **Event hinzufügen**
 4. Erstelle dann dein Event mit allen Details
 5. Konfiguriere Social-Media-Einstellungen (optional)
 6. Richte Wiederholungsmuster ein (optional)

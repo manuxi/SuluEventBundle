@@ -57,7 +57,6 @@ services:
             - '@sulu_route.route_repository'
             - '@sulu_core.webspace.webspace_manager'
             - '@request_stack'
-            - '@sulu_content.content_aggregator'
         tags:
             - { name: controller.service_arguments }
             - { name: sulu.context, context: website }

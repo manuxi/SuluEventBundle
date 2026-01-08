@@ -4,6 +4,11 @@
           xsi:schemaLocation="http://schemas.sulu.io/template/template http://schemas.sulu.io/template/template-1.0.xsd"
 >
     <key>event_basic</key>
+
+    <view>@SuluEvent/event</view>
+    <controller>Manuxi\SuluEventBundle\Controller\Website\EventController::indexAction</controller>
+    <cacheLifetime>604800</cacheLifetime>
+
     <meta>
         <title>sulu_event.template.basic</title>
     </meta>

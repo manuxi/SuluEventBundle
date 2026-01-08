@@ -25,12 +25,11 @@ class EventController
         private readonly RouteRepositoryInterface $routeRepository,
         private readonly WebspaceManagerInterface $webspaceManager,
         private readonly RequestStack $requestStack,
-        private readonly ContentAggregatorInterface $contentAggregator,
     ) {
     }
 
     public function indexAction(
-        Event $event,
+        EventDimensionContent $object,
         string $view = '@SuluEvent/event',
         bool $preview = false,
         bool $partial = false,
@@ -38,21 +37,12 @@ class EventController
         $request = $this->requestStack->getCurrentRequest();
         $locale = $request ? $request->getLocale() : 'en';
 
-        // Use ContentAggregator to properly resolve DimensionContent
-        // This handles merging unlocalized + localized content correctly
         $stage = $preview ? DimensionContentInterface::STAGE_DRAFT : DimensionContentInterface::STAGE_LIVE;
 
-        /** @var EventDimensionContent|null $content */
-        $content = $this->contentAggregator->aggregate(
-            $event,
-            [
-                'locale' => $locale,
-                'stage' => $stage,
-            ]
-        );
+        $content = $object;
+        $event = $content->getResource();
 
         if (!$content || !$content->getTitle()) {
-            // Fallback: Try to find directly in collection (for preview with injected content)
             $content = $this->findDimensionContentInCollection($event, $locale, $stage);
         }
 
