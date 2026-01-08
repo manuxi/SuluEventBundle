@@ -149,7 +149,8 @@ sulu_event:
 
     # Event Type translations
     event_type: "Event Type"
-    type:
+    type: "Type"
+    types:
         default: "Default"
         conference: "Conference"
         workshop: "Workshop"
