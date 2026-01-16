@@ -63,8 +63,10 @@ class EventRepository extends ServiceEntityRepository
 
     public function findByIds(array $ids, string $locale, string $stage = DimensionContentInterface::STAGE_LIVE): array
     {
+        $filters = ['ids' => $ids, 'locale' => $locale, 'stage' => $stage];
+
         $qb = $this->buildQueryBuilder(
-            ['ids' => $ids, 'locale' => $locale, 'stage' => $stage],
+            $filters,
             [], // sort
             [self::GROUP_SELECT_EVENT_WEBSITE => true]
         );

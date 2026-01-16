@@ -116,6 +116,7 @@
             <field-name>type</field-name>
             <entity-name>dimensionContent</entity-name>
             <joins ref="dimensionContent"/>
+            <!-- <transformer type="event_type_color" /> -->
         </property>
 
         <property name="location" translation="sulu_event.location" visibility="always">

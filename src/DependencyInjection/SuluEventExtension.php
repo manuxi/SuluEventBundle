@@ -234,7 +234,7 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
                                             'title',
                                             'date',
                                         ],
-                                        'icon' => 'su-calendar',
+                                        'icon' => 'su-filter',
                                         'label' => 'sulu_event.event_selection_label',
                                         'overlay_title' => 'sulu_event.select_events',
                                     ],
@@ -259,7 +259,7 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
                                             'title',
                                             'date'
                                         ],
-                                        'icon' => 'su-calendar',
+                                        'icon' => 'su-filter',
                                         'empty_text' => 'sulu_event.no_event_selected',
                                         'overlay_title' => 'sulu_event.select_event',
                                     ],
