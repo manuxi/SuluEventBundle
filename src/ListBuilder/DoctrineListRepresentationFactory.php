@@ -348,6 +348,7 @@ class DoctrineListRepresentationFactory
                 && \array_key_exists($element['image'], $images)
             ) {
                 $listeElements[$key]['image'] = $images[$element['image']];
+                //$listeElements[$key]['image']['sulu-40x40'] = $images[$element['image']]['sulu-40x40'];
             }
         }
 
@@ -396,6 +397,7 @@ class DoctrineListRepresentationFactory
             $type = $element['type'] ?? 'default';
             $listeElements[$key]['typeColor'] = $this->eventTypeSelect->getColor($type);
             $typeName = $this->eventTypeSelect->getTypeName($type);
+            $listeElements[$key]['typeKey'] = $type;
             $listeElements[$key]['typeName'] = $typeName;
             // Overwrite 'type' with the translated name for display
             $listeElements[$key]['type'] = $typeName;
