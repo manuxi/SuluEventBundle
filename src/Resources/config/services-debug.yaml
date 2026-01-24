@@ -1,0 +1,8 @@
+services:
+
+    Manuxi\SuluEventBundle\Command\DebugTeaserCommand:
+        arguments:
+            - '@sulu_admin.teaser_provider_pool'
+            - '@sulu_admin.teaser_manager'
+        tags:
+            - { name: console.command }

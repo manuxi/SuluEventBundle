@@ -1,0 +1,14 @@
+services:
+    # Fixtures
+    Manuxi\SuluEventBundle\DataFixtures\Event\EventFixture:
+        class: Manuxi\SuluEventBundle\DataFixtures\Event\EventFixture
+        arguments:
+            - '@sulu_content.content_manager'
+            - '@sulu_content.content_workflow'
+        tags:
+            - { name: doctrine.fixture.orm }
+
+    Manuxi\SuluEventBundle\DataFixtures\Location\LocationFixture:
+        class: Manuxi\SuluEventBundle\DataFixtures\Location\LocationFixture
+        tags:
+            - { name: doctrine.fixture.orm }

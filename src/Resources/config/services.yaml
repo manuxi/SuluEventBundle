@@ -1,15 +1,4 @@
 services:
-    #_defaults:
-    #    autowire: true
-    #    autoconfigure: true
-    #    bind:
-            # Bind the environment parameter for all services
-    #        $environment: '%kernel.environment%'
-
-    # Auto-register all services from the bundle
-    #Manuxi\SuluEventBundle\:
-    #    resource: '../../*'
-    #    exclude: '../../{DependencyInjection,Entity,Tests,Resources,Twig}'
 
     # Admin Classes
     sulu_event.admin.event:
@@ -105,6 +94,22 @@ services:
             - '%sulu_event.types%'
         tags:
             - { name: sulu_content.smart_content_provider, type: events }
+
+    # Teaser Provider
+    sulu_event.event_teaser_provider:
+        class: Manuxi\SuluEventBundle\Teaser\EventTeaserProvider
+        public: true
+        arguments:
+            - '@Manuxi\SuluEventBundle\Repository\EventRepository'
+            - '@sulu_content.content_aggregator'
+            - '@sulu_content.content_enhancer'
+            - '@translator'
+        tags:
+            - { name: sulu.teaser.provider, alias: events }
+
+    Manuxi\SuluEventBundle\Content\PropertyResolver\TeaserSelectionPropertyResolverDecorator:
+        tags:
+            - { name: sulu_content.property_resolver }
 
     # Type Select Service
     sulu_event.type_selection:
@@ -221,7 +226,7 @@ services:
             - '@sulu_content.content_aggregator'
             - '@sulu_media.media_manager'
 
-    # Tracks references for "Where used" functionality
+    # Reference refresher
     Manuxi\SuluEventBundle\Reference\EventReferenceRefresher:
         class: Manuxi\SuluEventBundle\Reference\EventReferenceRefresher
         arguments:
@@ -351,17 +356,3 @@ services:
             - '@sulu_event.type_selection'
         tags:
             - { name: sulu_content.normalizer }
-
-    # Fixtures
-    Manuxi\SuluEventBundle\DataFixtures\Event\EventFixture:
-        class: Manuxi\SuluEventBundle\DataFixtures\Event\EventFixture
-        arguments:
-            - '@sulu_content.content_manager'
-            - '@sulu_content.content_workflow'
-        tags:
-            - { name: doctrine.fixture.orm }
-
-    Manuxi\SuluEventBundle\DataFixtures\Location\LocationFixture:
-        class: Manuxi\SuluEventBundle\DataFixtures\Location\LocationFixture
-        tags:
-            - { name: doctrine.fixture.orm }
