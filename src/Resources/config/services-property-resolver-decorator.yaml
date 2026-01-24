@@ -1,0 +1,4 @@
+services:
+    Manuxi\SuluEventBundle\Content\PropertyResolver\TeaserSelectionPropertyResolverDecorator:
+        tags:
+            - { name: sulu_content.property_resolver, priority: 100 }

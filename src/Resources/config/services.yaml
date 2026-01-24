@@ -107,10 +107,6 @@ services:
         tags:
             - { name: sulu.teaser.provider, alias: events }
 
-    Manuxi\SuluEventBundle\Content\PropertyResolver\TeaserSelectionPropertyResolverDecorator:
-        tags:
-            - { name: sulu_content.property_resolver }
-
     # Type Select Service
     sulu_event.type_selection:
         class: Manuxi\SuluEventBundle\Service\EventTypeSelect
