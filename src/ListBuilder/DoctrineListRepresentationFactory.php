@@ -76,6 +76,7 @@ class DoctrineListRepresentationFactory
         }
 
         $list = $listBuilder->execute();
+        $list = $this->convertIdsToString($list);
 
         // sort the items to reflect the order of the given ids if the list was requested to include specific ids
         $requestedIds = $this->listRestHelper->getIds();
@@ -103,6 +104,17 @@ class DoctrineListRepresentationFactory
             (int) $listBuilder->getLimit(),
             (int) $listBuilder->count()
         );
+    }
+
+    private function convertIdsToString(array $list): array
+    {
+        foreach ($list as $key => $element) {
+            if (isset($element['id']) && \is_int($element['id'])) {
+                $list[$key]['id'] = (string) $element['id'];
+            }
+        }
+
+        return $list;
     }
 
     private function formatDateTimeElements(array $listElements, ?string $locale): array

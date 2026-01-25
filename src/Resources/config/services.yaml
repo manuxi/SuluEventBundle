@@ -104,6 +104,7 @@ services:
             - '@sulu_content.content_aggregator'
             - '@sulu_content.content_enhancer'
             - '@translator'
+            - '@sulu_admin.form_metadata_provider'
         tags:
             - { name: sulu.teaser.provider, alias: events }
 

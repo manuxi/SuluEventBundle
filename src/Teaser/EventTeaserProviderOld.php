@@ -7,8 +7,6 @@ namespace Manuxi\SuluEventBundle\Teaser;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
-use Sulu\Bundle\AdminBundle\Metadata\FormMetadata\TypedFormMetadata;
-use Sulu\Bundle\AdminBundle\Metadata\MetadataProviderInterface;
 use Sulu\Bundle\AdminBundle\Teaser\Configuration\TeaserConfiguration;
 use Sulu\Bundle\AdminBundle\Teaser\Provider\TeaserProviderInterface;
 use Sulu\Bundle\AdminBundle\Teaser\Teaser;
@@ -18,14 +16,13 @@ use Sulu\Content\Domain\Exception\ContentNotFoundException;
 use Sulu\Content\Domain\Model\DimensionContentInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-class EventTeaserProvider implements TeaserProviderInterface
+class EventTeaserProviderOld implements TeaserProviderInterface
 {
     public function __construct(
         protected EventRepository $eventRepository,
         protected ContentAggregatorInterface $contentAggregator,
         protected ContentEnhancerInterface $contentEnhancer,
         protected TranslatorInterface $translator,
-        protected MetadataProviderInterface $metadataProvider,
     ) {
     }
 
@@ -35,7 +32,7 @@ class EventTeaserProvider implements TeaserProviderInterface
             $this->translator->trans('sulu_event.event', [], 'admin'),
             Event::RESOURCE_KEY,
             'table',
-            ['title', 'image'],
+            ['title', 'titleExcerpt'],
             $this->translator->trans('sulu_event.select_event', [], 'admin'),
         );
     }
@@ -47,6 +44,7 @@ class EventTeaserProvider implements TeaserProviderInterface
      */
     public function find(array $ids, $locale): array
     {
+
         if (0 === \count($ids)) {
             return [];
         }
@@ -71,7 +69,7 @@ class EventTeaserProvider implements TeaserProviderInterface
      */
     private function findEventsByIds(array $ids, string $locale): array
     {
-        $intIds = \array_map(static fn($id) => (int) $id, $ids);
+        $intIds = \array_map(static fn ($id) => (int) $id, $ids);
 
         /** @var array<Event> $events */
         $events = $this->eventRepository->findByFilters(
@@ -90,7 +88,7 @@ class EventTeaserProvider implements TeaserProviderInterface
         $idPositions = \array_flip($ids);
         \usort(
             $events,
-            static fn(Event $a, Event $b) => ($idPositions[(string) $a->getId()] ?? 0) - ($idPositions[(string) $b->getId()] ?? 0)
+            static fn (Event $a, Event $b) => ($idPositions[(string) $a->getId()] ?? 0) - ($idPositions[(string) $b->getId()] ?? 0)
         );
 
         return $events;
@@ -116,10 +114,10 @@ class EventTeaserProvider implements TeaserProviderInterface
         }
 
         /** @var string $description */
-        $description = $this->resolveDescription($dimensionContent);
+        $description = $this->resolveDescription($dimensionContent); // @phpstan-ignore-line
 
         /** @var string $moreText */
-        $moreText = $this->resolveMoreText($dimensionContent);
+        $moreText = $this->resolveMoreText($dimensionContent); // @phpstan-ignore-line
 
         /** @var int $mediaId */
         $mediaId = $this->resolveMediaId($dimensionContent);
@@ -149,6 +147,7 @@ class EventTeaserProvider implements TeaserProviderInterface
             'subtitle' => $subtitle,
             'name' => $title,
         ];
+        //return [];
     }
 
     protected function resolveDimensionContent(Event $event, string $locale): ?EventDimensionContent
@@ -182,28 +181,6 @@ class EventTeaserProvider implements TeaserProviderInterface
     protected function resolveTitle(EventDimensionContent $dimensionContent): ?string
     {
         $title = $dimensionContent->getExcerptTitle() ?? $dimensionContent->getTitle();
-        if (null !== $title && '' !== $title) {
-            return $title;
-        }
-
-        // Fallback to tagged property
-        $templateKey = $dimensionContent->getTemplateKey();
-        $locale = $dimensionContent->getLocale();
-        if (null === $templateKey || null === $locale) {
-            return null;
-        }
-
-        $propertyName = $this->findPropertyNameByTag(
-            Event::TEMPLATE_TYPE,
-            $templateKey,
-            $locale,
-            'sulu.teaser.title'
-        );
-
-        if ($propertyName) {
-            $templateData = $dimensionContent->getTemplateData();
-            $title = $templateData[$propertyName] ?? null;
-        }
 
         return \is_string($title) && '' !== $title ? $title : null;
     }
@@ -232,27 +209,6 @@ class EventTeaserProvider implements TeaserProviderInterface
             return \strip_tags($excerptDescription);
         }
 
-        // Fallback to tagged property
-        $templateKey = $dimensionContent->getTemplateKey();
-        $locale = $dimensionContent->getLocale();
-        if (null === $templateKey || null === $locale) {
-            return null;
-        }
-
-        $propertyName = $this->findPropertyNameByTag(
-            Event::TEMPLATE_TYPE,
-            $templateKey,
-            $locale,
-            'sulu.teaser.description'
-        );
-
-        if ($propertyName) {
-            $templateData = $dimensionContent->getTemplateData();
-            $description = $templateData[$propertyName] ?? null;
-
-            return \is_string($description) && '' !== $description ? \strip_tags($description) : null;
-        }
-
         return null;
     }
 
@@ -265,74 +221,14 @@ class EventTeaserProvider implements TeaserProviderInterface
 
     protected function resolveMediaId(EventDimensionContent $dimensionContent): ?int
     {
-        $excerptImage = $dimensionContent->getExcerptImage();
-        $mediaId = $excerptImage['id'] ?? null;
-        if (null !== $mediaId) {
-            return $mediaId;
-        }
-
         $image = $dimensionContent->getImage();
         if (null !== $image) {
             return $image->getId();
         }
 
-        // Fallback to tagged property
-        $templateKey = $dimensionContent->getTemplateKey();
-        $locale = $dimensionContent->getLocale();
-        if (null === $templateKey || null === $locale) {
-            return null;
-        }
+        $excerptImage = $dimensionContent->getExcerptImage();
 
-        $propertyName = $this->findPropertyNameByTag(
-            Event::TEMPLATE_TYPE,
-            $templateKey,
-            $locale,
-            'sulu.teaser.media'
-        );
-
-        if ($propertyName) {
-            $templateData = $dimensionContent->getTemplateData();
-            $value = $templateData[$propertyName] ?? null;
-
-            // Handle single_media_selection format: ['id' => int]
-            if (\is_array($value) && isset($value['id']) && \is_numeric($value['id'])) {
-                return (int) $value['id'];
-            }
-
-            // Handle media_selection format: ['ids' => [...]]
-            if (\is_array($value) && isset($value['ids']) && \is_array($value['ids'])) {
-                $firstId = \reset($value['ids']);
-                if (\is_numeric($firstId)) {
-                    return (int) $firstId;
-                }
-            }
-        }
-
-        return null;
+        return $excerptImage['id'] ?? null;
     }
 
-    private function findPropertyNameByTag(string $templateType, string $templateKey, string $locale, string $tagName): ?string
-    {
-        $typedFormMetadata = $this->metadataProvider->getMetadata($templateType, $locale, []);
-
-        if (!$typedFormMetadata instanceof TypedFormMetadata) {
-            return null;
-        }
-
-        $formMetadata = $typedFormMetadata->getForms()[$templateKey] ?? null;
-
-        if (null === $formMetadata) {
-            return null;
-        }
-
-        foreach ($formMetadata->getFlatFieldMetadata() as $field) {
-            foreach ($field->getTags() as $tag) {
-                if ($tag->getName() === $tagName) {
-                    return $field->getName();
-                }
-            }
-        }
-
-        return null;
-    }
 }
