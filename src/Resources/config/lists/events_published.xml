@@ -29,7 +29,7 @@
 
     <properties>
         <property name="id" translation="sulu_admin.id" visibility="no">
-            <field-name>id</field-name>
+            <field-name>uuid</field-name>
             <entity-name>Manuxi\SuluEventBundle\Entity\Event</entity-name>
         </property>
 

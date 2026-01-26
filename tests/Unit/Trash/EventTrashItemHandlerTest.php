@@ -40,15 +40,17 @@ class EventTrashItemHandlerTest extends TestCase
             $this->eventRepository,
             $this->contentNormalizer,
             $this->contentMerger,
-            new \ArrayIterator([]), // eventMappers
+            new \ArrayIterator([]),
             $this->domainEventCollector
         );
     }
 
     public function testStore(): void
     {
+        $eventUuid = '019bf796-423c-7e1f-969c-5c4ece5e9b73';
+
         $event = $this->createMock(Event::class);
-        $event->method('getId')->willReturn(1);
+        $event->method('getId')->willReturn($eventUuid);
 
         $unlocalizedContent = $this->createMock(EventDimensionContent::class);
         $unlocalizedContent->method('getLocale')->willReturn(null);
@@ -65,24 +67,21 @@ class EventTrashItemHandlerTest extends TestCase
         $allContents = new ArrayCollection([$unlocalizedContent, $localizedContent]);
         $event->method('getDimensionContents')->willReturn($allContents);
 
-        // Expect merger to be called
         $mergedContent = $this->createMock(EventDimensionContent::class);
         $this->contentMerger->method('merge')->willReturn($mergedContent);
 
-        // Expect normalizer
         $normalizedContent = ['some' => 'normalized', 'data' => 'here'];
         $this->contentNormalizer->method('normalize')->willReturn($normalizedContent);
 
-        // Expect creation
         $trashItem = $this->createMock(TrashItemInterface::class);
         $this->trashItemRepository->expects($this->once())
             ->method('create')
             ->with(
                 Event::RESOURCE_KEY,
-                '1',
+                $eventUuid,
                 ['en' => 'Trash Title'],
-                $this->callback(function ($data) use ($normalizedContent) {
-                    return 1 === $data['id']
+                $this->callback(function ($data) use ($eventUuid, $normalizedContent) {
+                    return $eventUuid === $data['id']
                         && isset($data['dimensionContents'])
                         && in_array($normalizedContent, $data['dimensionContents']);
                 })
@@ -95,14 +94,19 @@ class EventTrashItemHandlerTest extends TestCase
 
     public function testRestore(): void
     {
+        $eventUuid = '019bf796-423c-7e1f-969c-5c4ece5e9b73';
+
         $trashItem = $this->createMock(TrashItemInterface::class);
-        $trashItem->method('getResourceId')->willReturn('1');
+        $trashItem->method('getResourceId')->willReturn($eventUuid);
         $trashItem->method('getRestoreData')->willReturn([
             'dimensionContents' => [],
         ]);
 
         $event = $this->createMock(Event::class);
-        $this->eventRepository->method('findById')->with(1)->willReturn($event);
+        $this->eventRepository->expects($this->once())
+            ->method('findByUuid')
+            ->with($eventUuid)
+            ->willReturn($event);
 
         $this->domainEventCollector->expects($this->once())
             ->method('collect')

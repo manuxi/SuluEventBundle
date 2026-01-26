@@ -51,7 +51,7 @@ class LinkProviderTest extends TestCase
     public function testPreload(): void
     {
         $event = $this->createMock(Event::class);
-        $event->method('getId')->willReturn(123);
+        $event->method('getId')->willReturn('019bf796-423c-7e1f-969c-5c4ece5e9b73');
 
         $dimensionContent = $this->createMock(EventDimensionContent::class);
         $dimensionContent->method('getTitle')->willReturn('Test Event');
@@ -61,15 +61,15 @@ class LinkProviderTest extends TestCase
         $route->method('getSlug')->willReturn('/events/test');
         $dimensionContent->method('getRoute')->willReturn($route);
 
-        $this->eventRepository->method('findByIds')->willReturn([$event]);
+        $this->eventRepository->method('findByUuids')->willReturn([$event]);
         $this->contentAggregator->method('aggregate')->willReturn($dimensionContent);
 
-        $links = iterator_to_array($this->provider->preload([123], 'en', true));
+        $links = iterator_to_array($this->provider->preload(['019bf796-423c-7e1f-969c-5c4ece5e9b73'], 'en', true));
 
         $this->assertCount(1, $links);
         $link = $links[0];
 
-        $this->assertEquals('123', $link->getId());
+        $this->assertEquals('019bf796-423c-7e1f-969c-5c4ece5e9b73', $link->getId());
         $this->assertEquals('Test Event', $link->getTitle());
         $this->assertEquals('/events/test', $link->getUrl());
         $this->assertTrue($link->isPublished());

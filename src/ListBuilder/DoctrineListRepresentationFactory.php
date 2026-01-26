@@ -42,8 +42,9 @@ class DoctrineListRepresentationFactory
 
         /** @var DoctrineFieldDescriptor[] $fieldDescriptors */
         $fieldDescriptors = $this->fieldDescriptorFactory->getFieldDescriptors($listKey);
-
         $listBuilder = $this->listBuilderFactory->create($fieldDescriptors['id']->getEntityName());
+        $listBuilder->setIdField($fieldDescriptors['id']);
+        $listBuilder->distinct(true);
         $this->restHelper->initializeListBuilder($listBuilder, $fieldDescriptors);
 
         if (isset($fieldDescriptors['startDate'])) {
@@ -75,8 +76,13 @@ class DoctrineListRepresentationFactory
             $listBuilder->where($fieldDescriptors[$key], $value);
         }
 
+
+        if (isset($fieldDescriptors['version'])) {
+            $listBuilder->where($fieldDescriptors['version'], 0);
+        }
+
+        $listBuilder->addGroupBy($fieldDescriptors['id']);
         $list = $listBuilder->execute();
-        $list = $this->convertIdsToString($list);
 
         // sort the items to reflect the order of the given ids if the list was requested to include specific ids
         $requestedIds = $this->listRestHelper->getIds();
@@ -104,17 +110,6 @@ class DoctrineListRepresentationFactory
             (int) $listBuilder->getLimit(),
             (int) $listBuilder->count()
         );
-    }
-
-    private function convertIdsToString(array $list): array
-    {
-        foreach ($list as $key => $element) {
-            if (isset($element['id']) && \is_int($element['id'])) {
-                $list[$key]['id'] = (string) $element['id'];
-            }
-        }
-
-        return $list;
     }
 
     private function formatDateTimeElements(array $listElements, ?string $locale): array
@@ -246,7 +241,7 @@ class DoctrineListRepresentationFactory
             if ($isSameDay && !$startIsFullDay && !$endIsFullDay && $endDateObj) {
                 $listElements[$key]['startDate'] = $startDateObj->format($dateFormat);
                 $timeOfDayLabel = $this->getTimeOfDayLabel($startDateObj, $endDateObj, $locale);
-                $listElements[$key]['endDate'] = $timeOfDayLabel ?? ($startDateObj->format('H:i').'-'.$endDateObj->format('H:i'));
+                $listElements[$key]['endDate'] = $timeOfDayLabel ?? ($startDateObj->format('H:i') . '-' . $endDateObj->format('H:i'));
             } elseif ($isSameDay && $startIsFullDay && $endIsFullDay) {
                 $listElements[$key]['startDate'] = $startDateObj->format($dateFormat);
                 $listElements[$key]['endDate'] = $this->translator->trans('sulu_event.all_day', [], 'admin', $locale);
@@ -360,7 +355,6 @@ class DoctrineListRepresentationFactory
                 && \array_key_exists($element['image'], $images)
             ) {
                 $listeElements[$key]['image'] = $images[$element['image']];
-                //$listeElements[$key]['image']['sulu-40x40'] = $images[$element['image']]['sulu-40x40'];
             }
         }
 
@@ -381,7 +375,7 @@ class DoctrineListRepresentationFactory
             $missingLocales = $this->eventDimensionContentRepository->findMissingLocaleByIds($ids, $locale, $localesCount);
             foreach ($missingLocales as $missingLocale) {
                 foreach ($listeElements as $key => $element) {
-                    if ($element['id'] === (int) $missingLocale['event'] && !array_key_exists('ghostLocale', $element)) {
+                    if ($element['id'] === $missingLocale['event'] && !array_key_exists('ghostLocale', $element)) {
                         $listeElements[$key]['ghostLocale'] = $locale;
                         /*
                         $listeElements[$key]['localizationState'] = [
@@ -409,7 +403,6 @@ class DoctrineListRepresentationFactory
             $type = $element['type'] ?? 'default';
             $listeElements[$key]['typeColor'] = $this->eventTypeSelect->getColor($type);
             $typeName = $this->eventTypeSelect->getTypeName($type);
-            $listeElements[$key]['typeKey'] = $type;
             $listeElements[$key]['typeName'] = $typeName;
             // Overwrite 'type' with the translated name for display
             $listeElements[$key]['type'] = $typeName;
@@ -481,7 +474,7 @@ class DoctrineListRepresentationFactory
             if ($endDate) {
                 $endStr = $endDate->format($dateFormat);
                 if ($dateString !== $endStr) {
-                    $dateString .= ' - '.$endStr;
+                    $dateString .= ' - ' . $endStr;
                 }
             }
 

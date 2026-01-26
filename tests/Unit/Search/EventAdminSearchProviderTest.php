@@ -49,7 +49,7 @@ class EventAdminSearchProviderTest extends TestCase
     public function testProvide(): void
     {
         $event = $this->createMock(Event::class);
-        $event->method('getId')->willReturn(1);
+        $event->method('getId')->willReturn("019bf796-423c-7e1f-969c-5c4ece5e9b73");
 
         $this->eventRepository->method('findAll')->willReturn([$event]);
 
@@ -64,7 +64,7 @@ class EventAdminSearchProviderTest extends TestCase
         $documents = iterator_to_array($generator);
 
         $this->assertCount(1, $documents);
-        $this->assertEquals('event-1-en-draft', $documents[0]['id']);
+        $this->assertEquals('event-019bf796-423c-7e1f-969c-5c4ece5e9b73-en-draft', $documents[0]['id']);
         $this->assertEquals('Indexed Event', $documents[0]['title']);
     }
 

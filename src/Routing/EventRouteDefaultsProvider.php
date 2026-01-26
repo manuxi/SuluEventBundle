@@ -84,15 +84,15 @@ class EventRouteDefaultsProvider implements RouteDefaultsProviderInterface
         return Event::RESOURCE_KEY;
     }
 
-    private function loadEntity(string $id, string $locale): ?DimensionContentInterface
+    private function loadEntity(string $uuid, string $locale): ?DimensionContentInterface
     {
         $queryBuilder = $this->entityManager->createQueryBuilder()
             ->select('entity')
             ->from(Event::class, 'entity')
             ->leftJoin('entity.dimensionContents', 'dimensionContent')
             ->addSelect('dimensionContent')
-            ->where('entity.id = :id')
-            ->setParameter('id', (int) $id);
+            ->where('entity.uuid = :uuid')
+            ->setParameter('uuid', $uuid);
 
         try {
             /** @var Event $entity */
@@ -126,22 +126,22 @@ class EventRouteDefaultsProvider implements RouteDefaultsProviderInterface
         $formMetadata = $forms[$templateKey] ?? null;
 
         if (!$formMetadata) {
-            throw new \RuntimeException(\sprintf('No form metadata found for template "%s"', $templateKey));
+            throw new \RuntimeException(\sprintf('No form metadata found for template key "%s"', $templateKey));
         }
 
-        $templateMetadata = $formMetadata->getTemplate();
-        if (!$templateMetadata) {
-            throw new \RuntimeException(\sprintf('No template metadata found for template "%s"', $templateKey));
-        }
-
-        return $templateMetadata;
+        return $formMetadata;
     }
 
     private function getCacheLifetime(object $templateMetadata): ?int
     {
+        if (!\method_exists($templateMetadata, 'getCacheLifetime')) {
+            return null;
+        }
+
+        /** @var CacheLifetimeMetadata|null $cacheLifetimeMetadata */
         $cacheLifetimeMetadata = $templateMetadata->getCacheLifetime();
 
-        if (!$cacheLifetimeMetadata instanceof CacheLifetimeMetadata) {
+        if (!$cacheLifetimeMetadata) {
             return null;
         }
 

@@ -7,7 +7,7 @@ use Sulu\Bundle\ActivityBundle\Domain\Event\DomainEvent;
 
 abstract class AbstractDeletedEvent extends DomainEvent
 {
-    public function __construct(private int $id, private string $title = '')
+    public function __construct(private string $uuid, private string $title = '')
     {
         parent::__construct();
     }
@@ -19,7 +19,7 @@ abstract class AbstractDeletedEvent extends DomainEvent
 
     public function getResourceId(): string
     {
-        return (string)$this->id;
+        return $this->uuid;
     }
 
     public function getResourceTitle(): ?string

@@ -7,6 +7,7 @@ namespace Manuxi\SuluEventBundle\Entity;
 use Sulu\Content\Domain\Model\ContentRichEntityInterface;
 use Sulu\Content\Domain\Model\ContentRichEntityTrait;
 use Sulu\Content\Domain\Model\DimensionContentInterface;
+use Symfony\Component\Uid\Uuid;
 
 /**
  * @implements ContentRichEntityInterface<EventDimensionContent>
@@ -26,16 +27,22 @@ class Event implements ContentRichEntityInterface
     public const SECURITY_CONTEXT = 'sulu.events.events';
     public const TEMPLATE_TYPE = 'event';
 
-    private ?int $id = null;
+    protected string $uuid;
 
-    public function __construct()
+    public function __construct(?string $uuid = null)
     {
+        $this->uuid = $uuid ?: Uuid::v7()->toRfc4122();
         $this->initializeDimensionContents();
     }
 
-    public function getId(): ?int
+    public function getId(): string
     {
-        return $this->id;
+        return $this->uuid;
+    }
+
+    public function getUuid(): string
+    {
+        return $this->uuid;
     }
 
     public function createDimensionContent(): DimensionContentInterface

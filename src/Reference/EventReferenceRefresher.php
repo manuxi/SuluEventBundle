@@ -57,13 +57,11 @@ class EventReferenceRefresher implements ReferenceRefresherInterface
             }
 
             if ($resourceId !== $currentResourceId) {
-                // Process finished group
                 foreach ($this->resolveEventDimensionContents($currentGroup) as $merged) {
                     $this->processEventDimensionContent($merged);
                     yield $merged;
                 }
 
-                // Reset for next group
                 $currentGroup = [];
                 $currentResourceId = $resourceId;
             }
@@ -71,7 +69,6 @@ class EventReferenceRefresher implements ReferenceRefresherInterface
             $currentGroup[] = $dimensionContent;
         }
 
-        // Process the last group if present
         if ([] !== $currentGroup) {
             foreach ($this->resolveEventDimensionContents($currentGroup) as $merged) {
                 $this->processEventDimensionContent($merged);
@@ -80,9 +77,6 @@ class EventReferenceRefresher implements ReferenceRefresherInterface
         }
     }
 
-    /**
-     * Process a single event dimension content: collect and persist references.
-     */
     private function processEventDimensionContent(EventDimensionContent $eventDimensionContent): void
     {
         $referenceCollector = new ReferenceCollector(
@@ -97,7 +91,6 @@ class EventReferenceRefresher implements ReferenceRefresherInterface
             ]
         );
 
-        // Collect references from content views (template fields)
         $contentViews = $this->contentViewResolver->getContentViews(dimensionContent: $eventDimensionContent);
 
         foreach ($contentViews as $key => $contentView) {
@@ -113,20 +106,15 @@ class EventReferenceRefresher implements ReferenceRefresherInterface
             }
         }
 
-        // Collect direct field references (non-template fields)
         $this->collectDirectReferences($eventDimensionContent, $referenceCollector);
 
         $referenceCollector->persistReferences();
     }
 
-    /**
-     * Collect references from direct entity fields (not handled by template system).
-     */
     private function collectDirectReferences(
         EventDimensionContent $eventDimensionContent,
         ReferenceCollector $referenceCollector
     ): void {
-        // Image reference
         $image = $eventDimensionContent->getImage();
         if (null !== $image) {
             $referenceCollector->addReference(
@@ -136,7 +124,6 @@ class EventReferenceRefresher implements ReferenceRefresherInterface
             );
         }
 
-        // PDF reference
         $pdf = $eventDimensionContent->getPdf();
         if (null !== $pdf) {
             $referenceCollector->addReference(
@@ -146,7 +133,6 @@ class EventReferenceRefresher implements ReferenceRefresherInterface
             );
         }
 
-        // Images array (gallery)
         $images = $eventDimensionContent->getImages();
         if (null !== $images && \is_array($images)) {
             foreach ($images as $index => $imageData) {
@@ -160,7 +146,6 @@ class EventReferenceRefresher implements ReferenceRefresherInterface
             }
         }
 
-        // Speaker (Contact) reference
         $speaker = $eventDimensionContent->getSpeaker();
         if (null !== $speaker) {
             $referenceCollector->addReference(
@@ -170,7 +155,6 @@ class EventReferenceRefresher implements ReferenceRefresherInterface
             );
         }
 
-        // Author (Contact) reference
         $author = $eventDimensionContent->getAuthor();
         if (null !== $author) {
             $referenceCollector->addReference(
@@ -180,7 +164,6 @@ class EventReferenceRefresher implements ReferenceRefresherInterface
             );
         }
 
-        // Location reference
         $location = $eventDimensionContent->getLocation();
         if (null !== $location) {
             $referenceCollector->addReference(
@@ -214,7 +197,7 @@ class EventReferenceRefresher implements ReferenceRefresherInterface
                     'dimensionContent.event',
                     'event',
                     Join::WITH,
-                    'event.id = :resourceId'
+                    'event.uuid = :resourceId'
                 )
                 ->andWhere('dimensionContent.locale = :locale OR dimensionContent.locale IS NULL')
                 ->andWhere('dimensionContent.stage = :stage')
@@ -256,26 +239,31 @@ class EventReferenceRefresher implements ReferenceRefresherInterface
                         continue;
                     }
 
-                    $dimensionContentCollection = new DimensionContentCollection(
-                        new ArrayCollection(\array_filter([
-                            $unlocalizedDimensionContent,
-                            $localizedDimensionContent,
-                        ])),
-                        ['locale' => $locale, 'stage' => $stage],
-                        EventDimensionContent::class
-                    );
+                    if (null !== $unlocalizedDimensionContent) {
+                        $dimensionContentCollection = new DimensionContentCollection(
+                            new ArrayCollection([$unlocalizedDimensionContent, $localizedDimensionContent]),
+                            [
+                                'locale' => $locale,
+                                'stage' => $stage,
+                            ],
+                            EventDimensionContent::class
+                        );
 
-                    /** @var EventDimensionContent $merged */
-                    $merged = $this->contentMerger->merge($dimensionContentCollection);
+                        /** @var EventDimensionContent $mergedDimensionContent */
+                        $mergedDimensionContent = $this->contentMerger->merge($dimensionContentCollection);
 
-                    if (null === $merged->getLocale()) {
-                        $merged->setLocale($locale);
+                        if (null === $mergedDimensionContent->getLocale()) {
+                            $mergedDimensionContent->setLocale($locale);
+                        }
+
+                        if (empty($mergedDimensionContent->getTemplateKey())) {
+                            $mergedDimensionContent->setTemplateKey('event');
+                        }
+
+                        yield $mergedDimensionContent;
+                    } else {
+                        yield $localizedDimensionContent;
                     }
-
-                    if (empty($merged->getTemplateKey())) {
-                        $merged->setTemplateKey('event');
-                    }
-                    yield $merged;
                 }
             }
         }

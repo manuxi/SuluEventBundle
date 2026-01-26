@@ -50,7 +50,7 @@ class EventWebsiteSearchProviderTest extends TestCase
     public function testProvideSkipsEventsWithoutLiveContent(): void
     {
         $event = $this->createMock(Event::class);
-        $event->method('getId')->willReturn(1);
+        $event->method('getId')->willReturn('019bf796-423c-7e1f-969c-5c4ece5e9b73');
 
         $draftContent = $this->createMock(EventDimensionContent::class);
         $draftContent->method('getStage')->willReturn(DimensionContentInterface::STAGE_DRAFT);

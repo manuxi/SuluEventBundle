@@ -5,27 +5,18 @@
     <joins name="dimensionContent">
         <join>
             <entity-name>dimensionContent</entity-name>
-            <field-name>Manuxi\SuluEventBundle\Entity\Event.dimensionContents</field-name>
-            <method>LEFT</method>
-            <condition>dimensionContent.locale = :locale AND dimensionContent.stage = 'draft' AND dimensionContent.version = 0</condition>
-        </join>
-    </joins>
-
-    <joins name="liveDimensionContent">
-        <join>
-            <entity-name>liveDimensionContent</entity-name>
-            <field-name>Manuxi\SuluEventBundle\Entity\Event.dimensionContents</field-name>
-            <method>LEFT</method>
-            <condition>liveDimensionContent.locale = :locale AND liveDimensionContent.stage = 'live'</condition>
+            <field-name>%sulu.model.event.class%.dimensionContents</field-name>
+            <condition>
+                dimensionContent.stage = 'draft' AND dimensionContent.locale = :locale AND dimensionContent.version = 0
+            </condition>
         </join>
     </joins>
 
     <joins name="ghostDimensionContent">
         <join>
             <entity-name>ghostDimensionContent</entity-name>
-            <field-name>Manuxi\SuluEventBundle\Entity\Event.dimensionContents</field-name>
-            <method>LEFT</method>
-            <condition>ghostDimensionContent.locale = dimensionContent.ghostLocale AND ghostDimensionContent.stage = 'draft' AND ghostDimensionContent.version = 0 AND dimensionContent.locale IS NULL</condition>
+            <field-name>%sulu.model.event.class%.dimensionContents</field-name>
+            <condition>ghostDimensionContent.stage = 'draft' AND ghostDimensionContent.version = 0</condition>
         </join>
     </joins>
 
@@ -82,7 +73,7 @@
 
     <properties>
         <property name="id" translation="sulu_admin.id" visibility="no">
-            <field-name>id</field-name>
+            <field-name>uuid</field-name>
             <entity-name>Manuxi\SuluEventBundle\Entity\Event</entity-name>
         </property>
 
@@ -116,7 +107,6 @@
             <field-name>type</field-name>
             <entity-name>dimensionContent</entity-name>
             <joins ref="dimensionContent"/>
-            <!-- <transformer type="event_type_color" /> -->
         </property>
 
         <property name="location" translation="sulu_event.location" visibility="always">
@@ -194,22 +184,88 @@
             </field>
         </concatenation-property>
 
-        <property name="publishedState" type="string" visibility="never">
-            <field-name>workflowPlace</field-name>
-            <entity-name>dimensionContent</entity-name>
-        </property>
-
-        <property name="publishedAt" translation="sulu_admin.published" type="datetime" visibility="yes">
-            <field-name>workflowPublished</field-name>
+        <property name="authored" translation="sulu_event.authored" type="datetime" visibility="no" sortable="true">
+            <field-name>authored</field-name>
             <entity-name>dimensionContent</entity-name>
             <joins ref="dimensionContent"/>
         </property>
 
-        <property name="livePublished" type="date" visibility="never">
-            <field-name>workflowPublished</field-name>
-            <entity-name>dimensionContent</entity-name>
-            <joins ref="liveDimensionContent"/>
-            <transformer type="datetime"/>
-        </property>
+        <case-property name="published" visibility="always" translation="sulu_admin.published">
+            <field>
+                <field-name>workflowPublished</field-name>
+                <entity-name>dimensionContent</entity-name>
+                <joins ref="dimensionContent"/>
+            </field>
+            <field>
+                <field-name>workflowPublished</field-name>
+                <entity-name>ghostDimensionContent</entity-name>
+                <joins ref="ghostDimensionContent"/>
+            </field>
+        </case-property>
+
+        <case-property name="publishedState" visibility="always" translation="sulu_admin.published">
+            <field>
+                <field-name>workflowPlace</field-name>
+                <entity-name>dimensionContent</entity-name>
+                <joins ref="dimensionContent"/>
+            </field>
+            <field>
+                <field-name>workflowPlace</field-name>
+                <entity-name>ghostDimensionContent</entity-name>
+                <joins ref="ghostDimensionContent"/>
+            </field>
+        </case-property>
+
+        <case-property name="livePublished" visibility="never" translation="sulu_admin.live_published">
+            <field>
+                <field-name>workflowPublished</field-name>
+                <entity-name>dimensionContent</entity-name>
+                <joins ref="dimensionContent"/>
+            </field>
+            <field>
+                <field-name>workflowPublished</field-name>
+                <entity-name>ghostDimensionContent</entity-name>
+                <joins ref="ghostDimensionContent"/>
+            </field>
+        </case-property>
+
+        <case-property name="locale" visibility="never">
+            <field>
+                <field-name>locale</field-name>
+                <entity-name>dimensionContent</entity-name>
+                <joins ref="dimensionContent"/>
+            </field>
+            <field>
+                <field-name>locale</field-name>
+                <entity-name>ghostDimensionContent</entity-name>
+                <joins ref="ghostDimensionContent"/>
+            </field>
+        </case-property>
+
+        <case-property name="ghostLocale" visibility="never">
+            <field>
+                <field-name>ghostLocale</field-name>
+                <entity-name>dimensionContent</entity-name>
+                <joins ref="dimensionContent"/>
+            </field>
+            <field>
+                <field-name>ghostLocale</field-name>
+                <entity-name>ghostDimensionContent</entity-name>
+                <joins ref="ghostDimensionContent"/>
+            </field>
+        </case-property>
+
+        <case-property name="availableLocales" visibility="never">
+            <field>
+                <field-name>availableLocales</field-name>
+                <entity-name>dimensionContent</entity-name>
+                <joins ref="dimensionContent"/>
+            </field>
+            <field>
+                <field-name>availableLocales</field-name>
+                <entity-name>ghostDimensionContent</entity-name>
+                <joins ref="ghostDimensionContent"/>
+            </field>
+        </case-property>
     </properties>
 </list>

@@ -43,7 +43,7 @@ class EventSitemapProvider implements SitemapProviderInterface
 
         $result = [];
         foreach ($events as $eventData) {
-            $eventId = (string) $eventData['id'];
+            $eventId = (string) $eventData['uuid'];
             $eventLocale = $eventData['locale'];
             $slug = $eventData['slug'];
             $lastModified = $eventData['lastModified'];
@@ -59,7 +59,6 @@ class EventSitemapProvider implements SitemapProviderInterface
                 $lastModified,
             );
 
-            // Add alternate links for other locales
             if (isset($alternateRoutes[$eventId])) {
                 foreach ($alternateRoutes[$eventId] as $alternateLocale => $alternateSlug) {
                     if ($alternateLocale !== $eventLocale && !empty($alternateSlug)) {
@@ -122,13 +121,12 @@ class EventSitemapProvider implements SitemapProviderInterface
     /**
      * Find published events for sitemap.
      *
-     * @return array<array{id: int, locale: string, slug: string, lastModified: \DateTimeInterface|null}>
+     * @return array<array{uuid: string, locale: string, slug: string, lastModified: \DateTimeInterface|null}>
      */
     private function findEvents(string $locale, int $limit, int $offset): array
     {
         $queryBuilder = $this->entityRepository->createQueryBuilder('event');
 
-        // Join localized dimension content
         $queryBuilder->leftJoin(
             'event.dimensionContents',
             'dimensionContent',
@@ -139,7 +137,6 @@ class EventSitemapProvider implements SitemapProviderInterface
              AND (dimensionContent.seoHideInSitemap = :hide OR dimensionContent.seoHideInSitemap IS NULL)'
         );
 
-        // Join route for slug
         $queryBuilder->leftJoin('dimensionContent.route', 'route');
 
         $queryBuilder->setParameter('locale', $locale);
@@ -147,12 +144,10 @@ class EventSitemapProvider implements SitemapProviderInterface
         $queryBuilder->setParameter('version', DimensionContentInterface::CURRENT_VERSION);
         $queryBuilder->setParameter('hide', false);
 
-        // Only get events that have dimension content (INNER JOIN behavior)
         $queryBuilder->andWhere('dimensionContent.id IS NOT NULL');
 
-        // Select fields
         $queryBuilder->select([
-            'event.id AS id',
+            'event.uuid AS uuid',
             'dimensionContent.locale AS locale',
             'route.slug AS slug',
             'dimensionContent.changed AS lastModified',
@@ -174,7 +169,6 @@ class EventSitemapProvider implements SitemapProviderInterface
     {
         $queryBuilder = $this->entityRepository->createQueryBuilder('event');
 
-        // Get routes for ALL locales (not just the current one)
         $queryBuilder->leftJoin(
             'event.dimensionContents',
             'dimensionContent',
@@ -191,18 +185,17 @@ class EventSitemapProvider implements SitemapProviderInterface
         $queryBuilder->setParameter('version', DimensionContentInterface::CURRENT_VERSION);
         $queryBuilder->setParameter('hide', false);
 
-        // Only events with routes
         $queryBuilder->andWhere('route.slug IS NOT NULL');
 
         $queryBuilder->select([
-            'event.id AS id',
+            'event.uuid AS uuid',
             'dimensionContent.locale AS locale',
             'route.slug AS slug',
         ]);
 
         $result = [];
         foreach ($queryBuilder->getQuery()->getResult() as $row) {
-            $eventId = (string) $row['id'];
+            $eventId = (string) $row['uuid'];
             $rowLocale = $row['locale'];
             $slug = $row['slug'];
 
@@ -220,7 +213,7 @@ class EventSitemapProvider implements SitemapProviderInterface
     {
         $queryBuilder = $this->entityRepository->createQueryBuilder('event');
 
-        $queryBuilder->select('COUNT(DISTINCT event.id)');
+        $queryBuilder->select('COUNT(DISTINCT event.uuid)');
 
         $queryBuilder->leftJoin(
             'event.dimensionContents',

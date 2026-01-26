@@ -21,7 +21,7 @@ class EventObjectProvider implements PreviewDefaultsProviderInterface
 
     public function getDefaults(PreviewContext $previewContext): array
     {
-        $event = $this->eventRepository->findById((int) $previewContext->getId());
+        $event = $this->eventRepository->findByUuid($previewContext->getId());
 
         if (!$event) {
             return [];

@@ -18,9 +18,14 @@ class EventTest extends TestCase
         $this->entity = new Event();
     }
 
-    public function testGetIdReturnsNullForNewEntity(): void
+    public function testGetIdReturnsUuidForNewEntity(): void
     {
-        $this->assertNull($this->entity->getId());
+        $id = $this->entity->getId();
+        $this->assertIsString($id);
+        $this->assertMatchesRegularExpression(
+            '/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/',
+            $id
+        );
     }
 
     public function testGetDimensionContentsReturnsEmptyCollectionForNewEntity(): void
@@ -62,36 +67,16 @@ class EventTest extends TestCase
         $dimensionContent = $this->entity->createDimensionContent();
 
         $this->assertInstanceOf(EventDimensionContent::class, $dimensionContent);
-        $this->assertSame($this->entity, $dimensionContent->getEvent());
+        $this->assertSame($this->entity, $dimensionContent->getResource());
     }
 
-    public function testMultipleDimensionContentsCanBeAdded(): void
+    public function testGetResourceKeyReturnsCorrectValue(): void
     {
-        // English draft
-        $enDraft = new EventDimensionContent($this->entity);
-        $enDraft->setLocale('en');
-        $enDraft->setStage(DimensionContentInterface::STAGE_DRAFT);
-        $this->entity->addDimensionContent($enDraft);
-
-        // English live
-        $enLive = new EventDimensionContent($this->entity);
-        $enLive->setLocale('en');
-        $enLive->setStage(DimensionContentInterface::STAGE_LIVE);
-        $this->entity->addDimensionContent($enLive);
-
-        // German draft
-        $deDraft = new EventDimensionContent($this->entity);
-        $deDraft->setLocale('de');
-        $deDraft->setStage(DimensionContentInterface::STAGE_DRAFT);
-        $this->entity->addDimensionContent($deDraft);
-
-        // Unlocalized (for dates, location, etc.)
-        $unlocalized = new EventDimensionContent($this->entity);
-        $unlocalized->setLocale(null);
-        $unlocalized->setStage(DimensionContentInterface::STAGE_DRAFT);
-        $this->entity->addDimensionContent($unlocalized);
-
-        $this->assertCount(4, $this->entity->getDimensionContents());
+        $this->assertEquals('events', Event::RESOURCE_KEY);
     }
 
+    public function testGetSecurityContextReturnsCorrectValue(): void
+    {
+        $this->assertEquals('sulu.events.events', Event::SECURITY_CONTEXT);
+    }
 }

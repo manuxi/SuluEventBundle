@@ -47,9 +47,8 @@ class LinkProvider implements LinkProviderInterface
             'stage' => $published ? DimensionContentInterface::STAGE_LIVE : DimensionContentInterface::STAGE_DRAFT,
         ];
 
-        $intIds = \array_map('intval', $hrefs);
         $stage = $dimensionAttributes['stage'];
-        $result = $this->eventRepository->findByIds($intIds, $locale, $stage);
+        $result = $this->eventRepository->findByUuids($hrefs, $locale, $stage);
 
         foreach ($result as $event) {
             /** @var EventDimensionContent $dimensionContent */

@@ -32,13 +32,11 @@ class EventSearchListenerTest extends TestCase
         $this->webspaceManager = $this->createMock(WebspaceManagerInterface::class);
         $this->contentAggregator = $this->createMock(ContentAggregatorInterface::class);
 
-        // Mock Webspace Manager to return one locale 'en'
         $webspace = new Webspace();
         $localization = new Localization();
         $localization->setLanguage('en');
         $webspace->addLocalization($localization);
 
-        // Pass array to constructor assuming it accepts it, or mock the collection
         $collection = new WebspaceCollection(['en' => $webspace]);
 
         $this->webspaceManager->method('getWebspaceCollection')->willReturn($collection);
@@ -53,7 +51,7 @@ class EventSearchListenerTest extends TestCase
     public function testOnCreatedOrModified(): void
     {
         $event = $this->createMock(Event::class);
-        $event->method('getId')->willReturn(1);
+        $event->method('getId')->willReturn('019bf796-423c-7e1f-969c-5c4ece5e9b73');
 
         $domainEvent = $this->createMock(CreatedEvent::class);
         $domainEvent->method('getEntity')->willReturn($event);
@@ -67,7 +65,7 @@ class EventSearchListenerTest extends TestCase
         $this->engine->expects($this->once())
             ->method('saveDocument')
             ->with('admin', $this->callback(function ($doc) {
-                return 'event-1-en' === $doc['id'] && 'Test Event' === $doc['title'];
+                return 'event-019bf796-423c-7e1f-969c-5c4ece5e9b73-en' === $doc['id'] && 'Test Event' === $doc['title'];
             }));
 
         $this->listener->onCreatedOrModified($domainEvent);
@@ -76,7 +74,7 @@ class EventSearchListenerTest extends TestCase
     public function testOnPublished(): void
     {
         $event = $this->createMock(Event::class);
-        $event->method('getId')->willReturn(1);
+        $event->method('getId')->willReturn('019bf796-423c-7e1f-969c-5c4ece5e9b73');
 
         $domainEvent = $this->createMock(PublishedEvent::class);
         $domainEvent->method('getEntity')->willReturn($event);
@@ -87,14 +85,13 @@ class EventSearchListenerTest extends TestCase
 
         $this->contentAggregator->method('aggregate')->willReturn($dimensionContent);
 
-        // Expect calling saveDocument twice (admin and website)
         $msg = '';
         $this->engine->expects($this->exactly(2))
             ->method('saveDocument')
             ->willReturnCallback(function (string $index, array $document) use (&$msg) {
-                if ('admin' === $index && 'event-1-en' === $document['id']) {
+                if ('admin' === $index && 'event-019bf796-423c-7e1f-969c-5c4ece5e9b73-en' === $document['id']) {
                     $msg .= 'admin_ok';
-                } elseif ('website' === $index && 'event-1-en' === $document['id']) {
+                } elseif ('website' === $index && 'event-019bf796-423c-7e1f-969c-5c4ece5e9b73-en' === $document['id']) {
                     $msg .= 'website_ok';
                 }
             });
@@ -105,7 +102,7 @@ class EventSearchListenerTest extends TestCase
     public function testOnRemoved(): void
     {
         $domainEvent = $this->createMock(RemovedEvent::class);
-        $domainEvent->method('getResourceId')->willReturn('1');
+        $domainEvent->method('getResourceId')->willReturn('019bf796-423c-7e1f-969c-5c4ece5e9b73');
 
         $this->engine->expects($this->exactly(2))
             ->method('deleteDocument')
@@ -113,7 +110,7 @@ class EventSearchListenerTest extends TestCase
                 if (!in_array($index, ['admin', 'website'])) {
                     throw new \Exception("Unexpected index: $index");
                 }
-                if ('event-1-en' !== $id) {
+                if ('event-019bf796-423c-7e1f-969c-5c4ece5e9b73-en' !== $id) {
                     throw new \Exception("Unexpected id: $id");
                 }
             });

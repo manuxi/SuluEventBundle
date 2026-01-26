@@ -50,24 +50,28 @@ class EventRepository extends ServiceEntityRepository
         return $queryBuilder->getQuery()->getResult();
     }
 
-    public function findById(int $id): ?Event
+    public function findByUuid(string $uuid): ?Event
     {
         $queryBuilder = $this->createQueryBuilder('event')
             ->leftJoin('event.dimensionContents', 'dimensionContent')
             ->addSelect('dimensionContent')
-            ->where('event.id = :id')
-            ->setParameter('id', $id);
+            ->where('event.uuid = :uuid')
+            ->setParameter('uuid', $uuid);
 
         return $queryBuilder->getQuery()->getOneOrNullResult();
     }
 
-    public function findByIds(array $ids, string $locale, string $stage = DimensionContentInterface::STAGE_LIVE): array
+    /**
+     * @param string[] $uuids
+     * @return Event[]
+     */
+    public function findByUuids(array $uuids, string $locale, string $stage = DimensionContentInterface::STAGE_LIVE): array
     {
-        $filters = ['ids' => $ids, 'locale' => $locale, 'stage' => $stage];
+        $filters = ['uuids' => $uuids, 'locale' => $locale, 'stage' => $stage];
 
         $qb = $this->buildQueryBuilder(
             $filters,
-            [], // sort
+            [],
             [self::GROUP_SELECT_EVENT_WEBSITE => true]
         );
 
@@ -78,7 +82,7 @@ class EventRepository extends ServiceEntityRepository
     {
         $qb = $this->buildQueryBuilder(
             ['locale' => $locale, 'stage' => $stage],
-            [], // sort
+            [],
             [self::GROUP_SELECT_EVENT_WEBSITE => true]
         );
 
@@ -87,8 +91,8 @@ class EventRepository extends ServiceEntityRepository
 
     /**
      * @param array{
-     *     id?: int,
-     *     ids?: int[],
+     *     uuid?: string,
+     *     uuids?: string[],
      *     locale?: string|null,
      *     stage?: string|null,
      *     categoryIds?: int[],
@@ -122,8 +126,8 @@ class EventRepository extends ServiceEntityRepository
 
     /**
      * @param array{
-     *     id?: int,
-     *     ids?: int[],
+     *     uuid?: string,
+     *     uuids?: string[],
      *     locale?: string|null,
      *     stage?: string|null,
      *     categoryIds?: int[],
@@ -147,7 +151,7 @@ class EventRepository extends ServiceEntityRepository
         $selects = $this->normalizeSelects([]);
         $queryBuilder = $this->buildQueryBuilder($filters, [], $selects);
 
-        $queryBuilder->select('COUNT(DISTINCT event.id)');
+        $queryBuilder->select('COUNT(DISTINCT event.uuid)');
 
         return (int) $queryBuilder->getQuery()->getSingleScalarResult();
     }
@@ -155,7 +159,7 @@ class EventRepository extends ServiceEntityRepository
     public function countAll(): int
     {
         return (int) $this->createQueryBuilder('e')
-            ->select('COUNT(e.id)')
+            ->select('COUNT(e.uuid)')
             ->getQuery()
             ->getSingleScalarResult();
     }
@@ -164,7 +168,7 @@ class EventRepository extends ServiceEntityRepository
     {
         $qb = $this->createQueryBuilder('event');
 
-        $qb->select('COUNT(DISTINCT event.id)')
+        $qb->select('COUNT(DISTINCT event.uuid)')
             ->leftJoin('event.dimensionContents', 'dc')
             ->where('dc.locale = :locale')
             ->andWhere('dc.stage = :stage')
@@ -196,8 +200,6 @@ class EventRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find events for calendar display.
-     *
      * @param array{locale: string, start?: string, end?: string} $filters
      */
     public function findForCalendar(array $filters): array
@@ -373,14 +375,14 @@ class EventRepository extends ServiceEntityRepository
      */
     private function applyFilters(QueryBuilder $queryBuilder, array $filters): void
     {
-        if (isset($filters['id'])) {
-            $queryBuilder->andWhere('event.id = :id');
-            $queryBuilder->setParameter('id', $filters['id']);
+        if (isset($filters['uuid'])) {
+            $queryBuilder->andWhere('event.uuid = :uuid');
+            $queryBuilder->setParameter('uuid', $filters['uuid']);
         }
 
-        if (isset($filters['ids'])) {
-            $queryBuilder->andWhere('event.id IN (:ids)');
-            $queryBuilder->setParameter('ids', $filters['ids']);
+        if (isset($filters['uuids'])) {
+            $queryBuilder->andWhere('event.uuid IN (:uuids)');
+            $queryBuilder->setParameter('uuids', $filters['uuids']);
         }
 
         if (isset($filters['types'])) {
@@ -470,7 +472,7 @@ class EventRepository extends ServiceEntityRepository
 
     /**
      * @param array{
-     *     id?: 'asc'|'desc',
+     *     uuid?: 'asc'|'desc',
      *     title?: 'asc'|'desc',
      *     startDate?: 'asc'|'desc',
      *     created?: 'asc'|'desc',
@@ -481,8 +483,8 @@ class EventRepository extends ServiceEntityRepository
     {
         foreach ($sortBys as $field => $direction) {
             switch ($field) {
-                case 'id':
-                    $queryBuilder->addOrderBy('event.id', $direction);
+                case 'uuid':
+                    $queryBuilder->addOrderBy('event.uuid', $direction);
                     break;
                 case 'title':
                     $queryBuilder->addOrderBy('dimensionContent.title', $direction);

@@ -8,8 +8,8 @@
             table="app_event"
             repository-class="Manuxi\SuluEventBundle\Repository\EventRepository">
 
-        <id name="id" type="integer" column="id">
-            <generator strategy="AUTO"/>
+        <id name="uuid" type="string" column="uuid" length="36">
+            <generator strategy="NONE"/>
         </id>
 
         <one-to-many field="dimensionContents"

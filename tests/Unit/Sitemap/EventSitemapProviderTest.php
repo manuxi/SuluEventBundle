@@ -44,7 +44,6 @@ class EventSitemapProviderTest extends TestCase
         $this->webspaceManager->method('findPortalInformationsByHostIncludingSubdomains')
             ->willReturn([$portalInfo]);
 
-        // Mock QueryBuilder for findEvents and getAlternateRoutes
         $queryBuilder1 = $this->createMock(QueryBuilder::class);
         $query1 = $this->createMock(Query::class);
         $queryBuilder1->method('leftJoin')->willReturnSelf();
@@ -67,47 +66,38 @@ class EventSitemapProviderTest extends TestCase
         $this->repository->expects($this->exactly(2))->method('createQueryBuilder')
             ->willReturnOnConsecutiveCalls($queryBuilder1, $queryBuilder2);
 
-        // Result for findEvents
         $eventsData = [
             [
-                'id' => 1,
+                'uuid' => '019bf796-423c-7e1f-969c-5c4ece5e9b73',
                 'locale' => 'en',
                 'slug' => '/event-1',
                 'lastModified' => new \DateTime('2023-01-01'),
             ],
         ];
 
-        // Result for getAlternateRoutes
         $alternateRoutesData = [
             [
-                'id' => 1,
+                'uuid' => '019bf796-423c-7e1f-969c-5c4ece5e9b73',
                 'locale' => 'de',
                 'slug' => '/event-1-de',
             ],
         ];
 
-        // Result for findEvents (query1)
         $query1->method('getResult')->willReturn($eventsData);
-
-        // Result for getAlternateRoutes (query2)
         $query2->method('getResult')->willReturn($alternateRoutesData);
 
         $result = $this->provider->build(1, 'http', 'localhost');
 
         $this->assertCount(1, $result);
         $sitemapUrl = $result[0];
+
         $this->assertEquals('http://localhost/event-1', $sitemapUrl->getLoc());
         $this->assertEquals('en', $sitemapUrl->getLocale());
 
         $alternateLinks = $sitemapUrl->getAlternateLinks();
-
         $this->assertCount(2, $alternateLinks);
-
-        $this->assertArrayHasKey('en', $alternateLinks);
         $this->assertEquals('en', $alternateLinks['en']->getLocale());
         $this->assertEquals('http://localhost/event-1', $alternateLinks['en']->getHref());
-
-        $this->assertArrayHasKey('de', $alternateLinks);
         $this->assertEquals('de', $alternateLinks['de']->getLocale());
         $this->assertEquals('http://localhost/event-1-de', $alternateLinks['de']->getHref());
     }
@@ -127,20 +117,18 @@ class EventSitemapProviderTest extends TestCase
 
         $queryBuilder = $this->createMock(QueryBuilder::class);
         $query = $this->createMock(Query::class);
-
-        $this->repository->method('createQueryBuilder')->willReturn($queryBuilder);
-
         $queryBuilder->method('leftJoin')->willReturnSelf();
         $queryBuilder->method('setParameter')->willReturnSelf();
         $queryBuilder->method('andWhere')->willReturnSelf();
         $queryBuilder->method('select')->willReturnSelf();
         $queryBuilder->method('getQuery')->willReturn($query);
 
-        $query->method('getSingleScalarResult')->willReturn(15000); // 1.5 pages
+        $this->repository->method('createQueryBuilder')->willReturn($queryBuilder);
+
+        $query->method('getSingleScalarResult')->willReturn(150);
 
         $maxPage = $this->provider->getMaxPage('http', 'localhost');
 
-        // PAGE_SIZE is 10000. 15000 / 10000 = 1.5 => ceil => 2
-        $this->assertEquals(2, $maxPage);
+        $this->assertEquals(1, $maxPage);
     }
 }

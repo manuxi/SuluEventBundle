@@ -7,7 +7,7 @@
             <entity-name>dimensionContent</entity-name>
             <field-name>Manuxi\SuluEventBundle\Entity\Event.dimensionContents</field-name>
             <method>INNER</method>
-            <condition>dimensionContent.locale = :locale AND dimensionContent.stage = 'draft' AND dimensionContent.version > 0 AND Manuxi\SuluEventBundle\Entity\Event.id = :id</condition>
+            <condition>dimensionContent.locale = :locale AND dimensionContent.stage = 'draft' AND dimensionContent.version > 0 AND Manuxi\SuluEventBundle\Entity\Event.uuid = :eventUuid</condition>
         </join>
     </joins>
 
@@ -40,7 +40,7 @@
 
     <properties>
         <property name="id" translation="sulu_admin.id" visibility="never">
-            <field-name>id</field-name>
+            <field-name>uuid</field-name>
             <entity-name>Manuxi\SuluEventBundle\Entity\Event</entity-name>
         </property>
 

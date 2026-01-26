@@ -63,8 +63,6 @@ class EventController extends AbstractRestController
     )]
     public function cgetAction(Request $request): Response
     {
-
-        // Use events_published list for selection overlays
         $listKey = null;
         if ($request->query->has('selectedIds')) {
             $listKey = Event::LIST_KEY_PUBLISHED;
@@ -90,12 +88,12 @@ class EventController extends AbstractRestController
         defaults: ['_format' => 'json'],
         methods: ['GET']
     )]
-    public function getAction(Request $request, int $id): Response
+    public function getAction(Request $request, string $id): Response
     {
         /** @var EventRepository $eventRepository */
         $eventRepository = $this->entityManager->getRepository(Event::class);
         /** @var Event|null $event */
-        $event = $eventRepository->findById($id);
+        $event = $eventRepository->findByUuid($id);
 
         if (!$event) {
             throw new NotFoundHttpException();
@@ -136,7 +134,6 @@ class EventController extends AbstractRestController
                 ['locale' => $dimensionAttributes['locale']],
                 WorkflowInterface::WORKFLOW_TRANSITION_PUBLISH
             );
-            // Reload dimension content after transition
             $dimensionContent = $this->contentManager->resolve($event, $dimensionAttributes);
             $this->entityManager->flush();
             $this->domainEventCollector->collect(new PublishedEvent($event, $data));
@@ -147,118 +144,17 @@ class EventController extends AbstractRestController
 
     #[Route(
         path: '/events/{id}.{_format}',
-        name: 'sulu_event.post_event_trigger',
-        options: ['expose' => true],
-        defaults: ['_format' => 'json'],
-        methods: ['POST']
-    )]
-    public function postTriggerAction(string $id, Request $request): Response
-    {
-        /** @var EventRepository $eventRepository */
-        $eventRepository = $this->entityManager->getRepository(Event::class);
-        /** @var Event|null $event */
-        $event = $eventRepository->findById((int) $id);
-
-        if (!$event) {
-            throw new NotFoundHttpException();
-        }
-
-        $dimensionAttributes = $this->getDimensionAttributes($request);
-        $action = $request->query->get('action');
-
-        switch ($action) {
-            case 'copy_locale':
-                $dimensionContent = $this->contentManager->copy(
-                    $event,
-                    [
-                        'stage' => DimensionContentInterface::STAGE_DRAFT,
-                        'locale' => $request->query->get('src'),
-                    ],
-                    $event,
-                    [
-                        'stage' => DimensionContentInterface::STAGE_DRAFT,
-                        'locale' => $request->query->get('dest'),
-                    ]
-                );
-
-                $this->entityManager->flush();
-
-                return $this->handleView($this->view($this->normalize($event, $dimensionContent)));
-
-            case 'unpublish':
-                $this->contentWorkflow->apply(
-                    $event,
-                    ['locale' => $dimensionAttributes['locale']],
-                    WorkflowInterface::WORKFLOW_TRANSITION_UNPUBLISH
-                );
-                $dimensionContent = $this->contentManager->resolve($event, $dimensionAttributes);
-
-                $this->entityManager->flush();
-                $payload = $request->query->all();
-                $payload['title'] = $dimensionContent->getTitle();
-                $this->domainEventCollector->collect(new UnpublishedEvent($event, $payload));
-
-                return $this->handleView($this->view($this->normalize($event, $dimensionContent)));
-
-            case 'remove_draft':
-                $this->contentWorkflow->apply(
-                    $event,
-                    ['locale' => $dimensionAttributes['locale']],
-                    WorkflowInterface::WORKFLOW_TRANSITION_REMOVE_DRAFT
-                );
-                $dimensionContent = $this->contentManager->resolve($event, $dimensionAttributes);
-
-                $this->entityManager->flush();
-
-                return $this->handleView($this->view($this->normalize($event, $dimensionContent)));
-
-            case 'restore':
-                $version = (int) $request->query->get('version');
-                $dimensionContent = $this->contentManager->copy(
-                    $event,
-                    [
-                        'stage' => $dimensionAttributes['stage'] ?? DimensionContentInterface::STAGE_DRAFT,
-                        'locale' => $dimensionAttributes['locale'] ?? null,
-                        'version' => $version,
-                    ],
-                    $event,
-                    [
-                        'stage' => $dimensionAttributes['stage'] ?? DimensionContentInterface::STAGE_DRAFT,
-                        'locale' => $dimensionAttributes['locale'] ?? null,
-                        'version' => DimensionContentInterface::CURRENT_VERSION,
-                    ],
-                    [
-                        'ignoredAttributes' => ['url'],
-                    ]
-                );
-
-                $this->entityManager->flush();
-
-                // Dispatch ModifiedEvent for restore
-                $payload = $request->query->all();
-                $payload['title'] = $dimensionContent->getTitle();
-                $this->domainEventCollector->collect(new ModifiedEvent($event, $payload));
-
-                return $this->handleView($this->view($this->normalize($event, $dimensionContent)));
-
-            default:
-                throw new RestException('Unrecognized action: '.$action);
-        }
-    }
-
-    #[Route(
-        path: '/events/{id}.{_format}',
         name: 'sulu_event.put_event',
         options: ['expose' => true],
         defaults: ['_format' => 'json'],
         methods: ['PUT']
     )]
-    public function putAction(Request $request, int $id): Response
+    public function putAction(Request $request, string $id): Response
     {
         /** @var EventRepository $eventRepository */
         $eventRepository = $this->entityManager->getRepository(Event::class);
         /** @var Event|null $event */
-        $event = $eventRepository->findById($id);
+        $event = $eventRepository->findByUuid($id);
 
         if (!$event) {
             throw new NotFoundHttpException();
@@ -288,7 +184,6 @@ class EventController extends AbstractRestController
                 ['locale' => $dimensionAttributes['locale']],
                 WorkflowInterface::WORKFLOW_TRANSITION_PUBLISH
             );
-            // Reload dimension content after transition
             $dimensionContent = $this->contentManager->resolve($event, $dimensionAttributes);
             $this->entityManager->flush();
             $this->domainEventCollector->collect(new PublishedEvent($event, $data));
@@ -304,18 +199,18 @@ class EventController extends AbstractRestController
         defaults: ['_format' => 'json'],
         methods: ['DELETE']
     )]
-    public function deleteAction(Request $request, int $id): Response
+    public function deleteAction(Request $request, string $id): Response
     {
         /** @var EventRepository $eventRepository */
         $eventRepository = $this->entityManager->getRepository(Event::class);
         /** @var Event|null $event */
-        $event = $eventRepository->findById($id);
+        $event = $eventRepository->findByUuid($id);
 
         if (!$event) {
             throw new NotFoundHttpException();
         }
 
-        $eventId = $event->getId();
+        $eventUuid = $event->getUuid();
         $eventTitle = '';
 
         $locale = $request->query->get('locale');
@@ -329,12 +224,121 @@ class EventController extends AbstractRestController
         }
 
         $this->trashManager->store(Event::RESOURCE_KEY, $event);
-
         $this->entityManager->remove($event);
-        $this->domainEventCollector->collect(new RemovedEvent($eventId, $eventTitle));
         $this->entityManager->flush();
 
-        return new Response('', 204);
+        $this->domainEventCollector->collect(new RemovedEvent($eventUuid, $eventTitle));
+
+        return $this->handleView($this->view(null, 204));
+    }
+
+    #[Route(
+        path: '/events/{id}.{_format}',
+        name: 'sulu_event.post_trigger',
+        options: ['expose' => true],
+        defaults: ['_format' => 'json'],
+        methods: ['POST']
+    )]
+    public function postTriggerAction(Request $request, string $id): Response
+    {
+        $action = $request->query->get('action');
+
+        /** @var EventRepository $eventRepository */
+        $eventRepository = $this->entityManager->getRepository(Event::class);
+        /** @var Event|null $event */
+        $event = $eventRepository->findByUuid($id);
+
+        if (!$event) {
+            throw new NotFoundHttpException();
+        }
+
+        $dimensionAttributes = $this->getDimensionAttributes($request);
+        $locale = $dimensionAttributes['locale'];
+
+        switch ($action) {
+            case 'copy_locale':
+                $dimensionContent = $this->contentManager->copy(
+                    $event,
+                    [
+                        'stage' => DimensionContentInterface::STAGE_DRAFT,
+                        'locale' => $request->query->get('src'),
+                    ],
+                    $event,
+                    [
+                        'stage' => DimensionContentInterface::STAGE_DRAFT,
+                        'locale' => $request->query->get('dest'),
+                    ]
+                );
+
+                $this->entityManager->flush();
+
+                return $this->handleView($this->view($this->normalize($event, $dimensionContent)));
+
+            case 'publish':
+                $this->contentWorkflow->apply(
+                    $event,
+                    ['locale' => $locale],
+                    WorkflowInterface::WORKFLOW_TRANSITION_PUBLISH
+                );
+                $dimensionContent = $this->contentManager->resolve($event, $dimensionAttributes);
+                $this->entityManager->flush();
+
+                $payload = $request->query->all();
+                $payload['title'] = $dimensionContent->getTitle();
+                $this->domainEventCollector->collect(new PublishedEvent($event, $payload));
+
+                return $this->handleView($this->view($this->normalize($event, $dimensionContent)));
+
+            case 'unpublish':
+                $this->contentWorkflow->apply(
+                    $event,
+                    ['locale' => $locale],
+                    WorkflowInterface::WORKFLOW_TRANSITION_UNPUBLISH
+                );
+                $dimensionContent = $this->contentManager->resolve($event, $dimensionAttributes);
+                $this->entityManager->flush();
+
+                $payload = $request->query->all();
+                $payload['title'] = $dimensionContent->getTitle();
+                $this->domainEventCollector->collect(new UnpublishedEvent($event, $payload));
+
+                return $this->handleView($this->view($this->normalize($event, $dimensionContent)));
+
+            case 'remove_draft':
+                $this->contentWorkflow->apply(
+                    $event,
+                    ['locale' => $dimensionAttributes['locale']],
+                    WorkflowInterface::WORKFLOW_TRANSITION_REMOVE_DRAFT
+                );
+                $dimensionContent = $this->contentManager->resolve($event, $dimensionAttributes);
+
+                $this->entityManager->flush();
+
+                return $this->handleView($this->view($this->normalize($event, $dimensionContent)));
+
+            case 'restore':
+                $version = (int) $request->query->get('version');
+                $dimensionContent = $this->contentManager->copy(
+                    $event,
+                    [
+                        'stage' => $dimensionAttributes['stage'] ?? DimensionContentInterface::STAGE_DRAFT,
+                        'locale' => $dimensionAttributes['locale'],
+                        'version' => $version,
+                    ],
+                    $event,
+                    [
+                        'stage' => DimensionContentInterface::STAGE_DRAFT,
+                        'locale' => $dimensionAttributes['locale'],
+                    ]
+                );
+
+                $this->entityManager->flush();
+
+                return $this->handleView($this->view($this->normalize($event, $dimensionContent)));
+
+            default:
+                throw new RestException('Unrecognized action: ' . $action);
+        }
     }
 
     #[Route(
@@ -354,7 +358,7 @@ class EventController extends AbstractRestController
         /** @var DoctrineListBuilder $listBuilder */
         $listBuilder = $this->listBuilderFactory->create(Event::class);
         $listBuilder->setParameter('locale', $locale);
-        $listBuilder->setParameter('id', $id);
+        $listBuilder->setParameter('eventUuid', $id);
         $listBuilder->setIdField($fieldDescriptors['id']);
         $listBuilder->sort($fieldDescriptors['version'], 'DESC');
         $this->restHelper->initializeListBuilder($listBuilder, $fieldDescriptors);
@@ -373,12 +377,10 @@ class EventController extends AbstractRestController
 
     protected function getDimensionAttributes(Request $request): array
     {
-        $attributes = $request->query->all();
-        if (!isset($attributes['stage'])) {
-            $attributes['stage'] = DimensionContentInterface::STAGE_DRAFT;
-        }
-
-        return $attributes;
+        return [
+            'locale' => $request->query->get('locale', $request->getLocale()),
+            'stage' => DimensionContentInterface::STAGE_DRAFT,
+        ];
     }
 
     protected function getData(Request $request): array
@@ -390,8 +392,13 @@ class EventController extends AbstractRestController
         return $request->request->all();
     }
 
-    protected function normalize(Event $event, EventDimensionContent $dimensionContent): array
+    protected function normalize(Event $event, DimensionContentInterface $dimensionContent): array
     {
-        return $this->contentManager->normalize($dimensionContent);
+        $normalized = $this->contentManager->normalize($dimensionContent);
+
+        return array_merge($normalized, [
+            'id' => $event->getUuid(),
+            'uuid' => $event->getUuid(),
+        ]);
     }
 }

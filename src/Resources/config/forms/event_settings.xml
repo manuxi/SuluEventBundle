@@ -26,7 +26,7 @@
     </schema>
 
     <properties>
-        <property name="customizeWebspaceSettings" type="checkbox" visibleCondition="shadowOn == false">
+        <!--<property name="customizeWebspaceSettings" type="checkbox" visibleCondition="shadowOn == false">
             <meta>
                 <title>sulu_event.webspace_settings</title>
             </meta>
@@ -67,7 +67,7 @@
                         value="service('sulu_shared_tools.webspace_selector').getValues()"
                 />
             </params>
-        </property>
+        </property>-->
 
         <!--
         <section name="shadowEvent">

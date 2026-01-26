@@ -33,7 +33,7 @@ class ICalGeneratorTest extends TestCase
         $filters = ['category' => 1];
 
         $event = $this->createMock(Event::class);
-        $event->method('getId')->willReturn(123);
+        $event->method('getId')->willReturn('019bf796-423c-7e1f-969c-5c4ece5e9b73');
 
         $dimensionContent = $this->createMock(EventDimensionContent::class);
         $dimensionContent->method('getEvent')->willReturn($event);
@@ -60,7 +60,7 @@ class ICalGeneratorTest extends TestCase
         $ical = $this->generator->generate($filters, $locale);
 
         $this->assertStringContainsString('BEGIN:VCALENDAR', $ical);
-        $this->assertStringContainsStringIgnoringCase('summary:Test Event', $ical); // Check simple string
+        $this->assertStringContainsStringIgnoringCase('summary:Test Event', $ical);
         $this->assertStringContainsString('LOCATION:Test Location', $ical);
         $this->assertStringContainsString('URL:/events/test-event', $ical);
         $this->assertStringContainsString('DTSTART:20230101T100000Z', $ical);
@@ -70,7 +70,7 @@ class ICalGeneratorTest extends TestCase
     public function testGenerateSingle(): void
     {
         $event = $this->createMock(Event::class);
-        $event->method('getId')->willReturn(456);
+        $event->method('getId')->willReturn('019bf796-423c-7e1f-969c-5c4ece5e9b73');
 
         $dimensionContent = $this->createMock(EventDimensionContent::class);
         $dimensionContent->method('getEvent')->willReturn($event);
@@ -84,7 +84,7 @@ class ICalGeneratorTest extends TestCase
 
         $this->assertStringContainsString('BEGIN:VCALENDAR', $ical);
         $this->assertStringContainsString('SUMMARY:Single Event', $ical);
-        $this->assertStringContainsString('UID:456@', $ical);
+        $this->assertStringContainsString('UID:019bf796-423c-7e1f-969c-5c4ece5e9b73@', $ical);
         $this->assertStringNotContainsString('LOCATION:', $ical);
     }
 }

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Tests\Unit\Content\Normalizer;
 
-
 use Manuxi\SuluEventBundle\Content\Normalizer\EventNormalizer;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
@@ -31,7 +30,7 @@ class EventNormalizerTest extends TestCase
     {
         $normalizer = new EventNormalizer($this->translator, $this->eventTypeSelect);
         $event = $this->createMock(Event::class);
-        $event->method('getId')->willReturn(123);
+        $event->method('getId')->willReturn('019bf796-423c-7e1f-969c-5c4ece5e9b73');
 
         $location = $this->createMock(Location::class);
         $location->method('getId')->willReturn(456);
@@ -43,7 +42,7 @@ class EventNormalizerTest extends TestCase
         $normalizedData = [];
         $result = $normalizer->enhance($dimensionContent, $normalizedData);
 
-        $this->assertEquals(123, $result['id']);
+        $this->assertEquals('019bf796-423c-7e1f-969c-5c4ece5e9b73', $result['id']);
         $this->assertEquals(456, $result['locationId']);
         $this->assertEquals(456, $result['location']['id']);
     }
@@ -52,7 +51,7 @@ class EventNormalizerTest extends TestCase
     {
         $normalizer = new EventNormalizer($this->translator, $this->eventTypeSelect);
         $event = $this->createMock(Event::class);
-        $event->method('getId')->willReturn(123);
+        $event->method('getId')->willReturn('019bf796-423c-7e1f-969c-5c4ece5e9b73');
 
         $dimensionContent = $this->createMock(EventDimensionContent::class);
         $dimensionContent->method('getResource')->willReturn($event);
@@ -61,7 +60,7 @@ class EventNormalizerTest extends TestCase
         $normalizedData = [];
         $result = $normalizer->enhance($dimensionContent, $normalizedData);
 
-        $this->assertEquals(123, $result['id']);
+        $this->assertEquals('019bf796-423c-7e1f-969c-5c4ece5e9b73', $result['id']);
         $this->assertNull($result['locationId']);
         $this->assertNull($result['location']);
     }
