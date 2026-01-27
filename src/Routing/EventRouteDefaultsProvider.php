@@ -107,7 +107,15 @@ class EventRouteDefaultsProvider implements RouteDefaultsProviderInterface
                 ['locale' => $locale, 'stage' => DimensionContentInterface::STAGE_LIVE, 'version' => 0]
             );
         } catch (ContentNotFoundException) {
-            return null;
+            // If no live content exists, try to load draft content
+            try {
+                return $this->contentAggregator->aggregate(
+                    $entity,
+                    ['locale' => $locale, 'stage' => DimensionContentInterface::STAGE_DRAFT, 'version' => 0]
+                );
+            } catch (ContentNotFoundException) {
+                return null;
+            }
         }
     }
 

@@ -81,7 +81,7 @@ services:
             - '@sulu_http_cache.cache_lifetime.resolver'
         public: true
         tags:
-            - { name: sulu_route.route_defaults_provider, resource-key: events, resource_key: events }
+            - { name: sulu_route.route_defaults_provider, resource_key: events }
 
     # SmartContent Provider
     sulu_event.event_smart_content_provider:

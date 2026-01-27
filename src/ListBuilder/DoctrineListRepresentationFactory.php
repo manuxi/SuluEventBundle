@@ -404,8 +404,11 @@ class DoctrineListRepresentationFactory
             $listeElements[$key]['typeColor'] = $this->eventTypeSelect->getColor($type);
             $typeName = $this->eventTypeSelect->getTypeName($type);
             $listeElements[$key]['typeName'] = $typeName;
+            $listeElements[$key]['typeRaw'] = $type;
             // Overwrite 'type' with the translated name for display
             $listeElements[$key]['type'] = $typeName;
+
+            file_put_contents('d:/AI/Antigravity/list_debug.log', "Key: $key, Type: $type, Raw: {$listeElements[$key]['typeRaw']}, Color: {$listeElements[$key]['typeColor']}, Name: $typeName\n", FILE_APPEND);
         }
 
         return $listeElements;
