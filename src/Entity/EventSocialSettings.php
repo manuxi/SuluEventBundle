@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Entity;
 
+use Symfony\Component\Serializer\Attribute\Ignore;
+
 class EventSocialSettings
 {
     private ?int $id = null;
+
+    #[Ignore]
     private EventDimensionContent $dimensionContent;
     private ?string $twitterShareText = null;
     private ?string $facebookShareText = null;
@@ -24,6 +28,7 @@ class EventSocialSettings
         return $this->id;
     }
 
+    #[Ignore]
     public function getDimensionContent(): EventDimensionContent
     {
         return $this->dimensionContent;

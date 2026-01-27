@@ -23,7 +23,7 @@
                     </params>
                 </property>
 
-                <property name="platforms" type="select" visibleCondition="enableSharing == true">
+                <property name="platforms" type="select" visibleCondition="enableSharing == true" colspan="6">
                     <meta>
                         <title>sulu_event.social_media.platforms</title>
                         <info_text>sulu_event.social_media.platforms_info</info_text>
@@ -68,35 +68,36 @@
         </section>
 
         <!-- Social Media Profiles Section -->
-        <section name="profiles" visibleCondition="enableSharing == true">
+        <section name="profiles" visibleCondition="enableSharing == true"
+        >
             <meta>
                 <title>sulu_event.social_media.profiles_title</title>
                 <info_text>sulu_event.social_media.profiles_info</info_text>
             </meta>
 
             <properties>
-                <property name="facebookUrl" type="url">
+                <property name="facebookUrl" type="url" colspan="6">
                     <meta>
                         <title>sulu_event.social_media.facebook_url</title>
                         <placeholder>sulu_event.social_media.facebook_url_placeholder</placeholder>
                     </meta>
                 </property>
 
-                <property name="twitterHandle" type="text_line">
+                <property name="twitterHandle" type="text_line" colspan="6">
                     <meta>
                         <title>sulu_event.social_media.twitter_handle</title>
                         <placeholder>sulu_event.social_media.twitter_handle_placeholder</placeholder>
                     </meta>
                 </property>
 
-                <property name="instagramUrl" type="url">
+                <property name="instagramUrl" type="url" colspan="6">
                     <meta>
                         <title>sulu_event.social_media.instagram_url</title>
                         <placeholder>sulu_event.social_media.instagram_url_placeholder</placeholder>
                     </meta>
                 </property>
 
-                <property name="linkedinUrl" type="url">
+                <property name="linkedinUrl" type="url" colspan="6">
                     <meta>
                         <title>sulu_event.social_media.linkedin_url</title>
                         <placeholder>sulu_event.social_media.linkedin_url_placeholder</placeholder>

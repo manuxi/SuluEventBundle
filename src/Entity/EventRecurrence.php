@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Entity;
 
+use Symfony\Component\Serializer\Attribute\Ignore;
+
 class EventRecurrence
 {
     private ?int $id = null;
+
+    #[Ignore]
     private EventDimensionContent $dimensionContent;
     private bool $isRecurring = false;
     private ?string $frequency = null; // daily, weekly, monthly, yearly
@@ -26,6 +30,7 @@ class EventRecurrence
         return $this->id;
     }
 
+    #[Ignore]
     public function getDimensionContent(): EventDimensionContent
     {
         return $this->dimensionContent;

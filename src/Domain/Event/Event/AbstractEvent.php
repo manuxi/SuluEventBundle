@@ -43,7 +43,17 @@ abstract class AbstractEvent extends DomainEvent
 
     public function getResourceTitle(): ?string
     {
-        return $this->payload['title'] ?? null;
+        if (isset($this->payload['title'])) {
+            return $this->payload['title'];
+        }
+
+        foreach ($this->event->getDimensionContents() as $dimensionContent) {
+            if ($dimensionContent->getTitle()) {
+                return $dimensionContent->getTitle();
+            }
+        }
+
+        return null;
     }
 
     public function getResourceSecurityContext(): ?string

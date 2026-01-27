@@ -470,11 +470,19 @@ class EventDimensionContent implements DimensionContentInterface, ExcerptInterfa
         }
 
         if (\array_key_exists('showAuthor', $templateData)) {
-            $this->showAuthor = \is_bool($templateData['showAuthor']) ? $templateData['showAuthor'] : null;
+            $this->showAuthor = \filter_var(
+                $templateData['showAuthor'],
+                FILTER_VALIDATE_BOOLEAN,
+                FILTER_NULL_ON_FAILURE
+            );
         }
 
         if (\array_key_exists('showDate', $templateData)) {
-            $this->showDate = \is_bool($templateData['showDate']) ? $templateData['showDate'] : null;
+            $this->showDate = \filter_var(
+                $templateData['showDate'],
+                FILTER_VALIDATE_BOOLEAN,
+                FILTER_NULL_ON_FAILURE
+            );
         }
 
         if (\array_key_exists('image', $templateData)) {
@@ -483,6 +491,24 @@ class EventDimensionContent implements DimensionContentInterface, ExcerptInterfa
 
         if (\array_key_exists('pdf', $templateData)) {
             $this->pdf = $templateData['pdf'] instanceof MediaInterface ? $templateData['pdf'] : null;
+        }
+
+        if (\array_key_exists('authored', $templateData)) {
+            if ($templateData['authored'] instanceof \DateTimeImmutable) {
+                $this->authored = $templateData['authored'];
+            } elseif (\is_string($templateData['authored']) && !empty($templateData['authored'])) {
+                try {
+                    $this->authored = new \DateTimeImmutable($templateData['authored']);
+                } catch (\Exception $e) {
+                    $this->authored = null;
+                }
+            } else {
+                $this->authored = null;
+            }
+        }
+
+        if (\array_key_exists('author', $templateData)) {
+            $this->author = $templateData['author'] instanceof ContactInterface ? $templateData['author'] : null;
         }
 
         $this->parentSetTemplateData($templateData);

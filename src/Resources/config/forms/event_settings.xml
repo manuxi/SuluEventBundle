@@ -26,7 +26,7 @@
     </schema>
 
     <properties>
-        <!--<property name="customizeWebspaceSettings" type="checkbox" visibleCondition="shadowOn == false">
+        <property name="customizeWebspaceSettings" type="checkbox" visibleCondition="shadowOn == false">
             <meta>
                 <title>sulu_event.webspace_settings</title>
             </meta>
@@ -50,7 +50,7 @@
                 <param
                         name="values"
                         type="expression"
-                        value="service('sulu_shared_tools.webspace_selector').getValues()"
+                        value="service('sulu_event.webspace_selector').getValues()"
                 />
             </params>
         </property>
@@ -64,10 +64,10 @@
                 <param
                         name="values"
                         type="expression"
-                        value="service('sulu_shared_tools.webspace_selector').getValues()"
+                        value="service('sulu_event.webspace_selector').getValues()"
                 />
             </params>
-        </property>-->
+        </property>
 
         <!--
         <section name="shadowEvent">
@@ -108,7 +108,6 @@
                 <title>sulu_event.header.change_author</title>
             </meta>
             <properties>
-
                 <property name="authored" type="datetime" colspan="6">
                     <meta>
                         <title>sulu_content.authored_date</title>
@@ -139,6 +138,7 @@
                 </property>
             </properties>
         </section>
+
         <section name="changelog">
             <meta>
                 <title>sulu_event.header.created_changed</title>

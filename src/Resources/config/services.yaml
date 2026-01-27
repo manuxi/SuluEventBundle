@@ -117,6 +117,12 @@ services:
             - '%sulu_event.default_type%'
         public: true
 
+    sulu_event.webspace_selector:
+        class: Manuxi\SuluEventBundle\Service\WebspaceSelector
+        arguments:
+            - '@sulu_core.webspace.webspace_manager'
+        public: true
+
     # Country Code Select Service
     sulu_event.country_code_select:
         class: Manuxi\SuluEventBundle\Service\CountryCodeSelect

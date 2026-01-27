@@ -6,6 +6,8 @@ namespace Manuxi\SuluEventBundle\Content\DataMapper;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
+use Manuxi\SuluEventBundle\Entity\EventRecurrence;
+use Manuxi\SuluEventBundle\Entity\EventSocialSettings;
 use Manuxi\SuluEventBundle\Entity\Location;
 use Sulu\Bundle\ContactBundle\Entity\ContactInterface;
 use Sulu\Bundle\MediaBundle\Entity\Media;
@@ -40,6 +42,10 @@ class EventUnlocalizedDataMapper implements DataMapperInterface
         $this->mapAuthor($localizedDimensionContent, $data);
         $this->mapSpeaker($localizedDimensionContent, $data);
         $this->mapPdf($localizedDimensionContent, $data);
+        $this->mapShowAuthor($unlocalizedDimensionContent, $localizedDimensionContent, $data);
+        $this->mapShowDate($unlocalizedDimensionContent, $localizedDimensionContent, $data);
+        $this->mapSocialSettings($unlocalizedDimensionContent, $data);
+        $this->mapRecurrence($unlocalizedDimensionContent, $data);
     }
 
     private function mapImage(
@@ -109,13 +115,11 @@ class EventUnlocalizedDataMapper implements DataMapperInterface
         }
     }
 
-
     private function mapLocation(
         EventDimensionContent $unlocalizedContent,
         EventDimensionContent $localizedContent,
         array $data
     ): void {
-
         if (!\array_key_exists('locationId', $data) && !\array_key_exists('location', $data)) {
             return;
         }
@@ -133,7 +137,6 @@ class EventUnlocalizedDataMapper implements DataMapperInterface
                 $localizedContent->setLocation($location);
             }
         } else {
-            // Explicit null - clear the location
             $unlocalizedContent->setLocation(null);
             $localizedContent->setLocation(null);
         }
@@ -206,6 +209,152 @@ class EventUnlocalizedDataMapper implements DataMapperInterface
         }
     }
 
+    private function mapShowAuthor(
+        EventDimensionContent $unlocalizedContent,
+        EventDimensionContent $localizedContent,
+        array $data
+    ): void {
+        if (!\array_key_exists('showAuthor', $data)) {
+            return;
+        }
+
+        $showAuthor = (bool) $data['showAuthor'];
+        $unlocalizedContent->setShowAuthor($showAuthor);
+        $localizedContent->setShowAuthor($showAuthor);
+    }
+
+    private function mapShowDate(
+        EventDimensionContent $unlocalizedContent,
+        EventDimensionContent $localizedContent,
+        array $data
+    ): void {
+        if (!\array_key_exists('showDate', $data)) {
+            return;
+        }
+
+        $showDate = (bool) $data['showDate'];
+        $unlocalizedContent->setShowDate($showDate);
+        $localizedContent->setShowDate($showDate);
+    }
+
+    private function mapSocialSettings(
+        EventDimensionContent $unlocalizedContent,
+        array $data
+    ): void {
+        $hasSocialData = \array_key_exists('twitterShareText', $data)
+            || \array_key_exists('facebookShareText', $data)
+            || \array_key_exists('linkedInShareText', $data)
+            || \array_key_exists('emailShareSubject', $data)
+            || \array_key_exists('emailShareBody', $data);
+
+        if (!$hasSocialData) {
+            return;
+        }
+
+        $socialSettings = $unlocalizedContent->getSocialSettings();
+        if (null === $socialSettings) {
+            $socialSettings = new EventSocialSettings($unlocalizedContent);
+            $unlocalizedContent->setSocialSettings($socialSettings);
+            $this->entityManager->persist($socialSettings);
+        }
+
+        if (\array_key_exists('twitterShareText', $data)) {
+            $socialSettings->setTwitterShareText(
+                \is_string($data['twitterShareText']) ? $data['twitterShareText'] : null
+            );
+        }
+
+        if (\array_key_exists('facebookShareText', $data)) {
+            $socialSettings->setFacebookShareText(
+                \is_string($data['facebookShareText']) ? $data['facebookShareText'] : null
+            );
+        }
+
+        if (\array_key_exists('linkedInShareText', $data)) {
+            $socialSettings->setLinkedInShareText(
+                \is_string($data['linkedInShareText']) ? $data['linkedInShareText'] : null
+            );
+        }
+
+        if (\array_key_exists('emailShareSubject', $data)) {
+            $socialSettings->setEmailShareSubject(
+                \is_string($data['emailShareSubject']) ? $data['emailShareSubject'] : null
+            );
+        }
+
+        if (\array_key_exists('emailShareBody', $data)) {
+            $socialSettings->setEmailShareBody(
+                \is_string($data['emailShareBody']) ? $data['emailShareBody'] : null
+            );
+        }
+    }
+
+    private function mapRecurrence(
+        EventDimensionContent $unlocalizedContent,
+        array $data
+    ): void {
+        $hasRecurrenceData = \array_key_exists('isRecurring', $data)
+            || \array_key_exists('frequency', $data)
+            || \array_key_exists('interval', $data)
+            || \array_key_exists('byWeekday', $data)
+            || \array_key_exists('endType', $data)
+            || \array_key_exists('count', $data)
+            || \array_key_exists('until', $data);
+
+        if (!$hasRecurrenceData) {
+            return;
+        }
+
+        $recurrence = $unlocalizedContent->getRecurrence();
+        if (null === $recurrence) {
+            $recurrence = new EventRecurrence($unlocalizedContent);
+            $unlocalizedContent->setRecurrence($recurrence);
+            $this->entityManager->persist($recurrence);
+        }
+
+        if (\array_key_exists('isRecurring', $data)) {
+            $recurrence->setIsRecurring((bool) $data['isRecurring']);
+        }
+
+        if (\array_key_exists('frequency', $data)) {
+            $recurrence->setFrequency(
+                \is_string($data['frequency']) ? $data['frequency'] : null
+            );
+        }
+
+        if (\array_key_exists('interval', $data)) {
+            $interval = (int) ($data['interval'] ?? 1);
+            $recurrence->setInterval($interval > 0 ? $interval : 1);
+        }
+
+        if (\array_key_exists('byWeekday', $data)) {
+            $byWeekday = \is_array($data['byWeekday']) ? $data['byWeekday'] : [];
+            $recurrence->setByWeekday($byWeekday);
+        }
+
+        if (\array_key_exists('endType', $data)) {
+            $endType = \is_string($data['endType']) ? $data['endType'] : 'never';
+            $recurrence->setEndType($endType);
+        }
+
+        if (\array_key_exists('count', $data)) {
+            $count = $data['count'] !== null ? (int) $data['count'] : null;
+            $recurrence->setCount($count);
+        }
+
+        if (\array_key_exists('until', $data)) {
+            $until = null;
+            if ($data['until']) {
+                try {
+                    $until = new \DateTime($data['until']);
+                } catch (\Exception) {
+                    $until = null;
+                }
+            }
+            $recurrence->setUntil($until);
+        }
+    }
+
     private function extractLocationId(mixed $value): ?int
     {
         if (null === $value || '' === $value) {
@@ -220,7 +369,6 @@ class EventUnlocalizedDataMapper implements DataMapperInterface
             return (int) $value;
         }
 
-        // Object with 'id' property
         if (\is_array($value) && isset($value['id'])) {
             return (int) $value['id'];
         }
