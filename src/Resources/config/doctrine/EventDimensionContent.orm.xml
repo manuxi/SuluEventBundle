@@ -71,24 +71,6 @@
             <join-column name="location_id" referenced-column-name="id" on-delete="SET NULL"/>
         </many-to-one>
 
-        <one-to-one field="socialSettings"
-                    target-entity="Manuxi\SuluEventBundle\Entity\EventSocialSettings"
-                    mapped-by="dimensionContent">
-            <cascade>
-                <cascade-persist/>
-                <cascade-remove/>
-            </cascade>
-        </one-to-one>
-
-        <one-to-one field="recurrence"
-                    target-entity="Manuxi\SuluEventBundle\Entity\EventRecurrence"
-                    mapped-by="dimensionContent">
-            <cascade>
-                <cascade-persist/>
-                <cascade-remove/>
-            </cascade>
-        </one-to-one>
-
         <!-- LOCALIZED EVENT FIELDS -->
         <field name="title" type="string" length="255" nullable="true" column="title"/>
         <field name="subtitle" type="string" length="255" nullable="true" column="subtitle"/>

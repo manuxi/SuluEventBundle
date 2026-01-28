@@ -18,9 +18,6 @@ class SocialShareGenerator
     ) {
     }
 
-    /**
-     * Generate share links for an event
-     */
     public function generateShareLinks(Event $event, string $locale): array
     {
         /** @var EventDimensionContent $dimensionContent */
@@ -29,51 +26,37 @@ class SocialShareGenerator
             'stage' => DimensionContentInterface::STAGE_LIVE,
         ]);
 
-        // Get unlocalized dimension content for socialSettings
-        $unlocalizedDimensionContent = $this->getUnlocalizedDimensionContent($event);
-        if (!$unlocalizedDimensionContent) {
-            return [];
-        }
-
-        $settings = $unlocalizedDimensionContent->getSocialSettings();
-        if (!$settings) {
+        // Get socialSettings from Event (not DimensionContent!)
+        $settings = $event->getSocialSettings();
+        if (!$settings || !$settings->isEnableSharing()) {
             return [];
         }
 
         $url = urlencode($this->getEventUrl($dimensionContent));
         $title = urlencode($dimensionContent->getTitle() ?? '');
 
-        // Use configured share texts or fallback to title
-        $twitterText = $settings->getTwitterShareText()
-            ? urlencode($settings->getTwitterShareText())
-            : $title;
-
-        $facebookText = $settings->getFacebookShareText()
-            ? urlencode($settings->getFacebookShareText())
-            : $title;
-
-        $linkedInText = $settings->getLinkedInShareText()
-            ? urlencode($settings->getLinkedInShareText())
+        $customText = $settings->getCustomShareText()
+            ? urlencode($settings->getCustomShareText())
             : $title;
 
         $allLinks = [
-            'facebook' => sprintf('https://www.facebook.com/sharer/sharer.php?u=%s&quote=%s', $url, $facebookText),
-            'twitter' => sprintf('https://twitter.com/intent/tweet?url=%s&text=%s', $url, $twitterText),
-            'linkedin' => sprintf('https://www.linkedin.com/sharing/share-offsite/?url=%s&summary=%s', $url, $linkedInText),
-            'whatsapp' => sprintf('https://wa.me/?text=%s%%20%s', $title, $url),
-            'email' => sprintf(
-                'mailto:?subject=%s&body=%s',
-                $settings->getEmailShareSubject() ? urlencode($settings->getEmailShareSubject()) : $title,
-                $settings->getEmailShareBody() ? urlencode($settings->getEmailShareBody()) : $url
-            ),
+            'facebook' => sprintf('https://www.facebook.com/sharer/sharer.php?u=%s&quote=%s', $url, $customText),
+            'twitter' => sprintf('https://twitter.com/intent/tweet?url=%s&text=%s', $url, $customText),
+            'linkedin' => sprintf('https://www.linkedin.com/sharing/share-offsite/?url=%s&summary=%s', $url, $customText),
+            'whatsapp' => sprintf('https://wa.me/?text=%s%%20%s', $customText, $url),
+            'instagram' => $settings->getInstagramUrl(),
+            'email' => sprintf('mailto:?subject=%s&body=%s', $title, $url),
         ];
+
+        // Filter by enabled platforms
+        $enabledPlatforms = $settings->getPlatforms() ?? [];
+        if (!empty($enabledPlatforms)) {
+            $allLinks = array_intersect_key($allLinks, array_flip($enabledPlatforms));
+        }
 
         return $allLinks;
     }
 
-    /**
-     * Generate Open Graph meta tags for social media.
-     */
     public function generateOpenGraphTags(Event $event, string $locale): array
     {
         /** @var EventDimensionContent $dimensionContent */
@@ -82,24 +65,16 @@ class SocialShareGenerator
             'stage' => DimensionContentInterface::STAGE_LIVE,
         ]);
 
-        // Get unlocalized dimension content for dates/location
-        $unlocalizedDimensionContent = $this->getUnlocalizedDimensionContent($event);
-        if (!$unlocalizedDimensionContent) {
-            return [];
-        }
-
         $tags = [
             'og:type' => 'event',
             'og:title' => $dimensionContent->getTitle() ?? '',
             'og:url' => $this->getEventUrl($dimensionContent),
         ];
 
-        // Add start date
-        if ($startDate = $unlocalizedDimensionContent->getStartDate()) {
+        if ($startDate = $dimensionContent->getStartDate()) {
             $tags['event:start_time'] = $startDate->format('c');
         }
 
-        // Add optional properties
         if ($dimensionContent->getSummary()) {
             $tags['og:description'] = $dimensionContent->getSummary();
         }
@@ -109,20 +84,17 @@ class SocialShareGenerator
             $tags['og:image'] = $media->getUrl();
         }
 
-        if ($endDate = $unlocalizedDimensionContent->getEndDate()) {
+        if ($endDate = $dimensionContent->getEndDate()) {
             $tags['event:end_time'] = $endDate->format('c');
         }
 
-        if ($location = $unlocalizedDimensionContent->getLocation()) {
+        if ($location = $dimensionContent->getLocation()) {
             $tags['event:location'] = $location->getName();
         }
 
         return $tags;
     }
 
-    /**
-     * Generate Twitter Card meta tags.
-     */
     public function generateTwitterCardTags(Event $event, string $locale): array
     {
         /** @var EventDimensionContent $dimensionContent */
@@ -146,32 +118,18 @@ class SocialShareGenerator
             $tags['twitter:image'] = $media->getUrl();
         }
 
+        // Add Twitter handle if configured
+        $socialSettings = $event->getSocialSettings();
+        if ($socialSettings && $socialSettings->getTwitterHandle()) {
+            $tags['twitter:site'] = $socialSettings->getTwitterHandle();
+        }
+
         return $tags;
     }
 
-    /**
-     * Get absolute URL for event.
-     */
     private function getEventUrl(EventDimensionContent $dimensionContent): string
     {
         $route = $dimensionContent->getRoute();
         return $route ? $route->getSlug() : '';
-    }
-
-    /**
-     * Get unlocalized dimension content from event
-     */
-    private function getUnlocalizedDimensionContent(Event $event): ?EventDimensionContent
-    {
-        foreach ($event->getDimensionContents() as $dc) {
-            if ($dc->getLocale() === null
-                && $dc->getStage() === DimensionContentInterface::STAGE_LIVE
-                && $dc->getVersion() === DimensionContentInterface::CURRENT_VERSION
-            ) {
-                return $dc;
-            }
-        }
-
-        return null;
     }
 }

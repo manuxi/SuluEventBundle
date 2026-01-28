@@ -29,6 +29,10 @@ class Event implements ContentRichEntityInterface
 
     protected string $uuid;
 
+    protected ?EventSocialSettings $socialSettings = null;
+
+    protected ?EventRecurrence $recurrence = null;
+
     public function __construct(?string $uuid = null)
     {
         $this->uuid = $uuid ?: Uuid::v7()->toRfc4122();
@@ -48,5 +52,29 @@ class Event implements ContentRichEntityInterface
     public function createDimensionContent(): DimensionContentInterface
     {
         return new EventDimensionContent($this);
+    }
+
+    public function getSocialSettings(): ?EventSocialSettings
+    {
+        return $this->socialSettings;
+    }
+
+    public function setSocialSettings(?EventSocialSettings $socialSettings): self
+    {
+        $this->socialSettings = $socialSettings;
+
+        return $this;
+    }
+
+    public function getRecurrence(): ?EventRecurrence
+    {
+        return $this->recurrence;
+    }
+
+    public function setRecurrence(?EventRecurrence $recurrence): self
+    {
+        $this->recurrence = $recurrence;
+
+        return $this;
     }
 }

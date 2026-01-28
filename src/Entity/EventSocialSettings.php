@@ -11,16 +11,20 @@ class EventSocialSettings
     private ?int $id = null;
 
     #[Ignore]
-    private EventDimensionContent $dimensionContent;
-    private ?string $twitterShareText = null;
-    private ?string $facebookShareText = null;
-    private ?string $linkedInShareText = null;
-    private ?string $emailShareSubject = null;
-    private ?string $emailShareBody = null;
+    private Event $event;
 
-    public function __construct(EventDimensionContent $dimensionContent)
+    private bool $enableSharing = false;
+    private ?array $platforms = null;
+    private ?string $facebookUrl = null;
+    private ?string $twitterHandle = null;
+    private ?string $instagramUrl = null;
+    private ?string $linkedinUrl = null;
+    private ?string $customShareText = null;
+    private ?string $targetGroups = null;
+
+    public function __construct(Event $event)
     {
-        $this->dimensionContent = $dimensionContent;
+        $this->event = $event;
     }
 
     public function getId(): ?int
@@ -29,63 +33,96 @@ class EventSocialSettings
     }
 
     #[Ignore]
-    public function getDimensionContent(): EventDimensionContent
+    public function getEvent(): Event
     {
-        return $this->dimensionContent;
+        return $this->event;
     }
 
-    public function getTwitterShareText(): ?string
+    public function isEnableSharing(): bool
     {
-        return $this->twitterShareText;
+        return $this->enableSharing;
     }
 
-    public function setTwitterShareText(?string $twitterShareText): self
+    public function setEnableSharing(bool $enableSharing): self
     {
-        $this->twitterShareText = $twitterShareText;
+        $this->enableSharing = $enableSharing;
         return $this;
     }
 
-    public function getFacebookShareText(): ?string
+    public function getPlatforms(): ?array
     {
-        return $this->facebookShareText;
+        return $this->platforms;
     }
 
-    public function setFacebookShareText(?string $facebookShareText): self
+    public function setPlatforms(?array $platforms): self
     {
-        $this->facebookShareText = $facebookShareText;
+        $this->platforms = $platforms;
         return $this;
     }
 
-    public function getLinkedInShareText(): ?string
+    public function getFacebookUrl(): ?string
     {
-        return $this->linkedInShareText;
+        return $this->facebookUrl;
     }
 
-    public function setLinkedInShareText(?string $linkedInShareText): self
+    public function setFacebookUrl(?string $facebookUrl): self
     {
-        $this->linkedInShareText = $linkedInShareText;
+        $this->facebookUrl = $facebookUrl;
         return $this;
     }
 
-    public function getEmailShareSubject(): ?string
+    public function getTwitterHandle(): ?string
     {
-        return $this->emailShareSubject;
+        return $this->twitterHandle;
     }
 
-    public function setEmailShareSubject(?string $emailShareSubject): self
+    public function setTwitterHandle(?string $twitterHandle): self
     {
-        $this->emailShareSubject = $emailShareSubject;
+        $this->twitterHandle = $twitterHandle;
         return $this;
     }
 
-    public function getEmailShareBody(): ?string
+    public function getInstagramUrl(): ?string
     {
-        return $this->emailShareBody;
+        return $this->instagramUrl;
     }
 
-    public function setEmailShareBody(?string $emailShareBody): self
+    public function setInstagramUrl(?string $instagramUrl): self
     {
-        $this->emailShareBody = $emailShareBody;
+        $this->instagramUrl = $instagramUrl;
+        return $this;
+    }
+
+    public function getLinkedinUrl(): ?string
+    {
+        return $this->linkedinUrl;
+    }
+
+    public function setLinkedinUrl(?string $linkedinUrl): self
+    {
+        $this->linkedinUrl = $linkedinUrl;
+        return $this;
+    }
+
+    public function getCustomShareText(): ?string
+    {
+        return $this->customShareText;
+    }
+
+    public function setCustomShareText(?string $customShareText): self
+    {
+        $this->customShareText = $customShareText;
+        return $this;
+    }
+
+    public function getTargetGroups(): ?string
+    {
+        return $this->targetGroups;
+    }
+
+    public function setTargetGroups(?string $targetGroups): self
+    {
+        $this->targetGroups = $targetGroups;
         return $this;
     }
 }

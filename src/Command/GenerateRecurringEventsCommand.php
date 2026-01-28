@@ -63,7 +63,6 @@ class GenerateRecurringEventsCommand extends Command
 
         $io->title('Generating Recurring Events');
 
-        // Find all recurring events (now requires locale)
         $recurringEvents = $this->eventRepository->findRecurringEvents($locale);
 
         if (empty($recurringEvents)) {
@@ -82,7 +81,6 @@ class GenerateRecurringEventsCommand extends Command
         $rangeEnd = new \DateTimeImmutable("+{$lookahead} days");
 
         foreach ($recurringEvents as $event) {
-            // Get merged dimension content (includes all fields)
             /** @var EventDimensionContent $dimensionContent */
             $dimensionContent = $this->contentManager->resolve($event, [
                 'locale' => $locale,
@@ -90,22 +88,22 @@ class GenerateRecurringEventsCommand extends Command
             ]);
 
             if (!$dimensionContent instanceof EventDimensionContent) {
-                $io->warning(sprintf('Could not resolve dimension content for event #%d', $event->getId()));
+                $io->warning(sprintf('Could not resolve dimension content for event #%s', $event->getId()));
                 $errors++;
                 continue;
             }
 
-            $recurrence = $dimensionContent->getRecurrence();
+            // Get recurrence from Event (not DimensionContent!)
+            $recurrence = $event->getRecurrence();
             if (!$recurrence || !$recurrence->getIsRecurring()) {
                 continue;
             }
 
             $title = $dimensionContent->getTitle() ?? 'Event #' . $event->getId();
 
-            $io->writeln(sprintf('Processing: %s (ID: %d)', $title, $event->getId()));
+            $io->writeln(sprintf('Processing: %s (ID: %s)', $title, $event->getId()));
 
             try {
-                // Generate occurrences
                 $occurrences = $this->recurrenceGenerator->generateOccurrences(
                     $recurrence,
                     $dimensionContent,
@@ -114,13 +112,11 @@ class GenerateRecurringEventsCommand extends Command
                 );
 
                 foreach ($occurrences as $occurrenceDate) {
-                    // Check if occurrence already exists
                     if ($this->occurrenceExists($event, $occurrenceDate, $locale)) {
                         $skipped++;
                         continue;
                     }
 
-                    // Create new event for this occurrence
                     $newEvent = $this->createEventOccurrence(
                         $event,
                         $dimensionContent,
@@ -134,7 +130,7 @@ class GenerateRecurringEventsCommand extends Command
                 $this->entityManager->flush();
 
             } catch (\Exception $e) {
-                $io->error(sprintf('Error processing event %d: %s', $event->getId(), $e->getMessage()));
+                $io->error(sprintf('Error processing event %s: %s', $event->getId(), $e->getMessage()));
                 $errors++;
             }
         }
@@ -149,9 +145,6 @@ class GenerateRecurringEventsCommand extends Command
         return Command::SUCCESS;
     }
 
-    /**
-     * Check if occurrence already exists for this date.
-     */
     private function occurrenceExists(Event $parentEvent, \DateTimeInterface $date, string $locale): bool
     {
         $events = $this->eventRepository->findByFilters(['locale' => $locale]);
@@ -176,21 +169,16 @@ class GenerateRecurringEventsCommand extends Command
         return false;
     }
 
-    /**
-     * Create new event occurrence based on parent event.
-     */
     private function createEventOccurrence(
         Event $parentEvent,
         EventDimensionContent $parentDimensionContent,
         \DateTimeInterface $occurrenceDate,
         string $locale
     ): Event {
-        // Create new event entity
         $newEvent = new Event();
         $this->entityManager->persist($newEvent);
         $this->entityManager->flush();
 
-        // Calculate duration from parent event
         $parentStartDate = $parentDimensionContent->getStartDate();
         $parentEndDate = $parentDimensionContent->getEndDate();
 
@@ -199,60 +187,28 @@ class GenerateRecurringEventsCommand extends Command
             $duration = $parentStartDate->diff($parentEndDate);
         }
 
-        // Calculate new end date
         $newStartDate = \DateTimeImmutable::createFromInterface($occurrenceDate);
         $newEndDate = $duration ? $newStartDate->add($duration) : null;
 
-        // Build data array from parent (all fields from merged dimensionContent)
         $data = [
             'title' => $parentDimensionContent->getTitle(),
             'subtitle' => $parentDimensionContent->getSubtitle(),
             'summary' => $parentDimensionContent->getSummary(),
             'text' => $parentDimensionContent->getText(),
-            'footer' => $parentDimensionContent->getFooter(),
             'type' => $parentDimensionContent->getType(),
-            'startDate' => $newStartDate->format('Y-m-d H:i:s'),
-            'endDate' => $newEndDate?->format('Y-m-d H:i:s'),
-            'email' => $parentDimensionContent->getEmail(),
-            'phoneNumber' => $parentDimensionContent->getPhoneNumber(),
-            'location' => $parentDimensionContent->getLocation()?->getId(),
-            'showAuthor' => $parentDimensionContent->getShowAuthor(),
-            'showDate' => $parentDimensionContent->getShowDate(),
+            'startDate' => $newStartDate->format('c'),
+            'endDate' => $newEndDate?->format('c'),
+            'locationId' => $parentDimensionContent->getLocation()?->getId(),
+            'template' => $parentDimensionContent->getTemplateKey(),
         ];
 
-        // Copy media if exists
-        if ($image = $parentDimensionContent->getImage()) {
-            $data['image'] = ['id' => $image->getId()];
-        }
-
-        if ($pdf = $parentDimensionContent->getPdf()) {
-            $data['pdf'] = ['id' => $pdf->getId()];
-        }
-
-        // Copy speaker if exists
-        if ($speaker = $parentDimensionContent->getSpeaker()) {
-            $data['speaker'] = $speaker->getId();
-        }
-
-        // Copy images array
-        if ($images = $parentDimensionContent->getImages()) {
-            $data['images'] = $images;
-        }
-
-        // Persist content via ContentManager
         $this->contentManager->persist($newEvent, $data, [
             'locale' => $locale,
-            'stage' => DimensionContentInterface::STAGE_DRAFT,
         ]);
 
-        // Publish immediately
-        $this->contentWorkflow->apply(
-            $newEvent,
-            ['locale' => $locale],
-            WorkflowInterface::WORKFLOW_TRANSITION_PUBLISH
-        );
-
-        $this->entityManager->flush();
+        $this->contentWorkflow->apply($newEvent, $data, WorkflowInterface::WORKFLOW_TRANSITION_PUBLISH, [
+            'locale' => $locale,
+        ]);
 
         return $newEvent;
     }

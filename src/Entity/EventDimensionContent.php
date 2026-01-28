@@ -65,8 +65,6 @@ class EventDimensionContent implements DimensionContentInterface, ExcerptInterfa
     protected ?string $email = null;
     protected ?string $phoneNumber = null;
     protected ?Location $location = null;
-    protected ?EventSocialSettings $socialSettings = null;
-    protected ?EventRecurrence $recurrence = null;
 
     protected ?string $title = null;
     protected ?string $subtitle = null;
@@ -186,30 +184,6 @@ class EventDimensionContent implements DimensionContentInterface, ExcerptInterfa
         }
 
         return (int) ($this->templateData['locationId'] ?? null) ?: null;
-    }
-
-    public function getSocialSettings(): ?EventSocialSettings
-    {
-        return $this->socialSettings;
-    }
-
-    public function setSocialSettings(?EventSocialSettings $socialSettings): self
-    {
-        $this->socialSettings = $socialSettings;
-
-        return $this;
-    }
-
-    public function getRecurrence(): ?EventRecurrence
-    {
-        return $this->recurrence;
-    }
-
-    public function setRecurrence(?EventRecurrence $recurrence): self
-    {
-        $this->recurrence = $recurrence;
-
-        return $this;
     }
 
     public function getTitle(): ?string
@@ -372,8 +346,6 @@ class EventDimensionContent implements DimensionContentInterface, ExcerptInterfa
         $this->email = $dimensionContent->email;
         $this->phoneNumber = $dimensionContent->phoneNumber;
         $this->location = $dimensionContent->location;
-        $this->socialSettings = $dimensionContent->socialSettings;
-        $this->recurrence = $dimensionContent->recurrence;
 
         $this->title = $dimensionContent->title;
         $this->subtitle = $dimensionContent->subtitle;

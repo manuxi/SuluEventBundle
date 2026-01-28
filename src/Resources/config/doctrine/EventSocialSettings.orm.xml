@@ -11,22 +11,29 @@
             <generator strategy="AUTO"/>
         </id>
 
-        <one-to-one field="dimensionContent"
-                    target-entity="Manuxi\SuluEventBundle\Entity\EventDimensionContent"
+        <one-to-one field="event"
+                    target-entity="Manuxi\SuluEventBundle\Entity\Event"
                     inversed-by="socialSettings">
             <join-columns>
-                <join-column name="dimension_content_id"
-                             referenced-column-name="id"
+                <join-column name="event_uuid"
+                             referenced-column-name="uuid"
                              nullable="false"
                              on-delete="CASCADE"/>
             </join-columns>
         </one-to-one>
 
-        <field name="twitterShareText" type="text" nullable="true" column="twitter_share_text"/>
-        <field name="facebookShareText" type="text" nullable="true" column="facebook_share_text"/>
-        <field name="linkedInShareText" type="text" nullable="true" column="linkedin_share_text"/>
-        <field name="emailShareSubject" type="string" length="255" nullable="true" column="email_share_subject"/>
-        <field name="emailShareBody" type="text" nullable="true" column="email_share_body"/>
+        <field name="enableSharing" type="boolean" nullable="false" column="enable_sharing">
+            <options>
+                <option name="default">0</option>
+            </options>
+        </field>
+        <field name="platforms" type="json" nullable="true" column="platforms"/>
+        <field name="facebookUrl" type="string" length="255" nullable="true" column="facebook_url"/>
+        <field name="twitterHandle" type="string" length="255" nullable="true" column="twitter_handle"/>
+        <field name="instagramUrl" type="string" length="255" nullable="true" column="instagram_url"/>
+        <field name="linkedinUrl" type="string" length="255" nullable="true" column="linkedin_url"/>
+        <field name="customShareText" type="text" nullable="true" column="custom_share_text"/>
+        <field name="targetGroups" type="string" length="255" nullable="true" column="target_groups"/>
 
     </entity>
 </doctrine-mapping>

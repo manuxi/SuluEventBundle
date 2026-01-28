@@ -11,18 +11,19 @@ class EventRecurrence
     private ?int $id = null;
 
     #[Ignore]
-    private EventDimensionContent $dimensionContent;
-    private bool $isRecurring = false;
-    private ?string $frequency = null; // daily, weekly, monthly, yearly
-    private int $interval = 1; // every X days/weeks/months
-    private array $byWeekday = []; // [1,3,5] for Mon, Wed, Fri
-    private string $endType = 'never'; // never, count, until
-    private ?int $count = null; // number of occurrences
-    private ?\DateTime $until = null; // end date
+    private Event $event;
 
-    public function __construct(EventDimensionContent $dimensionContent)
+    private bool $isRecurring = false;
+    private ?string $frequency = null;
+    private int $interval = 1;
+    private array $byWeekday = [];
+    private string $endType = 'never';
+    private ?int $count = null;
+    private ?\DateTime $until = null;
+
+    public function __construct(Event $event)
     {
-        $this->dimensionContent = $dimensionContent;
+        $this->event = $event;
     }
 
     public function getId(): ?int
@@ -31,9 +32,9 @@ class EventRecurrence
     }
 
     #[Ignore]
-    public function getDimensionContent(): EventDimensionContent
+    public function getEvent(): Event
     {
-        return $this->dimensionContent;
+        return $this->event;
     }
 
     public function getIsRecurring(): bool

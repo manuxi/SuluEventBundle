@@ -10,6 +10,7 @@ use Manuxi\SuluEventBundle\Domain\Event\Event\CreatedEvent;
 use Manuxi\SuluEventBundle\Domain\Event\Event\ModifiedEvent;
 use Manuxi\SuluEventBundle\Domain\Event\Event\PublishedEvent;
 use Manuxi\SuluEventBundle\Domain\Event\Event\RemovedEvent;
+use Manuxi\SuluEventBundle\Domain\Event\Event\RestoredEvent;
 use Manuxi\SuluEventBundle\Domain\Event\Event\UnpublishedEvent;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
@@ -124,9 +125,8 @@ class EventController extends AbstractRestController
         /** @var EventDimensionContent $dimensionContent */
         $dimensionContent = $this->contentManager->persist($event, $data, $dimensionAttributes);
 
-        $this->entityManager->flush();
-
         $this->domainEventCollector->collect(new CreatedEvent($event, $data));
+        $this->entityManager->flush();
 
         if ('publish' === $request->query->get('action')) {
             $this->contentWorkflow->apply(
@@ -175,8 +175,8 @@ class EventController extends AbstractRestController
             $dimensionContent = $this->contentManager->resolve($event, $dimensionAttributes);
         }
 
-        $this->entityManager->flush();
         $this->domainEventCollector->collect(new ModifiedEvent($event, $data));
+        $this->entityManager->flush();
 
         if ('publish' === $request->query->get('action')) {
             $this->contentWorkflow->apply(
@@ -185,8 +185,8 @@ class EventController extends AbstractRestController
                 WorkflowInterface::WORKFLOW_TRANSITION_PUBLISH
             );
             $dimensionContent = $this->contentManager->resolve($event, $dimensionAttributes);
-            $this->entityManager->flush();
             $this->domainEventCollector->collect(new PublishedEvent($event, $data));
+            $this->entityManager->flush();
         }
 
         return $this->handleView($this->view($this->normalize($event, $dimensionContent)));
@@ -225,9 +225,8 @@ class EventController extends AbstractRestController
 
         $this->trashManager->store(Event::RESOURCE_KEY, $event);
         $this->entityManager->remove($event);
-        $this->entityManager->flush();
-
         $this->domainEventCollector->collect(new RemovedEvent($eventUuid, $eventTitle));
+        $this->entityManager->flush();
 
         return $this->handleView($this->view(null, 204));
     }
@@ -281,11 +280,11 @@ class EventController extends AbstractRestController
                     WorkflowInterface::WORKFLOW_TRANSITION_PUBLISH
                 );
                 $dimensionContent = $this->contentManager->resolve($event, $dimensionAttributes);
-                $this->entityManager->flush();
 
                 $payload = $request->query->all();
                 $payload['title'] = $dimensionContent->getTitle();
                 $this->domainEventCollector->collect(new PublishedEvent($event, $payload));
+                $this->entityManager->flush();
 
                 return $this->handleView($this->view($this->normalize($event, $dimensionContent)));
 
@@ -296,11 +295,11 @@ class EventController extends AbstractRestController
                     WorkflowInterface::WORKFLOW_TRANSITION_UNPUBLISH
                 );
                 $dimensionContent = $this->contentManager->resolve($event, $dimensionAttributes);
-                $this->entityManager->flush();
 
                 $payload = $request->query->all();
                 $payload['title'] = $dimensionContent->getTitle();
                 $this->domainEventCollector->collect(new UnpublishedEvent($event, $payload));
+                $this->entityManager->flush();
 
                 return $this->handleView($this->view($this->normalize($event, $dimensionContent)));
 
@@ -332,6 +331,9 @@ class EventController extends AbstractRestController
                     ]
                 );
 
+                $payload = $request->query->all();
+                $payload['title'] = $dimensionContent->getTitle();
+                $this->domainEventCollector->collect(new RestoredEvent($event, $payload));
                 $this->entityManager->flush();
 
                 return $this->handleView($this->view($this->normalize($event, $dimensionContent)));

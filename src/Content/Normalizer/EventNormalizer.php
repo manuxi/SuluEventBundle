@@ -48,9 +48,10 @@ class EventNormalizer implements NormalizerInterface
             return $normalizedData;
         }
 
-        $normalizedData['id'] = $event->getId();
+        $normalizedData['id'] = $event->getUuid();
+        $normalizedData['uuid'] = $event->getUuid();
 
-        // Add formatted date
+        // Date formatting
         $dateString = '';
         $startDate = $object->getStartDate();
         $endDate = $object->getEndDate();
@@ -68,38 +69,39 @@ class EventNormalizer implements NormalizerInterface
         }
         $normalizedData['date'] = $dateString;
 
-        // Add translated type name
+        // Type
         $type = $object->getType() ?? 'default';
         $normalizedData['typeName'] = $this->eventTypeSelect->getTypeName($type);
 
+        // Location
         $location = $object->getLocation();
         if (null !== $location) {
             $normalizedData['locationId'] = $location->getId();
-
             if (!isset($normalizedData['location']) || !\is_array($normalizedData['location'])) {
                 $normalizedData['location'] = [];
             }
-
             $normalizedData['location']['id'] = $location->getId();
         } else {
             $normalizedData['locationId'] = null;
             $normalizedData['location'] = null;
         }
 
+        // Speaker
         $speaker = $object->getSpeaker();
         if (null !== $speaker) {
             $normalizedData['speakerId'] = $speaker->getId();
-
             if (isset($normalizedData['speaker']) && \is_array($normalizedData['speaker'])) {
                 $normalizedData['speaker']['id'] = $speaker->getId();
             }
         }
 
+        // Author
         $author = $object->getAuthor();
         if (null !== $author) {
             $normalizedData['authorId'] = $author->getId();
         }
 
+        // Image
         $image = $object->getImage();
         if (null !== $image) {
             if (!isset($normalizedData['image']) || !\is_array($normalizedData['image'])) {
@@ -108,6 +110,7 @@ class EventNormalizer implements NormalizerInterface
             $normalizedData['image']['id'] = $image->getId();
         }
 
+        // Images
         $images = $object->getImages();
         if (empty($images)) {
             $normalizedData['images'] = ['ids' => []];
@@ -117,6 +120,7 @@ class EventNormalizer implements NormalizerInterface
             $normalizedData['images'] = $images;
         }
 
+        // PDF
         $pdf = $object->getPdf();
         if (null !== $pdf) {
             if (!isset($normalizedData['pdf']) || !\is_array($normalizedData['pdf'])) {
@@ -124,6 +128,32 @@ class EventNormalizer implements NormalizerInterface
             }
             $normalizedData['pdf']['id'] = $pdf->getId();
         }
+
+        $socialSettings = $event->getSocialSettings();
+        if (null !== $socialSettings) {
+            $normalizedData['enableSharing'] = $socialSettings->isEnableSharing();
+            $normalizedData['platforms'] = $socialSettings->getPlatforms();
+            $normalizedData['facebookUrl'] = $socialSettings->getFacebookUrl();
+            $normalizedData['twitterHandle'] = $socialSettings->getTwitterHandle();
+            $normalizedData['instagramUrl'] = $socialSettings->getInstagramUrl();
+            $normalizedData['linkedinUrl'] = $socialSettings->getLinkedinUrl();
+            $normalizedData['customShareText'] = $socialSettings->getCustomShareText();
+            $normalizedData['targetGroups'] = $socialSettings->getTargetGroups();
+        }
+        unset($normalizedData['socialSettings']);
+
+        $recurrence = $event->getRecurrence();
+        if (null !== $recurrence) {
+            $normalizedData['isRecurring'] = $recurrence->getIsRecurring();
+            $normalizedData['frequency'] = $recurrence->getFrequency();
+            $normalizedData['interval'] = $recurrence->getInterval();
+            $normalizedData['byWeekday'] = $recurrence->getByWeekday();
+            $normalizedData['endType'] = $recurrence->getEndType();
+            $normalizedData['count'] = $recurrence->getCount();
+            $normalizedData['until'] = $recurrence->getUntil()?->format('Y-m-d');
+        }
+
+        unset($normalizedData['recurrence']);
 
         return $normalizedData;
     }

@@ -20,5 +20,23 @@
                 <cascade-persist/>
             </cascade>
         </one-to-many>
+
+        <one-to-one field="socialSettings"
+                    target-entity="Manuxi\SuluEventBundle\Entity\EventSocialSettings"
+                    mapped-by="event">
+            <cascade>
+                <cascade-persist/>
+                <cascade-remove/>
+            </cascade>
+        </one-to-one>
+
+        <one-to-one field="recurrence"
+                    target-entity="Manuxi\SuluEventBundle\Entity\EventRecurrence"
+                    mapped-by="event">
+            <cascade>
+                <cascade-persist/>
+                <cascade-remove/>
+            </cascade>
+        </one-to-one>
     </entity>
 </doctrine-mapping>
