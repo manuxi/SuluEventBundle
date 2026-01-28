@@ -52,9 +52,11 @@ class SocialShareGeneratorTest extends TestCase
         $event->method('getDimensionContents')->willReturn(new ArrayCollection([$unlocalizedContent]));
 
         // Mock Unlocalized Content with Social Settings
-        $socialSettings = new EventSocialSettings($unlocalizedContent);
-        $socialSettings->setTwitterShareText('Check this out!');
-        $unlocalizedContent->method('getSocialSettings')->willReturn($socialSettings);
+        $socialSettings = new EventSocialSettings($event);
+        $socialSettings->setEnableSharing(true);
+        $socialSettings->setCustomShareText('Check this out!');
+        $socialSettings->setPlatforms(['facebook', 'twitter', 'linkedin']);
+        $event->method('getSocialSettings')->willReturn($socialSettings);
 
         $links = $this->generator->generateShareLinks($event, 'en');
 

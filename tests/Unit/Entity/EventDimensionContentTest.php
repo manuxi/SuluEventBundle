@@ -32,11 +32,7 @@ class EventDimensionContentTest extends TestCase
         $location = new Location();
         $source->setLocation($location);
 
-        $socialSettings = new EventSocialSettings($source);
-        $source->setSocialSettings($socialSettings);
 
-        $recurrence = new EventRecurrence($source);
-        $source->setRecurrence($recurrence);
 
         $source->setTitle('Title');
         $source->setSubtitle('Subtitle');
@@ -71,8 +67,7 @@ class EventDimensionContentTest extends TestCase
         $this->assertSame($source->getEmail(), $target->getEmail());
         $this->assertSame($source->getPhoneNumber(), $target->getPhoneNumber());
         $this->assertSame($source->getLocation(), $target->getLocation());
-        $this->assertSame($source->getSocialSettings(), $target->getSocialSettings());
-        $this->assertSame($source->getRecurrence(), $target->getRecurrence());
+
 
         $this->assertSame($source->getTitle(), $target->getTitle());
         $this->assertSame($source->getSubtitle(), $target->getSubtitle());
@@ -225,25 +220,6 @@ class EventDimensionContentTest extends TestCase
         // Reflection to set ID for locationId test?
     }
 
-    public function testGetSetSocialSettings(): void
-    {
-        $event = $this->createMock(Event::class);
-        $content = new EventDimensionContent($event);
-        $settings = new EventSocialSettings($content);
-        $this->assertNull($content->getSocialSettings());
-        $this->assertSame($content, $content->setSocialSettings($settings));
-        $this->assertSame($settings, $content->getSocialSettings());
-    }
-
-    public function testGetSetRecurrence(): void
-    {
-        $event = $this->createMock(Event::class);
-        $content = new EventDimensionContent($event);
-        $recurrence = new EventRecurrence($content);
-        $this->assertNull($content->getRecurrence());
-        $this->assertSame($content, $content->setRecurrence($recurrence));
-        $this->assertSame($recurrence, $content->getRecurrence());
-    }
 
     public function testGetSetTitle(): void
     {

@@ -5,60 +5,79 @@ declare(strict_types=1);
 namespace Manuxi\SuluEventBundle\Tests\Unit\Entity;
 
 use Manuxi\SuluEventBundle\Entity\Event;
-use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
 use Manuxi\SuluEventBundle\Entity\EventSocialSettings;
 use PHPUnit\Framework\TestCase;
 
 class EventSocialSettingsTest extends TestCase
 {
-    private EventDimensionContent $eventDimensionContent;
+    private Event $event;
     private EventSocialSettings $socialSettings;
 
     protected function setUp(): void
     {
-        $event = new Event();
-        $this->eventDimensionContent = new EventDimensionContent($event);
-        $this->socialSettings = new EventSocialSettings($this->eventDimensionContent);
+        $this->event = $this->createMock(Event::class);
+        $this->socialSettings = new EventSocialSettings($this->event);
     }
 
     public function testConstruction(): void
     {
-        $this->assertSame($this->eventDimensionContent, $this->socialSettings->getDimensionContent());
+        $this->assertSame($this->event, $this->socialSettings->getEvent());
     }
 
-    public function testTwitterShareText(): void
+    public function testEnableSharing(): void
     {
-        $this->assertNull($this->socialSettings->getTwitterShareText());
-        $this->socialSettings->setTwitterShareText('Check out this event!');
-        $this->assertEquals('Check out this event!', $this->socialSettings->getTwitterShareText());
+        $this->assertFalse($this->socialSettings->isEnableSharing());
+        $this->socialSettings->setEnableSharing(true);
+        $this->assertTrue($this->socialSettings->isEnableSharing());
     }
 
-    public function testFacebookShareText(): void
+    public function testPlatforms(): void
     {
-        $this->assertNull($this->socialSettings->getFacebookShareText());
-        $this->socialSettings->setFacebookShareText('Join us at this amazing event!');
-        $this->assertEquals('Join us at this amazing event!', $this->socialSettings->getFacebookShareText());
+        $this->assertNull($this->socialSettings->getPlatforms());
+        $platforms = ['facebook', 'twitter'];
+        $this->socialSettings->setPlatforms($platforms);
+        $this->assertEquals($platforms, $this->socialSettings->getPlatforms());
     }
 
-    public function testLinkedInShareText(): void
+    public function testFacebookUrl(): void
     {
-        $this->assertNull($this->socialSettings->getLinkedInShareText());
-        $this->socialSettings->setLinkedInShareText('Professional event announcement');
-        $this->assertEquals('Professional event announcement', $this->socialSettings->getLinkedInShareText());
+        $this->assertNull($this->socialSettings->getFacebookUrl());
+        $this->socialSettings->setFacebookUrl('https://facebook.com/event');
+        $this->assertEquals('https://facebook.com/event', $this->socialSettings->getFacebookUrl());
     }
 
-    public function testEmailShareSubject(): void
+    public function testTwitterHandle(): void
     {
-        $this->assertNull($this->socialSettings->getEmailShareSubject());
-        $this->socialSettings->setEmailShareSubject('Invitation to Event');
-        $this->assertEquals('Invitation to Event', $this->socialSettings->getEmailShareSubject());
+        $this->assertNull($this->socialSettings->getTwitterHandle());
+        $this->socialSettings->setTwitterHandle('@myevent');
+        $this->assertEquals('@myevent', $this->socialSettings->getTwitterHandle());
     }
 
-    public function testEmailShareBody(): void
+    public function testInstagramUrl(): void
     {
-        $this->assertNull($this->socialSettings->getEmailShareBody());
-        $body = 'You are invited to attend our event...';
-        $this->socialSettings->setEmailShareBody($body);
-        $this->assertEquals($body, $this->socialSettings->getEmailShareBody());
+        $this->assertNull($this->socialSettings->getInstagramUrl());
+        $this->socialSettings->setInstagramUrl('https://instagram.com/myevent');
+        $this->assertEquals('https://instagram.com/myevent', $this->socialSettings->getInstagramUrl());
+    }
+
+    public function testLinkedinUrl(): void
+    {
+        $this->assertNull($this->socialSettings->getLinkedinUrl());
+        $this->socialSettings->setLinkedinUrl('https://linkedin.com/myevent');
+        $this->assertEquals('https://linkedin.com/myevent', $this->socialSettings->getLinkedinUrl());
+    }
+
+    public function testCustomShareText(): void
+    {
+        $this->assertNull($this->socialSettings->getCustomShareText());
+        $this->socialSettings->setCustomShareText('Check out this event!');
+        $this->assertEquals('Check out this event!', $this->socialSettings->getCustomShareText());
+    }
+
+    public function testTargetGroups(): void
+    {
+        $this->assertNull($this->socialSettings->getTargetGroups());
+        $this->socialSettings->setTargetGroups('professionals,students');
+        $this->assertEquals('professionals,students', $this->socialSettings->getTargetGroups());
     }
 }

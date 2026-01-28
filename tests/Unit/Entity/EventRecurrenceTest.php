@@ -5,25 +5,23 @@ declare(strict_types=1);
 namespace Manuxi\SuluEventBundle\Tests\Unit\Entity;
 
 use Manuxi\SuluEventBundle\Entity\Event;
-use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
 use Manuxi\SuluEventBundle\Entity\EventRecurrence;
 use PHPUnit\Framework\TestCase;
 
 class EventRecurrenceTest extends TestCase
 {
-    private EventDimensionContent $eventDimensionContent;
+    private Event $event;
     private EventRecurrence $recurrence;
 
     protected function setUp(): void
     {
-        $event = new Event();
-        $this->eventDimensionContent = new EventDimensionContent($event);
-        $this->recurrence = new EventRecurrence($this->eventDimensionContent);
+        $this->event = $this->createMock(Event::class);
+        $this->recurrence = new EventRecurrence($this->event);
     }
 
     public function testConstruction(): void
     {
-        $this->assertSame($this->eventDimensionContent, $this->recurrence->getDimensionContent());
+        $this->assertSame($this->event, $this->recurrence->getEvent());
         $this->assertFalse($this->recurrence->getIsRecurring());
     }
 

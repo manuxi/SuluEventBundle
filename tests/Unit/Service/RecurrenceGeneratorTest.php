@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Tests\Unit\Service;
 
+use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
 use Manuxi\SuluEventBundle\Entity\EventRecurrence;
 use Manuxi\SuluEventBundle\Service\RecurrenceGenerator;
@@ -37,7 +38,7 @@ class RecurrenceGeneratorTest extends TestCase
 
     public function testGenerateOccurrencesDaily(): void
     {
-        $recurrence = new EventRecurrence($this->createMock(EventDimensionContent::class));
+        $recurrence = new EventRecurrence($this->createMock(Event::class));
         $recurrence->setIsRecurring(true);
         $recurrence->setFrequency('daily');
         $recurrence->setInterval(1);
@@ -59,7 +60,7 @@ class RecurrenceGeneratorTest extends TestCase
 
     public function testGenerateOccurrencesWeeklyWithWeekdays(): void
     {
-        $recurrence = new EventRecurrence($this->createMock(EventDimensionContent::class));
+        $recurrence = new EventRecurrence($this->createMock(Event::class));
         $recurrence->setIsRecurring(true);
         $recurrence->setFrequency('weekly');
         $recurrence->setInterval(1);

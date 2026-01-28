@@ -30,7 +30,7 @@ class EventNormalizerTest extends TestCase
     {
         $normalizer = new EventNormalizer($this->translator, $this->eventTypeSelect);
         $event = $this->createMock(Event::class);
-        $event->method('getId')->willReturn('019bf796-423c-7e1f-969c-5c4ece5e9b73');
+        $event->method('getUuid')->willReturn('019bf796-423c-7e1f-969c-5c4ece5e9b73');
 
         $location = $this->createMock(Location::class);
         $location->method('getId')->willReturn(456);
@@ -51,7 +51,7 @@ class EventNormalizerTest extends TestCase
     {
         $normalizer = new EventNormalizer($this->translator, $this->eventTypeSelect);
         $event = $this->createMock(Event::class);
-        $event->method('getId')->willReturn('019bf796-423c-7e1f-969c-5c4ece5e9b73');
+        $event->method('getUuid')->willReturn('019bf796-423c-7e1f-969c-5c4ece5e9b73');
 
         $dimensionContent = $this->createMock(EventDimensionContent::class);
         $dimensionContent->method('getResource')->willReturn($event);
