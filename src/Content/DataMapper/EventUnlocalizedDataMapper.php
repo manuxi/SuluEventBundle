@@ -208,8 +208,12 @@ class EventUnlocalizedDataMapper implements DataMapperInterface
 
         $imageId = $data['image'];
 
-        if (\is_array($imageId) && isset($imageId['id'])) {
-            $imageId = $imageId['id'];
+        if (\is_array($imageId)) {
+            if (isset($imageId['id'])) {
+                $imageId = $imageId['id'];
+            } elseif (isset($imageId['ids'][0])) {
+                $imageId = $imageId['ids'][0];
+            }
         }
 
         $image = null;
