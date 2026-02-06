@@ -6,13 +6,13 @@
 ![Github Release](https://img.shields.io/github/v/release/manuxi/SuluEventBundle?color=116ea3)
 ![Supports Sulu 3.0 or later](https://img.shields.io/badge/%20Sulu->=3.0-0088cc?color=00b2df)
 
-
 [🇬🇧 English Version](README.md)
 
-Das SuluEventBundle erweitert die Sulu CMF um eine umfassende Veranstaltungsverwaltung. 
-Es ermöglicht die Erstellung und Verwaltung von Events mit detaillierten Informationen, Orten, Medien und mehrsprachiger Unterstützung. 
-Erweiterte Funktionen wie wiederkehrende Termine, ein Kalender-Frontend, iCal-Export und Social-Media-Integration sind ebenfalls enthalten.
-Dieses Bundle basiert auf dem [Sulu Workshop](https://github.com/sulu/sulu-workshop) und wurde im Laufe der Zeit mit immer mehr Features ausgestattet.
+Das SuluEventBundle erweitert Sulu 3.0 um ein umfassendes Veranstaltungsmanagement.
+
+Es ermöglicht die Erstellung und Verwaltung von Veranstaltungen mit verschiedenen Vorlagen, um sowohl Einzelveranstaltungen als auch mehrtägige Events mit detaillierten Informationen, Veranstaltungsorten mit Räumlichkeiten, Medien und mehr anzuzeigen.
+
+Dieses Bundle wurde im Laufe der Zeit mit immer mehr Funktionen ausgestattet: Erweiterte Funktionen wie wiederkehrende Veranstaltungen, ein Kalender-Frontend, iCal-Export, Social-Media-Integration und weitere Features sind enthalten.
 
 ![Form template events.png](docs/img/template.multi-session.de.png)
 
@@ -21,13 +21,13 @@ Dieses Bundle basiert auf dem [Sulu Workshop](https://github.com/sulu/sulu-works
 ### 📅 Event-Verwaltung
 - **Umfangreiche Event-Details** - Titel, Untertitel, Zusammenfassung, Text und weiteres
 - **Datum & Uhrzeit** - Flexible Start-/Enddaten
-- **Veranstaltungsorte** - Separate Ortsverwaltung mit Adressdetails
-- **Medien-Integration** - Hero-Bilder, Bildergalerien, PDF-Anhänge
+- **Veranstaltungsorte** - Separate Ortsverwaltung mit Adress- und Raumdetails
+- **Medien-Integration** - Teaser-Bilder, Bildergalerien, PDF-Anhänge
 - **SEO & Excerpt** - Vollständige SEO- und Excerpt-Verwaltung
 - **Mehrsprachig** - Vollständige Übersetzungsunterstützung
 - **Autoren-Verwaltung** - Kontakte können als Event-Autoren zugewiesen werden
 - **Einstellungen** - Umfangreiche Einstellungsmöglichkeiten
-- **Weiteres** - Papierkorb, Automationen, usw.
+- **Weiteres** - Papierkorb, Referenzen, Sitemaps, Teaser, usw.
 - 
 ### 🔄 Erweiterte Features
 - **Wiederkehrende Events** - Tägliche, wöchentliche, monatliche, jährliche Muster mit Ausnahmen

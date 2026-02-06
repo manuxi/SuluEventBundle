@@ -8,10 +8,11 @@
 
 [🇩🇪 German Version](README.de.md)
 
-The SuluEventBundle extends Sulu CMF with comprehensive event management. 
-It enables the creation and management of events with detailed information, locations, media and multilingual support. 
-Advanced features such as recurring events, a calendar frontend, iCal export and social media integration are also included.
-This bundle is based on the [Sulu Workshop](https://github.com/sulu/sulu-workshop) and has been equipped with more and more features over time.
+The SuluEventBundle extends Sulu 3.0 with comprehensive event management.
+
+It enables the creation and management of events using various templates to display both single events and multi-day events with detailed information, venues with rooms, media and more.
+
+This bundle has been equipped with more and more features over time: advanced features such as recurring events, a calendar front end, iCal export, social media integration and other features are included.
 
 ![img.png](docs/img/template.multi-session.en.png)
 
@@ -20,13 +21,13 @@ This bundle is based on the [Sulu Workshop](https://github.com/sulu/sulu-worksho
 ### 📅 Event Management
 - **Extensive Event Details** - Title, subtitle, summary, text, blocks, and more
 - **Date & Time** - Flexible start/end dates
-- **Locations** - Separate location management with address details
+- **Locations** - Separate location management with address and premises details
 - **Media Integration** - Hero images, image galleries, PDF attachments
 - **SEO & Excerpt** - Full SEO and excerpt management
 - **Multilingual** - Full translation support
 - **Author Management** - Assign contacts as event authors
 - **Settings** - Extensive configuration options
-- **More** - Trash, references, sitemaps, etc.
+- **More** - Trash, references, sitemaps, teaser, etc.
 
 ### 🔄 Advanced Features
 - **Recurring Events** - Daily, weekly, monthly, yearly patterns with exceptions
