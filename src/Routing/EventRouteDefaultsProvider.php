@@ -8,6 +8,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NoResultException;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Sulu\Bundle\AdminBundle\Metadata\FormMetadata\CacheLifetimeMetadata;
+use Sulu\Bundle\AdminBundle\Metadata\FormMetadata\FormMetadata;
+use Sulu\Bundle\AdminBundle\Metadata\FormMetadata\TemplateMetadata;
 use Sulu\Bundle\AdminBundle\Metadata\FormMetadata\TypedFormMetadata;
 use Sulu\Bundle\AdminBundle\Metadata\MetadataProviderRegistry;
 use Sulu\Bundle\HttpCacheBundle\CacheLifetime\CacheLifetimeRequestStore;
@@ -119,7 +121,7 @@ class EventRouteDefaultsProvider implements RouteDefaultsProviderInterface
         }
     }
 
-    private function resolveTemplateMetadata(string $templateType, string $templateKey, string $locale): object
+    private function resolveTemplateMetadata(string $templateType, string $templateKey, string $locale): TemplateMetadata
     {
         $formMetadataProvider = $this->metadataProviderRegistry->getMetadataProvider('form');
 
@@ -133,11 +135,17 @@ class EventRouteDefaultsProvider implements RouteDefaultsProviderInterface
         $forms = $typedMetadata->getForms();
         $formMetadata = $forms[$templateKey] ?? null;
 
-        if (!$formMetadata) {
+        if (!$formMetadata instanceof FormMetadata) {
             throw new \RuntimeException(\sprintf('No form metadata found for template key "%s"', $templateKey));
         }
 
-        return $formMetadata;
+        $templateMetadata = $formMetadata->getTemplate();
+
+        if (!$templateMetadata instanceof TemplateMetadata) {
+            throw new \RuntimeException(\sprintf('No template metadata found for template key "%s"', $templateKey));
+        }
+
+        return $templateMetadata;
     }
 
     private function getCacheLifetime(object $templateMetadata): ?int

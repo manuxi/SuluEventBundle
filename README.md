@@ -19,7 +19,7 @@ This bundle has been equipped with more and more features over time: advanced fe
 ## ✨ Features
 
 ### 📅 Event Management
-- **Extensive Event Details** - Title, subtitle, summary, text, blocks, and more
+- **Extensive Event Details** - Different templates; Title, subtitle, summary, text, blocks, and more
 - **Date & Time** - Flexible start/end dates
 - **Locations** - Separate location management with address and premises details
 - **Media Integration** - Hero images, image galleries, PDF attachments
