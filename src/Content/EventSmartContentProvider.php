@@ -165,7 +165,7 @@ class EventSmartContentProvider implements SmartContentProviderInterface
         );
         $this->addInternalFilters($queryBuilder, $filters, $alias);
 
-        $queryBuilder->select('COUNT(DISTINCT '.$alias.'.id)');
+        $queryBuilder->select('COUNT(DISTINCT '.$alias.'.uuid)');
 
         return (int) $queryBuilder->getQuery()->getSingleScalarResult();
     }
@@ -202,7 +202,7 @@ class EventSmartContentProvider implements SmartContentProviderInterface
         );
         $dimensionContentAlias = $this->addInternalFilters($queryBuilder, $filters, $alias);
 
-        $queryBuilder->select('DISTINCT '.$alias.'.id as id');
+        $queryBuilder->select('DISTINCT '.$alias.'.uuid as id');
         $queryBuilder->addSelect($dimensionContentAlias.'.title');
         $queryBuilder->addSelect($dimensionContentAlias . '.workflowPlace');
         $queryBuilder->addSelect($dimensionContentAlias . '.workflowPublished');
@@ -246,7 +246,7 @@ class EventSmartContentProvider implements SmartContentProviderInterface
                     'id' => (string) $item['id'],
                     'title' => (string) ($item['title'] ?? ''),
                     'date' => $dateString,
-                    'publishedState' => 'published' === ($item['workflowPlace'] ?? ''),
+                    'publishedState' => 'published' === ($item['workflowPlace'] ?? '') || null !== ($item['workflowPublished'] ?? null),
                     'published' => $item['workflowPublished'] ?? null,
                     //'type' => $this->translator->trans($translationKey, [], 'admin'),
                 ];

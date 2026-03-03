@@ -183,8 +183,19 @@ class EventTeaserProvider implements TeaserProviderInterface
         }
 
         $excerptImage = $dimensionContent->getExcerptImage();
+        if (isset($excerptImage['id'])) {
+            return $excerptImage['id'];
+        }
 
-        return $excerptImage['id'] ?? null;
+        $location = $dimensionContent->getLocation();
+        if (null !== $location) {
+            $locationImage = $location->getImage();
+            if (null !== $locationImage) {
+                return $locationImage->getId();
+            }
+        }
+
+        return null;
     }
 
     /**
