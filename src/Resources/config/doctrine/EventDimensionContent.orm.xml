@@ -19,8 +19,7 @@
                 <option name="default">0</option>
             </options>
         </field>
-        <field name="ghostLocale" type="string" length="5" nullable="true" column="ghost_locale"/>
-        <field name="availableLocales" type="json" nullable="true" column="available_locales"/>
+        <!-- ghostLocale + availableLocales: managed by Sulu MetadataLoader -->
 
         <!-- AUDITABLE TRAIT FIELDS -->
         <field name="created" type="datetime_immutable" nullable="false" column="created"/>
