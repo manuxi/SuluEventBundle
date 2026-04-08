@@ -1,9 +1,9 @@
 # SuluEventBundle!
-![php workflow](https://github.com/manuxi/SuluEventBundle/actions/workflows/php.yml/badge.svg)
-![symfony workflow](https://github.com/manuxi/SuluEventBundle/actions/workflows/symfony.yml/badge.svg)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/manuxi/SuluEventBundle/blob/main/LICENSE)
-![GitHub Tag](https://img.shields.io/github/v/tag/manuxi/SuluEventBundle)
-![Github Release](https://img.shields.io/github/v/release/manuxi/SuluEventBundle?color=116ea3)
+![php workflow](https://github.com/manuxi/SuluEventBundle/actions/workflows/php.yml/badge.svg?branch=2.x)
+![symfony workflow](https://github.com/manuxi/SuluEventBundle/actions/workflows/symfony.yml/badge.svg?branch=2.x)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/manuxi/SuluEventBundle/blob/2.x/LICENSE)
+![GitHub Tag](https://img.shields.io/github/v/tag/manuxi/SuluEventBundle?filter=v2.*)
+![Github Release](https://img.shields.io/github/v/release/manuxi/SuluEventBundle?filter=v2.*&color=116ea3)
 ![Supports Sulu 2.6 or later](https://img.shields.io/badge/%20Sulu->=2.6-0088cc?color=00b2df)
 
 
