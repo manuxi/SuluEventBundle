@@ -56,20 +56,64 @@
                     </params>
                 </property>
 
-                <property name="tagsColor" type="color_select" colspan="3" visibleCondition="__parent.toggleTags == true">
+                <property name="tagsColor" type="select" colspan="3" visibleCondition="__parent.toggleTags == true">
                     <meta>
                         <title>sulu_event.config.properties.toggle_tags_color</title>
                         <info_text>sulu_event.config.properties.toggle_tags_color_info</info_text>
                     </meta>
                     <params>
-                        <param name="default_value"
-                               type="expression"
-                               value="service('sulu_content_types.color_palette_provider').getDefaultValue('bootstrap_emphasis')"
-                        />
-                        <param name="values"
-                               type="expression"
-                               value="service('sulu_content_types.color_palette_provider').getValues('bootstrap_emphasis')"
-                        />
+                        <param name="default_value" value="primary"/>
+
+                        <param name="values" type="collection">
+                            <param name="primary">
+                                <meta>
+                                    <title lang="en">Primary</title>
+                                    <title lang="de">Primärfarbe</title>
+                                </meta>
+                            </param>
+                            <param name="secondary">
+                                <meta>
+                                    <title lang="en">Secondary</title>
+                                    <title lang="de">Sekundärfarbe</title>
+                                </meta>
+                            </param>
+                            <param name="success">
+                                <meta>
+                                    <title lang="en">Success</title>
+                                    <title lang="de">Erfolg</title>
+                                </meta>
+                            </param>
+                            <param name="danger">
+                                <meta>
+                                    <title lang="en">Danger</title>
+                                    <title lang="de">Gefahr</title>
+                                </meta>
+                            </param>
+                            <param name="warning">
+                                <meta>
+                                    <title lang="en">Warning</title>
+                                    <title lang="de">Warnung</title>
+                                </meta>
+                            </param>
+                            <param name="info">
+                                <meta>
+                                    <title lang="en">Info</title>
+                                    <title lang="de">Info</title>
+                                </meta>
+                            </param>
+                            <param name="light">
+                                <meta>
+                                    <title lang="en">Light</title>
+                                    <title lang="de">Hell</title>
+                                </meta>
+                            </param>
+                            <param name="dark">
+                                <meta>
+                                    <title lang="en">Dark</title>
+                                    <title lang="de">Dunkel</title>
+                                </meta>
+                            </param>
+                        </param>
                     </params>
                 </property>
 
@@ -84,20 +128,64 @@
                     </params>
                 </property>
 
-                <property name="categoriesColor" type="color_select" colspan="3" visibleCondition="__parent.toggleCategories == true">
+                <property name="categoriesColor" type="select" colspan="3" visibleCondition="__parent.toggleCategories == true">
                     <meta>
                         <title>sulu_event.config.properties.toggle_categories_color</title>
                         <info_text>sulu_event.config.properties.toggle_categories_color_info</info_text>
                     </meta>
                     <params>
-                        <param name="default_value"
-                               type="expression"
-                               value="service('sulu_content_types.color_palette_provider').getDefaultValue('bootstrap_emphasis')"
-                        />
-                        <param name="values"
-                               type="expression"
-                               value="service('sulu_content_types.color_palette_provider').getValues('bootstrap_emphasis')"
-                        />
+                        <param name="default_value" value="primary"/>
+
+                        <param name="values" type="collection">
+                            <param name="primary">
+                                <meta>
+                                    <title lang="en">Primary</title>
+                                    <title lang="de">Primärfarbe</title>
+                                </meta>
+                            </param>
+                            <param name="secondary">
+                                <meta>
+                                    <title lang="en">Secondary</title>
+                                    <title lang="de">Sekundärfarbe</title>
+                                </meta>
+                            </param>
+                            <param name="success">
+                                <meta>
+                                    <title lang="en">Success</title>
+                                    <title lang="de">Erfolg</title>
+                                </meta>
+                            </param>
+                            <param name="danger">
+                                <meta>
+                                    <title lang="en">Danger</title>
+                                    <title lang="de">Gefahr</title>
+                                </meta>
+                            </param>
+                            <param name="warning">
+                                <meta>
+                                    <title lang="en">Warning</title>
+                                    <title lang="de">Warnung</title>
+                                </meta>
+                            </param>
+                            <param name="info">
+                                <meta>
+                                    <title lang="en">Info</title>
+                                    <title lang="de">Info</title>
+                                </meta>
+                            </param>
+                            <param name="light">
+                                <meta>
+                                    <title lang="en">Light</title>
+                                    <title lang="de">Hell</title>
+                                </meta>
+                            </param>
+                            <param name="dark">
+                                <meta>
+                                    <title lang="en">Dark</title>
+                                    <title lang="de">Dunkel</title>
+                                </meta>
+                            </param>
+                        </param>
                     </params>
                 </property>
             </properties>

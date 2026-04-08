@@ -6,7 +6,6 @@ namespace Manuxi\SuluEventBundle\Controller\Admin;
 
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
-use FOS\RestBundle\Routing\ClassResourceInterface;
 use FOS\RestBundle\View\ViewHandlerInterface;
 use Manuxi\SuluEventBundle\Entity\Location;
 use Manuxi\SuluEventBundle\Entity\Models\LocationModel;
@@ -20,7 +19,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 #[Route('/admin/api')]
-class LocationController extends AbstractRestController implements ClassResourceInterface
+class LocationController extends AbstractRestController
 {
     public function __construct(
         private readonly LocationModel $locationModel,
@@ -85,7 +84,7 @@ class LocationController extends AbstractRestController implements ClassResource
      * @throws OptimisticLockException
      */
     #[Route(
-        '/events.{_format}',
+        '/locations.{_format}',
         name: 'sulu_event.post_location',
         requirements: ['_format' => 'json'],
         options: ['expose' => true],

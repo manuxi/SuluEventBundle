@@ -6,7 +6,6 @@ namespace Manuxi\SuluEventBundle\Controller\Admin;
 
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
-use FOS\RestBundle\Routing\ClassResourceInterface;
 use FOS\RestBundle\View\ViewHandlerInterface;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\EventRecurrence;
@@ -32,7 +31,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 #[Route('/admin/api')]
-class EventController extends AbstractRestController implements ClassResourceInterface, SecuredControllerInterface
+class EventController extends AbstractRestController implements SecuredControllerInterface
 {
     use RequestParametersTrait;
 

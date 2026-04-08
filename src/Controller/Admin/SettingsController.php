@@ -6,8 +6,6 @@ namespace Manuxi\SuluEventBundle\Controller\Admin;
 
 use Doctrine\ORM\EntityManagerInterface;
 use FOS\RestBundle\View\ViewHandlerInterface;
-use HandcraftedInTheAlps\RestRoutingBundle\Controller\Annotations\RouteResource;
-use HandcraftedInTheAlps\RestRoutingBundle\Routing\ClassResourceInterface;
 use Manuxi\SuluEventBundle\Domain\Event\Config\ModifiedEvent;
 use Manuxi\SuluEventBundle\Entity\EventSettings;
 use Sulu\Bundle\ActivityBundle\Application\Collector\DomainEventCollectorInterface;
@@ -18,11 +16,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
-/**
- * @RouteResource("event-settings")
- */
 #[Route('/admin/api')]
-class SettingsController extends AbstractRestController implements ClassResourceInterface, SecuredControllerInterface
+class SettingsController extends AbstractRestController implements SecuredControllerInterface
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
