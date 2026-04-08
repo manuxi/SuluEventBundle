@@ -2,8 +2,8 @@
 ![php workflow](https://github.com/manuxi/SuluEventBundle/actions/workflows/php.yml/badge.svg?branch=2.x)
 ![symfony workflow](https://github.com/manuxi/SuluEventBundle/actions/workflows/symfony.yml/badge.svg?branch=2.x)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/manuxi/SuluEventBundle/LICENSE)
-![GitHub Tag](https://img.shields.io/github/v/tag/manuxi/SuluEventBundle?filter=v2.*)
-![Github Release](https://img.shields.io/github/v/release/manuxi/SuluEventBundle?filter=v2.*&color=116ea3)
+![GitHub Tag](https://img.shields.io/github/v/tag/manuxi/SuluEventBundle?filter=2.*)
+![Github Release](https://img.shields.io/github/v/release/manuxi/SuluEventBundle?filter=2.*&color=116ea3)
 ![Supports Sulu 2.6 or later](https://img.shields.io/badge/%20Sulu->=2.6-0088cc?color=00b2df)
 
 [🇩🇪 German Version](README.de.md)
