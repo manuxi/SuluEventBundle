@@ -7,6 +7,9 @@ namespace Manuxi\SuluEventBundle\DependencyInjection;
 use Manuxi\SuluEventBundle\Admin\EventAdmin;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\Location;
+use Manuxi\SuluEventBundle\Repository\EventDimensionContentRepository;
+use Manuxi\SuluEventBundle\Repository\EventRepository;
+use Manuxi\SuluEventBundle\Repository\LocationRepository;
 use Sulu\Bundle\PersistenceBundle\DependencyInjection\PersistenceExtensionTrait;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -45,6 +48,19 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
         $loader->load('services-feed.yaml');
 
         $this->configurePersistence($config['objects'], $container);
+
+        // PersistenceExtensionTrait::configurePersistence() unconditionally generates
+        // "sulu.repository.*" service definitions with a (EntityManager, ClassMetadata)
+        // constructor signature (the default for Sulu's own EntityRepository base class).
+        // Our repositories extend Doctrine's ServiceEntityRepository, which requires a
+        // ManagerRegistry instead, so those generated definitions are invalid and make
+        // `bin/console lint:container` fail. The repositories are already correctly wired
+        // as public FQCN services above, so replace the broken generated definitions with
+        // aliases to them. This must happen after configurePersistence(), since that call
+        // would otherwise overwrite an alias defined earlier (e.g. in services.yaml).
+        $container->setAlias('sulu.repository.event', EventRepository::class)->setPublic(true);
+        $container->setAlias('sulu.repository.event_dimension_content', EventDimensionContentRepository::class)->setPublic(true);
+        $container->setAlias('sulu.repository.location', LocationRepository::class)->setPublic(true);
     }
 
     public function prepend(ContainerBuilder $container)
