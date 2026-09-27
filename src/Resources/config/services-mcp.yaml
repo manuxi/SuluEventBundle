@@ -1,0 +1,8 @@
+# Tools for the Sulu MCP server (sulu/mcp-bundle). Loaded only if that bundle is installed.
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    Manuxi\SuluEventBundle\Mcp\Tool\:
+        resource: '../../Mcp/Tool/*'

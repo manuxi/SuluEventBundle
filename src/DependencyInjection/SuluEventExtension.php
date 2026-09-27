@@ -47,6 +47,11 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
         $loader->load('services-ical.yaml');
         $loader->load('services-feed.yaml');
 
+        // tools for the Sulu MCP server, only if sulu/mcp-bundle is installed
+        if (class_exists(\Mcp\Capability\Attribute\McpTool::class) && class_exists(\Sulu\Mcp\Domain\Security\RequiresPermission::class)) {
+            $loader->load('services-mcp.yaml');
+        }
+
         $this->configurePersistence($config['objects'], $container);
 
         // PersistenceExtensionTrait::configurePersistence() unconditionally generates

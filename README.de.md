@@ -114,6 +114,7 @@ Die Konfiguration findest Du hier: [Einstellungen](docs/settings.de.md)
 Detaillierte Dokumentation im [docs/](docs/) Verzeichnis.
 
 - [Kalender-Integration](docs/calendar.de.md) - FullCalendar.js-Integration
+- [MCP-Tools](docs/mcp.de.md) - Tools für KI-Assistenten (Sulu MCP)
 - [Social Media](docs/social-media.de.md) - Social-Sharing-Konfiguration
 - [Wiederkehrende Events](docs/recurrence.de.md) - Wiederholende Event-Muster
 - [Feeds/iCal](docs/feeds-ical.de.md) - Feeds und iCal Handling

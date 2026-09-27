@@ -114,6 +114,7 @@ You can find the extensive configuration here: [Settings](docs/settings.en.md)
 Detailed documentation in the [docs/](docs/) directory.
 
 - [Calendar Integration](docs/calendar.en.md) - FullCalendar.js integration
+- [MCP tools](docs/mcp.en.md) - Tools for AI assistants (Sulu MCP)
 - [Social Media](docs/social-media.en.md) - Social sharing configuration
 - [Recurring Events](docs/recurrence.en.md) - Recurring event patterns
 - [Feeds/iCal](docs/feeds-ical.en.md) - Feeds and iCal handling
