@@ -64,3 +64,7 @@ sulu_event:
     date_format: 'd.m.Y'
     datetime_format: 'd.m.Y H:i'
 ````
+
+### Veröffentlichungsstatus
+
+Die Liste zeigt den Veröffentlichungsstatus mit dem Indikator aus dem [SuluAdminExtrasBundle](https://github.com/manuxi/SuluAdminExtrasBundle) (List-Transformer `publish_state_indicator`, siehe dessen Doku `publish_state`). Ohne dieses Bundle ist der Transformer unbekannt und die Spalte zeigt nur Text.

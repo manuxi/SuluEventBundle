@@ -214,6 +214,7 @@
                 <entity-name>ghostDimensionContent</entity-name>
                 <joins ref="ghostDimensionContent"/>
             </field>
+            <transformer type="publish_state_indicator"/>
         </case-property>
 
         <case-property name="livePublished" visibility="never" translation="sulu_admin.live_published">

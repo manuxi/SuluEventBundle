@@ -65,3 +65,7 @@ sulu_event:
     date_format: 'm/d/Y'
     datetime_format: 'm/d/Y h:i A'
 ````
+
+### Publish state indicator
+
+The list shows the publish state with the indicator of [SuluAdminExtrasBundle](https://github.com/manuxi/SuluAdminExtrasBundle) (list transformer `publish_state_indicator`, see its documentation `publish_state`). Without that bundle the transformer type is unknown and the column shows plain text.
