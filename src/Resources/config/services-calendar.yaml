@@ -22,6 +22,7 @@ services:
             - '@sulu_event.recurrence_generator'
             - '@doctrine.orm.entity_manager'
             - '@sulu_content.content_manager'
+            - '@sulu_content.content_workflow'
         tags:
             - { name: console.command }
 
