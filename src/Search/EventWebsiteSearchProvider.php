@@ -76,6 +76,14 @@ class EventWebsiteSearchProvider implements ReindexProviderInterface
         }
         return array_keys($locales);
     }
+    private function getWebspaceKeys(): array
+    {
+        $keys = [];
+        foreach ($this->webspaceManager->getWebspaceCollection() as $webspace) {
+            $keys[] = $webspace->getKey();
+        }
+        return $keys;
+    }
     private function createDocument(Event $event, EventDimensionContent $dimensionContent, string $locale): array
     {
         $content = array_filter([
@@ -92,7 +100,7 @@ class EventWebsiteSearchProvider implements ReindexProviderInterface
             'resourceKey' => Event::RESOURCE_KEY,
             'resourceId' => (string) $event->getId(),
             'locale' => $locale,
-            'webspaces' => [],
+            'webspaces' => $this->getWebspaceKeys(),
             'title' => $dimensionContent->getTitle() ?? '',
             'url' => $dimensionContent->getRoute()?->getSlug() ?? '',
             'content' => array_values($content),
