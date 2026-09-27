@@ -10,7 +10,6 @@ use Doctrine\Persistence\ManagerRegistry;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
 use Sulu\Content\Domain\Model\DimensionContentInterface;
-use Sulu\Content\Domain\Model\WorkflowInterface;
 use Sulu\Content\Infrastructure\Doctrine\DimensionContentQueryEnhancer;
 use Webmozart\Assert\Assert;
 
@@ -166,16 +165,17 @@ class EventRepository extends ServiceEntityRepository
 
     public function countPublished(string $locale): int
     {
+        // workflowPlace is a draft-side concept and is never set on the live-stage
+        // dimension content, so having a live-stage row for the locale is itself
+        // the "published" signal (matches EventWebsiteSearchProvider::provide()).
         $qb = $this->createQueryBuilder('event');
 
         $qb->select('COUNT(DISTINCT event.uuid)')
             ->leftJoin('event.dimensionContents', 'dc')
             ->where('dc.locale = :locale')
             ->andWhere('dc.stage = :stage')
-            ->andWhere('dc.workflowPlace = :published')
             ->setParameter('locale', $locale)
-            ->setParameter('stage', DimensionContentInterface::STAGE_LIVE)
-            ->setParameter('published', WorkflowInterface::WORKFLOW_PLACE_PUBLISHED);
+            ->setParameter('stage', DimensionContentInterface::STAGE_LIVE);
 
         return (int) $qb->getQuery()->getSingleScalarResult();
     }

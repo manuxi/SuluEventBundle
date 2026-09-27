@@ -9,7 +9,6 @@ use Manuxi\SuluEventBundle\Repository\EventRepository;
 use Sulu\Component\Webspace\Manager\WebspaceManagerInterface;
 use Sulu\Content\Application\ContentAggregator\ContentAggregatorInterface;
 use Sulu\Content\Domain\Model\DimensionContentInterface;
-use Sulu\Content\Domain\Model\WorkflowInterface;
 class EventWebsiteSearchProvider implements ReindexProviderInterface
 {
     public function __construct(
@@ -56,9 +55,6 @@ class EventWebsiteSearchProvider implements ReindexProviderInterface
                         'version' => DimensionContentInterface::CURRENT_VERSION,
                     ]
                 );
-                if (WorkflowInterface::WORKFLOW_PLACE_PUBLISHED !== $dimensionContent->getWorkflowPlace()) {
-                    continue;
-                }
                 if (!$dimensionContent->getTitle()) {
                     continue;
                 }
