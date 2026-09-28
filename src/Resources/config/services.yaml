@@ -358,5 +358,6 @@ services:
         arguments:
             - '@translator'
             - '@sulu_event.type_selection'
+            - '@sulu_media.media_manager'
         tags:
             - { name: sulu_content.normalizer }

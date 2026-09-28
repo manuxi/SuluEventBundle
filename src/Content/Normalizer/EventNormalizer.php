@@ -7,6 +7,7 @@ namespace Manuxi\SuluEventBundle\Content\Normalizer;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
 use Manuxi\SuluEventBundle\Service\EventTypeSelect;
+use Sulu\Bundle\MediaBundle\Media\Manager\MediaManagerInterface;
 use Sulu\Content\Application\ContentNormalizer\Normalizer\NormalizerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -15,6 +16,7 @@ class EventNormalizer implements NormalizerInterface
     public function __construct(
         private TranslatorInterface $translator,
         private EventTypeSelect $eventTypeSelect,
+        private MediaManagerInterface $mediaManager,
     ) {
     }
 
@@ -102,12 +104,18 @@ class EventNormalizer implements NormalizerInterface
         }
 
         // Image
+        // "single_media_upload" (unlike "single_media_selection") does not resolve the media itself from an id -
+        // it needs the full media object (url, thumbnails, mimeType) already in the value, or the form shows no
+        // preview for an already saved event.
         $image = $object->getImage();
         if (null !== $image) {
-            if (!isset($normalizedData['image']) || !\is_array($normalizedData['image'])) {
-                $normalizedData['image'] = [];
-            }
-            $normalizedData['image']['id'] = $image->getId();
+            $apiImage = $this->mediaManager->getById($image->getId(), $locale);
+            $normalizedData['image'] = [
+                'id' => $apiImage->getId(),
+                'url' => $apiImage->getUrl(),
+                'thumbnails' => $apiImage->getFormats(),
+                'mimeType' => $apiImage->getMimeType(),
+            ];
         }
 
         // Images
