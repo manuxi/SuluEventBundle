@@ -19,7 +19,7 @@ class LocationResourceLoader implements ResourceLoaderInterface
     /**
      * @param string[] $ids
      * @param array<string, mixed> $params
-     * @return array<string, Location>
+     * @return array<string, array<string, mixed>>
      */
     public function load(array $ids, ?string $locale, array $params = []): array
     {
@@ -33,7 +33,26 @@ class LocationResourceLoader implements ResourceLoaderInterface
 
         $mappedResult = [];
         foreach ($result as $location) {
-            $mappedResult[(string) $location->getId()] = $location;
+            // Location is a plain entity, not a ContentRichEntityInterface: the generic
+            // ContentResolver would otherwise embed the raw object, which serializes to "{}"
+            // (json_encode only sees public properties). Return a plain array instead.
+            $mappedResult[(string) $location->getId()] = [
+                'id' => $location->getId(),
+                'name' => $location->getName(),
+                'street' => $location->getStreet(),
+                'number' => $location->getNumber(),
+                'postalCode' => $location->getPostalCode(),
+                'city' => $location->getCity(),
+                'state' => $location->getState(),
+                'countryCode' => $location->getCountryCode(),
+                'notes' => $location->getNotes(),
+                'email' => $location->getEmail(),
+                'phoneNumber' => $location->getPhoneNumber(),
+                'image' => $location->getImage() ? ['id' => $location->getImage()->getId()] : null,
+                'latitude' => $location->getLatitude(),
+                'longitude' => $location->getLongitude(),
+                'link' => $location->getLink(),
+            ];
         }
 
         return $mappedResult;
