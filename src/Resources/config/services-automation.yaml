@@ -1,0 +1,30 @@
+# Automation (scheduled publish/unpublish) integration for sulu/automation-bundle. Loaded only if that bundle is installed.
+services:
+    sulu_event.automation.admin:
+        class: Manuxi\SuluEventBundle\Admin\EventAutomationAdmin
+        arguments:
+            - '@sulu_automation.automation_view_builder_factory'
+            - '@sulu_security.security_checker'
+        tags:
+            - { name: sulu.admin }
+            - { name: sulu.context, context: admin }
+
+    sulu_event.automation.publish_handler:
+        class: Manuxi\SuluEventBundle\TaskHandler\EventPublishTaskHandler
+        arguments:
+            - '@Manuxi\SuluEventBundle\Repository\EventRepository'
+            - '@sulu_content.content_workflow'
+            - '@doctrine.orm.entity_manager'
+            - '@sulu_activity.domain_event_collector'
+        tags:
+            - { name: task.handler }
+
+    sulu_event.automation.unpublish_handler:
+        class: Manuxi\SuluEventBundle\TaskHandler\EventUnpublishTaskHandler
+        arguments:
+            - '@Manuxi\SuluEventBundle\Repository\EventRepository'
+            - '@sulu_content.content_workflow'
+            - '@doctrine.orm.entity_manager'
+            - '@sulu_activity.domain_event_collector'
+        tags:
+            - { name: task.handler }

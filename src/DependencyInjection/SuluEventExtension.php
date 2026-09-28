@@ -52,6 +52,11 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
             $loader->load('services-mcp.yaml');
         }
 
+        // scheduled publish/unpublish tasks, only if sulu/automation-bundle is installed
+        if (class_exists(\Sulu\Bundle\AutomationBundle\TaskHandler\AutomationTaskHandlerInterface::class)) {
+            $loader->load('services-automation.yaml');
+        }
+
         $this->configurePersistence($config['objects'], $container);
 
         // PersistenceExtensionTrait::configurePersistence() unconditionally generates

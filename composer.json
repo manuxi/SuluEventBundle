@@ -42,6 +42,9 @@
         "phpspec/prophecy": "^1.17",
         "phpspec/prophecy-phpunit": "^2.4"
     },
+    "suggest": {
+        "sulu/automation-bundle": "Allows scheduling automated publish/unpublish tasks for events."
+    },
     "autoload": {
         "psr-4": {
             "Manuxi\\SuluEventBundle\\": "src/"
