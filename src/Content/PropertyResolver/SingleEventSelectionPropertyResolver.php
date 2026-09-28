@@ -13,12 +13,12 @@ class SingleEventSelectionPropertyResolver implements PropertyResolverInterface
 {
     public function resolve(mixed $data, string $locale, array $params = []): ContentView
     {
-        if (null === $data || !\is_int($data)) {
+        if (null === $data || !\is_string($data) || '' === $data) {
             return ContentView::create(null, ['id' => null, ...$params]);
         }
 
         return ContentView::createResolvableWithReferences(
-            id: (string) $data,
+            id: $data,
             resourceLoaderKey: EventResourceLoader::getKey(),
             resourceKey: Event::RESOURCE_KEY,
             view: ['id' => $data, ...$params],
