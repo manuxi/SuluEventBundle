@@ -420,4 +420,3 @@ sulu_activity:
 
 sulu_admin:
     version: "Version"
-    smart_content_label: "{count, plural, =1{# Veranstaltung ausgewählt} other{# Veranstaltungen ausgewählt}}"
