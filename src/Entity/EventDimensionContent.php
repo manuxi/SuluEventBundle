@@ -372,6 +372,10 @@ class EventDimensionContent implements DimensionContentInterface, ExcerptInterfa
             $this->type = \is_string($templateData['type']) ? $templateData['type'] : null;
         }
 
+        // Sulu's core DateTimePropertyResolver (used when this event is embedded as a reference,
+        // e.g. an article's single_event_selection) requires the bare "Y-m-d\TH:i:s" format with
+        // no timezone offset; normalize whatever the admin form submitted before it is persisted
+        // into the templateData JSON blob below, or a linked event's date silently resolves to null.
         if (\array_key_exists('startDate', $templateData)) {
             if ($templateData['startDate'] instanceof \DateTimeImmutable) {
                 $this->startDate = $templateData['startDate'];
@@ -384,6 +388,7 @@ class EventDimensionContent implements DimensionContentInterface, ExcerptInterfa
             } else {
                 $this->startDate = null;
             }
+            $templateData['startDate'] = $this->startDate?->format('Y-m-d\TH:i:s');
         }
 
         if (\array_key_exists('endDate', $templateData)) {
@@ -398,6 +403,7 @@ class EventDimensionContent implements DimensionContentInterface, ExcerptInterfa
             } else {
                 $this->endDate = null;
             }
+            $templateData['endDate'] = $this->endDate?->format('Y-m-d\TH:i:s');
         }
 
         if (\array_key_exists('email', $templateData)) {
