@@ -115,6 +115,7 @@ Detailed documentation in the [docs/](docs/) directory.
 
 - [Calendar Integration](docs/calendar.en.md) - FullCalendar.js integration
 - [MCP tools](docs/mcp.en.md) - Tools for AI assistants (Sulu MCP)
+- [Smart content](docs/smart-content.en.md) - Filtering by categories and tags on the website
 - [Social Media](docs/social-media.en.md) - Social sharing configuration
 - [Recurring Events](docs/recurrence.en.md) - Recurring event patterns
 - [Feeds/iCal](docs/feeds-ical.en.md) - Feeds and iCal handling

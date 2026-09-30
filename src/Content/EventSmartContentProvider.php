@@ -307,8 +307,46 @@ class EventSmartContentProvider implements SmartContentProviderInterface
         return $mappedFilters;
     }
 
+    /**
+     * Categories (by id) and tags (by name) a website visitor picked, e.g. from the query string. The generic
+     * dimension content enhancer only knows the ones saved in the smart content field itself. The dimension content
+     * is joined as "filterDimensionContent" by DimensionContentQueryEnhancer::addFilters() beforehand.
+     *
+     * @param array<string, mixed> $filters
+     */
+    private function addWebsiteFilters(QueryBuilder $queryBuilder, array $filters): void
+    {
+        $websiteCategoryIds = $filters['websiteCategories'] ?? [];
+        if ([] !== $websiteCategoryIds) {
+            $this->smartContentQueryEnhancer->addJoinFilter(
+                $queryBuilder,
+                'filterDimensionContent.excerptCategories',
+                'websiteFilterCategoryId',
+                'id',
+                'websiteCategoryIds',
+                $websiteCategoryIds,
+                $filters['websiteCategoryOperator'] ?? 'OR',
+            );
+        }
+
+        $websiteTagNames = $filters['websiteTags'] ?? [];
+        if ([] !== $websiteTagNames) {
+            $this->smartContentQueryEnhancer->addJoinFilter(
+                $queryBuilder,
+                'filterDimensionContent.excerptTags',
+                'websiteFilterTagName',
+                'name',
+                'websiteTagNames',
+                $websiteTagNames,
+                $filters['websiteTagOperator'] ?? 'OR',
+            );
+        }
+    }
+
     protected function addInternalFilters(QueryBuilder $queryBuilder, array $filters, string $alias): string
     {
+        $this->addWebsiteFilters($queryBuilder, $filters);
+
         $dimensionContentAlias = null;
         $joins = $queryBuilder->getDQLPart('join');
 
