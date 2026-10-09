@@ -224,6 +224,18 @@ services:
         tags:
             - { name: console.command }
 
+    sulu_event.image_template_data_cleanup:
+        class: Manuxi\SuluEventBundle\Service\ImageTemplateDataCleanup
+        arguments:
+            - '@doctrine.orm.entity_manager'
+
+    sulu_event.command.clean_image_data:
+        class: Manuxi\SuluEventBundle\Command\CleanImageTemplateDataCommand
+        arguments:
+            - '@sulu_event.image_template_data_cleanup'
+        tags:
+            - { name: console.command }
+
     sulu_event.social_share_generator:
         class: Manuxi\SuluEventBundle\Service\SocialShareGenerator
         arguments:
