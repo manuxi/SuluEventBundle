@@ -125,6 +125,7 @@ Detailed documentation in the [docs/](docs/) directory.
 - [List View](docs/list-view.en.md) - List View Tweaks
 - [List Transformer](docs/list-transformer.en.md) - Type transformer for lists
 - [Settings](docs/settings.en.md) - Settings
+- [Maintenance](docs/maintenance.en.md) - Clean up stored image data
 - [Fixtures](docs/fixtures.en.md) - Sample Events
 
 ## 👩‍🍳 Contributing

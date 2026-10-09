@@ -33,3 +33,13 @@ The permissions are those of the events security context (`sulu.events.events`).
 `url` and `locationId` are required in the default template. Create the location first with `sulu_location_create` or take an id from `sulu_location_list`.
 
 Publishing is not part of the tools. Publish in the admin, or with the [bulk actions](https://github.com/manuxi/SuluBulkActionsBundle).
+
+## Update an event
+
+`sulu_event_update` takes `uuid`, `locale`, optionally `title` and the fields to change in `content`:
+
+```json
+{"summary": "New short text", "startDate": "2026-11-06T09:00:00"}
+```
+
+Only the given fields are changed. Everything else (image, location, dates, categories and so on) stays as it is. A published event becomes a draft again and has to be published again.

@@ -125,6 +125,7 @@ Detaillierte Dokumentation im [docs/](docs/) Verzeichnis.
 - [Listenansicht](docs/list-view.de.md) - Listen-Ansicht-Tweaks
 - [List-Transformer](docs/list-transformer.de.md) - Typ-Transformer für Listen
 - [Settings](docs/settings.de.md) - Einstellungen
+- [Wartung](docs/maintenance.de.md) - Gespeicherte Bilddaten bereinigen
 - [Fixtures](docs/fixtures.de.md) - Beispiel-Veranstaltungen
 
 ## 👩‍🍳 Mitwirken

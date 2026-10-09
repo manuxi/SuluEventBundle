@@ -33,3 +33,13 @@ Die Rechte sind die des Sicherheitskontexts der Veranstaltungen (`sulu.events.ev
 `url` und `locationId` sind im Standard-Template Pflicht. Den Ort vorher mit `sulu_location_create` anlegen oder eine ID aus `sulu_location_list` nehmen.
 
 Veröffentlichen gehört nicht zu den Tools. Das geht im Admin oder mit den [Sammelaktionen](https://github.com/manuxi/SuluBulkActionsBundle).
+
+## Event ändern
+
+`sulu_event_update` nimmt `uuid`, `locale`, optional `title` und die zu ändernden Felder in `content`:
+
+```json
+{"summary": "Neuer Kurztext", "startDate": "2026-11-06T09:00:00"}
+```
+
+Geändert werden nur die übergebenen Felder. Alles andere (Bild, Ort, Termine, Kategorien usw.) bleibt unverändert. Ein veröffentlichtes Event wird wieder zum Entwurf und muss erneut veröffentlicht werden.
