@@ -31,6 +31,7 @@
                                         value="service('sulu_media.system_collections.manager').getSystemCollection('sulu_event.events')"
                                 />
                             </params>
+                            <tag name="sulu_content.skip_template_data_mapper"/>
                         </property>
                     </properties>
                 </section>
