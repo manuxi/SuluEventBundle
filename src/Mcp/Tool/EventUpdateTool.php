@@ -14,6 +14,7 @@ use Sulu\Component\Security\Authorization\PermissionTypes;
 use Sulu\Content\Application\ContentManager\ContentManagerInterface;
 use Sulu\Content\Application\ContentWorkflow\ContentWorkflowInterface;
 use Sulu\Content\Domain\Model\DimensionContentInterface;
+use Sulu\Content\Domain\Model\TemplateInterface;
 use Sulu\Content\Domain\Model\WorkflowInterface;
 use Sulu\Mcp\Domain\Security\PermissionRequirement;
 use Sulu\Mcp\Domain\Security\RequiresPermission;
@@ -55,9 +56,15 @@ class EventUpdateTool
 
             $attributes = ['locale' => $locale, 'stage' => DimensionContentInterface::STAGE_DRAFT];
 
-            // the content manager takes the data as a whole, so start from the current content
-            $current = $this->contentManager->normalize($this->contentManager->resolve($event, $attributes));
-            $data = ($content ?? []) + (null !== $title ? ['title' => $title] : []) + $current;
+            // The data mappers only touch the fields that are part of the data, so pass just those. The template key
+            // is always needed: the template data mapper falls back to the default template without it.
+            // Do not start from normalize(): that is the form representation (e.g. the full media object of the
+            // image) and writing it back would store it in the content.
+            $current = $this->contentManager->resolve($event, $attributes);
+            $templateKey = $current instanceof TemplateInterface ? $current->getTemplateKey() : null;
+            $data = ($content ?? [])
+                + (null !== $title ? ['title' => $title] : [])
+                + (null !== $templateKey ? ['template' => $templateKey] : []);
 
             $dimensionContent = $this->contentManager->persist($event, $data, $attributes);
 

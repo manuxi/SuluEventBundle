@@ -8,6 +8,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Manuxi\SuluEventBundle\Content\DataMapper\EventUnlocalizedDataMapper;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
+use Manuxi\SuluEventBundle\Entity\Location;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use Sulu\Bundle\AdminBundle\Metadata\FormMetadata\FieldMetadata;
@@ -17,6 +18,7 @@ use Sulu\Bundle\AdminBundle\Metadata\FormMetadata\TypedFormMetadata;
 use Sulu\Bundle\AdminBundle\Metadata\MetadataInterface;
 use Sulu\Bundle\AdminBundle\Metadata\MetadataProviderInterface;
 use Sulu\Bundle\AdminBundle\Metadata\MetadataProviderRegistry;
+use Sulu\Bundle\ContactBundle\Entity\ContactInterface;
 use Sulu\Bundle\MediaBundle\Entity\MediaInterface;
 use Sulu\Content\Application\ContentDataMapper\DataMapper\TemplateDataMapper;
 
@@ -85,6 +87,47 @@ class EventTemplateDataFlowTest extends TestCase
             'summary' => 'Old summary',
             'image' => ['id' => self::MEDIA_ID, 'url' => '/media/241/image.jpg', 'thumbnails' => ['sulu-400x400' => '/a.jpg'], 'mimeType' => 'image/jpeg'],
         ]];
+    }
+
+    /**
+     * What the MCP update tool sends for `{"summary": "..."}`: the template key and that one field.
+     */
+    public function testSummaryOnlyUpdateKeepsImageLocationDatesPdfAndSpeaker(): void
+    {
+        $location = new Location();
+        $pdf = $this->createMock(MediaInterface::class);
+        $speaker = $this->createMock(ContactInterface::class);
+        $start = new \DateTimeImmutable('2026-11-05T09:00:00');
+        $end = new \DateTimeImmutable('2026-11-05T17:00:00');
+
+        foreach ([$this->unlocalized, $this->localized] as $row) {
+            $row->setType('conference');
+            $row->setStartDate($start);
+            $row->setEndDate($end);
+            $row->setLocation($location);
+            $row->setPdf($pdf);
+            $row->setSpeaker($speaker);
+        }
+        $this->localized->setTemplateData([
+            'summary' => 'Old summary',
+            'startDate' => '2026-11-05T09:00:00',
+            'endDate' => '2026-11-05T17:00:00',
+            'pdf' => ['id' => 5],
+            'speaker' => 7,
+        ]);
+
+        $this->map(['template' => 'event', 'summary' => 'New summary']);
+
+        foreach ([$this->unlocalized, $this->localized] as $row) {
+            $this->assertSame($this->media, $row->getImage());
+            $this->assertSame($location, $row->getLocation());
+            $this->assertSame($pdf, $row->getPdf());
+            $this->assertSame($speaker, $row->getSpeaker());
+            $this->assertSame('conference', $row->getType());
+            $this->assertEquals($start, $row->getStartDate());
+            $this->assertEquals($end, $row->getEndDate());
+        }
+        $this->assertSame('New summary', $this->localized->getSummary());
     }
 
     public function testFullUpdateSetsTheImageFromTheFormValue(): void
