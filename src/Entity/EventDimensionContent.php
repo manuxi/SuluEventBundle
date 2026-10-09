@@ -443,8 +443,11 @@ class EventDimensionContent implements DimensionContentInterface, ExcerptInterfa
             $this->images = \is_array($templateData['images']) ? $templateData['images'] : null;
         }
 
-        if (\array_key_exists('speaker', $templateData)) {
-            $this->speaker = $templateData['speaker'] instanceof ContactInterface ? $templateData['speaker'] : null;
+        // speaker, image, pdf and author are columns owned by the data mappers (EventUnlocalizedDataMapper,
+        // AuthorDataMapper). Their value in the template data is only the form value (an id, a small array or null),
+        // so it must never clear the column - only a real entity is taken over.
+        if (($templateData['speaker'] ?? null) instanceof ContactInterface) {
+            $this->speaker = $templateData['speaker'];
         }
 
         if (\array_key_exists('showAuthor', $templateData)) {
@@ -463,12 +466,12 @@ class EventDimensionContent implements DimensionContentInterface, ExcerptInterfa
             );
         }
 
-        if (\array_key_exists('image', $templateData)) {
-            $this->image = $templateData['image'] instanceof MediaInterface ? $templateData['image'] : null;
+        if (($templateData['image'] ?? null) instanceof MediaInterface) {
+            $this->image = $templateData['image'];
         }
 
-        if (\array_key_exists('pdf', $templateData)) {
-            $this->pdf = $templateData['pdf'] instanceof MediaInterface ? $templateData['pdf'] : null;
+        if (($templateData['pdf'] ?? null) instanceof MediaInterface) {
+            $this->pdf = $templateData['pdf'];
         }
 
         if (\array_key_exists('authored', $templateData)) {
@@ -485,8 +488,8 @@ class EventDimensionContent implements DimensionContentInterface, ExcerptInterfa
             }
         }
 
-        if (\array_key_exists('author', $templateData)) {
-            $this->author = $templateData['author'] instanceof ContactInterface ? $templateData['author'] : null;
+        if (($templateData['author'] ?? null) instanceof ContactInterface) {
+            $this->author = $templateData['author'];
         }
 
         $this->parentSetTemplateData($templateData);

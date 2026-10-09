@@ -140,6 +140,53 @@ class EventDimensionContentTest extends TestCase
         $this->assertFalse($content->getShowDate());
     }
 
+    /**
+     * The media and contact columns are owned by the data mappers. The template data only holds their form value
+     * (an id, a small array or null), so applying it must not clear what is already stored in the column.
+     *
+     * @dataProvider provideNonEntityReferenceValues
+     */
+    public function testSetTemplateDataKeepsReferencesForNonEntityValues(mixed $formValue): void
+    {
+        $event = $this->createMock(Event::class);
+        $content = new EventDimensionContent($event);
+
+        $image = $this->createMock(MediaInterface::class);
+        $pdf = $this->createMock(MediaInterface::class);
+        $speaker = $this->createMock(ContactInterface::class);
+        $author = $this->createMock(ContactInterface::class);
+
+        $content->setImage($image);
+        $content->setPdf($pdf);
+        $content->setSpeaker($speaker);
+        $content->setAuthor($author);
+
+        $content->setTemplateData([
+            'title' => 'Title',
+            'image' => $formValue,
+            'pdf' => $formValue,
+            'speaker' => $formValue,
+            'author' => $formValue,
+        ]);
+
+        $this->assertSame($image, $content->getImage());
+        $this->assertSame($pdf, $content->getPdf());
+        $this->assertSame($speaker, $content->getSpeaker());
+        $this->assertSame($author, $content->getAuthor());
+        $this->assertSame('Title', $content->getTitle());
+    }
+
+    /**
+     * @return iterable<string, array{mixed}>
+     */
+    public static function provideNonEntityReferenceValues(): iterable
+    {
+        yield 'null' => [null];
+        yield 'id' => [238];
+        yield 'id array' => [['id' => 238]];
+        yield 'full media object' => [['id' => 238, 'url' => '/media/238/image.jpg', 'thumbnails' => ['sulu-400x400' => '/a.jpg'], 'mimeType' => 'image/jpeg']];
+    }
+
     public function testSetTemplateDataWithInvalidValues(): void
     {
         $event = $this->createMock(Event::class);
