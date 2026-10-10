@@ -61,6 +61,7 @@ sulu_event:
         content_blocks: "Content Blocks"
         links: "Links & Infos"
         premises: "Premises"
+        participation: "Participation & Tickets"
         additional: "Additional Options"
         mandatory: "Mandatory Fields"
         optional: "Optional Fields"
@@ -71,6 +72,7 @@ sulu_event:
     toggle:
         date: "Date"
         links: "Links"
+        participation: "Participation & tickets"
         additional: "Options"
 
     # Block titles
@@ -161,6 +163,51 @@ sulu_event:
         networking: "Networking"
         presentation: "Presentation"
         celebration: "Celebration"
+        meetup: "Meetup"
+        trade_fair: "Trade fair"
+        keynote: "Keynote"
+        convention: "Convention"
+        hackathon: "Hackathon"
+
+    # Fields of the section "Participation & Tickets" and the date row
+    field:
+        all_day: "All day"
+        all_day_info: "Only the date counts, times are ignored."
+        attendance_mode: "Participation"
+        attendance_mode_info: "On site, online or both. Online events need no location."
+        status: "Status"
+        status_info: "Cancelled and postponed events stay visible, marked accordingly."
+        timezone: "Time zone"
+        timezone_info: "Time zone of the start and end. Automatic: of the location, otherwise of the website."
+        location_timezone_info: "Time zone of the place. Automatic: of the website."
+        languages: "Languages"
+        languages_info: "Language(s) the event is held in."
+        registration_url: "Tickets / registration"
+        registration_url_info: "Link to tickets or registration."
+        online_url: "Link to take part online"
+        online_url_info: "Stream or meeting link."
+        is_free: "Free of charge"
+        price_info: "Price"
+        price_info_info: "Short text, e.g. from 99 EUR."
+        organizer_name: "Organizer"
+        organizer_url: "Website of the organizer"
+
+    # Status of an event
+    status:
+        scheduled: "Takes place"
+        postponed: "Postponed"
+        rescheduled: "Rescheduled"
+        cancelled: "Cancelled"
+        moved_online: "Moved online"
+
+    # Way to take part
+    attendance_mode:
+        offline: "On site"
+        online: "Online"
+        mixed: "On site and online"
+
+    timezone:
+        auto: "Automatic"
 
     settings:
         title: "Other"

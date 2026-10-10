@@ -75,6 +75,23 @@
                                 />
                             </params>
                         </property>
+
+                        <property name="timezone" type="single_select" colspan="4">
+                            <meta>
+                                <title>sulu_event.field.timezone</title>
+                                <info_text>sulu_event.field.location_timezone_info</info_text>
+                            </meta>
+                            <params>
+                                <param name="default_value"
+                                       type="expression"
+                                       value="service('sulu_event.timezone_select').getDefaultValue()"
+                                />
+                                <param name="values"
+                                       type="expression"
+                                       value="service('sulu_event.timezone_select').getValues()"
+                                />
+                            </params>
+                        </property>
                     </properties>
                 </section>
             </properties>

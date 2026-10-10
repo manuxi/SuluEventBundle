@@ -71,7 +71,7 @@
                 <title>sulu_event.header.content_other</title>
             </meta>
             <properties>
-                <property name="type" type="single_select" mandatory="true" colspan="6">
+                <property name="type" type="single_select" mandatory="true" colspan="4">
                     <meta>
                         <title>sulu_event.event_type</title>
                     </meta>
@@ -105,6 +105,15 @@
                         <param name="default_value" value="false"/>
                     </params>
                 </property>
+                <property name="toggle_participation" type="checkbox" colspan="2">
+                    <meta>
+                        <title>sulu_event.toggle.participation</title>
+                    </meta>
+                    <params>
+                        <param name="type" value="toggler"/>
+                        <param name="default_value" value="false"/>
+                    </params>
+                </property>
                 <property name="toggle_additional" type="checkbox" colspan="2">
                     <meta>
                         <title>sulu_event.toggle.additional</title>
@@ -124,26 +133,170 @@
             </meta>
             <properties>
 
-                <property name="startDate" type="datetime" colspan="6">
+                <property name="startDate" type="datetime" colspan="4">
                     <meta>
                         <title>sulu_event.start_date</title>
                     </meta>
                 </property>
-                <property name="endDate" type="datetime" colspan="6">
+                <property name="endDate" type="datetime" colspan="4">
                     <meta>
                         <title>sulu_event.end_date</title>
                         <info_text>sulu_event.enddate_eq_startdate</info_text>
                     </meta>
                 </property>
-                <property name="locationId" type="single_location_selection" mandatory="true" colspan="6">
+                <property name="allDay" type="checkbox" colspan="4">
+                    <meta>
+                        <title>sulu_event.field.all_day</title>
+                        <info_text>sulu_event.field.all_day_info</info_text>
+                    </meta>
+                    <params>
+                        <param name="default_value" value="false"/>
+                    </params>
+                </property>
+
+                <property name="attendanceMode" type="single_select" colspan="4">
+                    <meta>
+                        <title>sulu_event.field.attendance_mode</title>
+                        <info_text>sulu_event.field.attendance_mode_info</info_text>
+                    </meta>
+                    <params>
+                        <param name="default_value"
+                               type="expression"
+                               value="service('sulu_event.attendance_mode_select').getDefaultValue()"
+                        />
+                        <param name="values"
+                               type="expression"
+                               value="service('sulu_event.attendance_mode_select').getValues()"
+                        />
+                    </params>
+                </property>
+                <property name="speaker" type="single_contact_selection" colspan="4">
+                    <meta>
+                        <title>sulu_event.speaker</title>
+                    </meta>
+                </property>
+                <property name="locationId" type="single_location_selection" mandatory="true" colspan="4" visibleCondition="__parent.attendanceMode != 'online'">
                     <meta>
                         <title>sulu_event.location</title>
                     </meta>
                 </property>
-                <property name="speaker" type="single_contact_selection" colspan="6">
+            </properties>
+        </section>
+
+        <section name="participation" visibleCondition="__parent.toggle_participation == true">
+            <meta>
+                <title>sulu_event.header.participation</title>
+            </meta>
+            <properties>
+                <property name="status" type="single_select" colspan="4">
                     <meta>
-                        <title>sulu_event.speaker</title>
+                        <title>sulu_event.field.status</title>
+                        <info_text>sulu_event.field.status_info</info_text>
                     </meta>
+                    <params>
+                        <param name="default_value"
+                               type="expression"
+                               value="service('sulu_event.status_select').getDefaultValue()"
+                        />
+                        <param name="values"
+                               type="expression"
+                               value="service('sulu_event.status_select').getValues()"
+                        />
+                    </params>
+                </property>
+                <property name="timezone" type="single_select" colspan="4">
+                    <meta>
+                        <title>sulu_event.field.timezone</title>
+                        <info_text>sulu_event.field.timezone_info</info_text>
+                    </meta>
+                    <params>
+                        <param name="default_value"
+                               type="expression"
+                               value="service('sulu_event.timezone_select').getDefaultValue()"
+                        />
+                        <param name="values"
+                               type="expression"
+                               value="service('sulu_event.timezone_select').getValues()"
+                        />
+                    </params>
+                </property>
+                <property name="languages" type="select" colspan="4">
+                    <meta>
+                        <title>sulu_event.field.languages</title>
+                        <info_text>sulu_event.field.languages_info</info_text>
+                    </meta>
+                    <params>
+                        <param name="values"
+                               type="expression"
+                               value="service('sulu_event.language_select').getValues()"
+                        />
+                    </params>
+                </property>
+
+                <property name="registrationUrl" type="url" colspan="6">
+                    <meta>
+                        <title>sulu_event.field.registration_url</title>
+                        <info_text>sulu_event.field.registration_url_info</info_text>
+                    </meta>
+                    <params>
+                        <param name="defaults" type="collection">
+                            <param name="scheme" value="https://"/>
+                        </param>
+                        <param name="schemes" type="collection">
+                            <param name="https://"/>
+                            <param name="http://"/>
+                        </param>
+                    </params>
+                </property>
+                <property name="onlineUrl" type="url" colspan="6" visibleCondition="__parent.attendanceMode != 'offline'">
+                    <meta>
+                        <title>sulu_event.field.online_url</title>
+                        <info_text>sulu_event.field.online_url_info</info_text>
+                    </meta>
+                    <params>
+                        <param name="defaults" type="collection">
+                            <param name="scheme" value="https://"/>
+                        </param>
+                        <param name="schemes" type="collection">
+                            <param name="https://"/>
+                            <param name="http://"/>
+                        </param>
+                    </params>
+                </property>
+
+                <property name="isFree" type="checkbox" colspan="4">
+                    <meta>
+                        <title>sulu_event.field.is_free</title>
+                    </meta>
+                    <params>
+                        <param name="default_value" value="false"/>
+                    </params>
+                </property>
+                <property name="priceInfo" type="text_line" colspan="4" visibleCondition="__parent.isFree != true">
+                    <meta>
+                        <title>sulu_event.field.price_info</title>
+                        <info_text>sulu_event.field.price_info_info</info_text>
+                    </meta>
+                </property>
+
+                <property name="organizerName" type="text_line" colspan="4">
+                    <meta>
+                        <title>sulu_event.field.organizer_name</title>
+                    </meta>
+                </property>
+                <property name="organizerUrl" type="url" colspan="4">
+                    <meta>
+                        <title>sulu_event.field.organizer_url</title>
+                    </meta>
+                    <params>
+                        <param name="defaults" type="collection">
+                            <param name="scheme" value="https://"/>
+                        </param>
+                        <param name="schemes" type="collection">
+                            <param name="https://"/>
+                            <param name="http://"/>
+                        </param>
+                    </params>
                 </property>
             </properties>
         </section>

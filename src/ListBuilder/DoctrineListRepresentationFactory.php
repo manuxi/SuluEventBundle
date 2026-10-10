@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\ListBuilder;
 
+use Manuxi\SuluEventBundle\Entity\AttendanceMode;
+use Manuxi\SuluEventBundle\Entity\EventStatus;
 use Manuxi\SuluEventBundle\Repository\EventDimensionContentRepository;
 use Manuxi\SuluEventBundle\Service\EventTypeSelect;
 use Sulu\Bundle\MediaBundle\Media\Manager\MediaManagerInterface;
@@ -99,6 +101,7 @@ class DoctrineListRepresentationFactory
         $list = $this->addGhostLocaleToListElements($list, $locale);
         $list = $this->addImagesToListElements($list, $locale);
         $list = $this->addColorsToListElements($list);
+        $list = $this->translateStatusColumns($list, $locale);
         $list = $this->addDateToListElements($list, $locale);
         $list = $this->formatDateTimeElements($list, $locale);
         $list = $this->addPublishStateToListElements($list, $listKey);
@@ -110,6 +113,27 @@ class DoctrineListRepresentationFactory
             (int) $listBuilder->getLimit(),
             (int) $listBuilder->count()
         );
+    }
+
+    /**
+     * Status and attendance mode are stored as keys; the columns show their names.
+     */
+    private function translateStatusColumns(array $listElements, ?string $locale): array
+    {
+        $columns = [
+            'status' => ['sulu_event.status.', EventStatus::values()],
+            'attendanceMode' => ['sulu_event.attendance_mode.', AttendanceMode::values()],
+        ];
+
+        foreach ($listElements as $index => $element) {
+            foreach ($columns as $column => [$prefix, $keys]) {
+                if (isset($element[$column]) && \is_string($element[$column]) && \in_array($element[$column], $keys, true)) {
+                    $listElements[$index][$column] = $this->translator->trans($prefix.$element[$column], [], 'admin', $locale);
+                }
+            }
+        }
+
+        return $listElements;
     }
 
     private function formatDateTimeElements(array $listElements, ?string $locale): array

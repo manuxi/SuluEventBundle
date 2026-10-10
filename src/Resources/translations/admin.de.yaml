@@ -60,6 +60,7 @@ sulu_event:
         content_blocks: "Inhaltsblöcke"
         links: "Links & Infos"
         premises: "Räumlichkeiten"
+        participation: "Teilnahme & Tickets"
         additional: "Zusätzliche Optionen"
         mandatory: "Verpflichtende Felder"
         optional: "Optionale Felder"
@@ -70,6 +71,7 @@ sulu_event:
     toggle:
         date: "Datum"
         links: "Links"
+        participation: "Teilnahme & Tickets"
         additional: "Optionen"
 
     # Block titles
@@ -167,6 +169,51 @@ sulu_event:
         networking: "Networking"
         presentation: "Präsentation"
         celebration: "Feier"
+        meetup: "Meetup"
+        trade_fair: "Messe"
+        keynote: "Keynote"
+        convention: "Convention"
+        hackathon: "Hackathon"
+
+    # Felder des Abschnitts "Teilnahme & Tickets" und der Datumszeile
+    field:
+        all_day: "Ganztägig"
+        all_day_info: "Nur das Datum zählt, Uhrzeiten entfallen."
+        attendance_mode: "Teilnahme"
+        attendance_mode_info: "Vor Ort, online oder beides. Online-Events brauchen keinen Ort."
+        status: "Status"
+        status_info: "Abgesagte und verschobene Events bleiben sichtbar und werden entsprechend gekennzeichnet."
+        timezone: "Zeitzone"
+        timezone_info: "Zeitzone von Beginn und Ende. Automatisch: die des Ortes, sonst die der Website."
+        location_timezone_info: "Zeitzone des Ortes. Automatisch: die der Website."
+        languages: "Sprachen"
+        languages_info: "Sprache(n) der Veranstaltung."
+        registration_url: "Tickets / Anmeldung"
+        registration_url_info: "Link zu Tickets oder Anmeldung."
+        online_url: "Link zur Online-Teilnahme"
+        online_url_info: "Stream- oder Meeting-Link."
+        is_free: "Kostenlos"
+        price_info: "Preis"
+        price_info_info: "Kurztext, z. B. ab 99 EUR."
+        organizer_name: "Veranstalter"
+        organizer_url: "Website des Veranstalters"
+
+    # Status eines Events
+    status:
+        scheduled: "Findet statt"
+        postponed: "Verschoben"
+        rescheduled: "Neu terminiert"
+        cancelled: "Abgesagt"
+        moved_online: "Jetzt online"
+
+    # Art der Teilnahme
+    attendance_mode:
+        offline: "Vor Ort"
+        online: "Online"
+        mixed: "Vor Ort und online"
+
+    timezone:
+        auto: "Automatisch"
 
     settings:
         title: "Weiteres"

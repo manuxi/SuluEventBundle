@@ -35,6 +35,21 @@ sulu_event:
         celebration:
             name: 'sulu_event.types.celebration'
             color: '#dc3545'
+        meetup:
+            name: 'sulu_event.types.meetup'
+            color: '#00a6a6'
+        trade_fair:
+            name: 'sulu_event.types.trade_fair'
+            color: '#8d6e63'
+        keynote:
+            name: 'sulu_event.types.keynote'
+            color: '#e0457b'
+        convention:
+            name: 'sulu_event.types.convention'
+            color: '#7e57c2'
+        hackathon:
+            name: 'sulu_event.types.hackathon'
+            color: '#2e7d32'
 
     default_type: 'default'
 

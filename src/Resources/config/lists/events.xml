@@ -109,6 +109,18 @@
             <joins ref="dimensionContent"/>
         </property>
 
+        <property name="status" translation="sulu_event.field.status" visibility="no">
+            <field-name>status</field-name>
+            <entity-name>dimensionContent</entity-name>
+            <joins ref="dimensionContent"/>
+        </property>
+
+        <property name="attendanceMode" translation="sulu_event.field.attendance_mode" visibility="no">
+            <field-name>attendanceMode</field-name>
+            <entity-name>dimensionContent</entity-name>
+            <joins ref="dimensionContent"/>
+        </property>
+
         <property name="location" translation="sulu_event.location" visibility="always">
             <field-name>name</field-name>
             <entity-name>locationEntity</entity-name>
