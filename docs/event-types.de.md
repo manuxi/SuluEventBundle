@@ -2,6 +2,8 @@
 
 Die Event-Types-Konfiguration beinhaltet den Namen und die Farbe des Types.
 
+Standardtypen sind `default`, `conference`, `workshop`, `meeting`, `seminar`, `webinar`, `training`, `networking`, `presentation`, `celebration` und, seit 3.6.0 (geplant), `meetup`, `trade_fair` (Messe), `keynote`, `convention` und `hackathon`. Projekte, die eigene `types` festlegen, müssen die neuen selbst ergänzen (siehe unten).
+
 ### 1. Bundle
 
 **Datei:** `Resources/config/packages/sulu_event.yaml`

@@ -251,8 +251,6 @@ Das Bundle bietet eine grundlegende Kalenderimplementierung. Für erweiterte Anp
 
 ## Ganztägige Events
 
-Solange es dafür kein eigenes Feld gibt, werden Events als ganztägig erkannt, wenn:
-- keine Endzeit gesetzt ist, oder
-- die Startzeit 00:00:00 und die Endzeit 23:59:59 ist
+Events mit gesetztem Häkchen **Ganztägig** werden mit `allDay: true`, `start` als Datum (`2027-03-02`) und `end` als Tag nach dem letzten Tag gesendet (FullCalendar nimmt das Ende ganztägiger Events als exklusiv). Die Zeiten werden nicht mehr geraten: Ein Event ohne Ende oder eines, das um Mitternacht beginnt, wird mit seiner Uhrzeit gezeigt, solange das Häkchen nicht gesetzt ist.
 
-Ganztägige Events werden im Kalender ohne Zeitangabe dargestellt.
+Alle anderen Events tragen den Offset ihrer Zeitzone (Event, Ort, `sulu_event.timezone`, PHP-Standard), z. B. `2027-07-01T10:00:00-07:00`. In `extendedProps` stehen außerdem `status` und `attendanceMode`, damit ein Frontend abgesagte oder Online-Events kennzeichnen kann. Siehe [Teilnahme, Zeitzone und Tickets](online-events.de.md).

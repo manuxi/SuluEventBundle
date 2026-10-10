@@ -30,7 +30,7 @@ class EventGetTool
     #[McpTool(
         name: 'sulu_event_get',
         title: 'Get Event',
-        description: 'Get one event (draft) by UUID with all fields of its template: title, subtitle, type, start and end date, location id, summary, text, details, images, contact data and workflow state.',
+        description: 'Get one event (draft) by UUID with all fields of its template: title, subtitle, type, start and end date, location id, summary, text, details, images, contact data, participation and time fields (allDay, timezone - "auto" if the event has none of its own -, status, attendanceMode, onlineUrl, registrationUrl, isFree, priceInfo, organizerName, organizerUrl, languages), categories and tags (ids) and workflow state.',
     )]
     #[RequiresPermission(requirements: [
         new PermissionRequirement(Event::SECURITY_CONTEXT, PermissionTypes::VIEW),

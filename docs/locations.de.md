@@ -18,6 +18,7 @@ Standorte werden im Sulu-Admin-Panel unter **Events > Standorte** verwaltet.
 - **Postleitzahl**: PLZ
 - **Stadt**: Stadtname
 - **Land**: Ländername
+- **Zeitzone**: IANA-Zone des Ortes, z. B. `America/Los_Angeles`. Optional: Events dort werden in dieser Zone gelesen ([Teilnahme, Zeitzone und Tickets](online-events.de.md)). „Automatisch“ nimmt die Zone der Website
 - **Notizen**: Zusätzliche Informationen oder Anweisungen
 - **Weitere Optionen**
 

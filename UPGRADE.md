@@ -2,9 +2,56 @@
 
 ## 3.6.0 (planned)
 
-The final version number is decided at release time. This section describes the iCal and calendar fixes; it will be extended by the following changes of the release.
+The final version number is decided at release time. This section describes the iCal and calendar fixes and the new event fields (participation, time zone, status, tickets).
 
-No database changes.
+### Database
+
+New columns, all with a default, so existing events keep their behaviour. Run the SQL (or let `doctrine:schema:update --dump-sql` / a Doctrine migration of your project produce it; table names are the ones of the bundle):
+
+```sql
+ALTER TABLE app_event_dimension_content
+    ADD all_day TINYINT DEFAULT 0 NOT NULL,
+    ADD timezone VARCHAR(64) DEFAULT NULL,
+    ADD status VARCHAR(20) DEFAULT 'scheduled' NOT NULL,
+    ADD attendance_mode VARCHAR(10) DEFAULT 'offline' NOT NULL,
+    ADD online_url VARCHAR(2048) DEFAULT NULL,
+    ADD registration_url VARCHAR(2048) DEFAULT NULL,
+    ADD is_free TINYINT DEFAULT NULL,
+    ADD price_info VARCHAR(255) DEFAULT NULL,
+    ADD organizer_name VARCHAR(255) DEFAULT NULL,
+    ADD organizer_url VARCHAR(2048) DEFAULT NULL,
+    ADD languages JSON DEFAULT NULL;
+
+ALTER TABLE app_location ADD timezone VARCHAR(64) DEFAULT NULL;
+```
+
+`timezone` stays `NULL` for existing events and locations: that means "the zone of the location, otherwise the one of the website", which is what was assumed so far. Set it only where it is needed (`UPDATE app_event_dimension_content SET timezone = 'Europe/Berlin'` pins every event to one zone).
+
+**All-day events are no longer guessed from the times.** Before, the calendar API treated an event without an end as all-day, and an event from 00:00:00 to 23:59:59 as well. Now only the new flag counts. To keep events that were all-day by that rule, set the flag once:
+
+```sql
+UPDATE app_event_dimension_content
+SET all_day = 1
+WHERE start_date IS NOT NULL
+  AND TIME(start_date) = '00:00:00'
+  AND (end_date IS NULL OR TIME(end_date) = '23:59:59');
+```
+
+### New dependency: SuluBlockValidationBundle
+
+The location is optional for online events. That needs the conditional validation of [manuxi/sulu-block-validation-bundle](https://github.com/manuxi/SuluBlockValidationBundle) (`^1.2`), which Composer installs with the bundle. Register it in `config/bundles.php` if it is not there yet:
+
+```php
+Manuxi\SuluBlockValidationBundle\SuluBlockValidationBundle::class => ['all' => true],
+```
+
+### New fields in the event templates
+
+`event`, `event_basic` and `event_detailed` have new fields (all day, participation, the section "Participation & tickets" with status, time zone, languages, tickets, online link, price, organizer) and the location is no longer mandatory for online events. If your project **copies or overrides** these templates (`config/templates/events/`), take the new properties over from the bundle's templates. See [Participation, time zone and tickets](docs/online-events.en.md).
+
+### New default event types
+
+`meetup`, `trade_fair`, `keynote`, `convention` and `hackathon` (with translations). Projects that define their own `sulu_event.types` replace the defaults completely and add the ones they want, with a name (translation key) and a colour.
 
 ### New dependency: sabre/vobject
 
@@ -58,7 +105,11 @@ Without the option nothing changes for installations whose PHP default timezone 
 
 ### For developers
 
-- `ICalGenerator` takes the `WebspaceManagerInterface`, the `RequestStack` and the timezone as additional constructor arguments (`sulu_event.ical_generator` is updated). `ICalGenerator::resolveTimezone()` returns the zone the stored times are meant in.
-- `CalendarApiController` takes the `WebspaceManagerInterface` as fourth constructor argument.
+- `ICalGenerator` takes the `WebspaceManagerInterface`, the `RequestStack` and the new `EventTimezoneResolver` as additional constructor arguments (`sulu_event.ical_generator` is updated). `ICalGenerator::resolveTimezone()` returns the zone the stored times are meant in: the zone of the event, of its location, `sulu_event.timezone`, the PHP default.
+- `CalendarApiController` takes the `WebspaceManagerInterface` and the `EventTimezoneResolver` as fourth and fifth constructor arguments, `EventNormalizer` the `EventStatusSelect` and the `AttendanceModeSelect` as fourth and fifth.
+- New services: `sulu_event.status_select`, `sulu_event.attendance_mode_select`, `sulu_event.timezone_select`, `sulu_event.language_select`, `sulu_event.timezone_resolver`. New entity fields come with `EventDetailsTrait` (`allDay`, `timezone`, `status`, `attendanceMode`, `onlineUrl`, `registrationUrl`, `isFree`, `priceInfo`, `organizerName`, `organizerUrl`, `languages`) and `Location::getTimezone()`.
+- The enums `EventStatus` and `AttendanceMode` list the allowed values; the entities store the strings and refuse unknown values (and invalid time zones and urls) with an `\InvalidArgumentException`.
 - `EventRepository::findForIcal()` and `findForCalendar()` return only events with a live dimension content in the locale and fetch all their dimension contents. Both accept `categories`, `tags` (and `location` for the calendar) as filters.
-- All-day events are still guessed (starts at midnight, no end or end at 23:59:59). A field for it is planned.
+- Without the `allDay` flag an event is a timed one, in the iCal export and in the calendar API.
+- The calendar API sends `start`/`end` of all-day events as dates (end exclusive) and the others with the offset of the time zone of the event; `extendedProps` has `status` and `attendanceMode`.
+- iCal: `STATUS:CANCELLED` for cancelled and `STATUS:TENTATIVE` for postponed events; the link to take part is the `LOCATION` of an online event without a place.

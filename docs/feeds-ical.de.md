@@ -147,7 +147,7 @@ Die Datei wird mit [sabre/vobject](https://sabre.io/vobject/) erzeugt; Sonderzei
 
 Im Admin eingegebene Zeiten werden als Uhrzeit ohne Zeitzone gespeichert („10:00“). Der Export liest sie in der Zeitzone der Anwendung und rechnet sie nach UTC um, ein Termin um 10:00 Uhr in Berlin steht also im Sommer als `DTSTART:…T080000Z` und im Winter als `…T090000Z` in der Datei. Kalender-Anwendungen zeigen ihn dadurch in der eigenen Zeitzone des Nutzers richtig an. Eine `VTIMEZONE`-Angabe ist deshalb nicht nötig.
 
-Die Zeitzone der Anwendung ist die PHP-Standardzeitzone (`date.timezone`). Sie lässt sich für die Events getrennt festlegen:
+Die Zeitzone ist in dieser Reihenfolge: die des Events, die seines Ortes, die konfigurierte und die PHP-Standardzeitzone (`date.timezone`), siehe [Teilnahme, Zeitzone und Tickets](online-events.de.md). Die konfigurierte wird so gesetzt:
 
 ```yaml
 # config/packages/sulu_event.yaml
@@ -157,7 +157,11 @@ sulu_event:
 
 #### Ganztägige Events
 
-Solange es dafür kein eigenes Feld gibt, gilt ein Event als ganztägig, wenn es um 00:00:00 beginnt und entweder kein Ende hat oder um 23:59:59 endet. Es wird dann als Datum ohne Uhrzeit ausgegeben (`DTSTART;VALUE=DATE:…`); `DTEND` ist, wie in iCal vorgesehen, der Tag nach dem letzten Tag.
+Events mit gesetztem Häkchen **Ganztägig** werden als Datum ohne Uhrzeit ausgegeben (`DTSTART;VALUE=DATE:…`); `DTEND` ist, wie in iCal vorgesehen, der Tag nach dem letzten Tag. Die Zeiten werden nicht mehr geraten: Ein Event, das um Mitternacht beginnt, ist ein Termin mit Uhrzeit, solange das Häkchen nicht gesetzt ist.
+
+#### Status und Online-Events
+
+Ein abgesagtes Event bekommt `STATUS:CANCELLED`, ein verschobenes `STATUS:TENTATIVE`. Ein Event ohne Ort, dessen Teilnahme „Online“ oder „Vor Ort und online“ ist, bekommt den Link zur Teilnahme als `LOCATION`.
 
 ### Kalender-Feed filtern
 

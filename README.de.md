@@ -34,6 +34,7 @@ Dieses Bundle wurde im Laufe der Zeit mit immer mehr Funktionen ausgestattet: Er
 - **Social-Media-Integration** - Pro-Event-Sharing-Konfiguration (Facebook, Twitter, LinkedIn, Instagram, WhatsApp)
 - **Kalender** - FullCalendar.js Integration mit Jahres-/Monats-/Wochen-/Listenansicht
 - **iCal-Export** - Einzelne Events oder vollständige Kalender-Abonnements (webcal://), nach Kategorie und Tag filterbar, mit korrekten Zeiten und absoluten Links
+- **Online-Events, Zeitzonen, Tickets** - Teilnahme (vor Ort, online, beides), Zeitzone je Event oder Ort, ganztägige Events, Status (abgesagt, verschoben ...), Ticket- und Stream-Links, Preis, Veranstalter, Sprachen
 - **RSS/Atom-Feeds** - Abonnenten über neue Events auf dem Laufenden halten
 - **Smart Content** - Als Content-Block in jeder Sulu-Seite verwendbar
 
@@ -119,6 +120,7 @@ Detaillierte Dokumentation im [docs/](docs/) Verzeichnis.
 - [Social Media](docs/social-media.de.md) - Social-Sharing-Konfiguration
 - [Wiederkehrende Events](docs/recurrence.de.md) - Wiederholende Event-Muster
 - [Feeds/iCal](docs/feeds-ical.de.md) - Feeds und iCal Handling
+- [Teilnahme, Zeitzone und Tickets](docs/online-events.de.md) - Online-Events, Zeitzonen, ganztägige Events, Status, Tickets
 - [Standorte](docs/locations.de.md) - Standorte, die Events zugeordnet werden
 - [Sitemap](docs/sitemap.de.md) - Sitemaps
 - [Eigene Event-Types](docs/event-types.de.md) - Event-Types selber konfigurieren

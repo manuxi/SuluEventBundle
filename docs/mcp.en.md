@@ -30,7 +30,26 @@ The permissions are those of the events security context (`sulu.events.events`).
 }
 ```
 
-`url` and `locationId` are required in the default template. Create the location first with `sulu_location_create` or take an id from `sulu_location_list`.
+`url` is required. `locationId` is required unless `attendanceMode` is `online`. Create the location first with `sulu_location_create` (it takes an optional IANA `timezone` such as `America/Los_Angeles`) or take an id from `sulu_location_list`.
+
+Further keys in `content`:
+
+| Key | Value |
+|---|---|
+| `allDay` | `true`: whole days, the times are set to 00:00:00 and 23:59:59 |
+| `timezone` | IANA name for the time of day in `startDate`/`endDate`; leave it out to use the zone of the location or of the website |
+| `status` | `scheduled`, `postponed`, `rescheduled`, `cancelled`, `moved_online` |
+| `attendanceMode` | `offline`, `online`, `mixed` |
+| `onlineUrl`, `registrationUrl`, `organizerUrl` | complete http(s) urls |
+| `isFree` | `true` / `false` |
+| `priceInfo` | short text of the locale, e.g. `from 99 EUR` |
+| `organizerName` | text |
+| `languages` | e.g. `["de", "en"]` |
+| `excerptCategories` | category ids from the Sulu tool `sulu_category_list` |
+| `excerptTags` | tag **ids** (not names) from `sulu_tag_list` / `sulu_tag_create`; unknown ids are ignored |
+| `excerpt` | `{"image": {"id": 12}, "title": "...", "description": "..."}`, the image for cards and teasers |
+
+Invalid values (an unknown status, an unknown time zone, a url without `http://` or `https://`) are rejected with a message and nothing is saved. `sulu_event_get` shows the time zone as `auto` for an event without one of its own. More: [Participation, time zone and tickets](online-events.en.md).
 
 Publishing is not part of the tools. Publish in the admin, or with the [bulk actions](https://github.com/manuxi/SuluBulkActionsBundle).
 

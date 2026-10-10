@@ -30,7 +30,26 @@ Die Rechte sind die des Sicherheitskontexts der Veranstaltungen (`sulu.events.ev
 }
 ```
 
-`url` und `locationId` sind im Standard-Template Pflicht. Den Ort vorher mit `sulu_location_create` anlegen oder eine ID aus `sulu_location_list` nehmen.
+`url` ist Pflicht. `locationId` ist Pflicht, außer `attendanceMode` ist `online`. Den Ort vorher mit `sulu_location_create` anlegen (es nimmt eine optionale IANA-`timezone` wie `America/Los_Angeles`) oder eine ID aus `sulu_location_list` nehmen.
+
+Weitere Schlüssel in `content`:
+
+| Schlüssel | Wert |
+|---|---|
+| `allDay` | `true`: ganze Tage, die Uhrzeiten werden auf 00:00:00 und 23:59:59 gesetzt |
+| `timezone` | IANA-Name für die Uhrzeit in `startDate`/`endDate`; weglassen, um die Zone des Ortes oder der Website zu nehmen |
+| `status` | `scheduled`, `postponed`, `rescheduled`, `cancelled`, `moved_online` |
+| `attendanceMode` | `offline`, `online`, `mixed` |
+| `onlineUrl`, `registrationUrl`, `organizerUrl` | vollständige http(s)-URLs |
+| `isFree` | `true` / `false` |
+| `priceInfo` | Kurztext der Sprache, z. B. `ab 99 EUR` |
+| `organizerName` | Text |
+| `languages` | z. B. `["de", "en"]` |
+| `excerptCategories` | Kategorie-IDs aus dem Sulu-Tool `sulu_category_list` |
+| `excerptTags` | Tag-**IDs** (keine Namen) aus `sulu_tag_list` / `sulu_tag_create`; unbekannte IDs werden ignoriert |
+| `excerpt` | `{"image": {"id": 12}, "title": "...", "description": "..."}`, das Bild für Karten und Teaser |
+
+Ungültige Werte (ein unbekannter Status, eine unbekannte Zeitzone, eine URL ohne `http://` oder `https://`) werden mit einer Meldung abgelehnt, gespeichert wird dann nichts. `sulu_event_get` zeigt die Zeitzone als `auto`, wenn das Event keine eigene hat. Mehr: [Teilnahme, Zeitzone und Tickets](online-events.de.md).
 
 Veröffentlichen gehört nicht zu den Tools. Das geht im Admin oder mit den [Sammelaktionen](https://github.com/manuxi/SuluBulkActionsBundle).
 

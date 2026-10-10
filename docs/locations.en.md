@@ -20,6 +20,7 @@ Locations are managed in the Sulu admin panel under **Events > Locations**.
 - **Country**: Country name
 - **Latitude**: Geographic latitude (for maps)
 - **Longitude**: Geographic longitude (for maps)
+- **Time zone**: IANA zone of the place, e.g. `America/Los_Angeles`. Optional: events there are read in this zone ([Participation, time zone and tickets](online-events.en.md)). "Automatic" uses the zone of the website
 - **Notes**: Additional information or instructions
 
 ## Assigning Locations to Events

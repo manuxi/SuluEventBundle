@@ -239,8 +239,6 @@ The bundle provides a basic calendar implementation. For advanced customization,
 
 ## All-Day Events
 
-Until an explicit field exists, events are detected as all-day when:
-- no end time is set, or
-- the start time is 00:00:00 and the end time is 23:59:59
+Events with the box **All day** checked are sent with `allDay: true`, `start` as a date (`2027-03-02`) and `end` as the day after the last day (FullCalendar takes the end of all-day events as exclusive). The times are not guessed any more: an event without an end or one that starts at midnight is shown with its time unless the box is checked.
 
-All-day events are displayed without time information in the calendar.
+All other events carry the offset of their time zone (event, location, `sulu_event.timezone`, PHP default), e.g. `2027-07-01T10:00:00-07:00`. `extendedProps` also holds `status` and `attendanceMode`, so a front end can mark cancelled or online events. See [Participation, time zone and tickets](online-events.en.md).

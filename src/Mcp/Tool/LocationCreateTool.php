@@ -26,7 +26,7 @@ class LocationCreateTool
     #[McpTool(
         name: 'sulu_location_create',
         title: 'Create Event Location',
-        description: 'Create a location for events. Returns its id, which is the "locationId" of an event. For online events use a location like "Online" without an address.',
+        description: 'Create a location for events. Returns its id, which is the "locationId" of an event. Online events do not need a location (set attendanceMode "online" on the event). Give the IANA "timezone" of the place (e.g. "America/Los_Angeles") for places outside the time zone of the website: the event times are read in it.',
     )]
     #[RequiresPermission(requirements: [
         new PermissionRequirement(Event::SECURITY_CONTEXT, PermissionTypes::ADD),
@@ -41,6 +41,7 @@ class LocationCreateTool
         ?string $email = null,
         ?string $phoneNumber = null,
         ?string $notes = null,
+        ?string $timezone = null,
     ): array {
         try {
             $location = $this->locationRepository->create();
@@ -53,6 +54,7 @@ class LocationCreateTool
             $location->setEmail($email);
             $location->setPhoneNumber($phoneNumber);
             $location->setNotes($notes);
+            $location->setTimezone($timezone);
 
             $location = $this->locationRepository->save($location);
 

@@ -153,7 +153,7 @@ The file is built with [sabre/vobject](https://sabre.io/vobject/); special chara
 
 Times entered in the admin are stored as a time of day without a timezone ("10:00"). The export reads them in the timezone of the application and converts them to UTC, so an appointment at 10:00 in Berlin appears as `DTSTART:…T080000Z` in summer and `…T090000Z` in winter. Calendar applications therefore show it correctly in the user's own timezone, and no `VTIMEZONE` component is needed.
 
-The timezone of the application is the PHP default timezone (`date.timezone`). It can be set separately for the events:
+The timezone is, in this order: the one of the event, the one of its location, the configured one and the PHP default timezone (`date.timezone`), see [Participation, time zone and tickets](online-events.en.md). The configured one is set like this:
 
 ```yaml
 # config/packages/sulu_event.yaml
@@ -163,7 +163,11 @@ sulu_event:
 
 #### All-day events
 
-Until there is a field of its own for it, an event counts as all-day if it starts at 00:00:00 and either has no end or ends at 23:59:59. It is then written as a date without time (`DTSTART;VALUE=DATE:…`); `DTEND` is, as iCal intends, the day after the last day.
+Events with the box **All day** checked are written as a date without time (`DTSTART;VALUE=DATE:…`); `DTEND` is, as iCal intends, the day after the last day. The times are no longer guessed: an event that starts at midnight is a timed one unless the box is checked.
+
+#### Status and online events
+
+A cancelled event is written with `STATUS:CANCELLED`, a postponed one with `STATUS:TENTATIVE`. An event without a location whose participation is "Online" or "On site and online" gets the link to take part as `LOCATION`.
 
 ### Filtering Calendar Feed
 
