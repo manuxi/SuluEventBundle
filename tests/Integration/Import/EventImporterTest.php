@@ -396,6 +396,27 @@ class EventImporterTest extends AbstractEventDatabaseTestCase
         $this->assertSame(['id' => 77], $this->draft($uuid, 'en')->getExcerptImage());
     }
 
+    public function testImageOfACategoryCanBeNamedByItsFile(): void
+    {
+        $settings = new ImportSettings(true, 'import', false, '/events', null, 'default', 'event', ['web' => 'event-topic-web.jpg']);
+
+        $this->import([new ArraySource('ical.a', 50, [$this->candidate(categoryKeys: ['web'])])], settings: $settings);
+
+        $this->assertSame(901, $this->contentManager->calls[0]['data']['image']);
+    }
+
+    public function testFileThatIsNotInTheLibraryIsAWarning(): void
+    {
+        $settings = new ImportSettings(true, 'import', false, '/events', null, 'default', 'event', ['web' => 'event-topic-missing.jpg']);
+        $importer = $this->createImporter([new ArraySource('ical.a', 50, [$this->candidate(categoryKeys: ['web'])])], $settings);
+
+        $report = $importer->import();
+
+        $this->assertSame(1, $report->getCounts()['created']);
+        $this->assertStringContainsString('The image "event-topic-missing.jpg" does not exist', $report->getWarnings()[0]['message']);
+        $this->assertArrayNotHasKey('image', $this->contentManager->calls[0]['data']);
+    }
+
     public function testImageOfTheSourceWinsOverTheOneOfTheCategory(): void
     {
         $settings = new ImportSettings(true, 'import', false, '/events', null, 'default', 'event', ['web' => 77]);
@@ -422,7 +443,7 @@ class EventImporterTest extends AbstractEventDatabaseTestCase
 
         $this->assertSame(1, $report->getCounts()['created']);
         $this->assertSame(0, $report->getCounts()['errors']);
-        $this->assertStringContainsString('image with the id 77 does not exist', $report->getWarnings()[0]['message']);
+        $this->assertStringContainsString('The image "77" does not exist', $report->getWarnings()[0]['message']);
         $this->assertArrayNotHasKey('image', $this->contentManager->calls[0]['data']);
     }
 
@@ -704,6 +725,8 @@ class EventImporterTest extends AbstractEventDatabaseTestCase
 
         $mediaResolver = $this->createStub(MediaResolver::class);
         $mediaResolver->method('exists')->willReturn($mediaExists);
+        // an id is itself, the file "event-topic-web.jpg" is the media 901, any other name is not there
+        $mediaResolver->method('resolve')->willReturnCallback(static fn (int|string $reference): ?int => !$mediaExists ? null : (ctype_digit((string) $reference) ? (int) $reference : ('event-topic-web.jpg' === $reference ? 901 : null)));
 
         return new EventImporter(
             new SourceRegistry($sources),

@@ -126,6 +126,21 @@ class ImportConfigurationTest extends TestCase
         $this->load(['import' => ['sources' => ['ical' => [['key' => 'a', 'url' => 'https://example.com/a.ics', 'timezone' => 'Mars/Olympus']]]]]);
     }
 
+    public function testCategoryImagesAreIdsOrFileNames(): void
+    {
+        $container = $this->load(['import' => ['category_images' => ['ai' => 123, 'games' => 'event-topic-games.jpg']]]);
+
+        $this->assertSame(['ai' => 123, 'games' => 'event-topic-games.jpg'], $container->getParameter('sulu_event.import.category_images'));
+    }
+
+    public function testCategoryImageMustNotBeEmpty(): void
+    {
+        $this->expectException(InvalidConfigurationException::class);
+        $this->expectExceptionMessage('id of a media or the name of its file');
+
+        $this->load(['import' => ['category_images' => ['ai' => ' ']]]);
+    }
+
     public function testUrlPrefixMustStartWithASlash(): void
     {
         $this->expectException(InvalidConfigurationException::class);

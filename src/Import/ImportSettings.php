@@ -10,13 +10,13 @@ namespace Manuxi\SuluEventBundle\Import;
 final class ImportSettings
 {
     /**
-     * @param string|null        $user                     user name of the Sulu user who is creator and changer of imported events
-     * @param bool               $autoUpdatePublishedDates a date or status change may go live without an editor publishing it
-     * @param string             $urlPrefix                path the urls of imported events start with ("/events")
-     * @param string|null        $webspace                 main webspace of imported events, null = the default one
-     * @param string             $defaultType              event type for candidates without one
-     * @param array<string, int> $categoryImages           category key => id of an image of our own, for events that have none
-     * @param string[]           $requiredLocales          locales an imported event should have a text in (for the list of events that need work)
+     * @param string|null               $user                     user name of the Sulu user who is creator and changer of imported events
+     * @param bool                      $autoUpdatePublishedDates a date or status change may go live without an editor publishing it
+     * @param string                    $urlPrefix                path the urls of imported events start with ("/events")
+     * @param string|null               $webspace                 main webspace of imported events, null = the default one
+     * @param string                    $defaultType              event type for candidates without one
+     * @param array<string, int|string> $categoryImages           category key => id or file name of an image of our own, for events that have none
+     * @param string[]                  $requiredLocales          locales an imported event should have a text in (for the list of events that need work)
      */
     public function __construct(
         public readonly bool $enabled = false,

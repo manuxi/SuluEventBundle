@@ -54,7 +54,7 @@ sulu_event:
 | `auto_update_published_dates` | Eine Änderung von Datum, Uhrzeit oder Status eines **veröffentlichten** Events geht von selbst live, wenn im Entwurf sonst nichts wartet | `false` |
 | `url_prefix` | Pfad, mit dem die URLs importierter Events beginnen | `/events` |
 | `webspace` | Webspace importierter Events | Standard-Webspace |
-| `category_images` | Eigene Bilder: Kategorie-Schlüssel => Medien-ID, siehe „Bilder“ | – |
+| `category_images` | Eigene Bilder: Kategorie-Schlüssel => Dateiname oder ID eines Mediums, siehe „Bilder“ | – |
 | `locales` | Sprachen, in denen ein importiertes Event einen Text haben soll, für die Liste der Events mit offener Arbeit | – |
 
 Optionen einer Quelle (`ical` und `jsonld` haben dieselben):
@@ -90,9 +90,9 @@ Importierte Events bekommen **eigene Bilder**, nie die Bilder einer Quelle (die 
 ```yaml
 sulu_event:
     import:
-        category_images:          # Kategorie-Schlüssel => ID eines Mediums
-            web-php: 123
-            ai: 124
+        category_images:          # Kategorie-Schlüssel => Dateiname (oder ID) eines Mediums
+            web-php: event-topic-web-php.jpg
+            ai: event-topic-ai.jpg
         sources:
             jsonld:
                 -   key: 'example-conf'
@@ -100,7 +100,7 @@ sulu_event:
                     image: 130    # geht dem Bild der Kategorie vor
 ```
 
-Ein neues Event bekommt das Bild seiner Quelle, sonst das seiner ersten Kategorie, die aufgeführt ist; es wird als Bild und als Excerpt-Bild (Karten und Teaser) gesetzt. Ein Event ohne Bild bekommt beim nächsten Lauf ebenfalls eins; ein Bild, das jemand gewählt hat, wird nie ersetzt. Eine Medien-ID, die es nicht gibt, wird als Warnung gemeldet. „Bild fehlt“ erscheint auch in der Liste der Events, an denen noch etwas zu tun ist (MCP-Werkzeug `sulu_event_import_pending`).
+**Dateinamen** sind besser als IDs: Die IDs der Medien unterscheiden sich zwischen Testplattform und Live-Seite, die Namen nicht (genommen wird das erste Medium, dessen aktuelle Datei so heißt). Ein neues Event bekommt das Bild seiner Quelle, sonst das seiner ersten Kategorie, die aufgeführt ist; es wird als Bild und als Excerpt-Bild (Karten und Teaser) gesetzt. Ein Event ohne Bild bekommt beim nächsten Lauf ebenfalls eins; ein Bild, das jemand gewählt hat, wird nie ersetzt. Eine Medien-ID, die es nicht gibt, wird als Warnung gemeldet. „Bild fehlt“ erscheint auch in der Liste der Events, an denen noch etwas zu tun ist (MCP-Werkzeug `sulu_event_import_pending`).
 
 ## Im Admin
 

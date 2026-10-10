@@ -54,7 +54,7 @@ sulu_event:
 | `auto_update_published_dates` | A change of date, time or status of a **published** event goes live by itself, if nothing else is waiting in its draft | `false` |
 | `url_prefix` | Path the urls of imported events start with | `/events` |
 | `webspace` | Webspace of imported events | default webspace |
-| `category_images` | Images of your own: category key => media id, see "Images" | – |
+| `category_images` | Images of your own: category key => file name or id of a media, see "Images" | – |
 | `locales` | Locales an imported event should have a text in, for the list of events that need work | – |
 
 Options of a source (`ical` and `jsonld` have the same):
@@ -90,9 +90,9 @@ Imported events get **images of your own**, never the images of a source (they b
 ```yaml
 sulu_event:
     import:
-        category_images:          # category key => id of a media
-            web-php: 123
-            ai: 124
+        category_images:          # category key => file name (or id) of a media
+            web-php: event-topic-web-php.jpg
+            ai: event-topic-ai.jpg
         sources:
             jsonld:
                 -   key: 'example-conf'
@@ -100,7 +100,7 @@ sulu_event:
                     image: 130    # wins over the image of the category
 ```
 
-A new event gets the image of its source, otherwise the one of its first category that is listed; it is set as the image and as the excerpt image (cards and teasers). An event that has no image yet gets one on the next run as well; an image someone chose is never replaced. A media id that does not exist is reported as a warning. "Image missing" also shows in the list of events that need work (MCP tool `sulu_event_import_pending`).
+Use **file names** rather than ids where you can: the ids of the media differ between a test platform and the live site, the names do not (the first media whose current file has the name is taken). A new event gets the image of its source, otherwise the one of its first category that is listed; it is set as the image and as the excerpt image (cards and teasers). An event that has no image yet gets one on the next run as well; an image someone chose is never replaced. A media id that does not exist is reported as a warning. "Image missing" also shows in the list of events that need work (MCP tool `sulu_event_import_pending`).
 
 ## In the admin
 

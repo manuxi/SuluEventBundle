@@ -781,29 +781,31 @@ class EventImporter
      */
     private function resolveImageId(EventCandidate $candidate, ImportReport $report, string $source): ?int
     {
-        $id = $this->pickImageId($candidate);
-        if (null === $id) {
+        $reference = $this->pickImageReference($candidate);
+        if (null === $reference) {
             return null;
         }
 
-        if (!$this->mediaResolver->exists($id)) {
-            $report->addWarning($source, $candidate->externalId, \sprintf('The image with the id %d does not exist, the event gets no image.', $id));
-
-            return null;
+        $id = $this->mediaResolver->resolve($reference);
+        if (null === $id) {
+            $report->addWarning($source, $candidate->externalId, \sprintf('The image "%s" does not exist, the event gets no image.', $reference));
         }
 
         return $id;
     }
 
-    private function pickImageId(EventCandidate $candidate): ?int
+    /**
+     * @return int|string|null id or file name of the image
+     */
+    private function pickImageReference(EventCandidate $candidate): int|string|null
     {
         if (null !== $candidate->imageMediaId) {
             return $candidate->imageMediaId;
         }
 
         foreach ($candidate->categoryKeys as $key) {
-            if (isset($this->settings->categoryImages[$key])) {
-                return (int) $this->settings->categoryImages[$key];
+            if (isset($this->settings->categoryImages[$key]) && '' !== (string) $this->settings->categoryImages[$key]) {
+                return $this->settings->categoryImages[$key];
             }
         }
 
@@ -941,7 +943,8 @@ class EventImporter
         }
         $data['location'] = null !== $candidate->location ? get_object_vars($candidate->location) : null;
         // a new image setting must reach events that are otherwise unchanged
-        $data['_image'] = $this->pickImageId($candidate);
+        $reference      = $this->pickImageReference($candidate);
+        $data['_image'] = null !== $reference ? $this->mediaResolver->resolve($reference) : null;
 
         return sha1((string) json_encode($data, \JSON_UNESCAPED_UNICODE | \JSON_UNESCAPED_SLASHES | \JSON_PARTIAL_OUTPUT_ON_ERROR));
     }
