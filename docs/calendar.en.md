@@ -168,9 +168,13 @@ The calendar API (`sulu_event.api.calendar`, `/api/events/calendar/{locale}`) ev
 | `categories[]` | Category IDs, several values are combined with OR | `?categories[]=12&categories[]=15` |
 | `tags[]` | Tag **names**, several values are combined with OR | `?tags[]=Symfony` |
 | `location` | ID or exact name of a location | `?location=3` |
+| `types[]` | Event type keys, several values are combined with OR | `?types[]=conference&types[]=meetup` |
+| `attendanceMode[]` | `offline`, `online`, `mixed` | `?attendanceMode[]=online&attendanceMode[]=mixed` |
+| `country[]` | Country codes of the location | `?country[]=DE` |
+| `free` | `1`: only free events | `?free=1` |
 | `start`, `end` | Visible date range (set by FullCalendar itself) | `?start=2027-03-01&end=2027-04-01` |
 
-Categories and tags are evaluated like in Smart Content (see [Smart Content](smart-content.en.md)); if both are given, an event has to match both. A filter that only contains invalid values (e.g. `categories[]=abc`) deliberately returns no events instead of all of them.
+Lists can be given as arrays (`categories[]=12&categories[]=15`) or comma separated (`categories=12,15`). Categories, tags and the further filters are evaluated like in Smart Content (see [Smart Content](smart-content.en.md)); several values of one kind match with OR, the kinds with AND. A filter that only contains invalid values (e.g. `categories[]=abc`) deliberately returns no events instead of all of them.
 
 ```
 /api/events/calendar/en?categories[]=12

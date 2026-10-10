@@ -36,7 +36,8 @@ This bundle has been equipped with more and more features over time: advanced fe
 - **iCal Export** - Single events or full calendar subscriptions (webcal://), filterable by category and tag, correct times and absolute links
 - **Online events, time zones, tickets** - Participation (on site, online, both), time zone per event or location, all-day events, status (cancelled, postponed ...), ticket and stream links, price, organizer, languages
 - **RSS/Atom Feeds** - Keep subscribers updated on new events
-- **Smart Content** - Usable as a content block in any Sulu page
+- **Smart Content** - Usable as a content block in any Sulu page, filterable by topic, tag, type, participation, country and free of charge (with filter options for a filter bar)
+- **Structured data** - schema.org Event as an array for your own JSON-LD graph
 
 ## 📋 Prerequisites
 
@@ -116,11 +117,12 @@ Detailed documentation in the [docs/](docs/) directory.
 
 - [Calendar Integration](docs/calendar.en.md) - FullCalendar.js integration
 - [MCP tools](docs/mcp.en.md) - Tools for AI assistants (Sulu MCP)
-- [Smart content](docs/smart-content.en.md) - Filtering by categories and tags on the website
+- [Smart content](docs/smart-content.en.md) - Filtering on the website (categories, tags, participation, country, free) and filter options
 - [Social Media](docs/social-media.en.md) - Social sharing configuration
 - [Recurring Events](docs/recurrence.en.md) - Recurring event patterns
 - [Feeds/iCal](docs/feeds-ical.en.md) - Feeds and iCal handling
 - [Participation, time zone and tickets](docs/online-events.en.md) - Online events, time zones, all-day events, status, tickets
+- [Structured data (schema.org)](docs/schema-org.en.md) - schema.org Event, times in the zone of the event
 - [Locations](docs/locations.en.md) - Locations that are assigned to events
 - [Sitemap](docs/sitemap.en.md) - Sitemap
 - [Custom Event Types](docs/event-types.en.md) - Own Event types for categorization

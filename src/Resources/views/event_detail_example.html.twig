@@ -3,16 +3,23 @@
 
 {% block meta %}
     {# Open Graph Tags for Social Media #}
-    {% set ogTags = event_og_tags(event) %}
+    {% set ogTags = event_og_tags(event.resource, app.request.locale) %}
     {% for property, content in ogTags %}
         <meta property="{{ property }}" content="{{ content }}" />
     {% endfor %}
     
     {# Twitter Card Tags #}
-    {% set twitterTags = event_twitter_tags(event) %}
+    {% set twitterTags = event_twitter_tags(event.resource, app.request.locale) %}
     {% for name, content in twitterTags %}
         <meta name="{{ name }}" content="{{ content }}" />
     {% endfor %}
+
+    {# schema.org Event as JSON-LD. A project that builds its own structured data graph adds sulu_event_schema(event)
+       to it instead. JSON_HEX_TAG keeps a "</script>" in a title from ending the block. #}
+    {% set schema = sulu_event_schema(event) %}
+    {% if schema %}
+        <script type="application/ld+json">{{ {'@context': 'https://schema.org'}|merge(schema)|json_encode(constant('JSON_UNESCAPED_SLASHES') b-or constant('JSON_UNESCAPED_UNICODE') b-or constant('JSON_HEX_TAG') b-or constant('JSON_HEX_AMP'))|raw }}</script>
+    {% endif %}
 {% endblock %}
 
 {% block content %}
@@ -23,17 +30,76 @@
             <h2>{{ event.subtitle }}</h2>
         {% endif %}
         
+        {# cancelled, postponed ... events stay online and say so #}
+        {% if event.status != 'scheduled' %}
+            <p class="event-status event-status--{{ event.status }}" role="status">
+                {{ ('sulu_event.display.' ~ event.status)|trans }}
+            </p>
+        {% endif %}
+
+        {# the times are meant in the time zone of the event: sulu_event_datetime() returns them in that zone #}
+        {% set start = sulu_event_datetime(event, 'start') %}
+        {% set end = sulu_event_datetime(event, 'end') %}
+        {% set zone = sulu_event_timezone(event) %}
+
         <div class="event-meta">
-            <time datetime="{{ event.startDate|date('c') }}">
-                {{ event.startDate|format_datetime('full', 'short', locale=app.request.locale) }}
-            </time>
-            
+            {% if start %}
+                {% if event.allDay %}
+                    {# all-day events show dates only #}
+                    <time datetime="{{ start|date('Y-m-d', false) }}">
+                        {{ start|format_date('full', locale=app.request.locale) }}
+                    </time>
+                    {% if end and end|date('Y-m-d', false) > start|date('Y-m-d', false) %}
+                        – <time datetime="{{ end|date('Y-m-d', false) }}">{{ end|format_date('full', locale=app.request.locale) }}</time>
+                    {% endif %}
+                {% else %}
+                    {# |date('c', false) keeps the zone of the event instead of converting to the one of the server #}
+                    <time datetime="{{ start|date('c', false) }}">
+                        {{ start|format_datetime('full', 'short', locale=app.request.locale, timezone=zone.name) }}
+                    </time>
+                    {% if zone.name != 'now'|date('e') %}
+                        <span class="local-time">({{ 'sulu_event.display.local_time'|trans({'%zone%': zone.name|replace({'_': ' '})}) }})</span>
+                    {% endif %}
+                {% endif %}
+            {% endif %}
+
+            {% if event.attendanceMode != 'offline' %}
+                <span class="attendance-mode">{{ ('sulu_event.display.' ~ event.attendanceMode)|trans }}</span>
+            {% endif %}
+
             {% if event.location %}
                 <span class="location">@ {{ event.location.name }}</span>
             {% endif %}
+
+            {% if event.isFree %}
+                <span class="price">{{ 'sulu_event.display.free'|trans }}</span>
+            {% elseif event.priceInfo %}
+                <span class="price">{{ event.priceInfo }}</span>
+            {% endif %}
+
+            {% if event.organizerName %}
+                <span class="organizer">
+                    {{ 'sulu_event.display.organizer'|trans }}:
+                    {% if event.organizerUrl %}<a href="{{ event.organizerUrl }}" rel="noopener">{{ event.organizerName }}</a>{% else %}{{ event.organizerName }}{% endif %}
+                </span>
+            {% endif %}
         </div>
-        
+
         <div class="event-actions">
+            {# tickets and online participation are not offered for events that do not take place #}
+            {% if event.status not in ['cancelled', 'postponed'] %}
+                {% if event.registrationUrl %}
+                    <a href="{{ event.registrationUrl }}" class="btn btn-primary" rel="noopener">
+                        {{ 'sulu_event.display.tickets'|trans }}
+                    </a>
+                {% endif %}
+                {% if event.onlineUrl and event.attendanceMode != 'offline' %}
+                    <a href="{{ event.onlineUrl }}" class="btn btn-outline-primary" rel="noopener">
+                        {{ 'sulu_event.display.join_online'|trans }}
+                    </a>
+                {% endif %}
+            {% endif %}
+
             {# iCal Download #}
             <a href="{{ path('sulu_event.ical_single', {id: event.resource.id, _locale: app.request.locale}) }}" 
                class="btn btn-secondary"
@@ -49,11 +115,11 @@
         {% endif %}
         
         {# Social Media Share Buttons #}
-        {% if event.enableSocialShare %}
+        {% if event.resource.socialSettings and event.resource.socialSettings.enableSharing %}
             <div class="social-share mt-4">
                 <h3>{{ 'sulu_event.share_event'|trans }}</h3>
                 <div class="share-buttons">
-                    {% set shareLinks = event_social_shares(event, app.request.locale) %}
+                    {% set shareLinks = event_social_shares(event.resource, app.request.locale) %}
                     
                     {% if shareLinks.facebook is defined %}
                         <a href="{{ shareLinks.facebook }}" target="_blank" class="btn btn-facebook">

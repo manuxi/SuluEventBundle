@@ -180,9 +180,13 @@ Die Kalender-API (`sulu_event.api.calendar`, `/api/events/calendar/{locale}`) we
 | `categories[]` | Kategorie-IDs, mehrere Werte gelten als ODER | `?categories[]=12&categories[]=15` |
 | `tags[]` | Tag-**Namen**, mehrere Werte gelten als ODER | `?tags[]=Symfony` |
 | `location` | ID oder genauer Name eines Veranstaltungsorts | `?location=3` |
+| `types[]` | Schlüssel der Event-Typen, mehrere Werte gelten als ODER | `?types[]=conference&types[]=meetup` |
+| `attendanceMode[]` | `offline`, `online`, `mixed` | `?attendanceMode[]=online&attendanceMode[]=mixed` |
+| `country[]` | Ländercodes des Ortes | `?country[]=DE` |
+| `free` | `1`: nur kostenlose Events | `?free=1` |
 | `start`, `end` | Sichtbarer Zeitraum (setzt FullCalendar selbst) | `?start=2027-03-01&end=2027-04-01` |
 
-Kategorien und Tags werden wie bei Smart Content ausgewertet (siehe [Smart Content](smart-content.de.md)); sind beide gesetzt, muss ein Event zu beiden passen. Ein Filter, der nur ungültige Werte enthält (etwa `categories[]=abc`), liefert bewusst keine Events statt aller.
+Listen lassen sich als Array (`categories[]=12&categories[]=15`) oder kommagetrennt (`categories=12,15`) angeben. Kategorien, Tags und die weiteren Filter werden wie bei Smart Content ausgewertet (siehe [Smart Content](smart-content.de.md)); mehrere Werte einer Art gelten als ODER, die Arten untereinander als UND. Ein Filter, der nur ungültige Werte enthält (etwa `categories[]=abc`), liefert bewusst keine Events statt aller.
 
 ```
 /api/events/calendar/de?categories[]=12

@@ -11,6 +11,21 @@ sulu_event:
     footer: "Fußnoten"
     action:
         website: "Website besuchen"
+    add_to_calendar: "Zum Kalender hinzufügen"
+    display:
+        scheduled: "Die Veranstaltung findet statt."
+        postponed: "Die Veranstaltung wurde verschoben. Ein neuer Termin steht noch nicht fest."
+        rescheduled: "Die Veranstaltung wurde neu terminiert."
+        cancelled: "Die Veranstaltung wurde abgesagt."
+        moved_online: "Die Veranstaltung findet jetzt online statt."
+        online: "Online"
+        mixed: "Vor Ort und online"
+        offline: "Vor Ort"
+        local_time: "Ortszeit, %zone%"
+        free: "Kostenlos"
+        organizer: "Veranstalter"
+        tickets: "Tickets und Anmeldung"
+        join_online: "Online teilnehmen"
     salutation:
         male: "Herr"
         female: "Frau"

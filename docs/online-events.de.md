@@ -60,7 +60,7 @@ Bei „Online“ ist kein Ort nötig. In der iCal-Datei ist der Link zur Teilnah
 
 ## Für Templates
 
-Alle Felder stehen am Inhalt des Events bereit: `event.allDay`, `event.timezone`, `event.status`, `event.attendanceMode`, `event.onlineUrl`, `event.registrationUrl`, `event.isFree`, `event.priceInfo`, `event.organizerName`, `event.organizerUrl`, `event.languages`. Die Zeitzone eines Events liefert der Service `sulu_event.timezone_resolver` (`resolve()` gibt die `DateTimeZone`, `toInstant()` macht aus einer gespeicherten Uhrzeit ein `DateTimeImmutable` in dieser Zone).
+Alle Felder stehen am Inhalt des Events bereit: `event.allDay`, `event.timezone`, `event.status`, `event.attendanceMode`, `event.onlineUrl`, `event.registrationUrl`, `event.isFree`, `event.priceInfo`, `event.organizerName`, `event.organizerUrl`, `event.languages`. Die Zeitzone eines Events liefert der Service `sulu_event.timezone_resolver` (`resolve()` gibt die `DateTimeZone`, `toInstant()` macht aus einer gespeicherten Uhrzeit ein `DateTimeImmutable` in dieser Zone). In Twig nimmt man `sulu_event_datetime(event, 'start')`; die strukturierten Daten und das Beispiel-Template stehen in [Strukturierte Daten (schema.org) und Zeiten im Template](schema-org.de.md).
 
 ## MCP
 

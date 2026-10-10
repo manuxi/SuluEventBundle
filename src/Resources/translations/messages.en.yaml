@@ -11,6 +11,21 @@ sulu_event:
     footer: "Footer"
     action:
         website: "Visit Website"
+    add_to_calendar: "Add to calendar"
+    display:
+        scheduled: "The event takes place."
+        postponed: "The event has been postponed. A new date has not been set yet."
+        rescheduled: "The event has been rescheduled."
+        cancelled: "The event has been cancelled."
+        moved_online: "The event now takes place online."
+        online: "Online"
+        mixed: "On site and online"
+        offline: "On site"
+        local_time: "local time, %zone%"
+        free: "Free of charge"
+        organizer: "Organizer"
+        tickets: "Tickets and registration"
+        join_online: "Join online"
     salutation:
         male: "Mr."
         female: "Mrs."

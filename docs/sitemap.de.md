@@ -15,6 +15,19 @@ Die URLs werden basierend auf dem Routing generiert.
 
 Es ist keine spezielle Konfiguration notwendig, solange das Bundle korrekt registriert ist. Der `EventSitemapProvider` ist als Service mit dem Tag `sulu.sitemap.provider` registriert.
 
+### Vergangene Events auslassen
+
+Standardmäßig bleibt jedes veröffentlichte Event in der Sitemap. Um Events zu entfernen, die vor einiger Zeit zu Ende gingen (abgesagte oder verschobene Events der Zukunft bleiben drin):
+
+```yaml
+# config/packages/sulu_event.yaml
+sulu_event:
+    sitemap:
+        hide_past_after_days: 90   # null (Standard): alle behalten
+```
+
+Ein Event, das vor mehr als 90 Tagen endete, wird dann nicht mehr aufgeführt. Events ohne Datum stehen immer drin. Die Event-Seite selbst bleibt online.
+
 ### Events ausblenden
 
 Um ein einzelnes Event aus der Sitemap auszuschließen:

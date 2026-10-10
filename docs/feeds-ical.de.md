@@ -174,8 +174,14 @@ Kalender-Feeds können über Query-Parameter gefiltert werden:
 **Verfügbare Filter:**
 - `categories[]`: Nach Kategorie-IDs filtern
 - `tags[]`: Nach Tag-Namen filtern
+- `types[]`: Nach Schlüsseln der Event-Typen filtern (`conference`, `meetup`, …)
+- `attendanceMode[]`: `offline`, `online` oder `mixed`
+- `country[]`: Ländercodes des Ortes (`DE`, `US`, …)
+- `free=1`: nur Events, die als kostenlos gekennzeichnet sind
 
-Mehrere Werte eines Filters gelten als ODER, Kategorien und Tags zusammen als UND. Ein Abo für ein einzelnes Thema ist damit ein Link wie:
+Listen lassen sich auch kommagetrennt schreiben (`categories=12,15`). Beispiel: alle Online-Events zum Thema 12 als Abo: `webcal://example.com/events/calendar.de.ics?categories=12&attendanceMode=online,mixed`.
+
+Mehrere Werte eines Filters gelten als ODER, die verschiedenen Filter untereinander als UND. Ein Abo für ein einzelnes Thema ist damit ein Link wie:
 
 ```
 webcal://example.com/events/calendar.de.ics?categories[]=12
