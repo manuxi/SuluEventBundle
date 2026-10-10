@@ -33,7 +33,7 @@ Dieses Bundle wurde im Laufe der Zeit mit immer mehr Funktionen ausgestattet: Er
 - **Wiederkehrende Events** - Tägliche, wöchentliche, monatliche, jährliche Muster mit Ausnahmen
 - **Social-Media-Integration** - Pro-Event-Sharing-Konfiguration (Facebook, Twitter, LinkedIn, Instagram, WhatsApp)
 - **Kalender** - FullCalendar.js Integration mit Jahres-/Monats-/Wochen-/Listenansicht
-- **iCal-Export** - Einzelne Events oder vollständige Kalender-Abonnements (webcal://)
+- **iCal-Export** - Einzelne Events oder vollständige Kalender-Abonnements (webcal://), nach Kategorie und Tag filterbar, mit korrekten Zeiten und absoluten Links
 - **RSS/Atom-Feeds** - Abonnenten über neue Events auf dem Laufenden halten
 - **Smart Content** - Als Content-Block in jeder Sulu-Seite verwendbar
 

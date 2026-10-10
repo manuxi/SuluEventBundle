@@ -33,7 +33,7 @@ This bundle has been equipped with more and more features over time: advanced fe
 - **Recurring Events** - Daily, weekly, monthly, yearly patterns with exceptions
 - **Social Media Integration** - Per-event sharing configuration (Facebook, Twitter, LinkedIn, Instagram, WhatsApp)
 - **Calendar** - FullCalendar.js integration with year/month/week/list view
-- **iCal Export** - Single events or full calendar subscriptions (webcal://)
+- **iCal Export** - Single events or full calendar subscriptions (webcal://), filterable by category and tag, correct times and absolute links
 - **RSS/Atom Feeds** - Keep subscribers updated on new events
 - **Smart Content** - Usable as a content block in any Sulu page
 

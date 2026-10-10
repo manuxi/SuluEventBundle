@@ -57,6 +57,15 @@ class Configuration implements ConfigurationInterface
                 ->info('Format for date display in list view: "default", "clock_format", "time_labels"')
             ->end()
 
+            ->scalarNode('timezone')
+                ->defaultNull()
+                ->info('IANA timezone (e.g. "Europe/Berlin") the stored event times are meant in. Defaults to the PHP default timezone.')
+                ->validate()
+                    ->ifTrue(static fn ($value): bool => null !== $value && !\in_array($value, \DateTimeZone::listIdentifiers(), true))
+                    ->thenInvalid('"%s" is not a valid IANA timezone.')
+                ->end()
+            ->end()
+
             ->arrayNode('objects')
                 ->addDefaultsIfNotSet()
                 ->children()

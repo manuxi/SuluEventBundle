@@ -138,15 +138,32 @@ Or provide both protocols:
 
 ### iCal Content
 
-Each iCal event includes:
-- **UID**: Unique event identifier
-- **DTSTAMP**: Timestamp when iCal was generated
-- **DTSTART**: Event start date and time
-- **DTEND**: Event end date and time (if available)
+The file is built with [sabre/vobject](https://sabre.io/vobject/); special characters are escaped and long lines are folded after 75 octets. Each iCal event includes:
+- **UID**: Stable identifier `<uuid>@<host>`. The host is the one of the event's website (webspace and locale), not the one the feed was requested with, so a subscription does not create duplicates when the site is fetched under another name.
+- **DTSTAMP** and **LAST-MODIFIED**: Time of the last change of the event
+- **DTSTART**: Event start, written as UTC (`…Z`), see timezone below
+- **DTEND**: Event end (if available and after the start)
 - **SUMMARY**: Event title
-- **DESCRIPTION**: Event summary/description
+- **DESCRIPTION**: Event summary/description (without HTML)
 - **LOCATION**: Venue name (if assigned)
-- **URL**: Link to event detail page
+- **URL**: Absolute link to the event detail page, built with the website URL of Sulu (webspace and locale of the event). If there is no page or no URL for the locale, the line is left out.
+- **CATEGORIES**: The categories of the event (excerpt tab) with their names in the locale of the feed; if a category has no name there, the one in its default locale is used.
+
+#### Timezone
+
+Times entered in the admin are stored as a time of day without a timezone ("10:00"). The export reads them in the timezone of the application and converts them to UTC, so an appointment at 10:00 in Berlin appears as `DTSTART:…T080000Z` in summer and `…T090000Z` in winter. Calendar applications therefore show it correctly in the user's own timezone, and no `VTIMEZONE` component is needed.
+
+The timezone of the application is the PHP default timezone (`date.timezone`). It can be set separately for the events:
+
+```yaml
+# config/packages/sulu_event.yaml
+sulu_event:
+    timezone: 'Europe/Berlin'   # IANA name; the PHP default timezone applies if omitted
+```
+
+#### All-day events
+
+Until there is a field of its own for it, an event counts as all-day if it starts at 00:00:00 and either has no end or ends at 23:59:59. It is then written as a date without time (`DTSTART;VALUE=DATE:…`); `DTEND` is, as iCal intends, the day after the last day.
 
 ### Filtering Calendar Feed
 

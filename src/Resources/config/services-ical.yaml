@@ -5,6 +5,9 @@ services:
         arguments:
             - '@Manuxi\SuluEventBundle\Repository\EventRepository'
             - '@sulu_content.content_aggregator'
+            - '@sulu_core.webspace.webspace_manager'
+            - '@request_stack'
+            - '%sulu_event.timezone%'
 
     # iCal Controller
     Manuxi\SuluEventBundle\Controller\Website\ICalController:

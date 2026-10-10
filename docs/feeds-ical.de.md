@@ -132,15 +132,32 @@ Oder beide Protokolle anbieten:
 
 ### iCal-Inhalt
 
-Jedes iCal-Event enthält:
-- **UID**: Eindeutiger Event-Identifier
-- **DTSTAMP**: Zeitstempel der iCal-Generierung
-- **DTSTART**: Event-Startdatum und -zeit
-- **DTEND**: Event-Enddatum und -zeit (falls vorhanden)
+Die Datei wird mit [sabre/vobject](https://sabre.io/vobject/) erzeugt; Sonderzeichen werden maskiert und lange Zeilen nach 75 Oktetten umgebrochen. Jedes iCal-Event enthält:
+- **UID**: Stabiler Bezeichner `<uuid>@<host>`. Der Host ist der der Webseite des Events (Webspace und Sprache), nicht der des Abrufs, damit ein Abonnement keine Dubletten erzeugt, wenn die Seite unter einem anderen Namen abgerufen wird.
+- **DTSTAMP** und **LAST-MODIFIED**: Zeitpunkt der letzten Änderung des Events
+- **DTSTART**: Event-Start, als UTC (`…Z`) ausgegeben, siehe Zeitzone unten
+- **DTEND**: Event-Ende (falls vorhanden und nach dem Start)
 - **SUMMARY**: Event-Titel
-- **DESCRIPTION**: Event-Zusammenfassung/Beschreibung
+- **DESCRIPTION**: Event-Zusammenfassung/Beschreibung (ohne HTML)
 - **LOCATION**: Veranstaltungsort-Name (falls zugewiesen)
-- **URL**: Link zur Event-Detailseite
+- **URL**: Absoluter Link zur Event-Detailseite, über die Webseiten-URL von Sulu gebildet (Webspace und Sprache des Events). Fehlt die Seite oder gibt es keine URL für die Sprache, entfällt die Zeile.
+- **CATEGORIES**: Die Kategorien des Events (Reiter „Auszug“) mit ihren Namen in der Sprache des Feeds; hat eine Kategorie dort keinen Namen, wird der in der Standardsprache der Kategorie verwendet.
+
+#### Zeitzone
+
+Im Admin eingegebene Zeiten werden als Uhrzeit ohne Zeitzone gespeichert („10:00“). Der Export liest sie in der Zeitzone der Anwendung und rechnet sie nach UTC um, ein Termin um 10:00 Uhr in Berlin steht also im Sommer als `DTSTART:…T080000Z` und im Winter als `…T090000Z` in der Datei. Kalender-Anwendungen zeigen ihn dadurch in der eigenen Zeitzone des Nutzers richtig an. Eine `VTIMEZONE`-Angabe ist deshalb nicht nötig.
+
+Die Zeitzone der Anwendung ist die PHP-Standardzeitzone (`date.timezone`). Sie lässt sich für die Events getrennt festlegen:
+
+```yaml
+# config/packages/sulu_event.yaml
+sulu_event:
+    timezone: 'Europe/Berlin'   # IANA-Name; ohne Angabe gilt die PHP-Standardzeitzone
+```
+
+#### Ganztägige Events
+
+Solange es dafür kein eigenes Feld gibt, gilt ein Event als ganztägig, wenn es um 00:00:00 beginnt und entweder kein Ende hat oder um 23:59:59 endet. Es wird dann als Datum ohne Uhrzeit ausgegeben (`DTSTART;VALUE=DATE:…`); `DTEND` ist, wie in iCal vorgesehen, der Tag nach dem letzten Tag.
 
 ### Kalender-Feed filtern
 
