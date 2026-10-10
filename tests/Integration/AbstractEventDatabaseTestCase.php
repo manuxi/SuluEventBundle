@@ -17,6 +17,8 @@ use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Persistence\Mapping\Driver\MappingDriverChain;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
+use Manuxi\SuluEventBundle\Entity\EventImport;
+use Manuxi\SuluEventBundle\Entity\EventImportRun;
 use Manuxi\SuluEventBundle\Entity\EventRecurrence;
 use Manuxi\SuluEventBundle\Entity\EventSocialSettings;
 use Manuxi\SuluEventBundle\Entity\Location;
@@ -167,6 +169,8 @@ abstract class AbstractEventDatabaseTestCase extends TestCase
                 Location::class,
                 EventSocialSettings::class,
                 EventRecurrence::class,
+                EventImport::class,
+                EventImportRun::class,
                 StubEntity::class,
                 StubCategory::class,
                 StubTag::class,

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                  http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+
+    <entity name="Manuxi\SuluEventBundle\Entity\EventImportRun"
+            table="app_event_import_run"
+            repository-class="Manuxi\SuluEventBundle\Repository\EventImportRunRepository">
+
+        <id name="id" type="integer" column="id">
+            <generator strategy="AUTO"/>
+        </id>
+
+        <field name="startedAt" type="datetime_immutable" column="started_at"/>
+        <field name="finishedAt" type="datetime_immutable" nullable="true" column="finished_at"/>
+        <field name="source" type="string" length="64" nullable="true" column="source"/>
+        <field name="dryRun" type="boolean" column="dry_run"/>
+        <field name="created" type="integer" column="created"/>
+        <field name="updated" type="integer" column="updated"/>
+        <field name="unchanged" type="integer" column="unchanged"/>
+        <field name="locked" type="integer" column="locked"/>
+        <field name="vanished" type="integer" column="vanished"/>
+        <field name="rejected" type="integer" column="rejected"/>
+        <field name="errors" type="integer" column="errors"/>
+        <field name="newLocations" type="integer" column="new_locations"/>
+        <field name="report" type="json" column="report"/>
+    </entity>
+</doctrine-mapping>
