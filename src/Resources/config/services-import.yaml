@@ -1,0 +1,126 @@
+services:
+    # Repositories of the import
+    Manuxi\SuluEventBundle\Repository\EventImportRepository:
+        class: Manuxi\SuluEventBundle\Repository\EventImportRepository
+        arguments:
+            - '@doctrine'
+        public: true
+        tags:
+            - { name: doctrine.repository_service }
+
+    Manuxi\SuluEventBundle\Repository\EventImportRunRepository:
+        class: Manuxi\SuluEventBundle\Repository\EventImportRunRepository
+        arguments:
+            - '@doctrine'
+        public: true
+        tags:
+            - { name: doctrine.repository_service }
+
+    # Fetching pages: own user agent, robots.txt, ETag cache, one request per second and host
+    sulu_event.import.symfony_http_client:
+        class: Symfony\Contracts\HttpClient\HttpClientInterface
+        factory: ['Symfony\Component\HttpClient\HttpClient', 'create']
+        arguments:
+            - headers: { 'User-Agent': '%sulu_event.import.user_agent%' }
+              timeout: '%sulu_event.import.timeout%'
+
+    sulu_event.import.cache:
+        class: Symfony\Component\Cache\Adapter\FilesystemAdapter
+        arguments:
+            - 'sulu_event_import'
+            - 0
+            - '%kernel.cache_dir%/sulu_event_import'
+
+    sulu_event.import.http_client:
+        class: Manuxi\SuluEventBundle\Import\Http\ImportHttpClient
+        arguments:
+            - '@sulu_event.import.symfony_http_client'
+            - '@sulu_event.import.cache'
+            - '%sulu_event.import.user_agent%'
+            - '%sulu_event.import.timeout%'
+
+    sulu_event.import.timezone_guesser:
+        class: Manuxi\SuluEventBundle\Import\Resolver\TimezoneGuesser
+
+    # Resolvers
+    sulu_event.import.location_resolver:
+        class: Manuxi\SuluEventBundle\Import\Resolver\LocationResolver
+        arguments:
+            - '@doctrine.orm.entity_manager'
+            - '@sulu_event.import.timezone_guesser'
+
+    sulu_event.import.category_resolver:
+        class: Manuxi\SuluEventBundle\Import\Resolver\CategoryResolver
+        arguments:
+            - '@sulu.repository.category'
+
+    sulu_event.import.tag_resolver:
+        class: Manuxi\SuluEventBundle\Import\Resolver\TagResolver
+        arguments:
+            - '@sulu.repository.tag'
+            - '@doctrine.orm.entity_manager'
+
+    # Importer
+    sulu_event.import.settings:
+        class: Manuxi\SuluEventBundle\Import\ImportSettings
+        arguments:
+            - '%sulu_event.import.enabled%'
+            - '%sulu_event.import.user%'
+            - '%sulu_event.import.auto_update_published_dates%'
+            - '%sulu_event.import.url_prefix%'
+            - '%sulu_event.import.webspace%'
+            - '%sulu_event.default_type%'
+
+    sulu_event.import.source_registry:
+        class: Manuxi\SuluEventBundle\Import\SourceRegistry
+        arguments:
+            - !tagged_iterator sulu_event.import_source
+
+    sulu_event.import.url_generator:
+        class: Manuxi\SuluEventBundle\Import\ImportUrlGenerator
+        arguments:
+            - '@sulu_route.route_repository'
+            - '%sulu_event.import.url_prefix%'
+
+    sulu_event.import.user_switcher:
+        class: Manuxi\SuluEventBundle\Import\ImportUserSwitcher
+        arguments:
+            - '@security.token_storage'
+            - '@sulu.repository.user'
+            - '@sulu_event.import.settings'
+
+    sulu_event.import.importer:
+        class: Manuxi\SuluEventBundle\Import\EventImporter
+        public: true
+        arguments:
+            - '@sulu_event.import.source_registry'
+            - '@doctrine.orm.entity_manager'
+            - '@Manuxi\SuluEventBundle\Repository\EventImportRepository'
+            - '@Manuxi\SuluEventBundle\Repository\EventRepository'
+            - '@sulu_content.content_manager'
+            - '@sulu_content.content_workflow'
+            - '@sulu_activity.domain_event_collector'
+            - '@sulu_event.import.location_resolver'
+            - '@sulu_event.import.category_resolver'
+            - '@sulu_event.import.tag_resolver'
+            - '@sulu_event.import.url_generator'
+            - '@sulu_event.import.user_switcher'
+            - '@sulu_event.import.settings'
+
+    sulu_event.import.state_listener:
+        class: Manuxi\SuluEventBundle\Import\EventImportStateListener
+        arguments:
+            - '@doctrine.orm.entity_manager'
+        tags:
+            - { name: kernel.event_subscriber }
+
+    sulu_event.command.import:
+        class: Manuxi\SuluEventBundle\Command\ImportEventsCommand
+        arguments:
+            - '@sulu_event.import.importer'
+            - '@sulu_event.import.source_registry'
+            - '@Manuxi\SuluEventBundle\Repository\EventImportRunRepository'
+            - '@doctrine.orm.entity_manager'
+            - '@sulu_event.import.settings'
+        tags:
+            - { name: console.command }

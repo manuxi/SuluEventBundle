@@ -7,14 +7,21 @@ namespace Manuxi\SuluEventBundle\DependencyInjection;
 use Manuxi\SuluEventBundle\Admin\EventAdmin;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\Location;
+use Manuxi\SuluEventBundle\Import\EventSourceInterface;
+use Manuxi\SuluEventBundle\Import\Source\ICalSource;
+use Manuxi\SuluEventBundle\Import\Source\JsonLdSource;
+use Manuxi\SuluEventBundle\Import\SourceConfig;
 use Manuxi\SuluEventBundle\Repository\EventDimensionContentRepository;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
 use Manuxi\SuluEventBundle\Repository\LocationRepository;
 use Sulu\Bundle\PersistenceBundle\DependencyInjection\PersistenceExtensionTrait;
+use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
+use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 use Symfony\Component\Yaml\Yaml;
 
@@ -49,6 +56,8 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
         $loader->load('services-calendar.yaml');
         $loader->load('services-ical.yaml');
         $loader->load('services-feed.yaml');
+        $loader->load('services-import.yaml');
+        $this->configureImport($config, $container);
 
         // tools for the Sulu MCP server, only if sulu/mcp-bundle is installed
         if (class_exists(\Mcp\Capability\Attribute\McpTool::class) && class_exists(\Sulu\Mcp\Domain\Security\RequiresPermission::class)) {
@@ -74,6 +83,53 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
         $container->setAlias('sulu.repository.event', EventRepository::class)->setPublic(true);
         $container->setAlias('sulu.repository.event_dimension_content', EventDimensionContentRepository::class)->setPublic(true);
         $container->setAlias('sulu.repository.location', LocationRepository::class)->setPublic(true);
+    }
+
+    /**
+     * Parameters of the import and one service per configured source (tagged "sulu_event.import_source", like the
+     * sources projects add themselves).
+     *
+     * @param array<string, mixed> $config
+     */
+    private function configureImport(array $config, ContainerBuilder $container): void
+    {
+        $import = $config['import'];
+
+        foreach (['enabled', 'user', 'user_agent', 'timeout', 'auto_update_published_dates', 'url_prefix', 'webspace'] as $key) {
+            $container->setParameter('sulu_event.import.' . $key, $import[$key]);
+        }
+
+        $container->registerForAutoconfiguration(EventSourceInterface::class)->addTag('sulu_event.import_source');
+
+        $types    = array_keys($config['types'] ?? []);
+        $usedKeys = [];
+
+        foreach ([SourceConfig::KIND_ICAL => ICalSource::class, SourceConfig::KIND_JSONLD => JsonLdSource::class] as $kind => $class) {
+            foreach ($import['sources'][$kind] as $index => $source) {
+                $path = \sprintf('sulu_event.import.sources.%s[%d] ("%s")', $kind, $index, $source['key']);
+
+                if (isset($usedKeys[$kind . '.' . $source['key']])) {
+                    throw new InvalidConfigurationException(\sprintf('Invalid configuration for path "%s": the key "%s" is used twice for %s sources. Every source needs its own key.', $path, $source['key'], $kind));
+                }
+                $usedKeys[$kind . '.' . $source['key']] = true;
+
+                if (null !== $source['type'] && !\in_array($source['type'], $types, true)) {
+                    throw new InvalidConfigurationException(\sprintf('Invalid configuration for path "%s.type": "%s" is not an event type. Known types: %s (see sulu_event.types).', $path, $source['type'], implode(', ', $types)));
+                }
+
+                $sourceConfig = (new Definition(SourceConfig::class, [$kind, $source]))
+                    ->setFactory([SourceConfig::class, 'fromArray']);
+
+                $definition = new Definition($class, [
+                    $sourceConfig,
+                    new Reference('sulu_event.import.http_client'),
+                    new Reference('sulu_event.import.timezone_guesser'),
+                ]);
+                $definition->addTag('sulu_event.import_source');
+
+                $container->setDefinition('sulu_event.import.source.' . $kind . '.' . $source['key'], $definition);
+            }
+        }
     }
 
     public function prepend(ContainerBuilder $container)

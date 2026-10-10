@@ -10,6 +10,7 @@ use Manuxi\SuluEventBundle\Entity\Location;
 use Manuxi\SuluEventBundle\Repository\EventDimensionContentRepository;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
 use Manuxi\SuluEventBundle\Repository\LocationRepository;
+use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
@@ -82,6 +83,8 @@ class Configuration implements ConfigurationInterface
                 ->end()
             ->end()
 
+            ->append($this->createImportNode())
+
             ->arrayNode('objects')
                 ->addDefaultsIfNotSet()
                 ->children()
@@ -110,5 +113,130 @@ class Configuration implements ConfigurationInterface
             ->end();
 
         return $treeBuilder;
+    }
+
+    private function createImportNode(): ArrayNodeDefinition
+    {
+        $node = (new TreeBuilder('import'))->getRootNode();
+        $node
+            ->addDefaultsIfNotSet()
+            ->info('Import of events from iCal feeds and web pages with schema.org data (command "sulu:event:import"). Off by default.')
+            ->validate()
+                ->ifTrue(static fn (array $import): bool => $import['enabled'] && (null === $import['user'] || '' === $import['user']))
+                ->thenInvalid('sulu_event.import.user is required when the import is enabled: the user name of a Sulu user (for example "event-import") who is shown as creator of the imported events.')
+            ->end()
+            ->children()
+                ->booleanNode('enabled')
+                    ->defaultFalse()
+                    ->info('Switches the import on. When it is off the command only tells so.')
+                ->end()
+                ->scalarNode('user')
+                    ->defaultNull()
+                    ->info('User name of the Sulu user who is creator and changer of imported events.')
+                ->end()
+                ->scalarNode('user_agent')
+                    ->defaultValue('SuluEventBundle-Import (+https://github.com/manuxi/SuluEventBundle)')
+                    ->cannotBeEmpty()
+                    ->info('Name the import introduces itself with to the sources. Put a contact (url or e-mail) in it, so site owners can reach you.')
+                ->end()
+                ->floatNode('timeout')
+                    ->defaultValue(15.0)
+                    ->min(1.0)
+                    ->info('Seconds to wait for a source.')
+                ->end()
+                ->booleanNode('auto_update_published_dates')
+                    ->defaultFalse()
+                    ->info('A change of date, time or status of a published event goes live by itself (only if nothing else is waiting in its draft). Everything else always stays a draft.')
+                ->end()
+                ->scalarNode('url_prefix')
+                    ->defaultValue('/events')
+                    ->cannotBeEmpty()
+                    ->info('Path the urls of imported events start with.')
+                    ->validate()
+                        ->ifTrue(static fn ($value): bool => !\is_string($value) || !str_starts_with($value, '/'))
+                        ->thenInvalid('sulu_event.import.url_prefix must start with a slash, for example "/events".')
+                    ->end()
+                ->end()
+                ->scalarNode('webspace')
+                    ->defaultNull()
+                    ->info('Key of the webspace imported events belong to. Default: the default webspace of Sulu.')
+                ->end()
+                ->arrayNode('sources')
+                    ->addDefaultsIfNotSet()
+                    ->children()
+                        ->append($this->createSourcesNode('ical', 'iCalendar feeds (.ics): Meetup groups, Luma calendars, conference calendars'))
+                        ->append($this->createSourcesNode('jsonld', 'Web pages with schema.org events (JSON-LD)'))
+                    ->end()
+                ->end()
+            ->end();
+
+        return $node;
+    }
+
+    private function createSourcesNode(string $name, string $info): ArrayNodeDefinition
+    {
+        $node = (new TreeBuilder($name))->getRootNode();
+        $node
+            ->info($info)
+            ->arrayPrototype()
+                ->children()
+                    ->scalarNode('key')
+                        ->isRequired()
+                        ->cannotBeEmpty()
+                        ->info('Short name of the source, used in reports and as part of the id of its events (letters, digits, "-" and "_").')
+                        ->validate()
+                            ->ifTrue(static fn ($value): bool => !\is_string($value) || 1 !== preg_match('/^[a-z0-9][a-z0-9_-]*$/', $value))
+                            ->thenInvalid('The source key "%s" may only contain lower case letters, digits, "-" and "_".')
+                        ->end()
+                    ->end()
+                    ->scalarNode('url')
+                        ->isRequired()
+                        ->cannotBeEmpty()
+                        ->validate()
+                            ->ifTrue(static fn ($value): bool => !\is_string($value) || 1 !== preg_match('#^https?://[^\s/]+#i', $value))
+                            ->thenInvalid('The url "%s" of the source is not an http(s) url.')
+                        ->end()
+                    ->end()
+                    ->scalarNode('type')
+                        ->defaultNull()
+                        ->info('Key of the event type (see sulu_event.types) all events of the source get.')
+                    ->end()
+                    ->arrayNode('categories')
+                        ->scalarPrototype()->end()
+                        ->info('Keys of Sulu categories all events of the source get.')
+                    ->end()
+                    ->arrayNode('tags')
+                        ->scalarPrototype()->end()
+                        ->info('Tags (names) all events of the source get. Unknown tags are created.')
+                    ->end()
+                    ->scalarNode('locale')
+                        ->defaultValue('en')
+                        ->cannotBeEmpty()
+                        ->info('Locale the title (and the texts) of the source are in.')
+                    ->end()
+                    ->scalarNode('timezone')
+                        ->defaultNull()
+                        ->info('IANA time zone for events whose source gives no usable one.')
+                        ->validate()
+                            ->ifTrue(static fn ($value): bool => null !== $value && !\in_array($value, \DateTimeZone::listIdentifiers(), true))
+                            ->thenInvalid('"%s" is not a valid IANA timezone.')
+                        ->end()
+                    ->end()
+                    ->scalarNode('series')
+                        ->defaultNull()
+                        ->info('Name of the event series ("ces"). With the year of the start it joins the same event from different sources ("ces-2027"). Events of one source are never joined.')
+                    ->end()
+                    ->integerNode('priority')
+                        ->defaultNull()
+                        ->info('Which source maintains an event that several sources deliver: the higher number wins. Default: 100 for pages, 50 for calendars.')
+                    ->end()
+                    ->arrayNode('languages')
+                        ->scalarPrototype()->end()
+                        ->info('Language codes the events of the source are held in ("en", "de").')
+                    ->end()
+                ->end()
+            ->end();
+
+        return $node;
     }
 }
