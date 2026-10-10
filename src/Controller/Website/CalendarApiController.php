@@ -7,6 +7,7 @@ namespace Manuxi\SuluEventBundle\Controller\Website;
 use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
 use Manuxi\SuluEventBundle\Service\EventTypeSelect;
+use Sulu\Component\Webspace\Manager\WebspaceManagerInterface;
 use Sulu\Content\Application\ContentAggregator\ContentAggregatorInterface;
 use Sulu\Content\Domain\Model\DimensionContentInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -21,6 +22,7 @@ class CalendarApiController extends AbstractController
         private readonly EventRepository $eventRepository,
         private readonly EventTypeSelect $eventTypeSelect,
         private readonly ContentAggregatorInterface $contentAggregator,
+        private readonly WebspaceManagerInterface $webspaceManager,
     ) {
     }
 
@@ -133,7 +135,7 @@ class CalendarApiController extends AbstractController
                 'title' => $dimensionContent->getTitle() ?? '',
                 'start' => $dimensionContent->getStartDate()->format('c'),
                 'allDay' => $isAllDay,
-                'url' => $dimensionContent->getRoute()?->getSlug() ?? '',
+                'url' => $this->findUrl($dimensionContent, $locale),
                 'extendedProps' => [
                     'type' => $dimensionContent->getType() ?? 'default',
                     'typeName' => $typeName,
@@ -160,6 +162,20 @@ class CalendarApiController extends AbstractController
         }
 
         return $result;
+    }
+
+    /**
+     * Absolute url of the event page in the webspace of the event and the given locale. Falls back to the path
+     * if the webspace has no url for the locale.
+     */
+    private function findUrl(EventDimensionContent $dimensionContent, string $locale): string
+    {
+        $slug = $dimensionContent->getRoute()?->getSlug();
+        if (null === $slug || '' === $slug) {
+            return '';
+        }
+
+        return $this->webspaceManager->findUrlByResourceLocator($slug, null, $locale, $dimensionContent->getMainWebspace()) ?? $slug;
     }
 
     private function isAllDayEvent(EventDimensionContent $dimensionContent): bool

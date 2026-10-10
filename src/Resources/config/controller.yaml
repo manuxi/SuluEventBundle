@@ -83,6 +83,7 @@ services:
             - '@Manuxi\SuluEventBundle\Repository\EventRepository'
             - '@sulu_event.type_selection'
             - '@sulu_content.content_aggregator'
+            - '@sulu_core.webspace.webspace_manager'
         tags:
             - { name: controller.service_arguments }
             - { name: sulu.context, context: website }

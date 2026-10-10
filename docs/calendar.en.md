@@ -176,6 +176,8 @@ Categories and tags are evaluated like in Smart Content (see [Smart Content](sma
 /api/events/calendar/en?categories[]=12
 ```
 
+The `url` field of every event in the response is an absolute link to the detail page (webspace and locale of the event). Only if the website knows no URL for the locale does it hold the plain path.
+
 Only events that are published in the locale are shown. An event appears as soon as it **overlaps** the visible range, so a three-day fair that starts before the range is still displayed.
 
 ### Example of a View-Selector

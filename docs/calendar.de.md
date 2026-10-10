@@ -188,6 +188,8 @@ Kategorien und Tags werden wie bei Smart Content ausgewertet (siehe [Smart Conte
 /api/events/calendar/de?categories[]=12
 ```
 
+Das Feld `url` jedes Events der Antwort ist ein absoluter Link auf die Detailseite (Webspace und Sprache des Events). Nur wenn die Webseite für die Sprache keine URL kennt, enthält es den reinen Pfad.
+
 Angezeigt werden nur Events, die in der Sprache veröffentlicht sind. Ein Event erscheint, sobald es den sichtbaren Zeitraum **überschneidet**; eine dreitägige Messe, die vor dem Zeitraum beginnt, ist also weiterhin zu sehen.
 
 ### Beispiel für Auswahl einer View
