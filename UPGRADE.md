@@ -53,6 +53,7 @@ Without the option nothing changes for installations whose PHP default timezone 
 - **`URL` and `CATEGORIES`.** The iCal events carry an absolute URL (was: only the path) and the names of their categories in the locale of the feed.
 - **Feed and calendar filters work.** `/events/calendar.{locale}.ics` and `/api/events/calendar/{locale}` evaluate `categories[]` (ids), `tags[]` (names) and, for the calendar, `location` (id or exact name). Before, they were ignored and every event was returned. A filter without any usable value returns no events. Only events published in the locale are returned.
 - **Calendar range.** `/api/events/calendar/{locale}` returns every event that *overlaps* the requested range (was: events that start inside it), so multi-day events that began earlier are shown.
+- **Calendar API works again.** `/api/events/calendar/{locale}` answered 500 ("has no container set"): `services-calendar.yaml` redefined the controller without the container and overrode the complete definition in `controller.yaml`. The duplicate is removed. If you overrode the service `Manuxi\SuluEventBundle\Controller\Website\CalendarApiController` yourself, it needs the container (`calls: setContainer`) and the webspace manager as fourth argument.
 - **Calendar API `url`** is an absolute URL (was: the path). `tags[]` takes names; numeric-only values were required before, which dropped every name.
 
 ### For developers

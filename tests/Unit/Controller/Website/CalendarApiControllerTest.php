@@ -44,8 +44,8 @@ class CalendarApiControllerTest extends TestCase
             ->method('findForCalendar')
             ->with($this->callback(function (array $filters): bool {
                 $this->assertSame('de', $filters['locale']);
-                $this->assertSame(['12', '15'], $filters['categories']);
-                $this->assertSame(['Symfony', 'Unreal Engine'], $filters['tags']);
+                $this->assertSame(['12', 'abc', '15'], $filters['categories']);
+                $this->assertSame(['Symfony', '', 'Unreal Engine'], $filters['tags']);
                 $this->assertSame('Messe & Halle', $filters['location']);
                 $this->assertSame('2027-03-01 00:00:00', $filters['start']);
                 $this->assertSame('2027-04-01 00:00:00', $filters['end']);

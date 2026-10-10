@@ -66,11 +66,9 @@ class CalendarApiController extends AbstractController
             'locale' => $locale,
             'dataId' => $request->query->get('dataId', null),
             'includeSubFolders' => $request->query->getBoolean('includeSubFolders', false),
-            'categories' => array_values(array_filter($request->query->all('categories'), 'is_numeric')),
-            'tags' => array_values(array_filter(
-                array_map('trim', array_filter($request->query->all('tags'), 'is_string')),
-                static fn (string $tag): bool => '' !== $tag
-            )),
+            // the repository validates the values; a filter without any usable value matches nothing
+            'categories' => array_values(array_filter($request->query->all('categories'), 'is_scalar')),
+            'tags' => array_values(array_map('trim', array_filter($request->query->all('tags'), 'is_string'))),
             'location' => '' !== trim((string) $request->query->get('location', ''))
                 ? trim((string) $request->query->get('location'))
                 : null,

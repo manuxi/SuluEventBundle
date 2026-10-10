@@ -1,16 +1,4 @@
 services:
-    # Calendar API Controller
-    Manuxi\SuluEventBundle\Controller\Website\CalendarApiController:
-        arguments:
-            - '@Manuxi\SuluEventBundle\Repository\EventRepository'
-            - '@sulu_event.type_selection'
-            - '@sulu_content.content_aggregator'
-            - '@sulu_core.webspace.webspace_manager'
-        tags:
-            - { name: controller.service_arguments }
-            - { name: sulu.context, context: website }
-        public: true
-
     # Recurrence Generator Service
     sulu_event.recurrence_generator:
         class: Manuxi\SuluEventBundle\Service\RecurrenceGenerator
