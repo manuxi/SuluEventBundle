@@ -68,13 +68,15 @@ You can validate your feeds using:
 Download an individual event as `.ics` file:
 
 ```
-/events/{id}/download.{locale}.ics
+/events/{uuid}/download.{locale}.ics
 ```
 
 **Example:**
 ```
-https://example.com/events/42/download.en.ics
+https://example.com/events/019bf796-423c-7e1f-969c-5c4ece5e9b73/download.en.ics
 ```
+
+`{uuid}` is the UUID of the event (no longer a number as in older versions; the route never worked that way). In the detail template `event` is the content of the event, so the UUID is `event.resource.id`. Events that are not published in the locale return 404.
 
 ### Calendar Feed (Subscription)
 
@@ -97,8 +99,8 @@ webcal://example.com/events/calendar.de.ics
 #### Single Event Download Button
 
 ```html
-<a href="{{ path('sulu_event.ical_single', {id: event.id, _locale: app.request.locale}) }}" 
-   download="event-{{ event.id }}.ics"
+<a href="{{ path('sulu_event.ical_single', {id: event.resource.id, _locale: app.request.locale}) }}" 
+   download="event-{{ event.resource.id }}.ics"
    class="btn btn-primary">
     <i class="fa fa-calendar-plus"></i> Add to Calendar
 </a>

@@ -25,7 +25,8 @@ sulu_event.ical_single:
     defaults:
         _locale: en
     requirements:
-        id: \d+
+        # event ids are UUIDs
+        id: '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}'
 
 # iCal Calendar-Feed
 sulu_event.ical_feed:

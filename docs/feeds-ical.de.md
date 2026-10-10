@@ -62,13 +62,15 @@ Oder direkte Links anbieten:
 Einzelne Events als `.ics`-Datei herunterladen:
 
 ```
-/events/{id}/download.{locale}.ics
+/events/{uuid}/download.{locale}.ics
 ```
 
 **Beispiel:**
 ```
-https://beispiel.de/events/42/download.de.ics
+https://beispiel.de/events/019bf796-423c-7e1f-969c-5c4ece5e9b73/download.de.ics
 ```
+
+`{uuid}` ist die UUID des Events (nicht mehr eine Zahl wie in älteren Versionen, die Route hat so nie funktioniert). Im Detail-Template ist `event` der Inhalt des Events, die UUID steht daher in `event.resource.id`. Events, die in der Sprache nicht veröffentlicht sind, liefern 404.
 
 ### Kalender-Feed (Abonnement)
 
@@ -91,8 +93,8 @@ webcal://beispiel.de/events/calendar.de.ics
 #### Einzel-Event-Download-Button
 
 ```html
-<a href="{{ path('sulu_event.ical_single', {id: event.id, _locale: app.request.locale}) }}" 
-   download="event-{{ event.id }}.ics"
+<a href="{{ path('sulu_event.ical_single', {id: event.resource.id, _locale: app.request.locale}) }}" 
+   download="event-{{ event.resource.id }}.ics"
    class="btn btn-primary">
     <i class="fa fa-calendar-plus"></i> Zum Kalender hinzufügen
 </a>

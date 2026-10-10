@@ -35,9 +35,9 @@
         
         <div class="event-actions">
             {# iCal Download #}
-            <a href="{{ path('sulu_event.ical_single', {id: event.id, _locale: app.request.locale}) }}" 
+            <a href="{{ path('sulu_event.ical_single', {id: event.resource.id, _locale: app.request.locale}) }}" 
                class="btn btn-secondary"
-               download="event-{{ event.id }}.ics">
+               download="event-{{ event.resource.id }}.ics">
                 <i class="fa fa-calendar-plus"></i> {{ 'sulu_event.add_to_calendar'|trans }}
             </a>
         </div>
