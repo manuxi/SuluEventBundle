@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Service;
 
+use Manuxi\SuluEventBundle\Entity\AttendanceMode;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
+use Manuxi\SuluEventBundle\Entity\EventStatus;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
 use Sabre\VObject\Component\VCalendar;
 use Sulu\Component\Webspace\Manager\WebspaceManagerInterface;
@@ -19,6 +21,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
  *
  * Event times are stored as wall clock time without a zone (see resolveTimezone()). They are converted to UTC for
  * the calendar file, so no VTIMEZONE component is needed and every calendar application shows the right time.
+ * All-day events (flag of the event) are written as dates without a time.
  */
 class ICalGenerator
 {
@@ -29,7 +32,7 @@ class ICalGenerator
         private readonly ContentAggregatorInterface $contentAggregator,
         private readonly WebspaceManagerInterface $webspaceManager,
         private readonly RequestStack $requestStack,
-        private readonly ?string $timezone = null,
+        private readonly EventTimezoneResolver $timezoneResolver,
     ) {
     }
 
@@ -86,12 +89,13 @@ class ICalGenerator
     }
 
     /**
-     * The zone the stored start and end of an event are meant in. The database holds the wall clock time as it was
-     * entered, without any zone.
+     * The zone the stored start and end of an event are meant in: the one of the event, its location, the configured
+     * one (sulu_event.timezone) or the PHP default. The database holds the wall clock time as it was entered, without
+     * any zone.
      */
     public function resolveTimezone(EventDimensionContent $dimensionContent): \DateTimeZone
     {
-        return new \DateTimeZone($this->timezone ?? date_default_timezone_get());
+        return $this->timezoneResolver->resolve($dimensionContent);
     }
 
     private function createCalendar(): VCalendar
@@ -121,19 +125,18 @@ class ICalGenerator
         $vevent->DTSTAMP           = $changed;
         $vevent->{'LAST-MODIFIED'} = $changed;
 
-        if ($this->isAllDay($start, $end)) {
+        if ($dimensionContent->getAllDay()) {
             // a date without time; DTEND is exclusive, so it is the day after the last day
             $vevent->add('DTSTART', new \DateTimeImmutable($start->format('Y-m-d'), $utc), ['VALUE' => 'DATE']);
             if (null !== $end && $end->format('Y-m-d') > $start->format('Y-m-d')) {
                 $vevent->add('DTEND', (new \DateTimeImmutable($end->format('Y-m-d'), $utc))->modify('+1 day'), ['VALUE' => 'DATE']);
             }
         } else {
-            $zone     = $this->resolveTimezone($dimensionContent);
-            $startUtc = $this->toUtc($start, $zone);
+            $startUtc = $this->toUtc($start, $dimensionContent);
             $vevent->add('DTSTART', $startUtc);
 
             if (null !== $end) {
-                $endUtc = $this->toUtc($end, $zone);
+                $endUtc = $this->toUtc($end, $dimensionContent);
                 if ($endUtc > $startUtc) {
                     $vevent->add('DTEND', $endUtc);
                 }
@@ -146,8 +149,16 @@ class ICalGenerator
             $vevent->DESCRIPTION = strip_tags($dimensionContent->getSummary());
         }
 
+        $status = $this->findStatus($dimensionContent);
+        if (null !== $status) {
+            $vevent->STATUS = $status;
+        }
+
         if ($dimensionContent->getLocation()) {
             $vevent->LOCATION = $dimensionContent->getLocation()->getName();
+        } elseif (AttendanceMode::Offline->value !== $dimensionContent->getAttendanceMode() && null !== $dimensionContent->getOnlineUrl()) {
+            // an online event has no place; the link to take part is the "location" calendar applications show
+            $vevent->LOCATION = $dimensionContent->getOnlineUrl();
         }
 
         if (null !== $url && null !== $dimensionContent->getRoute()?->getSlug()) {
@@ -163,22 +174,21 @@ class ICalGenerator
     /**
      * The wall clock time of the stored date, read in the zone of the event, as an instant in UTC.
      */
-    private function toUtc(\DateTimeInterface $stored, \DateTimeZone $zone): \DateTimeImmutable
+    private function toUtc(\DateTimeInterface $stored, EventDimensionContent $dimensionContent): \DateTimeImmutable
     {
-        return (new \DateTimeImmutable($stored->format('Y-m-d H:i:s'), $zone))->setTimezone(new \DateTimeZone('UTC'));
+        return $this->timezoneResolver->toInstant($stored, $dimensionContent)->setTimezone(new \DateTimeZone('UTC'));
     }
 
     /**
-     * Events without an explicit "all day" field (planned) count as all-day if they start at midnight and either
-     * have no end or end at the end of a day. Same idea as the calendar API.
+     * A cancelled event stays in the calendar, marked as cancelled; a postponed one has no valid date any more.
      */
-    private function isAllDay(\DateTimeInterface $start, ?\DateTimeInterface $end): bool
+    private function findStatus(EventDimensionContent $dimensionContent): ?string
     {
-        if ('00:00:00' !== $start->format('H:i:s')) {
-            return false;
-        }
-
-        return null === $end || '23:59:59' === $end->format('H:i:s');
+        return match ($dimensionContent->getStatus()) {
+            EventStatus::Cancelled->value => 'CANCELLED',
+            EventStatus::Postponed->value => 'TENTATIVE',
+            default                       => null,
+        };
     }
 
     /**

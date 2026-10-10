@@ -84,6 +84,7 @@ services:
             - '@sulu_event.type_selection'
             - '@sulu_content.content_aggregator'
             - '@sulu_core.webspace.webspace_manager'
+            - '@sulu_event.timezone_resolver'
         tags:
             - { name: controller.service_arguments }
             - { name: sulu.context, context: website }

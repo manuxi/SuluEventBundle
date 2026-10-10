@@ -6,6 +6,7 @@ namespace Manuxi\SuluEventBundle\Controller\Website;
 
 use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
+use Manuxi\SuluEventBundle\Service\EventTimezoneResolver;
 use Manuxi\SuluEventBundle\Service\EventTypeSelect;
 use Sulu\Component\Webspace\Manager\WebspaceManagerInterface;
 use Sulu\Content\Application\ContentAggregator\ContentAggregatorInterface;
@@ -23,6 +24,7 @@ class CalendarApiController extends AbstractController
         private readonly EventTypeSelect $eventTypeSelect,
         private readonly ContentAggregatorInterface $contentAggregator,
         private readonly WebspaceManagerInterface $webspaceManager,
+        private readonly EventTimezoneResolver $timezoneResolver,
     ) {
     }
 
@@ -124,25 +126,28 @@ class CalendarApiController extends AbstractController
                 continue;
             }
 
-            $isAllDay = $this->isAllDayEvent($dimensionContent);
+            $isAllDay = $dimensionContent->getAllDay();
             $typeColor = $this->eventTypeSelect->getColor($dimensionContent->getType() ?? 'default');
             $typeName = $this->eventTypeSelect->getTypeName($dimensionContent->getType() ?? 'default');
 
             $calendarEvent = [
                 'id' => $event->getId(),
                 'title' => $dimensionContent->getTitle() ?? '',
-                'start' => $dimensionContent->getStartDate()->format('c'),
+                'start' => $this->formatStart($dimensionContent),
                 'allDay' => $isAllDay,
                 'url' => $this->findUrl($dimensionContent, $locale),
                 'extendedProps' => [
                     'type' => $dimensionContent->getType() ?? 'default',
                     'typeName' => $typeName,
                     'typeColor' => $typeColor,
+                    'status' => $dimensionContent->getStatus(),
+                    'attendanceMode' => $dimensionContent->getAttendanceMode(),
                 ],
             ];
 
-            if ($dimensionContent->getEndDate()) {
-                $calendarEvent['end'] = $dimensionContent->getEndDate()->format('c');
+            $end = $this->formatEnd($dimensionContent);
+            if (null !== $end) {
+                $calendarEvent['end'] = $end;
             }
 
             if ($dimensionContent->getLocation()) {
@@ -163,6 +168,40 @@ class CalendarApiController extends AbstractController
     }
 
     /**
+     * All-day events are sent as a date, so no zone can shift them to another day; all others with the offset of the
+     * zone of the event (see EventTimezoneResolver).
+     */
+    private function formatStart(EventDimensionContent $dimensionContent): string
+    {
+        $start = $dimensionContent->getStartDate();
+
+        return $dimensionContent->getAllDay()
+            ? $start->format('Y-m-d')
+            : $this->timezoneResolver->toInstant($start, $dimensionContent)->format('c');
+    }
+
+    /**
+     * FullCalendar takes the end of an all-day event as exclusive: the day after the last day.
+     */
+    private function formatEnd(EventDimensionContent $dimensionContent): ?string
+    {
+        $end = $dimensionContent->getEndDate();
+        if (null === $end) {
+            return null;
+        }
+
+        if (!$dimensionContent->getAllDay()) {
+            return $this->timezoneResolver->toInstant($end, $dimensionContent)->format('c');
+        }
+
+        if ($end->format('Y-m-d') <= $dimensionContent->getStartDate()->format('Y-m-d')) {
+            return null;
+        }
+
+        return $end->modify('+1 day')->format('Y-m-d');
+    }
+
+    /**
      * Absolute url of the event page in the webspace of the event and the given locale. Falls back to the path
      * if the webspace has no url for the locale.
      */
@@ -174,18 +213,5 @@ class CalendarApiController extends AbstractController
         }
 
         return $this->webspaceManager->findUrlByResourceLocator($slug, null, $locale, $dimensionContent->getMainWebspace()) ?? $slug;
-    }
-
-    private function isAllDayEvent(EventDimensionContent $dimensionContent): bool
-    {
-        if (!$dimensionContent->getEndDate()) {
-            return true;
-        }
-
-        $start = $dimensionContent->getStartDate();
-        $end = $dimensionContent->getEndDate();
-
-        return '00:00:00' === $start->format('H:i:s')
-            && '23:59:59' === $end->format('H:i:s');
     }
 }

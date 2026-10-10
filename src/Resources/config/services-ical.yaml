@@ -7,7 +7,7 @@ services:
             - '@sulu_content.content_aggregator'
             - '@sulu_core.webspace.webspace_manager'
             - '@request_stack'
-            - '%sulu_event.timezone%'
+            - '@sulu_event.timezone_resolver'
 
     # iCal Controller
     Manuxi\SuluEventBundle\Controller\Website\ICalController:

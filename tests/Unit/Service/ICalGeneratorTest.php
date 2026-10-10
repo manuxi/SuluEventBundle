@@ -8,6 +8,7 @@ use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
 use Manuxi\SuluEventBundle\Entity\Location;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
+use Manuxi\SuluEventBundle\Service\EventTimezoneResolver;
 use Manuxi\SuluEventBundle\Service\ICalGenerator;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -145,6 +146,76 @@ class ICalGeneratorTest extends TestCase
         $this->assertNull($vevent->DTEND);
     }
 
+    public function testTimezoneOfTheEventWinsOverTheOneOfTheLocationAndTheApplication(): void
+    {
+        $location = new Location();
+        $location->setName('Convention Center');
+        $location->setTimezone('Asia/Tokyo');
+
+        $ownZone = $this->createContent('2027-01-15 10:00:00', '2027-01-15 12:00:00');
+        $ownZone->setLocation($location);
+        $ownZone->setTimezone('America/Los_Angeles');
+        $this->assertSame('20270115T180000Z', (string) $this->singleEvent($this->parse($this->generateFeed([$ownZone])))->DTSTART);
+
+        $locationZone = $this->createContent('2027-01-15 10:00:00', '2027-01-15 12:00:00');
+        $locationZone->setLocation($location);
+        $this->assertSame('20270115T010000Z', (string) $this->singleEvent($this->parse($this->generateFeed([$locationZone])))->DTSTART);
+
+        $applicationZone = $this->createContent('2027-01-15 10:00:00', '2027-01-15 12:00:00');
+        $this->assertSame('20270115T090000Z', (string) $this->singleEvent($this->parse($this->generateFeed([$applicationZone])))->DTSTART);
+    }
+
+    public function testResolveTimezoneFollowsEventLocationApplication(): void
+    {
+        $content = $this->createContent('2027-07-01 10:00:00', null);
+        $this->assertSame('Europe/Berlin', $this->generator->resolveTimezone($content)->getName());
+
+        $location = new Location();
+        $location->setName('Las Vegas');
+        $location->setTimezone('America/Los_Angeles');
+        $content->setLocation($location);
+        $this->assertSame('America/Los_Angeles', $this->generator->resolveTimezone($content)->getName());
+
+        $content->setTimezone('Asia/Taipei');
+        $this->assertSame('Asia/Taipei', $this->generator->resolveTimezone($content)->getName());
+    }
+
+    public function testCancelledAndPostponedEventsAreMarked(): void
+    {
+        $cancelled = $this->createContent('2027-07-01 10:00:00', null);
+        $cancelled->setStatus('cancelled');
+        $postponed = $this->createContent('2027-07-01 10:00:00', null, uuid: 'postponed');
+        $postponed->setStatus('postponed');
+        $rescheduled = $this->createContent('2027-07-01 10:00:00', null, uuid: 'rescheduled');
+        $rescheduled->setStatus('rescheduled');
+        $scheduled = $this->createContent('2027-07-01 10:00:00', null, uuid: 'scheduled');
+
+        $this->assertStringContainsString("\r\nSTATUS:CANCELLED\r\n", $this->generateFeed([$cancelled]));
+        $this->assertStringContainsString("\r\nSTATUS:TENTATIVE\r\n", $this->generateFeed([$postponed]));
+        $this->assertStringNotContainsString('STATUS:', $this->generateFeed([$rescheduled]));
+        $this->assertStringNotContainsString('STATUS:', $this->generateFeed([$scheduled]));
+    }
+
+    public function testOnlineEventWithoutPlaceUsesTheLinkAsLocation(): void
+    {
+        $online = $this->createContent('2027-07-01 10:00:00', null);
+        $online->setAttendanceMode('online');
+        $online->setOnlineUrl('https://stream.example.com/keynote');
+        $this->assertSame('https://stream.example.com/keynote', (string) $this->singleEvent($this->parse($this->generateFeed([$online])))->LOCATION);
+
+        $withPlace = $this->createContent('2027-07-01 10:00:00', null, uuid: 'mixed');
+        $withPlace->setAttendanceMode('mixed');
+        $withPlace->setOnlineUrl('https://stream.example.com/keynote');
+        $location = new Location();
+        $location->setName('Hall 1');
+        $withPlace->setLocation($location);
+        $this->assertSame('Hall 1', (string) $this->singleEvent($this->parse($this->generateFeed([$withPlace])))->LOCATION);
+
+        $offline = $this->createContent('2027-07-01 10:00:00', null, uuid: 'offline');
+        $offline->setOnlineUrl('https://stream.example.com/keynote');
+        $this->assertNull($this->singleEvent($this->parse($this->generateFeed([$offline])))->LOCATION);
+    }
+
     public function testEndBeforeStartIsLeftOut(): void
     {
         $content = $this->createContent('2027-07-01 18:30:00', '2027-07-01 17:00:00');
@@ -157,6 +228,7 @@ class ICalGeneratorTest extends TestCase
     public function testAllDayEventsUseDatesWithoutTimeAndAnExclusiveEnd(): void
     {
         $content = $this->createContent('2027-03-01 00:00:00', '2027-03-03 23:59:59');
+        $content->setAllDay(true);
 
         $ical   = $this->generateFeed([$content]);
         $vevent = $this->singleEvent($this->parse($ical));
@@ -166,9 +238,21 @@ class ICalGeneratorTest extends TestCase
         $this->assertSame('DATE', (string) $vevent->DTSTART['VALUE']);
     }
 
+    public function testEventAtMidnightIsOnlyAllDayWithTheFlag(): void
+    {
+        // no guessing from the times any more: without the flag the event is a timed one
+        $content = $this->createContent('2027-03-01 00:00:00', '2027-03-01 23:59:59');
+
+        $vevent = $this->singleEvent($this->parse($this->generateFeed([$content])));
+
+        $this->assertSame('20270228T230000Z', (string) $vevent->DTSTART);
+        $this->assertSame('20270301T225959Z', (string) $vevent->DTEND);
+    }
+
     public function testSingleAllDayEventWithoutEndHasNoDtend(): void
     {
         $content = $this->createContent('2027-03-01 00:00:00', null);
+        $content->setAllDay(true);
 
         $ical = $this->generateFeed([$content]);
 
@@ -366,7 +450,7 @@ class ICalGeneratorTest extends TestCase
             static fn (Event $event) => $byUuid[$event->getUuid()]
         );
 
-        $generator = new ICalGenerator($repository, $aggregator, $webspaceManager ?? $this->webspaceManager, $this->requestStack, $timezone);
+        $generator = new ICalGenerator($repository, $aggregator, $webspaceManager ?? $this->webspaceManager, $this->requestStack, new EventTimezoneResolver($timezone));
 
         return $generator->generate([], 'de');
     }
@@ -378,7 +462,7 @@ class ICalGeneratorTest extends TestCase
             $this->contentAggregator,
             $this->webspaceManager,
             $this->requestStack,
-            $timezone,
+            new EventTimezoneResolver($timezone),
         );
     }
 

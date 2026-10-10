@@ -8,6 +8,7 @@ use Manuxi\SuluEventBundle\Controller\Website\CalendarApiController;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
+use Manuxi\SuluEventBundle\Service\EventTimezoneResolver;
 use Manuxi\SuluEventBundle\Service\EventTypeSelect;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -34,7 +35,7 @@ class CalendarApiControllerTest extends TestCase
         $eventTypeSelect->method('getColor')->willReturn('#0d6efd');
         $eventTypeSelect->method('getTypeName')->willReturn('Conference');
 
-        $this->controller = new CalendarApiController($this->eventRepository, $eventTypeSelect, $this->contentAggregator, $this->webspaceManager);
+        $this->controller = new CalendarApiController($this->eventRepository, $eventTypeSelect, $this->contentAggregator, $this->webspaceManager, new EventTimezoneResolver('Europe/Berlin'));
         $this->controller->setContainer(new Container());
     }
 
@@ -111,6 +112,73 @@ class CalendarApiControllerTest extends TestCase
         $calendarEvent = $this->callWithOneEvent($this->createContent(null, null));
 
         $this->assertSame('', $calendarEvent['url']);
+    }
+
+    public function testTimedEventsCarryTheOffsetOfTheirOwnTimezone(): void
+    {
+        $this->webspaceManager->method('findUrlByResourceLocator')->willReturn(null);
+        $content = $this->createContent('/events/live', null);
+        $content->setTimezone('America/Los_Angeles');
+
+        $calendarEvent = $this->callWithOneEvent($content);
+
+        $this->assertFalse($calendarEvent['allDay']);
+        $this->assertSame('2027-07-01T10:00:00-07:00', $calendarEvent['start']);
+        $this->assertSame('2027-07-01T12:00:00-07:00', $calendarEvent['end']);
+    }
+
+    public function testAllDayEventsAreSentAsDatesWithAnExclusiveEnd(): void
+    {
+        $this->webspaceManager->method('findUrlByResourceLocator')->willReturn(null);
+        $content = $this->createContent('/events/live', null);
+        $content->setAllDay(true);
+        $content->setStartDate(new \DateTimeImmutable('2027-03-02 00:00:00'));
+        $content->setEndDate(new \DateTimeImmutable('2027-03-04 23:59:59'));
+
+        $calendarEvent = $this->callWithOneEvent($content);
+
+        $this->assertTrue($calendarEvent['allDay']);
+        $this->assertSame('2027-03-02', $calendarEvent['start']);
+        $this->assertSame('2027-03-05', $calendarEvent['end']);
+    }
+
+    public function testSingleDayAllDayEventHasNoEnd(): void
+    {
+        $this->webspaceManager->method('findUrlByResourceLocator')->willReturn(null);
+        $content = $this->createContent('/events/live', null);
+        $content->setAllDay(true);
+        $content->setStartDate(new \DateTimeImmutable('2027-03-02 00:00:00'));
+        $content->setEndDate(new \DateTimeImmutable('2027-03-02 23:59:59'));
+
+        $calendarEvent = $this->callWithOneEvent($content);
+
+        $this->assertSame('2027-03-02', $calendarEvent['start']);
+        $this->assertArrayNotHasKey('end', $calendarEvent);
+    }
+
+    public function testEventWithoutEndIsNoLongerGuessedAsAllDay(): void
+    {
+        $this->webspaceManager->method('findUrlByResourceLocator')->willReturn(null);
+        $content = $this->createContent('/events/live', null);
+        $content->setEndDate(null);
+
+        $calendarEvent = $this->callWithOneEvent($content);
+
+        $this->assertFalse($calendarEvent['allDay']);
+        $this->assertSame('2027-07-01T10:00:00+02:00', $calendarEvent['start']);
+    }
+
+    public function testStatusAndAttendanceModeAreExposed(): void
+    {
+        $this->webspaceManager->method('findUrlByResourceLocator')->willReturn(null);
+        $content = $this->createContent('/events/live', null);
+        $content->setStatus('cancelled');
+        $content->setAttendanceMode('online');
+
+        $calendarEvent = $this->callWithOneEvent($content);
+
+        $this->assertSame('cancelled', $calendarEvent['extendedProps']['status']);
+        $this->assertSame('online', $calendarEvent['extendedProps']['attendanceMode']);
     }
 
     /**
