@@ -152,6 +152,14 @@ Kalender-Feeds können über Query-Parameter gefiltert werden:
 - `categories[]`: Nach Kategorie-IDs filtern
 - `tags[]`: Nach Tag-Namen filtern
 
+Mehrere Werte eines Filters gelten als ODER, Kategorien und Tags zusammen als UND. Ein Abo für ein einzelnes Thema ist damit ein Link wie:
+
+```
+webcal://example.com/events/calendar.de.ics?categories[]=12
+```
+
+Wie beim Smart Content und der Kalender-API zählen nur Events, die in der Sprache veröffentlicht sind. Ein Filter, der nur ungültige Werte enthält (etwa `categories[]=abc`), liefert einen leeren Kalender statt aller Events.
+
 **Beispiel:**
 ```html
 <a href="{{ path('sulu_event.ical_feed', {

@@ -171,6 +171,25 @@ Es wird ein Element mit class="event-calendar" erwartet. Mehrere Kalender auf ei
 
 'calendarView' steuert die inititale View. Siehe nächsten Abschnitt.
 
+### Events filtern
+
+Die Kalender-API (`sulu_event.api.calendar`, `/api/events/calendar/{locale}`) wertet diese Query-Parameter aus. Sie lassen sich an `data-events-url` anhängen, im Beispiel oben also über die Parameter von `path()`:
+
+| Parameter | Bedeutung | Beispiel |
+|---|---|---|
+| `categories[]` | Kategorie-IDs, mehrere Werte gelten als ODER | `?categories[]=12&categories[]=15` |
+| `tags[]` | Tag-**Namen**, mehrere Werte gelten als ODER | `?tags[]=Symfony` |
+| `location` | ID oder genauer Name eines Veranstaltungsorts | `?location=3` |
+| `start`, `end` | Sichtbarer Zeitraum (setzt FullCalendar selbst) | `?start=2027-03-01&end=2027-04-01` |
+
+Kategorien und Tags werden wie bei Smart Content ausgewertet (siehe [Smart Content](smart-content.de.md)); sind beide gesetzt, muss ein Event zu beiden passen. Ein Filter, der nur ungültige Werte enthält (etwa `categories[]=abc`), liefert bewusst keine Events statt aller.
+
+```
+/api/events/calendar/de?categories[]=12
+```
+
+Angezeigt werden nur Events, die in der Sprache veröffentlicht sind. Ein Event erscheint, sobald es den sichtbaren Zeitraum **überschneidet**; eine dreitägige Messe, die vor dem Zeitraum beginnt, ist also weiterhin zu sehen.
+
 ### Beispiel für Auswahl einer View
 
 ```html
@@ -230,8 +249,8 @@ Das Bundle bietet eine grundlegende Kalenderimplementierung. Für erweiterte Anp
 
 ## Ganztägige Events
 
-Events werden als ganztägig erkannt, wenn:
-- Startzeit ist 00:00
-- Endzeit ist 00:00 oder keine Endzeit gesetzt ist
+Solange es dafür kein eigenes Feld gibt, werden Events als ganztägig erkannt, wenn:
+- keine Endzeit gesetzt ist, oder
+- die Startzeit 00:00:00 und die Endzeit 23:59:59 ist
 
 Ganztägige Events werden im Kalender ohne Zeitangabe dargestellt.

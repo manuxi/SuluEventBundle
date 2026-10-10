@@ -200,56 +200,65 @@ class EventRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param array{locale: string, start?: string, end?: string} $filters
+     * Events for the FullCalendar JSON API: live events of the locale that overlap the requested range, optionally
+     * narrowed down like the smart content provider does it (see applyLiveFeedFilters()).
+     *
+     * @param array{
+     *     locale: string,
+     *     start?: string|null,
+     *     end?: string|null,
+     *     categories?: array<int|string>,
+     *     categoryOperator?: 'AND'|'OR',
+     *     tags?: string[],
+     *     tagOperator?: 'AND'|'OR',
+     *     location?: int|string|null,
+     * } $filters
+     *
+     * @return Event[]
      */
     public function findForCalendar(array $filters): array
     {
         Assert::keyExists($filters, 'locale', 'locale is required for findForCalendar');
 
-        $qb = $this->createQueryBuilder('event');
+        $qb = $this->createLiveFeedQueryBuilder($filters['locale']);
+        $this->applyLiveFeedFilters($qb, $filters);
 
-        $qb->leftJoin(
-            'event.dimensionContents',
-            'dimensionContent',
-            'WITH',
-            'dimensionContent.locale = :locale AND dimensionContent.stage = :stage AND dimensionContent.version = :version'
-        );
-        $qb->setParameter('locale', $filters['locale']);
-        $qb->setParameter('stage', DimensionContentInterface::STAGE_LIVE);
-        $qb->setParameter('version', DimensionContentInterface::CURRENT_VERSION);
-
-        if (isset($filters['start'])) {
-            $qb->andWhere('dimensionContent.startDate >= :start')
+        // overlap with the requested range instead of "starts inside": multi day events that began before the
+        // range still have to show up
+        if (!empty($filters['start'])) {
+            $qb->andWhere('COALESCE(dimensionContent.endDate, dimensionContent.startDate) >= :start')
                 ->setParameter('start', new \DateTime($filters['start']));
         }
 
-        if (isset($filters['end'])) {
+        if (!empty($filters['end'])) {
             $qb->andWhere('dimensionContent.startDate <= :end')
                 ->setParameter('end', new \DateTime($filters['end']));
         }
 
-        $qb->orderBy('dimensionContent.startDate', 'ASC');
-
         return $qb->getQuery()->getResult();
     }
 
+    /**
+     * Events for the iCal feed: live events of the locale, optionally narrowed down by categories, tags and
+     * location (see applyLiveFeedFilters()).
+     *
+     * @param array{
+     *     locale: string,
+     *     categories?: array<int|string>,
+     *     categoryOperator?: 'AND'|'OR',
+     *     tags?: string[],
+     *     tagOperator?: 'AND'|'OR',
+     *     location?: int|string|null,
+     * } $filters
+     *
+     * @return Event[]
+     */
     public function findForIcal(array $filters): array
     {
         Assert::keyExists($filters, 'locale', 'locale is required for findForIcal');
 
-        $qb = $this->createQueryBuilder('event');
-
-        $qb->leftJoin(
-            'event.dimensionContents',
-            'dimensionContent',
-            'WITH',
-            'dimensionContent.locale = :locale AND dimensionContent.stage = :stage AND dimensionContent.version = :version'
-        );
-        $qb->setParameter('locale', $filters['locale']);
-        $qb->setParameter('stage', DimensionContentInterface::STAGE_LIVE);
-        $qb->setParameter('version', DimensionContentInterface::CURRENT_VERSION);
-
-        $qb->orderBy('dimensionContent.startDate', 'ASC');
+        $qb = $this->createLiveFeedQueryBuilder($filters['locale']);
+        $this->applyLiveFeedFilters($qb, $filters);
 
         return $qb->getQuery()->getResult();
     }
@@ -281,6 +290,118 @@ class EventRepository extends ServiceEntityRepository
     public function remove(Event $event): void
     {
         $this->getEntityManager()->remove($event);
+    }
+
+    /**
+     * Only events that have a live dimension content in the locale (i.e. are published there), ordered by start.
+     */
+    private function createLiveFeedQueryBuilder(string $locale): QueryBuilder
+    {
+        $qb = $this->createQueryBuilder('event');
+
+        $qb->innerJoin(
+            'event.dimensionContents',
+            'dimensionContent',
+            'WITH',
+            'dimensionContent.locale = :locale AND dimensionContent.stage = :stage AND dimensionContent.version = :version'
+        );
+        $qb->setParameter('locale', $locale);
+        $qb->setParameter('stage', DimensionContentInterface::STAGE_LIVE);
+        $qb->setParameter('version', DimensionContentInterface::CURRENT_VERSION);
+
+        $qb->orderBy('dimensionContent.startDate', 'ASC');
+
+        return $qb;
+    }
+
+    /**
+     * Categories (by id), tags (by name) and location (by id or exact name) as the smart content provider evaluates
+     * them. The operator per kind is "OR" (any of them) or "AND" (all of them). A filter that was passed but holds no
+     * usable value matches nothing, so a typo in a subscription link does not silently return every event.
+     *
+     * @param array<string, mixed> $filters
+     */
+    private function applyLiveFeedFilters(QueryBuilder $qb, array $filters): void
+    {
+        $categoryIds = [];
+        foreach ((array) ($filters['categories'] ?? []) as $categoryId) {
+            if (\is_int($categoryId) || (\is_string($categoryId) && 1 === preg_match('/^\d+$/', $categoryId))) {
+                $categoryIds[] = (int) $categoryId;
+            }
+        }
+        $this->applyTaxonomyFilter(
+            $qb,
+            'dimensionContent.excerptCategories',
+            'feedCategory',
+            'id',
+            array_values(array_unique($categoryIds)),
+            [] !== (array) ($filters['categories'] ?? []),
+            $filters['categoryOperator'] ?? 'OR',
+        );
+
+        $tagNames = [];
+        foreach ((array) ($filters['tags'] ?? []) as $tagName) {
+            if (\is_string($tagName) && '' !== trim($tagName)) {
+                $tagNames[] = trim($tagName);
+            }
+        }
+        $this->applyTaxonomyFilter(
+            $qb,
+            'dimensionContent.excerptTags',
+            'feedTag',
+            'name',
+            array_values(array_unique($tagNames)),
+            [] !== (array) ($filters['tags'] ?? []),
+            $filters['tagOperator'] ?? 'OR',
+        );
+
+        $location = $filters['location'] ?? null;
+        if (\is_int($location) || (\is_string($location) && '' !== trim($location))) {
+            if (\is_int($location) || 1 === preg_match('/^\d+$/', trim($location))) {
+                $qb->andWhere('IDENTITY(dimensionContent.location) = :feedLocationId')
+                    ->setParameter('feedLocationId', (int) $location);
+            } else {
+                $qb->innerJoin('dimensionContent.location', 'feedLocation')
+                    ->andWhere('feedLocation.name = :feedLocationName')
+                    ->setParameter('feedLocationName', trim($location));
+            }
+        }
+    }
+
+    /**
+     * @param list<int|string> $values
+     */
+    private function applyTaxonomyFilter(
+        QueryBuilder $qb,
+        string $join,
+        string $alias,
+        string $field,
+        array $values,
+        bool $wasRequested,
+        string $operator,
+    ): void {
+        if ([] === $values) {
+            if ($wasRequested) {
+                $qb->andWhere('1 = 0');
+            }
+
+            return;
+        }
+
+        if ('AND' === $operator) {
+            // one join per value: the event has to carry every one of them
+            foreach ($values as $index => $value) {
+                $qb->innerJoin($join, $alias . $index)
+                    ->andWhere($alias . $index . '.' . $field . ' = :' . $alias . $index)
+                    ->setParameter($alias . $index, $value);
+            }
+
+            return;
+        }
+
+        $qb->innerJoin($join, $alias)
+            ->andWhere($alias . '.' . $field . ' IN (:' . $alias . 'Values)')
+            ->setParameter($alias . 'Values', $values);
     }
 
     /**

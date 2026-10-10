@@ -159,6 +159,25 @@ An element with the class="event-calendar" is expected. Multiple calendars on on
 
 'calendarView' controls the initial view. See next section.
 
+### Filtering events
+
+The calendar API (`sulu_event.api.calendar`, `/api/events/calendar/{locale}`) evaluates these query parameters. They can be appended to `data-events-url`, i.e. via the parameters of `path()` in the example above:
+
+| Parameter | Meaning | Example |
+|---|---|---|
+| `categories[]` | Category IDs, several values are combined with OR | `?categories[]=12&categories[]=15` |
+| `tags[]` | Tag **names**, several values are combined with OR | `?tags[]=Symfony` |
+| `location` | ID or exact name of a location | `?location=3` |
+| `start`, `end` | Visible date range (set by FullCalendar itself) | `?start=2027-03-01&end=2027-04-01` |
+
+Categories and tags are evaluated like in Smart Content (see [Smart Content](smart-content.en.md)); if both are given, an event has to match both. A filter that only contains invalid values (e.g. `categories[]=abc`) deliberately returns no events instead of all of them.
+
+```
+/api/events/calendar/en?categories[]=12
+```
+
+Only events that are published in the locale are shown. An event appears as soon as it **overlaps** the visible range, so a three-day fair that starts before the range is still displayed.
+
 ### Example of a View-Selector
 
 ```html
@@ -218,8 +237,8 @@ The bundle provides a basic calendar implementation. For advanced customization,
 
 ## All-Day Events
 
-Events are detected as all-day when:
-- Start time is 00:00
-- End time is 00:00 or no end time is set
+Until an explicit field exists, events are detected as all-day when:
+- no end time is set, or
+- the start time is 00:00:00 and the end time is 23:59:59
 
 All-day events are displayed without time information in the calendar.

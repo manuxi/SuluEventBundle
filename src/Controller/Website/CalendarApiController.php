@@ -64,10 +64,14 @@ class CalendarApiController extends AbstractController
             'locale' => $locale,
             'dataId' => $request->query->get('dataId', null),
             'includeSubFolders' => $request->query->getBoolean('includeSubFolders', false),
-            'categories' => array_filter($request->query->all('categories') ?? [], 'is_numeric'),
-            'tags' => array_filter($request->query->all('tags') ?? [], 'is_numeric'),
-            'location' => $request->query->get('location') ?
-                filter_var($request->query->get('location'), FILTER_SANITIZE_FULL_SPECIAL_CHARS) : null,
+            'categories' => array_values(array_filter($request->query->all('categories'), 'is_numeric')),
+            'tags' => array_values(array_filter(
+                array_map('trim', array_filter($request->query->all('tags'), 'is_string')),
+                static fn (string $tag): bool => '' !== $tag
+            )),
+            'location' => '' !== trim((string) $request->query->get('location', ''))
+                ? trim((string) $request->query->get('location'))
+                : null,
             'sortBy' => in_array($request->query->get('sortBy'), ['startDate', 'title', 'created', 'changed']) ?
                 $request->query->get('sortBy') : 'startDate',
             'sortMethod' => in_array(strtolower($request->query->get('sortMethod', 'asc')), ['asc', 'desc']) ?

@@ -158,6 +158,14 @@ You can filter the calendar feed using query parameters:
 - `categories[]`: Filter by category IDs
 - `tags[]`: Filter by tag names
 
+Several values of one filter are combined with OR, categories and tags together with AND. A subscription for a single topic is therefore a link like:
+
+```
+webcal://example.com/events/calendar.en.ics?categories[]=12
+```
+
+As with Smart Content and the calendar API, only events that are published in the locale are included. A filter that only contains invalid values (e.g. `categories[]=abc`) yields an empty calendar instead of all events.
+
 **Example:**
 ```html
 <a href="{{ path('sulu_event.ical_feed', {
