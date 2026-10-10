@@ -309,6 +309,12 @@ class EventRepository extends ServiceEntityRepository
         $qb->setParameter('stage', DimensionContentInterface::STAGE_LIVE);
         $qb->setParameter('version', DimensionContentInterface::CURRENT_VERSION);
 
+        // The content aggregator needs the complete collection of the dimension contents (the unlocalized one next
+        // to the localized one), and in debug mode it insists on it being loaded already. The join above only
+        // filters, so fetch all of them separately.
+        $qb->leftJoin('event.dimensionContents', 'allDimensionContents')
+            ->addSelect('allDimensionContents');
+
         $qb->orderBy('dimensionContent.startDate', 'ASC');
 
         return $qb;

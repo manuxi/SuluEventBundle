@@ -216,6 +216,31 @@ class EventRepositoryFeedFilterTest extends TestCase
         $this->assertSame(['b', 'a'], $this->uuids($this->repository->findForCalendar(['locale' => 'de'])));
     }
 
+    public function testFeedEventsCarryAllTheirDimensionContents(): void
+    {
+        // the content aggregator needs the complete, already loaded collection (it throws in debug mode otherwise)
+        $event = new Event('with-draft');
+        foreach ([DimensionContentInterface::STAGE_LIVE, DimensionContentInterface::STAGE_DRAFT] as $stage) {
+            $content = new EventDimensionContent($event);
+            $content->setStage($stage);
+            $content->setLocale('de');
+            $content->setTitle('Event');
+            $content->setStartDate(new \DateTimeImmutable('2027-03-01 10:00:00'));
+            $event->addDimensionContent($content);
+        }
+        $this->entityManager->persist($event);
+        $this->entityManager->flush();
+        $this->entityManager->clear();
+
+        foreach ([$this->repository->findForIcal(['locale' => 'de']), $this->repository->findForCalendar(['locale' => 'de'])] as $events) {
+            $this->assertCount(1, $events);
+            $dimensionContents = $events[0]->getDimensionContents();
+            $this->assertTrue($dimensionContents->isInitialized());
+            $this->assertCount(2, $dimensionContents);
+            $this->entityManager->clear();
+        }
+    }
+
     /**
      * @param string[] $categories
      * @param string[] $tags
