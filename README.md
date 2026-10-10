@@ -123,6 +123,7 @@ Detailed documentation in the [docs/](docs/) directory.
 - [Feeds/iCal](docs/feeds-ical.en.md) - Feeds and iCal handling
 - [Participation, time zone and tickets](docs/online-events.en.md) - Online events, time zones, all-day events, status, tickets
 - [Structured data (schema.org)](docs/schema-org.en.md) - schema.org Event, times in the zone of the event
+- [Event import](docs/import.en.md) - Drafts from iCal feeds and pages with schema.org data
 - [Locations](docs/locations.en.md) - Locations that are assigned to events
 - [Sitemap](docs/sitemap.en.md) - Sitemap
 - [Custom Event Types](docs/event-types.en.md) - Own Event types for categorization

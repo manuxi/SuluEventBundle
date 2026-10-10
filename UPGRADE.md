@@ -59,6 +59,61 @@ Manuxi\SuluBlockValidationBundle\SuluBlockValidationBundle::class => ['all' => t
 - **Sitemap**: new option `sulu_event.sitemap.hide_past_after_days` (default `null`: nothing changes) leaves out events that ended more than that many days ago.
 - New services: `sulu_event.url_resolver` (`EventUrlResolver`, used by iCal, calendar API and schema.org), `sulu_event.filter_options`, `sulu_event.schema_builder`. `EventTypeSelect::getTypeName()` takes an optional locale.
 
+### Event import (B3)
+
+New and optional: the command `sulu:event:import` creates event drafts from iCal feeds and pages with schema.org data, see [docs/import.en.md](docs/import.en.md). It is **off** until `sulu_event.import.enabled` is set; you only need the steps below if you use it.
+
+Two new tables (names are the ones of the bundle; or let `doctrine:schema:update --dump-sql` / a migration of your project produce them):
+
+```sql
+CREATE TABLE app_event_import (
+    source VARCHAR(64) NOT NULL,
+    external_id VARCHAR(255) NOT NULL,
+    match_key VARCHAR(128) DEFAULT NULL,
+    last_event_uuid VARCHAR(36) DEFAULT NULL,
+    content_hash VARCHAR(64) DEFAULT NULL,
+    imported_values JSON NOT NULL,
+    locked_fields JSON NOT NULL,
+    state VARCHAR(16) NOT NULL,
+    source_url VARCHAR(2048) DEFAULT NULL,
+    priority INT NOT NULL,
+    last_seen_at DATETIME DEFAULT NULL,
+    last_synced_at DATETIME DEFAULT NULL,
+    last_error LONGTEXT DEFAULT NULL,
+    created_at DATETIME NOT NULL,
+    id INT AUTO_INCREMENT NOT NULL,
+    event_uuid VARCHAR(36) DEFAULT NULL,
+    INDEX idx_event_import_match_key (match_key),
+    INDEX idx_event_import_state (state),
+    INDEX idx_event_import_last_event (last_event_uuid),
+    UNIQUE INDEX uniq_event_import_source_external (source, external_id),
+    INDEX IDX_6D59A3CECEB41C0D (event_uuid),
+    PRIMARY KEY (id)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci`;
+
+CREATE TABLE app_event_import_run (
+    started_at DATETIME NOT NULL,
+    finished_at DATETIME DEFAULT NULL,
+    source VARCHAR(64) DEFAULT NULL,
+    dry_run TINYINT NOT NULL,
+    created INT NOT NULL,
+    updated INT NOT NULL,
+    unchanged INT NOT NULL,
+    locked INT NOT NULL,
+    vanished INT NOT NULL,
+    rejected INT NOT NULL,
+    errors INT NOT NULL,
+    new_locations INT NOT NULL,
+    report JSON NOT NULL,
+    id INT AUTO_INCREMENT NOT NULL,
+    PRIMARY KEY (id)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci`;
+
+ALTER TABLE app_event_import ADD CONSTRAINT FK_6D59A3CECEB41C0D FOREIGN KEY (event_uuid) REFERENCES app_event (uuid) ON DELETE SET NULL;
+```
+
+New requirements, installed by Composer with the bundle: `symfony/http-client` and `symfony/string` (`composer update manuxi/sulu-event-bundle`). New services are `sulu_event.import.*` and the command `sulu:event:import`; sources that you tag with `sulu_event.import_source` are picked up. No existing behaviour changes.
+
 ### New default event types
 
 `meetup`, `trade_fair`, `keynote`, `convention` and `hackathon` (with translations). Projects that define their own `sulu_event.types` replace the defaults completely and add the ones they want, with a name (translation key) and a colour.

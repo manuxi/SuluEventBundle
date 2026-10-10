@@ -122,6 +122,7 @@ Detaillierte Dokumentation im [docs/](docs/) Verzeichnis.
 - [Wiederkehrende Events](docs/recurrence.de.md) - Wiederholende Event-Muster
 - [Feeds/iCal](docs/feeds-ical.de.md) - Feeds und iCal Handling
 - [Teilnahme, Zeitzone und Tickets](docs/online-events.de.md) - Online-Events, Zeitzonen, ganztägige Events, Status, Tickets
+- [Event-Import](docs/import.de.md) - Entwürfe aus iCal-Feeds und Seiten mit schema.org-Daten
 - [Strukturierte Daten (schema.org)](docs/schema-org.de.md) - schema.org-Event, Zeiten in der Zone des Events
 - [Standorte](docs/locations.de.md) - Standorte, die Events zugeordnet werden
 - [Sitemap](docs/sitemap.de.md) - Sitemaps
