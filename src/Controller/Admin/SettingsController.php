@@ -8,6 +8,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use FOS\RestBundle\View\ViewHandlerInterface;
 use Manuxi\SuluEventBundle\Domain\Event\Config\ModifiedEvent;
 use Manuxi\SuluEventBundle\Entity\EventSettings;
+use Manuxi\SuluEventBundle\Import\ImportRunSummary;
+use Manuxi\SuluEventBundle\Repository\EventImportRunRepository;
 use Sulu\Bundle\ActivityBundle\Application\Collector\DomainEventCollectorInterface;
 use Sulu\Component\Rest\AbstractRestController;
 use Sulu\Component\Security\SecuredControllerInterface;
@@ -25,6 +27,7 @@ class SettingsController extends AbstractRestController implements SecuredContro
         private DomainEventCollectorInterface $domainEventCollector,
         ViewHandlerInterface $viewHandler,
         ?TokenStorageInterface $tokenStorage = null,
+        private ?EventImportRunRepository $importRunRepository = null,
     ) {
         parent::__construct($viewHandler, $tokenStorage);
     }
@@ -128,7 +131,35 @@ class SettingsController extends AbstractRestController implements SecuredContro
             'enableLocationFilter' => $entity->getEnableLocationFilter(),
             'enableDateFilter' => $entity->getEnableDateFilter(),
             'enableSearchFilter' => $entity->getEnableSearchFilter(),
+        ] + $this->getImportRunData();
+    }
+
+    /**
+     * The last run of the import for the read only tab "Import".
+     *
+     * @return array<string, string|null>
+     */
+    private function getImportRunData(): array
+    {
+        $none = [
+            'importLastRunWhen'         => null,
+            'importLastRunSummary'      => null,
+            'importLastRunErrors'       => null,
+            'importLastRunNewLocations' => null,
         ];
+
+        if (null === $this->importRunRepository) {
+            return $none;
+        }
+
+        try {
+            $run = $this->importRunRepository->findLast(true);
+        } catch (\Throwable) {
+            // the tables of the import may not exist yet
+            return $none;
+        }
+
+        return null === $run ? $none : ImportRunSummary::fromRun($run);
     }
 
     protected function mapDataToEntity(array $data, EventSettings $entity): void

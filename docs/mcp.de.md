@@ -10,6 +10,9 @@ Ist [sulu/mcp-bundle](https://github.com/sulu/SuluMcpBundle) installiert, bringt
 | `sulu_event_update` | Felder einer Veranstaltung ändern | Bearbeiten |
 | `sulu_location_list` | Orte mit ihren IDs | Ansehen |
 | `sulu_location_create` | Ort anlegen | Hinzufügen |
+| `sulu_event_import_upsert` | Ein Event mit den Regeln des Imports als Entwurf anlegen oder aktualisieren | Hinzufügen und Bearbeiten |
+| `sulu_event_import_pending` | Importierte Events, an denen noch etwas zu tun ist | Ansehen |
+| `sulu_event_import_report` | Ergebnis des letzten Import-Laufs | Ansehen |
 
 Die Rechte sind die des Sicherheitskontexts der Veranstaltungen (`sulu.events.events`).
 
@@ -62,3 +65,34 @@ Veröffentlichen gehört nicht zu den Tools. Das geht im Admin oder mit den [Sam
 ```
 
 Geändert werden nur die übergebenen Felder. Alles andere (Bild, Ort, Termine, Kategorien usw.) bleibt unverändert. Ein veröffentlichtes Event wird wieder zum Entwurf und muss erneut veröffentlicht werden.
+
+## Werkzeuge für den Import
+
+Die drei Werkzeuge gehören zum [Event-Import](import.de.md). Sie sind für Recherche und Redaktion gedacht: Ein Assistent findet Events im Web, trägt sie ein und vervollständigt später die, die der Import angelegt hat.
+
+**`sulu_event_import_upsert`** legt **ein** Event als Entwurf an oder aktualisiert es, mit denselben Abgleich- und Schutzregeln wie der Import-Befehl. Parameter: `source` (woher das Event stammt, z. B. `editorial`), `externalId` (eine stabile Kennung innerhalb der Quelle, z. B. die URL der Seite) und die Fakten: `titles` (Sprache => Titel), `startDate`, `endDate`, `timezone`, `allDay`, `status`, `attendanceMode`, `location` (Objekt) oder `locationId`, `onlineUrl`, `registrationUrl`, `organizerName`, `organizerUrl`, `isFree`, `priceInfos`, `languages`, `type`, `categories` (**Schlüssel**), `tags` (**Namen**), `subtitles`, `summaries`, `texts`, `sourceUrl`, `sourceDescription`, `series`, `priority` (Standard 30) und `dryRun`.
+
+```json
+{
+  "source": "editorial",
+  "externalId": "https://conf.example.com/2027",
+  "titles": {"de": "Example Conf 2027"},
+  "startDate": "2027-06-12T10:00:00",
+  "endDate": "2027-06-13T17:00:00",
+  "timezone": "Europe/Berlin",
+  "location": {"name": "Messe Hall 3", "city": "Köln", "countryCode": "DE"},
+  "categories": ["web-php"],
+  "tags": ["Symfony"],
+  "summaries": {"de": "Zwei Tage rund um PHP."},
+  "sourceUrl": "https://conf.example.com/2027",
+  "series": "example-conf"
+}
+```
+
+Die Antwort enthält `action` (`created`, `updated`, `unchanged`, `rejected`), `uuid`, `detail`, `lockedFields` (Felder, die jemand im Admin geändert hat: sie werden nicht überschrieben), `warnings` (ein unbekannter Kategorie-Schlüssel, ein fehlendes Bild) und `newLocations`. Ein erneuter Aufruf mit derselben `source` und `externalId` aktualisiert dasselbe Event. Ein im Admin gelöschtes Event wird nicht neu angelegt (`rejected`). Texte, Kurztexte, Kategorien, Tags und das Bild werden nur ergänzt, wenn das Event noch keine hat. Die Texte selbst schreiben: der Text einer Quelle darf nicht kopiert werden; was gelesen wurde, gehört in `sourceDescription`, das nicht veröffentlicht wird.
+
+**`sulu_event_import_pending`** listet importierte Events, denen etwas fehlt: `text:de`, `summary:en` (leer), `locale:en` (kein Entwurf in dieser Sprache), `categories` (kein Thema), `image` (kein Bild). Jeder Eintrag trägt `sourceUrl` (die Seite des Events) und `sourceDescription` als Recherchehilfe sowie `published`. `locales` begrenzt die geprüften Sprachen (Standard: `sulu_event.import.locales`, sonst die Sprachen des Events). Seitenweise mit `page` und `limit`.
+
+**`sulu_event_import_report`** liefert den letzten Lauf des Import-Befehls: Zahlen, Fehler, verschwundene Events, Events mit geschützten Feldern, neue Orte (`certain: false` heißt: Zeitzone geraten). `includeDryRuns` berücksichtigt auch Testläufe.
+
+Die Rechte sind die des Security-Kontexts der Events. Die Werkzeuge laufen als der Benutzer, der am MCP-Server angemeldet ist, nicht als `sulu_event.import.user`.

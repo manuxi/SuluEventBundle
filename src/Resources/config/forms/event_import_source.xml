@@ -1,0 +1,81 @@
+<?xml version="1.0" ?>
+<form xmlns="http://schemas.sulu.io/template/template"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://schemas.sulu.io/template/template http://schemas.sulu.io/template/form-1.0.xsd">
+
+    <key>event_import_source</key>
+
+    <properties>
+        <section name="import_source">
+            <meta>
+                <title>sulu_event.import.title</title>
+            </meta>
+
+            <properties>
+                <property name="importSource" type="text_line" colspan="6" disabledCondition="true">
+                    <meta>
+                        <title>sulu_event.import.source</title>
+                    </meta>
+                </property>
+
+                <property name="importState" type="text_line" colspan="3" disabledCondition="true">
+                    <meta>
+                        <title>sulu_event.import.state_title</title>
+                    </meta>
+                </property>
+
+                <property name="importLastSyncedAt" type="text_line" colspan="3" disabledCondition="true">
+                    <meta>
+                        <title>sulu_event.import.last_synced</title>
+                    </meta>
+                </property>
+
+                <property name="importSourceUrl" type="text_line" disabledCondition="true">
+                    <meta>
+                        <title>sulu_event.import.source_url</title>
+                        <info_text>sulu_event.import.source_url_info</info_text>
+                    </meta>
+                </property>
+
+                <property name="importSourceDescription" type="text_area" disabledCondition="true">
+                    <meta>
+                        <title>sulu_event.import.source_description</title>
+                        <info_text>sulu_event.import.source_description_info</info_text>
+                    </meta>
+                </property>
+
+                <property name="importLastError" type="text_area" disabledCondition="true" visibleCondition="importLastError != null">
+                    <meta>
+                        <title>sulu_event.import.last_error</title>
+                    </meta>
+                </property>
+            </properties>
+        </section>
+
+        <section name="import_locks" visibleCondition="importHasLocks == true">
+            <meta>
+                <title>sulu_event.import.locks_title</title>
+            </meta>
+
+            <properties>
+                <property name="importLockedFields" type="text_line" disabledCondition="true">
+                    <meta>
+                        <title>sulu_event.import.locked_fields</title>
+                        <info_text>sulu_event.import.locked_fields_info</info_text>
+                    </meta>
+                </property>
+
+                <property name="importUnlockAll" type="checkbox">
+                    <meta>
+                        <title>sulu_event.import.unlock_all</title>
+                        <info_text>sulu_event.import.unlock_all_info</info_text>
+                    </meta>
+                    <params>
+                        <param name="type" value="toggler"/>
+                        <param name="default_value" value="false"/>
+                    </params>
+                </property>
+            </properties>
+        </section>
+    </properties>
+</form>

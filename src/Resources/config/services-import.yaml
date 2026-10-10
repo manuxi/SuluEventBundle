@@ -129,6 +129,18 @@ services:
     Manuxi\SuluEventBundle\Import\PendingEventFinder:
         alias: sulu_event.import.pending_finder
 
+    sulu_event.import.info_provider:
+        class: Manuxi\SuluEventBundle\Import\EventImportInfoProvider
+        arguments:
+            - '@Manuxi\SuluEventBundle\Repository\EventImportRepository'
+
+    sulu_event.import.lock_data_mapper:
+        class: Manuxi\SuluEventBundle\Content\DataMapper\EventImportLockDataMapper
+        arguments:
+            - '@Manuxi\SuluEventBundle\Repository\EventImportRepository'
+        tags:
+            - { name: sulu_content.data_mapper }
+
     sulu_event.import.state_listener:
         class: Manuxi\SuluEventBundle\Import\EventImportStateListener
         arguments:

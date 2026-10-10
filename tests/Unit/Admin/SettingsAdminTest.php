@@ -202,9 +202,9 @@ class SettingsAdminTest extends TestCase
             ->with(SettingsAdmin::TAB_VIEW, '/event-settings/:id')
             ->willReturn($resourceTabViewBuilder);
 
-        // Expect: 1 tab view + 3 form views (General, Calendar, Breadcrumbs)
+        // Expect: 1 tab view + 4 form views (General, Calendar, Breadcrumbs, Import)
         $viewCollection
-            ->expects($this->exactly(4))
+            ->expects($this->exactly(5))
             ->method('add');
 
         // Act
@@ -243,11 +243,12 @@ class SettingsAdminTest extends TestCase
         // Act
         $this->settingsAdmin->configureViews($viewCollection);
 
-        // Assert - Check that all three form views were created
-        $this->assertCount(3, $formViewNames);
+        // Assert - Check that all four form views were created
+        $this->assertCount(4, $formViewNames);
         $this->assertContains(SettingsAdmin::FORM_VIEW_SETTINGS_GENERAL, $formViewNames);
         $this->assertContains(SettingsAdmin::FORM_VIEW_SETTINGS_CALENDAR, $formViewNames);
         $this->assertContains(SettingsAdmin::FORM_VIEW_SETTINGS_BREADCRUMBS, $formViewNames);
+        $this->assertContains(SettingsAdmin::FORM_VIEW_SETTINGS_IMPORT, $formViewNames);
     }
 
     public function testConfigureViewsUsesCorrectResourceKey(): void
@@ -497,8 +498,8 @@ class SettingsAdminTest extends TestCase
         // Act
         $this->settingsAdmin->configureViews($viewCollection);
 
-        // Assert - All 3 form views should have the correct parent set
-        $this->assertEquals(3, $parentCount);
+        // Assert - All 4 form views should have the correct parent set
+        $this->assertEquals(4, $parentCount);
     }
 
     /**

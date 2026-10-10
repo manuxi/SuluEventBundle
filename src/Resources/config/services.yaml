@@ -451,5 +451,6 @@ services:
             - '@sulu_media.media_manager'
             - '@sulu_event.status_select'
             - '@sulu_event.attendance_mode_select'
+            - '@sulu_event.import.info_provider'
         tags:
             - { name: sulu_content.normalizer }

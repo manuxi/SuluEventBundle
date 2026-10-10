@@ -181,6 +181,19 @@ class EventAdmin extends Admin
                     ->setParent(static::EDIT_TABS_VIEW)
             );
 
+            // Source Tab (only for events that come from the import)
+            $viewCollection->add(
+                $this->viewBuilderFactory
+                    ->createFormViewBuilder(static::EDIT_TABS_VIEW . '.import', '/import')
+                    ->setResourceKey($resourceKey)
+                    ->setFormKey('event_import_source')
+                    ->setTabTitle('sulu_event.import.tab')
+                    ->setTabOrder(4608)
+                    ->setTabCondition('importSource != null')
+                    ->addToolbarActions($formToolbarActions)
+                    ->setParent(static::EDIT_TABS_VIEW)
+            );
+
             // Activity/Insights Tab
             if ($this->activityViewBuilderFactory->hasActivityListPermission()) {
                 $insightsResourceTabViewName = static::EDIT_TABS_VIEW . '.insights';

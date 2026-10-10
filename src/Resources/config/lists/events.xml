@@ -71,6 +71,14 @@
         </join>
     </joins>
 
+    <joins name="importEntry">
+        <join>
+            <entity-name>importEntry</entity-name>
+            <field-name>%sulu.model.event.class%.imports</field-name>
+            <method>LEFT</method>
+        </join>
+    </joins>
+
     <properties>
         <property name="id" translation="sulu_admin.id" visibility="no">
             <field-name>uuid</field-name>
@@ -241,6 +249,43 @@
                 <joins ref="ghostDimensionContent"/>
             </field>
         </case-property>
+
+        <group-concat-property name="importSource" translation="sulu_event.import.column_source" visibility="yes" glue=", " distinct="true" sortable="false">
+            <field-name>source</field-name>
+            <entity-name>importEntry</entity-name>
+            <joins ref="importEntry"/>
+        </group-concat-property>
+
+        <property name="importState" translation="sulu_event.import.filter_state" visibility="never">
+            <field-name>state</field-name>
+            <entity-name>importEntry</entity-name>
+            <joins ref="importEntry"/>
+
+            <filter type="select">
+                <params>
+                    <param name="options" type="collection">
+                        <param name="active" value="sulu_event.import.state.active"/>
+                        <param name="vanished" value="sulu_event.import.state.vanished"/>
+                    </param>
+                </params>
+            </filter>
+        </property>
+
+        <property name="workflowState" translation="sulu_content.published_state" visibility="never">
+            <field-name>workflowPlace</field-name>
+            <entity-name>dimensionContent</entity-name>
+            <joins ref="dimensionContent"/>
+
+            <filter type="select">
+                <params>
+                    <param name="options" type="collection">
+                        <param name="published" value="sulu_content.state_published"/>
+                        <param name="unpublished" value="sulu_content.state_not_published"/>
+                        <param name="draft" value="sulu_admin.draft"/>
+                    </param>
+                </params>
+            </filter>
+        </property>
 
         <case-property name="locale" visibility="never">
             <field>

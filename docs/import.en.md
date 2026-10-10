@@ -54,6 +54,8 @@ sulu_event:
 | `auto_update_published_dates` | A change of date, time or status of a **published** event goes live by itself, if nothing else is waiting in its draft | `false` |
 | `url_prefix` | Path the urls of imported events start with | `/events` |
 | `webspace` | Webspace of imported events | default webspace |
+| `category_images` | Images of your own: category key => media id, see "Images" | – |
+| `locales` | Locales an imported event should have a text in, for the list of events that need work | – |
 
 Options of a source (`ical` and `jsonld` have the same):
 
@@ -69,6 +71,7 @@ Options of a source (`ical` and `jsonld` have the same):
 | `series` | Name of an event series, see "Several sources" |
 | `priority` | Which source wins, see "Several sources". Default 100 for pages, 50 for calendars |
 | `languages` | Language codes the events are held in |
+| `image` | Id of a media (an image of your own) every event of the source gets, see "Images" |
 
 Mistakes in the configuration are reported when the cache is built, with the path of the option.
 
@@ -79,6 +82,35 @@ Mistakes in the configuration are reported when the cache is built, with the pat
 **Pages with structured data** (`jsonld`): reads `<script type="application/ld+json">` with `Event` or one of its subtypes (also inside `@graph` and lists). The time zone comes from the offset together with the country or coordinates of the place, or from `timezone`.
 
 Own sources: implement `Manuxi\SuluEventBundle\Import\EventSourceInterface` (`getKey()`, `getPriority()`, `fetch()` returning `EventCandidate` objects) and tag the service `sulu_event.import_source` (autoconfigured).
+
+## Images
+
+Imported events get **images of your own**, never the images of a source (they belong to the source). Without an image an event looks empty in lists and cards, so set them:
+
+```yaml
+sulu_event:
+    import:
+        category_images:          # category key => id of a media
+            web-php: 123
+            ai: 124
+        sources:
+            jsonld:
+                -   key: 'example-conf'
+                    url: 'https://conf.example.com/'
+                    image: 130    # wins over the image of the category
+```
+
+A new event gets the image of its source, otherwise the one of its first category that is listed; it is set as the image and as the excerpt image (cards and teasers). An event that has no image yet gets one on the next run as well; an image someone chose is never replaced. A media id that does not exist is reported as a warning. "Image missing" also shows in the list of events that need work (MCP tool `sulu_event_import_pending`).
+
+## In the admin
+
+- **Tab "Source"** of an event (only for events from the import): the sources, the state, the last comparison, the page of the event at the source, the description of the source (a hint for whoever writes the text, not published), the last error, and the protected fields. The switch **Release all protected fields** gives them free: after saving, the next import writes the values of the source into them again.
+- **List of events**: the column **Source** (empty for events entered by hand) and the filters **State of the import** (active / no longer in the source) and **Publication state** in the filter of the list. With "imported" and "not published" you get the list of events that wait for approval.
+- **Settings > Import**: the last run (time, numbers, errors, new locations), read only.
+
+## The user of the import
+
+`sulu_event.import.user` is the user whose name appears as creator of imported events. The command needs **no role**: it writes as that user without logging in, and no permission is checked. A role matters only if somebody logs in with this user, for example to use the MCP tools (those check the permissions). Give such a user a role that may **view, add and edit** events (`sulu.events.events`), locations, tags and categories (view) and media (view) and **not** the permission "live" (publish) of events, so that everything stays a draft until an editor publishes it.
 
 ## What happens in a run
 

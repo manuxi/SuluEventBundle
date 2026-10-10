@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Sulu\Content\Domain\Model\ContentRichEntityInterface;
 use Sulu\Content\Domain\Model\ContentRichEntityTrait;
 use Sulu\Content\Domain\Model\DimensionContentInterface;
@@ -33,10 +35,18 @@ class Event implements ContentRichEntityInterface
 
     protected ?EventRecurrence $recurrence = null;
 
+    /**
+     * The entries of the import that point to this event (read only; it is the list of the admin that needs it).
+     *
+     * @var Collection<int, EventImport>
+     */
+    protected Collection $imports;
+
     public function __construct(?string $uuid = null)
     {
         $this->uuid = $uuid ?: Uuid::v7()->toRfc4122();
         $this->initializeDimensionContents();
+        $this->imports = new ArrayCollection();
     }
 
     public function getId(): string

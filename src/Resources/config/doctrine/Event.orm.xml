@@ -21,6 +21,10 @@
             </cascade>
         </one-to-many>
 
+        <one-to-many field="imports"
+                     target-entity="Manuxi\SuluEventBundle\Entity\EventImport"
+                     mapped-by="event"/>
+
         <one-to-one field="socialSettings"
                     target-entity="Manuxi\SuluEventBundle\Entity\EventSocialSettings"
                     mapped-by="event">

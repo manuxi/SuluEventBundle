@@ -6,6 +6,7 @@ namespace Manuxi\SuluEventBundle\Content\Normalizer;
 
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
+use Manuxi\SuluEventBundle\Import\EventImportInfoProvider;
 use Manuxi\SuluEventBundle\Service\AttendanceModeSelect;
 use Manuxi\SuluEventBundle\Service\EventStatusSelect;
 use Manuxi\SuluEventBundle\Service\EventTypeSelect;
@@ -22,6 +23,7 @@ class EventNormalizer implements NormalizerInterface
         private MediaManagerInterface $mediaManager,
         private EventStatusSelect $eventStatusSelect,
         private AttendanceModeSelect $attendanceModeSelect,
+        private ?EventImportInfoProvider $importInfoProvider = null,
     ) {
     }
 
@@ -55,14 +57,14 @@ class EventNormalizer implements NormalizerInterface
             return $normalizedData;
         }
 
-        $normalizedData['id'] = $event->getUuid();
+        $normalizedData['id']   = $event->getUuid();
         $normalizedData['uuid'] = $event->getUuid();
 
         // Date formatting
         $dateString = '';
-        $startDate = $object->getStartDate();
-        $endDate = $object->getEndDate();
-        $locale = $object->getLocale();
+        $startDate  = $object->getStartDate();
+        $endDate    = $object->getEndDate();
+        $locale     = $object->getLocale();
         $dateFormat = $this->translator->trans('sulu_event.date_format', [], 'admin', $locale);
 
         if ($startDate) {
@@ -77,17 +79,17 @@ class EventNormalizer implements NormalizerInterface
         $normalizedData['date'] = $dateString;
 
         // Type
-        $type = $object->getType() ?? 'default';
+        $type                       = $object->getType() ?? 'default';
         $normalizedData['typeName'] = $this->eventTypeSelect->getTypeName($type);
 
         // Status, attendance mode and the other details. The form shows "auto" for "no own time zone".
-        $normalizedData['allDay'] = $object->getAllDay();
-        $normalizedData['timezone'] = $object->getTimezone() ?? TimezoneSelect::AUTO;
-        $normalizedData['status'] = $object->getStatus();
-        $normalizedData['statusName'] = $this->eventStatusSelect->getName($object->getStatus());
-        $normalizedData['attendanceMode'] = $object->getAttendanceMode();
+        $normalizedData['allDay']             = $object->getAllDay();
+        $normalizedData['timezone']           = $object->getTimezone() ?? TimezoneSelect::AUTO;
+        $normalizedData['status']             = $object->getStatus();
+        $normalizedData['statusName']         = $this->eventStatusSelect->getName($object->getStatus());
+        $normalizedData['attendanceMode']     = $object->getAttendanceMode();
         $normalizedData['attendanceModeName'] = $this->attendanceModeSelect->getName($object->getAttendanceMode());
-        $normalizedData['languages'] = $object->getLanguages() ?? [];
+        $normalizedData['languages']          = $object->getLanguages() ?? [];
 
         // Location
         $location = $object->getLocation();
@@ -99,7 +101,7 @@ class EventNormalizer implements NormalizerInterface
             $normalizedData['location']['id'] = $location->getId();
         } else {
             $normalizedData['locationId'] = null;
-            $normalizedData['location'] = null;
+            $normalizedData['location']   = null;
         }
 
         // Speaker
@@ -123,12 +125,12 @@ class EventNormalizer implements NormalizerInterface
         // preview for an already saved event.
         $image = $object->getImage();
         if (null !== $image) {
-            $apiImage = $this->mediaManager->getById($image->getId(), $locale);
+            $apiImage                = $this->mediaManager->getById($image->getId(), $locale);
             $normalizedData['image'] = [
-                'id' => $apiImage->getId(),
-                'url' => $apiImage->getUrl(),
+                'id'         => $apiImage->getId(),
+                'url'        => $apiImage->getUrl(),
                 'thumbnails' => $apiImage->getFormats(),
-                'mimeType' => $apiImage->getMimeType(),
+                'mimeType'   => $apiImage->getMimeType(),
             ];
         }
 
@@ -153,30 +155,70 @@ class EventNormalizer implements NormalizerInterface
 
         $socialSettings = $event->getSocialSettings();
         if (null !== $socialSettings) {
-            $normalizedData['enableSharing'] = $socialSettings->isEnableSharing();
-            $normalizedData['platforms'] = $socialSettings->getPlatforms();
-            $normalizedData['facebookUrl'] = $socialSettings->getFacebookUrl();
-            $normalizedData['twitterHandle'] = $socialSettings->getTwitterHandle();
-            $normalizedData['instagramUrl'] = $socialSettings->getInstagramUrl();
-            $normalizedData['linkedinUrl'] = $socialSettings->getLinkedinUrl();
+            $normalizedData['enableSharing']   = $socialSettings->isEnableSharing();
+            $normalizedData['platforms']       = $socialSettings->getPlatforms();
+            $normalizedData['facebookUrl']     = $socialSettings->getFacebookUrl();
+            $normalizedData['twitterHandle']   = $socialSettings->getTwitterHandle();
+            $normalizedData['instagramUrl']    = $socialSettings->getInstagramUrl();
+            $normalizedData['linkedinUrl']     = $socialSettings->getLinkedinUrl();
             $normalizedData['customShareText'] = $socialSettings->getCustomShareText();
-            $normalizedData['targetGroups'] = $socialSettings->getTargetGroups();
+            $normalizedData['targetGroups']    = $socialSettings->getTargetGroups();
         }
         unset($normalizedData['socialSettings']);
 
         $recurrence = $event->getRecurrence();
         if (null !== $recurrence) {
             $normalizedData['isRecurring'] = $recurrence->getIsRecurring();
-            $normalizedData['frequency'] = $recurrence->getFrequency();
-            $normalizedData['interval'] = $recurrence->getInterval();
-            $normalizedData['byWeekday'] = $recurrence->getByWeekday();
-            $normalizedData['endType'] = $recurrence->getEndType();
-            $normalizedData['count'] = $recurrence->getCount();
-            $normalizedData['until'] = $recurrence->getUntil()?->format('Y-m-d');
+            $normalizedData['frequency']   = $recurrence->getFrequency();
+            $normalizedData['interval']    = $recurrence->getInterval();
+            $normalizedData['byWeekday']   = $recurrence->getByWeekday();
+            $normalizedData['endType']     = $recurrence->getEndType();
+            $normalizedData['count']       = $recurrence->getCount();
+            $normalizedData['until']       = $recurrence->getUntil()?->format('Y-m-d');
         }
 
         unset($normalizedData['recurrence']);
 
+        $this->addImportInfo($event->getUuid(), $locale, $normalizedData);
+
         return $normalizedData;
+    }
+
+    /**
+     * The data of the "Source" tab: where an imported event comes from. "importSource" stays null for other events,
+     * the tab is only shown if it is set.
+     *
+     * @param array<string, mixed> $normalizedData
+     */
+    private function addImportInfo(string $uuid, ?string $locale, array &$normalizedData): void
+    {
+        $info = $this->importInfoProvider?->getInfo($uuid);
+        if (null === $info) {
+            $normalizedData['importSource'] = null;
+
+            return;
+        }
+
+        $normalizedData['importSource']            = $info['source'];
+        $normalizedData['importState']             = $this->translator->trans('sulu_event.import.state.' . $info['state'], [], 'admin', $locale);
+        $normalizedData['importSourceUrl']         = $info['sourceUrl'];
+        $normalizedData['importLastSyncedAt']      = $info['lastSyncedAt'];
+        $normalizedData['importSourceDescription'] = $info['sourceDescription'];
+        $normalizedData['importLastError']         = $info['lastError'];
+        $normalizedData['importLockedFields']      = implode(', ', array_map(fn (string $field): string => $this->fieldLabel($field, $locale), $info['lockedFields']));
+        $normalizedData['importHasLocks']          = [] !== $info['lockedFields'];
+    }
+
+    private function fieldLabel(string $field, ?string $locale): string
+    {
+        [$name, $fieldLocale] = array_pad(explode(':', $field, 2), 2, null);
+        $key                  = 'sulu_event.import.field.' . $name;
+        $label                = $this->translator->trans($key, [], 'admin', $locale);
+
+        if ($label === $key) {
+            $label = $name;
+        }
+
+        return null !== $fieldLocale ? \sprintf('%s (%s)', $label, $fieldLocale) : $label;
     }
 }

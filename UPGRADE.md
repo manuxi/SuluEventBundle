@@ -112,6 +112,8 @@ CREATE TABLE app_event_import_run (
 ALTER TABLE app_event_import ADD CONSTRAINT FK_6D59A3CECEB41C0D FOREIGN KEY (event_uuid) REFERENCES app_event (uuid) ON DELETE SET NULL;
 ```
 
+The class `Event` has a new read only collection `imports` (the inverse side of `EventImport::event`, no database change). `EventNormalizer` takes the `EventImportInfoProvider` as sixth constructor argument (optional) and adds `importSource` and related keys to the form data; `SettingsController` takes the `EventImportRunRepository` as fifth argument (optional). New options `sulu_event.import.category_images`, `sulu_event.import.locales` and `image` per source (images of your own for imported events), the tab "Source" of events from the import, the columns and filters in the list of events, the tab "Import" of the settings, and the MCP tools `sulu_event_import_upsert`, `sulu_event_import_pending` and `sulu_event_import_report`: see [docs/import.en.md](docs/import.en.md) and [docs/mcp.en.md](docs/mcp.en.md). If your project overrides the list `events.xml` or the services `sulu_event.event_normalizer` / `Manuxi\SuluEventBundle\Controller\Admin\SettingsController`, take the additions over.
+
 New requirements, installed by Composer with the bundle: `symfony/http-client` and `symfony/string` (`composer update manuxi/sulu-event-bundle`). New services are `sulu_event.import.*` and the command `sulu:event:import`; sources that you tag with `sulu_event.import_source` are picked up. No existing behaviour changes.
 
 ### New default event types

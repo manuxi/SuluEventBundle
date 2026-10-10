@@ -27,6 +27,8 @@ class SettingsAdmin extends Admin
     public const FORM_KEY_SETTINGS_LISTS = 'events_settings_lists';
     public const FORM_VIEW_SETTINGS_BREADCRUMBS = 'sulu_event.config.form.breadcrumbs';
     public const FORM_KEY_SETTINGS_BREADCRUMBS = 'events_settings_breadcrumbs';
+    public const FORM_VIEW_SETTINGS_IMPORT = 'sulu_event.config.form.import';
+    public const FORM_KEY_SETTINGS_IMPORT = 'events_settings_import';
 
     public function __construct(
         private ViewBuilderFactoryInterface $viewBuilderFactory,
@@ -90,6 +92,15 @@ class SettingsAdmin extends Admin
                     ->setFormKey(static::FORM_KEY_SETTINGS_BREADCRUMBS)
                     ->setTabTitle('sulu_event.config.tab.breadcrumbs')
                     ->addToolbarActions([new ToolbarAction('sulu_admin.save')])
+                    ->setParent(static::TAB_VIEW)
+            );
+
+            // The last run of the import, read only
+            $viewCollection->add(
+                $this->viewBuilderFactory->createFormViewBuilder(static::FORM_VIEW_SETTINGS_IMPORT, '/' . static::FORM_KEY_SETTINGS_IMPORT)
+                    ->setResourceKey(EventSettings::RESOURCE_KEY)
+                    ->setFormKey(static::FORM_KEY_SETTINGS_IMPORT)
+                    ->setTabTitle('sulu_event.config.tab.import')
                     ->setParent(static::TAB_VIEW)
             );
         }

@@ -1,0 +1,39 @@
+<?xml version="1.0" ?>
+<form xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns="http://schemas.sulu.io/template/template"
+      xsi:schemaLocation="http://schemas.sulu.io/template/template http://schemas.sulu.io/template/form-1.0.xsd"
+>
+    <key>events_settings_import</key>
+
+    <properties>
+        <section name="import-last-run">
+            <meta>
+                <title>sulu_event.import.last_run</title>
+                <info_text>sulu_event.import.last_run_info</info_text>
+            </meta>
+            <properties>
+                <property name="importLastRunWhen" type="text_line" colspan="6" disabledCondition="true">
+                    <meta>
+                        <title>sulu_event.import.last_run_when</title>
+                    </meta>
+                </property>
+                <property name="importLastRunSummary" type="text_line" colspan="12" disabledCondition="true">
+                    <meta>
+                        <title>sulu_event.import.last_run_counts</title>
+                    </meta>
+                </property>
+                <property name="importLastRunErrors" type="text_area" disabledCondition="true" visibleCondition="importLastRunErrors != null">
+                    <meta>
+                        <title>sulu_event.import.last_run_errors</title>
+                    </meta>
+                </property>
+                <property name="importLastRunNewLocations" type="text_area" disabledCondition="true" visibleCondition="importLastRunNewLocations != null">
+                    <meta>
+                        <title>sulu_event.import.last_run_new_locations</title>
+                        <info_text>sulu_event.import.last_run_new_locations_info</info_text>
+                    </meta>
+                </property>
+            </properties>
+        </section>
+    </properties>
+</form>

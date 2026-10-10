@@ -54,6 +54,8 @@ sulu_event:
 | `auto_update_published_dates` | Eine Änderung von Datum, Uhrzeit oder Status eines **veröffentlichten** Events geht von selbst live, wenn im Entwurf sonst nichts wartet | `false` |
 | `url_prefix` | Pfad, mit dem die URLs importierter Events beginnen | `/events` |
 | `webspace` | Webspace importierter Events | Standard-Webspace |
+| `category_images` | Eigene Bilder: Kategorie-Schlüssel => Medien-ID, siehe „Bilder“ | – |
+| `locales` | Sprachen, in denen ein importiertes Event einen Text haben soll, für die Liste der Events mit offener Arbeit | – |
 
 Optionen einer Quelle (`ical` und `jsonld` haben dieselben):
 
@@ -69,6 +71,7 @@ Optionen einer Quelle (`ical` und `jsonld` haben dieselben):
 | `series` | Name einer Veranstaltungsreihe, siehe „Mehrere Quellen“ |
 | `priority` | Welche Quelle gewinnt, siehe „Mehrere Quellen“. Standard 100 für Seiten, 50 für Kalender |
 | `languages` | Sprachkürzel, in denen die Events gehalten werden |
+| `image` | ID eines Mediums (ein eigenes Bild), das jedes Event der Quelle bekommt, siehe „Bilder“ |
 
 Fehler in der Konfiguration werden beim Aufbau des Caches gemeldet, mit dem Pfad der Option.
 
@@ -79,6 +82,35 @@ Fehler in der Konfiguration werden beim Aufbau des Caches gemeldet, mit dem Pfad
 **Seiten mit strukturierten Daten** (`jsonld`): liest `<script type="application/ld+json">` mit `Event` oder einem Untertyp (auch innerhalb von `@graph` und Listen). Die Zeitzone ergibt sich aus dem Offset zusammen mit Land oder Koordinaten des Ortes, oder aus `timezone`.
 
 Eigene Quellen: `Manuxi\SuluEventBundle\Import\EventSourceInterface` implementieren (`getKey()`, `getPriority()`, `fetch()` mit `EventCandidate`-Objekten) und den Service mit `sulu_event.import_source` taggen (wird automatisch konfiguriert).
+
+## Bilder
+
+Importierte Events bekommen **eigene Bilder**, nie die Bilder einer Quelle (die gehören der Quelle). Ohne Bild wirkt ein Event in Listen und Karten leer, deshalb:
+
+```yaml
+sulu_event:
+    import:
+        category_images:          # Kategorie-Schlüssel => ID eines Mediums
+            web-php: 123
+            ai: 124
+        sources:
+            jsonld:
+                -   key: 'example-conf'
+                    url: 'https://conf.example.com/'
+                    image: 130    # geht dem Bild der Kategorie vor
+```
+
+Ein neues Event bekommt das Bild seiner Quelle, sonst das seiner ersten Kategorie, die aufgeführt ist; es wird als Bild und als Excerpt-Bild (Karten und Teaser) gesetzt. Ein Event ohne Bild bekommt beim nächsten Lauf ebenfalls eins; ein Bild, das jemand gewählt hat, wird nie ersetzt. Eine Medien-ID, die es nicht gibt, wird als Warnung gemeldet. „Bild fehlt“ erscheint auch in der Liste der Events, an denen noch etwas zu tun ist (MCP-Werkzeug `sulu_event_import_pending`).
+
+## Im Admin
+
+- **Tab „Quelle“** eines Events (nur für Events aus dem Import): die Quellen, der Zustand, der letzte Abgleich, die Seite des Events bei der Quelle, die Beschreibung der Quelle (Hinweis für alle, die den Text schreiben, wird nicht veröffentlicht), der letzte Fehler und die geschützten Felder. Mit dem Schalter **Alle geschützten Felder freigeben** werden sie freigegeben: nach dem Speichern schreibt der nächste Import die Werte der Quelle wieder hinein.
+- **Liste der Events**: die Spalte **Quelle** (leer bei von Hand erfassten Events) und die Filter **Zustand des Imports** (aktiv / nicht mehr in der Quelle) und **Veröffentlichungsstand** im Filter der Liste. Mit „importiert“ und „nicht veröffentlicht“ ergibt sich die Liste der Events, die auf Freigabe warten.
+- **Einstellungen > Import**: der letzte Lauf (Zeitpunkt, Zahlen, Fehler, neue Orte), nur zur Ansicht.
+
+## Der Benutzer des Imports
+
+`sulu_event.import.user` ist der Benutzer, dessen Name als Ersteller importierter Events erscheint. Der Befehl braucht **keine Rolle**: Er schreibt als dieser Benutzer, ohne anzumelden, und prüft keine Rechte. Eine Rolle ist nur nötig, wenn sich jemand mit diesem Benutzer anmeldet, etwa um die MCP-Werkzeuge zu nutzen (diese prüfen die Rechte). Einem solchen Benutzer eine Rolle geben, die Events (`sulu.events.events`), Orte, Tags und Kategorien (nur Ansehen) und Medien (nur Ansehen) **ansehen, hinzufügen und bearbeiten** darf, aber **nicht** das Recht „Live“ (Veröffentlichen) bei den Events, damit alles ein Entwurf bleibt, bis jemand es veröffentlicht.
 
 ## Was bei einem Lauf passiert
 
