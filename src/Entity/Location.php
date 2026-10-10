@@ -44,6 +44,10 @@ class Location
     #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
     private ?string $countryCode = null;
 
+    /** IANA time zone of the place, e.g. "America/Los_Angeles"; null = the one of the application. */
+    #[ORM\Column(type: Types::STRING, length: 64, nullable: true)]
+    private ?string $timezone = null;
+
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $notes = null;
 
@@ -158,6 +162,30 @@ class Location
     public function setCountryCode(?string $countryCode): self
     {
         $this->countryCode = $countryCode;
+
+        return $this;
+    }
+
+    public function getTimezone(): ?string
+    {
+        return $this->timezone;
+    }
+
+    /**
+     * @throws \InvalidArgumentException for a name that is not an IANA time zone ("auto" and "" mean none)
+     */
+    public function setTimezone(?string $timezone): self
+    {
+        $timezone = null === $timezone ? null : \trim($timezone);
+        if ('' === $timezone || 'auto' === $timezone) {
+            $timezone = null;
+        }
+
+        if (null !== $timezone && !\in_array($timezone, \DateTimeZone::listIdentifiers(), true)) {
+            throw new \InvalidArgumentException(\sprintf('"%s" is not a valid IANA time zone (e.g. "Europe/Berlin").', $timezone));
+        }
+
+        $this->timezone = $timezone;
 
         return $this;
     }

@@ -34,6 +34,8 @@ class EventUnlocalizedFieldsMerger implements MergerInterface
             $targetObject->setEndDate($sourceObject->getEndDate());
         }
 
+        $targetObject->mergeDetailsFrom($sourceObject);
+
         if (null !== $sourceObject->getEmail()) {
             $targetObject->setEmail($sourceObject->getEmail());
         }

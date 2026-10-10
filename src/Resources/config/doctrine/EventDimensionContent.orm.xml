@@ -63,6 +63,31 @@
         <field name="type" type="string" length="50" nullable="true" column="type"/>
         <field name="startDate" type="datetime_immutable" nullable="true" column="start_date"/>
         <field name="endDate" type="datetime_immutable" nullable="true" column="end_date"/>
+
+        <!-- EVENT DETAILS (EventDetailsTrait): same in all locales except priceInfo -->
+        <field name="allDay" type="boolean" column="all_day">
+            <options>
+                <option name="default">0</option>
+            </options>
+        </field>
+        <field name="timezone" type="string" length="64" nullable="true" column="timezone"/>
+        <field name="status" type="string" length="20" column="status">
+            <options>
+                <option name="default">scheduled</option>
+            </options>
+        </field>
+        <field name="attendanceMode" type="string" length="10" column="attendance_mode">
+            <options>
+                <option name="default">offline</option>
+            </options>
+        </field>
+        <field name="onlineUrl" type="string" length="2048" nullable="true" column="online_url"/>
+        <field name="registrationUrl" type="string" length="2048" nullable="true" column="registration_url"/>
+        <field name="isFree" type="boolean" nullable="true" column="is_free"/>
+        <field name="priceInfo" type="string" length="255" nullable="true" column="price_info"/>
+        <field name="organizerName" type="string" length="255" nullable="true" column="organizer_name"/>
+        <field name="organizerUrl" type="string" length="2048" nullable="true" column="organizer_url"/>
+        <field name="languages" type="json" nullable="true" column="languages"/>
         <field name="email" type="string" length="255" nullable="true" column="email"/>
         <field name="phoneNumber" type="string" length="255" nullable="true" column="phone_number"/>
 

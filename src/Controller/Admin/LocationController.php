@@ -127,6 +127,7 @@ class LocationController extends AbstractRestController
             'city' => $location->getCity(),
             'state' => $location->getState(),
             'countryCode' => $location->getCountryCode(),
+            'timezone' => $location->getTimezone() ?? 'auto',
             'notes' => $location->getNotes(),
             'email' => $location->getEmail(),
             'phoneNumber' => $location->getPhoneNumber(),
@@ -232,6 +233,9 @@ class LocationController extends AbstractRestController
         $entity->setCity($data['city'] ?? null);
         $entity->setState($data['state'] ?? null);
         $entity->setCountryCode($data['countryCode'] ?? null);
+        if (array_key_exists('timezone', $data)) {
+            $entity->setTimezone($data['timezone']);
+        }
         $entity->setNotes($data['notes'] ?? null);
         $entity->setEmail($data['email'] ?? null);
         $entity->setPhoneNumber($data['phoneNumber'] ?? null);

@@ -117,6 +117,38 @@ services:
             - '%sulu_event.default_type%'
         public: true
 
+    # Selects of the event form (status, attendance mode, time zone, languages)
+    sulu_event.status_select:
+        class: Manuxi\SuluEventBundle\Service\EventStatusSelect
+        arguments:
+            - '@translator'
+        public: true
+
+    sulu_event.attendance_mode_select:
+        class: Manuxi\SuluEventBundle\Service\AttendanceModeSelect
+        arguments:
+            - '@translator'
+        public: true
+
+    sulu_event.timezone_select:
+        class: Manuxi\SuluEventBundle\Service\TimezoneSelect
+        arguments:
+            - '@translator'
+        public: true
+
+    sulu_event.language_select:
+        class: Manuxi\SuluEventBundle\Service\LanguageSelect
+        arguments:
+            - '@translator'
+        public: true
+
+    # Time zone of an event: its own, the one of the location, the configured one
+    sulu_event.timezone_resolver:
+        class: Manuxi\SuluEventBundle\Service\EventTimezoneResolver
+        arguments:
+            - '%sulu_event.timezone%'
+        public: true
+
     sulu_event.webspace_selector:
         class: Manuxi\SuluEventBundle\Service\WebspaceSelector
         arguments:
@@ -371,5 +403,7 @@ services:
             - '@translator'
             - '@sulu_event.type_selection'
             - '@sulu_media.media_manager'
+            - '@sulu_event.status_select'
+            - '@sulu_event.attendance_mode_select'
         tags:
             - { name: sulu_content.normalizer }

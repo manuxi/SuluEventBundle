@@ -18,6 +18,7 @@
         <field name="city" type="string" length="255" nullable="true"/>
         <field name="state" type="string" length="255" nullable="true"/>
         <field name="countryCode" type="string" length="255" nullable="true" column="country_code"/>
+        <field name="timezone" type="string" length="64" nullable="true" column="timezone"/>
         <field name="notes" type="text" nullable="true"/>
         <field name="email" type="string" length="255" nullable="true"/>
         <field name="phoneNumber" type="string" length="50" nullable="true" column="phone_number"/>

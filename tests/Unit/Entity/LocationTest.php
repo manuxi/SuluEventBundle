@@ -92,6 +92,29 @@ class LocationTest extends TestCase
         $this->assertSame($image, $this->location->getImage());
     }
 
+    public function testTimezone(): void
+    {
+        $this->assertNull($this->location->getTimezone());
+        $this->assertSame($this->location, $this->location->setTimezone(' America/Los_Angeles '));
+        $this->assertSame('America/Los_Angeles', $this->location->getTimezone());
+
+        // "auto" is what the form shows for none
+        $this->location->setTimezone('auto');
+        $this->assertNull($this->location->getTimezone());
+
+        $this->location->setTimezone('Asia/Tokyo');
+        $this->location->setTimezone('');
+        $this->assertNull($this->location->getTimezone());
+    }
+
+    public function testTimezoneMustBeAnIanaName(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('"Mars/Base" is not a valid IANA time zone');
+
+        $this->location->setTimezone('Mars/Base');
+    }
+
     public function testResourceKeyConstants(): void
     {
         $this->assertEquals('locations', Location::RESOURCE_KEY);

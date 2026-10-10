@@ -53,6 +53,7 @@ class EventDimensionContent implements DimensionContentInterface, ExcerptInterfa
     use WorkflowTrait;
     use AuditableTrait;
     use LinkTrait;
+    use EventDetailsTrait;
 
     protected ?int $id = null;
 
@@ -358,6 +359,7 @@ class EventDimensionContent implements DimensionContentInterface, ExcerptInterfa
         $this->speaker = $dimensionContent->speaker;
         $this->showAuthor = $dimensionContent->showAuthor;
         $this->showDate = $dimensionContent->showDate;
+        $this->copyDetailsFrom($dimensionContent);
         $this->author = $dimensionContent->author;
         $this->authored = $dimensionContent->authored;
 
@@ -404,6 +406,19 @@ class EventDimensionContent implements DimensionContentInterface, ExcerptInterfa
                 $this->endDate = null;
             }
             $templateData['endDate'] = $this->endDate?->format('Y-m-d\TH:i:s');
+        }
+
+        $this->applyUnlocalizedDetails($templateData);
+        $this->applyLocalizedDetails($templateData);
+
+        if ($this->allDay) {
+            $this->normalizeAllDayTimes();
+            if (null !== $this->startDate) {
+                $templateData['startDate'] = $this->startDate->format('Y-m-d\TH:i:s');
+            }
+            if (null !== $this->endDate) {
+                $templateData['endDate'] = $this->endDate->format('Y-m-d\TH:i:s');
+            }
         }
 
         if (\array_key_exists('email', $templateData)) {

@@ -6,7 +6,10 @@ namespace Manuxi\SuluEventBundle\Content\Normalizer;
 
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
+use Manuxi\SuluEventBundle\Service\AttendanceModeSelect;
+use Manuxi\SuluEventBundle\Service\EventStatusSelect;
 use Manuxi\SuluEventBundle\Service\EventTypeSelect;
+use Manuxi\SuluEventBundle\Service\TimezoneSelect;
 use Sulu\Bundle\MediaBundle\Media\Manager\MediaManagerInterface;
 use Sulu\Content\Application\ContentNormalizer\Normalizer\NormalizerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -17,6 +20,8 @@ class EventNormalizer implements NormalizerInterface
         private TranslatorInterface $translator,
         private EventTypeSelect $eventTypeSelect,
         private MediaManagerInterface $mediaManager,
+        private EventStatusSelect $eventStatusSelect,
+        private AttendanceModeSelect $attendanceModeSelect,
     ) {
     }
 
@@ -74,6 +79,15 @@ class EventNormalizer implements NormalizerInterface
         // Type
         $type = $object->getType() ?? 'default';
         $normalizedData['typeName'] = $this->eventTypeSelect->getTypeName($type);
+
+        // Status, attendance mode and the other details. The form shows "auto" for "no own time zone".
+        $normalizedData['allDay'] = $object->getAllDay();
+        $normalizedData['timezone'] = $object->getTimezone() ?? TimezoneSelect::AUTO;
+        $normalizedData['status'] = $object->getStatus();
+        $normalizedData['statusName'] = $this->eventStatusSelect->getName($object->getStatus());
+        $normalizedData['attendanceMode'] = $object->getAttendanceMode();
+        $normalizedData['attendanceModeName'] = $this->attendanceModeSelect->getName($object->getAttendanceMode());
+        $normalizedData['languages'] = $object->getLanguages() ?? [];
 
         // Location
         $location = $object->getLocation();

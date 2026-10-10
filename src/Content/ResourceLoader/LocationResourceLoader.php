@@ -45,6 +45,7 @@ class LocationResourceLoader implements ResourceLoaderInterface
                 'city' => $location->getCity(),
                 'state' => $location->getState(),
                 'countryCode' => $location->getCountryCode(),
+                'timezone' => $location->getTimezone(),
                 'notes' => $location->getNotes(),
                 'email' => $location->getEmail(),
                 'phoneNumber' => $location->getPhoneNumber(),

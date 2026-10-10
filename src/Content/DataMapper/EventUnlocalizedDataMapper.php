@@ -38,6 +38,7 @@ class EventUnlocalizedDataMapper implements DataMapperInterface
         $this->mapLocation($unlocalizedDimensionContent, $localizedDimensionContent, $data);
         $this->mapType($unlocalizedDimensionContent, $localizedDimensionContent, $data);
         $this->mapDates($unlocalizedDimensionContent, $localizedDimensionContent, $data);
+        $this->mapDetails($unlocalizedDimensionContent, $localizedDimensionContent, $data);
         $this->mapContactInfo($unlocalizedDimensionContent, $localizedDimensionContent, $data);
         $this->mapImage($unlocalizedDimensionContent, $localizedDimensionContent, $data);
         $this->mapAuthor($localizedDimensionContent, $data);
@@ -322,6 +323,24 @@ class EventUnlocalizedDataMapper implements DataMapperInterface
             $unlocalizedContent->setEndDate($endDate);
             $localizedContent->setEndDate($endDate);
         }
+    }
+
+    /**
+     * Time zone, status, attendance mode, all-day flag, online and ticket links, price, organizer and languages.
+     * Like the dates they are the same in all locales (except the price info) and only taken over if present.
+     */
+    private function mapDetails(
+        EventDimensionContent $unlocalizedContent,
+        EventDimensionContent $localizedContent,
+        array $data
+    ): void {
+        $unlocalizedContent->applyUnlocalizedDetails($data);
+        $localizedContent->applyUnlocalizedDetails($data);
+        $localizedContent->applyLocalizedDetails($data);
+
+        // all-day events cover whole days; also when only the flag was sent for already saved dates
+        $unlocalizedContent->normalizeAllDayTimes();
+        $localizedContent->normalizeAllDayTimes();
     }
 
     private function mapContactInfo(

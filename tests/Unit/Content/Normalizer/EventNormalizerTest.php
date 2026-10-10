@@ -8,6 +8,8 @@ use Manuxi\SuluEventBundle\Content\Normalizer\EventNormalizer;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
 use Manuxi\SuluEventBundle\Entity\Location;
+use Manuxi\SuluEventBundle\Service\AttendanceModeSelect;
+use Manuxi\SuluEventBundle\Service\EventStatusSelect;
 use Manuxi\SuluEventBundle\Service\EventTypeSelect;
 use PHPUnit\Framework\TestCase;
 use Sulu\Bundle\MediaBundle\Api\Media as ApiMedia;
@@ -20,6 +22,8 @@ class EventNormalizerTest extends TestCase
     private $translator;
     private $eventTypeSelect;
     private $mediaManager;
+    private $statusSelect;
+    private $attendanceModeSelect;
 
     protected function setUp(): void
     {
@@ -30,11 +34,64 @@ class EventNormalizerTest extends TestCase
         $this->eventTypeSelect->method('getTypeName')->willReturn('Test Type');
 
         $this->mediaManager = $this->createMock(MediaManagerInterface::class);
+
+        $this->statusSelect = $this->createStub(EventStatusSelect::class);
+        $this->statusSelect->method('getName')->willReturnCallback(static fn (string $key): string => 'status:'.$key);
+        $this->attendanceModeSelect = $this->createStub(AttendanceModeSelect::class);
+        $this->attendanceModeSelect->method('getName')->willReturnCallback(static fn (string $key): string => 'mode:'.$key);
+    }
+
+    private function createNormalizer(): EventNormalizer
+    {
+        return new EventNormalizer(
+            $this->translator,
+            $this->eventTypeSelect,
+            $this->mediaManager,
+            $this->statusSelect,
+            $this->attendanceModeSelect,
+        );
+    }
+
+    public function testEnhanceExposesTheEventDetailsForTheForm(): void
+    {
+        $event = new Event('019bf796-423c-7e1f-969c-5c4ece5e9b73');
+        $content = new EventDimensionContent($event);
+        $content->setLocale('de');
+        $content->setAllDay(true);
+        $content->setTimezone('America/Los_Angeles');
+        $content->setStatus('cancelled');
+        $content->setAttendanceMode('mixed');
+        $content->setLanguages(['de', 'en']);
+
+        $result = $this->createNormalizer()->enhance($content, []);
+
+        $this->assertTrue($result['allDay']);
+        $this->assertSame('America/Los_Angeles', $result['timezone']);
+        $this->assertSame('cancelled', $result['status']);
+        $this->assertSame('status:cancelled', $result['statusName']);
+        $this->assertSame('mixed', $result['attendanceMode']);
+        $this->assertSame('mode:mixed', $result['attendanceModeName']);
+        $this->assertSame(['de', 'en'], $result['languages']);
+    }
+
+    public function testEnhanceShowsAutoForAnEventWithoutOwnTimezoneAndTheDefaults(): void
+    {
+        $event = new Event('019bf796-423c-7e1f-969c-5c4ece5e9b73');
+        $content = new EventDimensionContent($event);
+        $content->setLocale('de');
+
+        $result = $this->createNormalizer()->enhance($content, []);
+
+        $this->assertFalse($result['allDay']);
+        $this->assertSame('auto', $result['timezone']);
+        $this->assertSame('scheduled', $result['status']);
+        $this->assertSame('offline', $result['attendanceMode']);
+        $this->assertSame([], $result['languages']);
     }
 
     public function testEnhanceLocationId(): void
     {
-        $normalizer = new EventNormalizer($this->translator, $this->eventTypeSelect, $this->mediaManager);
+        $normalizer = $this->createNormalizer();
         $event = $this->createMock(Event::class);
         $event->method('getUuid')->willReturn('019bf796-423c-7e1f-969c-5c4ece5e9b73');
 
@@ -55,7 +112,7 @@ class EventNormalizerTest extends TestCase
 
     public function testEnhanceNoLocation(): void
     {
-        $normalizer = new EventNormalizer($this->translator, $this->eventTypeSelect, $this->mediaManager);
+        $normalizer = $this->createNormalizer();
         $event = $this->createMock(Event::class);
         $event->method('getUuid')->willReturn('019bf796-423c-7e1f-969c-5c4ece5e9b73');
 
@@ -92,7 +149,7 @@ class EventNormalizerTest extends TestCase
         $dimensionContent->method('getLocale')->willReturn('de');
         $dimensionContent->method('getImage')->willReturn($image);
 
-        $normalizer = new EventNormalizer($this->translator, $this->eventTypeSelect, $this->mediaManager);
+        $normalizer = $this->createNormalizer();
         $result = $normalizer->enhance($dimensionContent, []);
 
         $this->assertSame([
