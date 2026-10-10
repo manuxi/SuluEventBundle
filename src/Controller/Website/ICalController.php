@@ -7,6 +7,7 @@ namespace Manuxi\SuluEventBundle\Controller\Website;
 use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
 use Manuxi\SuluEventBundle\Service\ICalGenerator;
+use Manuxi\SuluEventBundle\Service\RequestParameters;
 use Sulu\Content\Application\ContentAggregator\ContentAggregatorInterface;
 use Sulu\Content\Domain\Exception\ContentNotFoundException;
 use Sulu\Content\Domain\Model\DimensionContentInterface;
@@ -34,9 +35,13 @@ class ICalController extends AbstractController
     public function feedAction(Request $request, string $_locale): Response
     {
         $filters = [
-            'locale'     => $_locale,
-            'categories' => $request->query->all('categories'),
-            'tags'       => $request->query->all('tags'),
+            'locale'          => $_locale,
+            'categories'      => RequestParameters::getList($request, 'categories'),
+            'tags'            => RequestParameters::getList($request, 'tags'),
+            'types'           => RequestParameters::getList($request, 'types'),
+            'attendanceModes' => RequestParameters::getList($request, 'attendanceMode'),
+            'countries'       => RequestParameters::getList($request, 'country'),
+            'free'            => RequestParameters::getFlag($request, 'free'),
         ];
 
         $ical = $this->icalGenerator->generate($filters, $_locale);

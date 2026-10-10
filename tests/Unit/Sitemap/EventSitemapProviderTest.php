@@ -107,6 +107,68 @@ class EventSitemapProviderTest extends TestCase
         $this->assertEquals('events', $this->provider->getAlias());
     }
 
+    public function testPastEventsStayInTheSitemapByDefault(): void
+    {
+        $queryBuilder = $this->prepareCountQuery();
+        $conditions = [];
+        $queryBuilder->method('andWhere')->willReturnCallback(function (string $condition) use (&$conditions, $queryBuilder) {
+            $conditions[] = $condition;
+
+            return $queryBuilder;
+        });
+
+        $this->provider->getMaxPage('http', 'localhost');
+
+        $this->assertNotSame([], $conditions);
+        foreach ($conditions as $condition) {
+            $this->assertStringNotContainsString('sitemapPastLimit', $condition);
+        }
+    }
+
+    public function testPastEventsCanBeLeftOutAfterSomeDays(): void
+    {
+        $provider = new EventSitemapProvider($this->entityManager, $this->webspaceManager, 'dev', 30);
+        $queryBuilder = $this->prepareCountQuery();
+
+        $conditions = [];
+        $queryBuilder->method('andWhere')->willReturnCallback(function (string $condition) use (&$conditions, $queryBuilder) {
+            $conditions[] = $condition;
+
+            return $queryBuilder;
+        });
+        $limits = [];
+        $queryBuilder->method('setParameter')->willReturnCallback(function (string $name, mixed $value) use (&$limits, $queryBuilder) {
+            $limits[$name] = $value;
+
+            return $queryBuilder;
+        });
+
+        $provider->getMaxPage('http', 'localhost');
+
+        $this->assertContains(
+            'dimensionContent.startDate IS NULL OR COALESCE(dimensionContent.endDate, dimensionContent.startDate) >= :sitemapPastLimit',
+            $conditions
+        );
+        $this->assertEquals(new \DateTimeImmutable('today -30 days'), $limits['sitemapPastLimit']);
+    }
+
+    private function prepareCountQuery(): QueryBuilder&\PHPUnit\Framework\MockObject\MockObject
+    {
+        $portalInfo = $this->createMock(PortalInformation::class);
+        $portalInfo->method('getLocale')->willReturn('en');
+        $this->webspaceManager->method('findPortalInformationsByHostIncludingSubdomains')->willReturn([$portalInfo]);
+
+        $query = $this->createMock(Query::class);
+        $query->method('getSingleScalarResult')->willReturn(1);
+        $queryBuilder = $this->createMock(QueryBuilder::class);
+        $queryBuilder->method('leftJoin')->willReturnSelf();
+        $queryBuilder->method('select')->willReturnSelf();
+        $queryBuilder->method('getQuery')->willReturn($query);
+        $this->repository->method('createQueryBuilder')->willReturn($queryBuilder);
+
+        return $queryBuilder;
+    }
+
     public function testGetMaxPage(): void
     {
         $portalInfo = $this->createMock(PortalInformation::class);

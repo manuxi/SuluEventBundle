@@ -94,7 +94,7 @@ class EventTypeSelect
      * Get translated name for a type
      * Falls back to default type if type not found.
      */
-    public function getTypeName(string $type): string
+    public function getTypeName(string $type, ?string $locale = null): string
     {
         if (!isset($this->types[$type])) {
             $type = $this->defaultType;
@@ -104,7 +104,7 @@ class EventTypeSelect
             return 'Default';
         }
 
-        return $this->translator->trans($this->types[$type]['name'], [], 'admin');
+        return $this->translator->trans($this->types[$type]['name'], [], 'admin', $locale);
     }
 
     /**

@@ -4,77 +4,13 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Tests\Integration\Repository;
 
-use Doctrine\Common\EventManager;
-use Doctrine\DBAL\DriverManager;
-use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\Events;
-use Doctrine\ORM\Mapping\Driver\AttributeDriver;
-use Doctrine\ORM\Mapping\Driver\SimplifiedXmlDriver;
-use Doctrine\ORM\ORMSetup;
-use Doctrine\ORM\Tools\ResolveTargetEntityListener;
-use Doctrine\ORM\Tools\SchemaTool;
-use Doctrine\Persistence\ManagerRegistry;
-use Doctrine\Persistence\Mapping\Driver\MappingDriverChain;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
-use Manuxi\SuluEventBundle\Entity\EventRecurrence;
-use Manuxi\SuluEventBundle\Entity\EventSocialSettings;
-use Manuxi\SuluEventBundle\Entity\Location;
-use Manuxi\SuluEventBundle\Repository\EventRepository;
-use Manuxi\SuluEventBundle\Tests\Integration\Stub\StubCategory;
-use Manuxi\SuluEventBundle\Tests\Integration\Stub\StubEntity;
-use Manuxi\SuluEventBundle\Tests\Integration\Stub\StubTag;
-use PHPUnit\Framework\TestCase;
+use Manuxi\SuluEventBundle\Tests\Integration\AbstractEventDatabaseTestCase;
 use Sulu\Content\Domain\Model\DimensionContentInterface;
-use Sulu\Content\Infrastructure\Doctrine\DimensionContentQueryEnhancer;
 
-/**
- * Runs the real mapping of the bundle against an in-memory SQLite database. The Sulu entities the mapping only
- * references (user, media, contact, route, category, tag) are replaced by small stubs.
- */
-class EventRepositoryFeedFilterTest extends TestCase
+class EventRepositoryFeedFilterTest extends AbstractEventDatabaseTestCase
 {
-    private EntityManager $entityManager;
-    private EventRepository $repository;
-
-    /** @var array<string, StubCategory> */
-    private array $categories = [];
-
-    /** @var array<string, StubTag> */
-    private array $tags = [];
-
-    /** @var array<string, Location> */
-    private array $locations = [];
-
-    protected function setUp(): void
-    {
-        $this->entityManager = $this->createEntityManager();
-
-        $registry = $this->createStub(ManagerRegistry::class);
-        $registry->method('getManagerForClass')->willReturn($this->entityManager);
-
-        $this->repository = new EventRepository($registry, $this->createStub(DimensionContentQueryEnhancer::class));
-
-        foreach (['ai', 'games', 'web'] as $key) {
-            $this->categories[$key] = new StubCategory();
-            $this->entityManager->persist($this->categories[$key]);
-        }
-
-        foreach (['symfony', 'llm'] as $name) {
-            $this->tags[$name] = new StubTag($name);
-            $this->entityManager->persist($this->tags[$name]);
-        }
-
-        foreach (['Messe Berlin', 'Online'] as $name) {
-            $location = new Location();
-            $location->setName($name);
-            $this->entityManager->persist($location);
-            $this->locations[$name] = $location;
-        }
-
-        $this->entityManager->flush();
-    }
-
     public function testIcalWithoutFiltersReturnsEveryLiveEventOfTheLocale(): void
     {
         $this->createEvent('a', 'de', '2027-03-01 10:00:00');
@@ -216,6 +152,70 @@ class EventRepositoryFeedFilterTest extends TestCase
         $this->assertSame(['b', 'a'], $this->uuids($this->repository->findForCalendar(['locale' => 'de'])));
     }
 
+    public function testFiltersByType(): void
+    {
+        $this->createEvent('conf', 'de', '2027-03-01 10:00:00', type: 'conference');
+        $this->createEvent('fair', 'de', '2027-03-02 10:00:00', type: 'trade_fair');
+        $this->createEvent('meetup', 'de', '2027-03-03 10:00:00', type: 'meetup');
+
+        $this->assertSame(['conf', 'meetup'], $this->uuids($this->repository->findForIcal(['locale' => 'de', 'types' => ['conference', 'meetup']])));
+        $this->assertSame(['fair'], $this->uuids($this->repository->findForCalendar(['locale' => 'de', 'types' => ['trade_fair']])));
+        $this->assertSame([], $this->repository->findForIcal(['locale' => 'de', 'types' => ['']]));
+    }
+
+    public function testFiltersByAttendanceMode(): void
+    {
+        $this->createEvent('onsite', 'de', '2027-03-01 10:00:00', attendanceMode: 'offline');
+        $this->createEvent('stream', 'de', '2027-03-02 10:00:00', attendanceMode: 'online');
+        $this->createEvent('both', 'de', '2027-03-03 10:00:00', attendanceMode: 'mixed');
+
+        $this->assertSame(['stream'], $this->uuids($this->repository->findForIcal(['locale' => 'de', 'attendanceModes' => ['online']])));
+        $this->assertSame(['stream', 'both'], $this->uuids($this->repository->findForCalendar(['locale' => 'de', 'attendanceModes' => ['online', 'mixed']])));
+        // an unknown mode matches nothing, valid ones next to it still count
+        $this->assertSame([], $this->repository->findForIcal(['locale' => 'de', 'attendanceModes' => ['hybrid']]));
+        $this->assertSame(['stream'], $this->uuids($this->repository->findForIcal(['locale' => 'de', 'attendanceModes' => ['hybrid', 'online']])));
+    }
+
+    public function testFiltersByCountryOfTheLocation(): void
+    {
+        $this->createEvent('berlin', 'de', '2027-03-01 10:00:00', location: 'Messe Berlin');
+        $this->createEvent('vegas', 'de', '2027-03-02 10:00:00', location: 'Convention Center');
+        $this->createEvent('stream', 'de', '2027-03-03 10:00:00', location: 'Online');
+        $this->createEvent('nowhere', 'de', '2027-03-04 10:00:00');
+
+        // codes are compared case-insensitively
+        $this->assertSame(['berlin'], $this->uuids($this->repository->findForIcal(['locale' => 'de', 'countries' => ['de']])));
+        $this->assertSame(['berlin', 'vegas'], $this->uuids($this->repository->findForCalendar(['locale' => 'de', 'countries' => ['DE', 'US']])));
+        $this->assertSame([], $this->repository->findForIcal(['locale' => 'de', 'countries' => ['Germany']]));
+    }
+
+    public function testFreeFilterOnlyKeepsFreeEvents(): void
+    {
+        $this->createEvent('free', 'de', '2027-03-01 10:00:00', isFree: true);
+        $this->createEvent('paid', 'de', '2027-03-02 10:00:00', isFree: false);
+        $this->createEvent('unknown', 'de', '2027-03-03 10:00:00');
+
+        $this->assertSame(['free'], $this->uuids($this->repository->findForIcal(['locale' => 'de', 'free' => true])));
+        $this->assertSame(['free', 'paid', 'unknown'], $this->uuids($this->repository->findForIcal(['locale' => 'de', 'free' => false])));
+    }
+
+    public function testDetailFiltersCombineWithCategories(): void
+    {
+        $this->createEvent('a', 'de', '2027-03-01 10:00:00', categories: ['ai'], type: 'conference', attendanceMode: 'online', isFree: true);
+        $this->createEvent('b', 'de', '2027-03-02 10:00:00', categories: ['ai'], type: 'conference', attendanceMode: 'offline', isFree: true);
+        $this->createEvent('c', 'de', '2027-03-03 10:00:00', categories: ['games'], type: 'conference', attendanceMode: 'online', isFree: true);
+
+        $events = $this->repository->findForIcal([
+            'locale' => 'de',
+            'categories' => [$this->categories['ai']->getId()],
+            'types' => ['conference'],
+            'attendanceModes' => ['online'],
+            'free' => true,
+        ]);
+
+        $this->assertSame(['a'], $this->uuids($events));
+    }
+
     public function testFeedEventsCarryAllTheirDimensionContents(): void
     {
         // the content aggregator needs the complete, already loaded collection (it throws in debug mode otherwise)
@@ -241,97 +241,4 @@ class EventRepositoryFeedFilterTest extends TestCase
         }
     }
 
-    /**
-     * @param string[] $categories
-     * @param string[] $tags
-     */
-    private function createEvent(
-        string $uuid,
-        string $locale,
-        string $start,
-        ?string $end = null,
-        array $categories = [],
-        array $tags = [],
-        ?string $location = null,
-        string $stage = DimensionContentInterface::STAGE_LIVE,
-    ): void {
-        $event = new Event($uuid);
-
-        $content = new EventDimensionContent($event);
-        $content->setStage($stage);
-        $content->setLocale($locale);
-        $content->setTitle('Event ' . $uuid);
-        $content->setStartDate(new \DateTimeImmutable($start));
-        $content->setEndDate(null === $end ? null : new \DateTimeImmutable($end));
-        $content->setExcerptCategories(array_map(fn (string $key) => $this->categories[$key], $categories));
-        $content->setExcerptTags(array_map(fn (string $name) => $this->tags[$name], $tags));
-        if (null !== $location) {
-            $content->setLocation($this->locations[$location]);
-        }
-
-        $event->addDimensionContent($content);
-
-        $this->entityManager->persist($event);
-        $this->entityManager->flush();
-    }
-
-    /**
-     * @param Event[] $events
-     *
-     * @return string[]
-     */
-    private function uuids(array $events): array
-    {
-        return array_map(static fn (Event $event) => $event->getUuid(), $events);
-    }
-
-    private function createEntityManager(): EntityManager
-    {
-        $xmlDriver  = new SimplifiedXmlDriver([__DIR__ . '/../../../src/Resources/config/doctrine' => 'Manuxi\SuluEventBundle\Entity']);
-        $stubDriver = new AttributeDriver([__DIR__ . '/../Stub']);
-
-        $driverChain = new MappingDriverChain();
-        $driverChain->addDriver($xmlDriver, 'Manuxi\SuluEventBundle\Entity');
-        $driverChain->addDriver($stubDriver, 'Manuxi\SuluEventBundle\Tests\Integration\Stub');
-
-        $config = ORMSetup::createConfiguration(true);
-        $config->setMetadataDriverImpl($driverChain);
-
-        $resolver = new ResolveTargetEntityListener();
-        foreach ([
-            'Sulu\Bundle\SecurityBundle\Entity\User',
-            'Sulu\Component\Security\Authentication\UserInterface',
-            'Sulu\Bundle\MediaBundle\Entity\Media',
-            'Sulu\Bundle\MediaBundle\Entity\MediaInterface',
-            'Sulu\Bundle\ContactBundle\Entity\ContactInterface',
-            'Sulu\Route\Domain\Model\Route',
-        ] as $referenced) {
-            $resolver->addResolveTargetEntity($referenced, StubEntity::class, []);
-        }
-        $resolver->addResolveTargetEntity('Sulu\Bundle\CategoryBundle\Entity\CategoryInterface', StubCategory::class, []);
-        $resolver->addResolveTargetEntity('Sulu\Bundle\TagBundle\Tag\TagInterface', StubTag::class, []);
-
-        $eventManager = new EventManager();
-        $eventManager->addEventListener(Events::loadClassMetadata, $resolver);
-
-        $connection    = DriverManager::getConnection(['driver' => 'pdo_sqlite', 'memory' => true], $config);
-        $entityManager = new EntityManager($connection, $config, $eventManager);
-
-        $metadata = array_map(
-            [$entityManager->getMetadataFactory(), 'getMetadataFor'],
-            [
-                Event::class,
-                EventDimensionContent::class,
-                Location::class,
-                EventSocialSettings::class,
-                EventRecurrence::class,
-                StubEntity::class,
-                StubCategory::class,
-                StubTag::class,
-            ]
-        );
-        (new SchemaTool($entityManager))->createSchema($metadata);
-
-        return $entityManager;
-    }
 }

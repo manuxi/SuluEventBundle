@@ -10,6 +10,7 @@ use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
 use Manuxi\SuluEventBundle\Service\EventTimezoneResolver;
 use Manuxi\SuluEventBundle\Service\EventTypeSelect;
+use Manuxi\SuluEventBundle\Service\EventUrlResolver;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Sulu\Component\Webspace\Manager\WebspaceManagerInterface;
@@ -35,7 +36,7 @@ class CalendarApiControllerTest extends TestCase
         $eventTypeSelect->method('getColor')->willReturn('#0d6efd');
         $eventTypeSelect->method('getTypeName')->willReturn('Conference');
 
-        $this->controller = new CalendarApiController($this->eventRepository, $eventTypeSelect, $this->contentAggregator, $this->webspaceManager, new EventTimezoneResolver('Europe/Berlin'));
+        $this->controller = new CalendarApiController($this->eventRepository, $eventTypeSelect, $this->contentAggregator, new EventUrlResolver($this->webspaceManager), new EventTimezoneResolver('Europe/Berlin'));
         $this->controller->setContainer(new Container());
     }
 
@@ -46,7 +47,11 @@ class CalendarApiControllerTest extends TestCase
             ->with($this->callback(function (array $filters): bool {
                 $this->assertSame('de', $filters['locale']);
                 $this->assertSame(['12', 'abc', '15'], $filters['categories']);
-                $this->assertSame(['Symfony', '', 'Unreal Engine'], $filters['tags']);
+                $this->assertSame(['Symfony', 'Unreal Engine'], $filters['tags']);
+                $this->assertSame(['conference', 'meetup'], $filters['types']);
+                $this->assertSame(['online', 'mixed'], $filters['attendanceModes']);
+                $this->assertSame(['DE', 'US'], $filters['countries']);
+                $this->assertTrue($filters['free']);
                 $this->assertSame('Messe & Halle', $filters['location']);
                 $this->assertSame('2027-03-01 00:00:00', $filters['start']);
                 $this->assertSame('2027-04-01 00:00:00', $filters['end']);
@@ -59,6 +64,10 @@ class CalendarApiControllerTest extends TestCase
             'categories' => ['12', 'abc', '15'],
             'tags'       => ['Symfony', '', ' Unreal Engine '],
             'location'   => 'Messe & Halle',
+            'types'      => 'conference,meetup',
+            'attendanceMode' => ['online', 'mixed'],
+            'country'    => 'DE, US',
+            'free'       => '1',
             'start'      => '2027-03-01',
             'end'        => '2027-04-01',
         ]);
@@ -76,6 +85,8 @@ class CalendarApiControllerTest extends TestCase
                 $this->assertSame([], $filters['categories']);
                 $this->assertSame([], $filters['tags']);
                 $this->assertNull($filters['location']);
+                $this->assertSame([], $filters['types']);
+                $this->assertFalse($filters['free']);
 
                 return true;
             }))

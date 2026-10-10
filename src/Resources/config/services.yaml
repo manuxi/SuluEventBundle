@@ -92,6 +92,7 @@ services:
             - '@doctrine.orm.entity_manager'
             - '@translator.default'
             - '%sulu_event.types%'
+            - '@request_stack'
         tags:
             - { name: sulu_content.smart_content_provider, type: events }
 
@@ -141,6 +142,50 @@ services:
         arguments:
             - '@translator'
         public: true
+
+    # Absolute urls of event pages through the webspace manager
+    sulu_event.url_resolver:
+        class: Manuxi\SuluEventBundle\Service\EventUrlResolver
+        arguments:
+            - '@sulu_core.webspace.webspace_manager'
+        public: true
+
+    # Values for a filter bar (topics, types, countries, ways to take part, free), cached per locale
+    sulu_event.filter_options:
+        class: Manuxi\SuluEventBundle\Service\EventFilterOptions
+        arguments:
+            - '@doctrine.orm.entity_manager'
+            - '@sulu_event.type_selection'
+            - '@translator'
+            - '%sulu_event.category_root%'
+            - '@?cache.app.taggable'
+        public: true
+
+    sulu_event.filter_options_cache_listener:
+        class: Manuxi\SuluEventBundle\Service\FilterOptionsCacheListener
+        arguments:
+            - '@sulu_event.filter_options'
+        tags:
+            - { name: kernel.event_subscriber }
+
+    # schema.org Event as an array
+    sulu_event.schema_builder:
+        class: Manuxi\SuluEventBundle\Service\EventSchemaBuilder
+        arguments:
+            - '@sulu_event.timezone_resolver'
+            - '@sulu_event.url_resolver'
+            - '@sulu_media.media_manager'
+            - '@request_stack'
+        public: true
+
+    sulu_event.output_twig_extension:
+        class: Manuxi\SuluEventBundle\Twig\EventOutputTwigExtension
+        arguments:
+            - '@sulu_event.filter_options'
+            - '@sulu_event.schema_builder'
+            - '@sulu_event.timezone_resolver'
+        tags:
+            - { name: twig.extension }
 
     # Time zone of an event: its own, the one of the location, the configured one
     sulu_event.timezone_resolver:
@@ -292,6 +337,7 @@ services:
             - '@doctrine.orm.entity_manager'
             - '@sulu_core.webspace.webspace_manager'
             - '%kernel.environment%'
+            - '%sulu_event.sitemap.hide_past_after_days%'
         tags:
             - { name: sulu.sitemap.provider }
 

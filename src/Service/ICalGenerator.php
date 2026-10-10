@@ -10,7 +10,6 @@ use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
 use Manuxi\SuluEventBundle\Entity\EventStatus;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
 use Sabre\VObject\Component\VCalendar;
-use Sulu\Component\Webspace\Manager\WebspaceManagerInterface;
 use Sulu\Content\Application\ContentAggregator\ContentAggregatorInterface;
 use Sulu\Content\Domain\Exception\ContentNotFoundException;
 use Sulu\Content\Domain\Model\DimensionContentInterface;
@@ -30,7 +29,7 @@ class ICalGenerator
     public function __construct(
         private readonly EventRepository $eventRepository,
         private readonly ContentAggregatorInterface $contentAggregator,
-        private readonly WebspaceManagerInterface $webspaceManager,
+        private readonly EventUrlResolver $urlResolver,
         private readonly RequestStack $requestStack,
         private readonly EventTimezoneResolver $timezoneResolver,
     ) {
@@ -115,10 +114,11 @@ class ICalGenerator
         }
 
         $end = $dimensionContent->getEndDate();
-        $url = $this->findUrl($dimensionContent, $locale);
+        $url     = $this->urlResolver->findUrl($dimensionContent, $locale);
+        $siteUrl = $url ?? $this->urlResolver->findSiteUrl($dimensionContent, $locale);
 
         $vevent      = $calendar->add('VEVENT');
-        $vevent->UID = $event->getId() . '@' . $this->resolveHost($url);
+        $vevent->UID = $event->getId() . '@' . $this->resolveHost($siteUrl);
 
         $utc                       = new \DateTimeZone('UTC');
         $changed                   = $dimensionContent->getChanged()->setTimezone($utc);
@@ -161,7 +161,7 @@ class ICalGenerator
             $vevent->LOCATION = $dimensionContent->getOnlineUrl();
         }
 
-        if (null !== $url && null !== $dimensionContent->getRoute()?->getSlug()) {
+        if (null !== $url) {
             $vevent->URL = $url;
         }
 
@@ -189,21 +189,6 @@ class ICalGenerator
             EventStatus::Postponed->value => 'TENTATIVE',
             default                       => null,
         };
-    }
-
-    /**
-     * Absolute url of the event page in the webspace of the event and the given locale.
-     */
-    private function findUrl(EventDimensionContent $dimensionContent, string $locale): ?string
-    {
-        $slug = $dimensionContent->getRoute()?->getSlug();
-
-        return $this->webspaceManager->findUrlByResourceLocator(
-            $slug ?? '/',
-            null,
-            $locale,
-            $dimensionContent->getMainWebspace(),
-        );
     }
 
     /**

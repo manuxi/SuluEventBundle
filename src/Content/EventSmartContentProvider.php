@@ -7,8 +7,11 @@ namespace Manuxi\SuluEventBundle\Content;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use Manuxi\SuluEventBundle\Admin\EventAdmin;
+use Manuxi\SuluEventBundle\Entity\AttendanceMode;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
+use Manuxi\SuluEventBundle\Entity\Location;
+use Manuxi\SuluEventBundle\Service\RequestParameters;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
 use Sulu\Bundle\AdminBundle\SmartContent\Configuration\Builder;
 use Sulu\Bundle\AdminBundle\SmartContent\Configuration\BuilderInterface;
@@ -17,6 +20,11 @@ use Sulu\Bundle\AdminBundle\SmartContent\SmartContentProviderInterface;
 use Sulu\Bundle\AdminBundle\SmartContent\SmartContentQueryEnhancer;
 use Sulu\Content\Domain\Model\DimensionContentInterface;
 use Sulu\Content\Infrastructure\Doctrine\DimensionContentQueryEnhancer;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\Intl\Countries;
+use Symfony\Component\Intl\Exception\MissingResourceException;
+use Symfony\Contracts\Translation\LocaleAwareInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
@@ -60,6 +68,13 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  */
 class EventSmartContentProvider implements SmartContentProviderInterface
 {
+    /** Prefix of the filter values for the way to take part (in the list of types): mode:online */
+    public const MODE_PREFIX = 'mode:';
+    /** Prefix of the filter values for a country: country:DE */
+    public const COUNTRY_PREFIX = 'country:';
+    /** Filter value for free of charge events */
+    public const FREE_TYPE = 'free';
+
     /**
      * @var class-string<EventDimensionContent>
      */
@@ -76,6 +91,7 @@ class EventSmartContentProvider implements SmartContentProviderInterface
         private EntityManagerInterface $entityManager,
         private TranslatorInterface $translator,
         private array $eventTypes = [],
+        private ?RequestStack $requestStack = null,
     ) {
         $entityDimensionContentRepository = $entityManager->getRepository(EventDimensionContent::class);
         $this->eventDimensionContentClassName = $entityDimensionContentRepository->getClassName();
@@ -128,7 +144,59 @@ class EventSmartContentProvider implements SmartContentProviderInterface
             ];
         }
 
+        // ways to take part, free of charge and the countries of the locations: filters like the event types
+        foreach (AttendanceMode::values() as $mode) {
+            $types[] = [
+                'type' => self::MODE_PREFIX.$mode,
+                'title' => $this->translator->trans('sulu_event.field.attendance_mode', [], 'admin').': '
+                    .$this->translator->trans('sulu_event.attendance_mode.'.$mode, [], 'admin'),
+            ];
+        }
+
+        $types[] = [
+            'type' => self::FREE_TYPE,
+            'title' => $this->translator->trans('sulu_event.field.is_free', [], 'admin'),
+        ];
+
+        foreach ($this->findCountryCodes() as $code) {
+            $types[] = [
+                'type' => self::COUNTRY_PREFIX.$code,
+                'title' => $this->translator->trans('sulu_event.filter.country', [], 'admin').': '.$this->getCountryName($code),
+            ];
+        }
+
         return $types;
+    }
+
+    /**
+     * Country codes of all locations that are in use.
+     *
+     * @return string[]
+     */
+    private function findCountryCodes(): array
+    {
+        $codes = $this->entityManager->createQueryBuilder()
+            ->select('DISTINCT UPPER(location.countryCode)')
+            ->from(Location::class, 'location')
+            ->where('location.countryCode IS NOT NULL')
+            ->getQuery()
+            ->getSingleColumnResult();
+
+        $codes = \array_values(\array_filter($codes, static fn ($code): bool => \is_string($code) && 1 === \preg_match('/^[A-Z]{2}$/', $code)));
+        \sort($codes);
+
+        return $codes;
+    }
+
+    private function getCountryName(string $code): string
+    {
+        $locale = $this->translator instanceof LocaleAwareInterface ? $this->translator->getLocale() : 'en';
+
+        try {
+            return Countries::getName($code, $locale);
+        } catch (MissingResourceException) {
+            return $code;
+        }
     }
 
     protected function getSorting(): array
@@ -163,7 +231,8 @@ class EventSmartContentProvider implements SmartContentProviderInterface
             $filters,
             [],
         );
-        $this->addInternalFilters($queryBuilder, $filters, $alias);
+        $dimensionContentAlias = $this->addInternalFilters($queryBuilder, $filters, $alias);
+        $this->addWebsiteDetailFilters($queryBuilder, $dimensionContentAlias, $params);
 
         $queryBuilder->select('COUNT(DISTINCT '.$alias.'.uuid)');
 
@@ -201,6 +270,7 @@ class EventSmartContentProvider implements SmartContentProviderInterface
             $sortBys,
         );
         $dimensionContentAlias = $this->addInternalFilters($queryBuilder, $filters, $alias);
+        $this->addWebsiteDetailFilters($queryBuilder, $dimensionContentAlias, $params);
 
         $queryBuilder->select('DISTINCT '.$alias.'.uuid as id');
         $queryBuilder->addSelect($dimensionContentAlias.'.title');
@@ -380,6 +450,79 @@ class EventSmartContentProvider implements SmartContentProviderInterface
     }
 
     /**
+     * Ways to take part, countries and "free of charge" a website visitor picked, e.g. from the query string:
+     * ?attendanceMode=online,mixed&country=DE,AT&free=1. The names of the parameters can be changed with
+     * attendance_mode_parameter, country_parameter and free_parameter in the params of the smart content field.
+     * Several values of one kind match with OR, the kinds with AND; a list without a usable value matches nothing.
+     *
+     * @param array<string, mixed> $params
+     */
+    private function addWebsiteDetailFilters(QueryBuilder $queryBuilder, string $dimensionContentAlias, array $params): void
+    {
+        $request = $this->requestStack?->getCurrentRequest() ?? new Request();
+
+        $modeParameter = \is_string($params['attendance_mode_parameter'] ?? null) ? $params['attendance_mode_parameter'] : 'attendanceMode';
+        $countryParameter = \is_string($params['country_parameter'] ?? null) ? $params['country_parameter'] : 'country';
+        $freeParameter = \is_string($params['free_parameter'] ?? null) ? $params['free_parameter'] : 'free';
+
+        $requestedModes = RequestParameters::getList($request, $modeParameter);
+        if ([] !== $requestedModes) {
+            $this->addAttendanceModeFilter($queryBuilder, $dimensionContentAlias, $requestedModes);
+        }
+
+        $requestedCountries = RequestParameters::getList($request, $countryParameter);
+        if ([] !== $requestedCountries) {
+            $this->addCountryFilter($queryBuilder, $dimensionContentAlias, $requestedCountries);
+        }
+
+        if (RequestParameters::getFlag($request, $freeParameter)) {
+            $this->addFreeFilter($queryBuilder, $dimensionContentAlias);
+        }
+    }
+
+    /**
+     * @param string[] $modes
+     */
+    private function addAttendanceModeFilter(QueryBuilder $queryBuilder, string $alias, array $modes): void
+    {
+        $modes = \array_values(\array_intersect(\array_unique($modes), AttendanceMode::values()));
+        if ([] === $modes) {
+            $queryBuilder->andWhere('1 = 0');
+
+            return;
+        }
+
+        $queryBuilder->andWhere($alias.'.attendanceMode IN (:detailModes)')
+            ->setParameter('detailModes', $modes);
+    }
+
+    /**
+     * @param string[] $countries
+     */
+    private function addCountryFilter(QueryBuilder $queryBuilder, string $alias, array $countries): void
+    {
+        $countries = \array_values(\array_unique(\array_filter(
+            \array_map('strtoupper', $countries),
+            static fn (string $code): bool => 1 === \preg_match('/^[A-Z]{2}$/', $code)
+        )));
+        if ([] === $countries) {
+            $queryBuilder->andWhere('1 = 0');
+
+            return;
+        }
+
+        $queryBuilder->innerJoin($alias.'.location', 'detailLocation')
+            ->andWhere('UPPER(detailLocation.countryCode) IN (:detailCountries)')
+            ->setParameter('detailCountries', $countries);
+    }
+
+    private function addFreeFilter(QueryBuilder $queryBuilder, string $alias): void
+    {
+        $queryBuilder->andWhere($alias.'.isFree = :detailFree')
+            ->setParameter('detailFree', true);
+    }
+
+    /**
      * @param string[] $types
      */
     protected function addTypeFilters(QueryBuilder $queryBuilder, array $types, string $alias): void
@@ -396,6 +539,26 @@ class EventSmartContentProvider implements SmartContentProviderInterface
         if (!empty($configurableTypes)) {
             $queryBuilder->andWhere($alias.'.type IN (:eventTypes)')
                 ->setParameter('eventTypes', $configurableTypes);
+        }
+
+        $modes = [];
+        $countries = [];
+        foreach ($types as $type) {
+            if (\str_starts_with($type, self::MODE_PREFIX)) {
+                $modes[] = \substr($type, \strlen(self::MODE_PREFIX));
+            } elseif (\str_starts_with($type, self::COUNTRY_PREFIX)) {
+                $countries[] = \substr($type, \strlen(self::COUNTRY_PREFIX));
+            }
+        }
+
+        if ([] !== $modes) {
+            $this->addAttendanceModeFilter($queryBuilder, $alias, $modes);
+        }
+        if ([] !== $countries) {
+            $this->addCountryFilter($queryBuilder, $alias, $countries);
+        }
+        if (\in_array(self::FREE_TYPE, $types, true)) {
+            $this->addFreeFilter($queryBuilder, $alias);
         }
 
         if ($hasPending && $hasExpired) {

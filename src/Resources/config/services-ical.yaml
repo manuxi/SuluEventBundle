@@ -5,7 +5,7 @@ services:
         arguments:
             - '@Manuxi\SuluEventBundle\Repository\EventRepository'
             - '@sulu_content.content_aggregator'
-            - '@sulu_core.webspace.webspace_manager'
+            - '@sulu_event.url_resolver'
             - '@request_stack'
             - '@sulu_event.timezone_resolver'
 

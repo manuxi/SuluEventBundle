@@ -57,6 +57,22 @@ class Configuration implements ConfigurationInterface
                 ->info('Format for date display in list view: "default", "clock_format", "time_labels"')
             ->end()
 
+            ->scalarNode('category_root')
+                ->defaultNull()
+                ->info('Key of the root category of the event topics. The filter options (sulu_event_filter_options) list only its descendants; the category selection in the admin is not restricted.')
+            ->end()
+
+            ->arrayNode('sitemap')
+                ->addDefaultsIfNotSet()
+                ->children()
+                    ->integerNode('hide_past_after_days')
+                        ->defaultNull()
+                        ->min(0)
+                        ->info('Events that ended more than this many days ago are left out of the sitemap. Default: null (all published events stay in).')
+                    ->end()
+                ->end()
+            ->end()
+
             ->scalarNode('timezone')
                 ->defaultNull()
                 ->info('IANA timezone (e.g. "Europe/Berlin") the stored event times are meant in. Defaults to the PHP default timezone.')

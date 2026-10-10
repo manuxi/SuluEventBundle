@@ -59,6 +59,33 @@ class SuluEventExtensionTest extends TestCase
         self::assertSame('America/New_York', $container->getParameter('sulu_event.timezone'));
     }
 
+    public function testCategoryRootAndSitemapDefaultsChangeNothing(): void
+    {
+        $container = new ContainerBuilder();
+
+        (new SuluEventExtension())->load([], $container);
+
+        self::assertNull($container->getParameter('sulu_event.category_root'));
+        self::assertNull($container->getParameter('sulu_event.sitemap.hide_past_after_days'));
+    }
+
+    public function testCategoryRootAndSitemapCanBeConfigured(): void
+    {
+        $container = new ContainerBuilder();
+
+        (new SuluEventExtension())->load([['category_root' => 'event-topics', 'sitemap' => ['hide_past_after_days' => 90]]], $container);
+
+        self::assertSame('event-topics', $container->getParameter('sulu_event.category_root'));
+        self::assertSame(90, $container->getParameter('sulu_event.sitemap.hide_past_after_days'));
+    }
+
+    public function testNegativeSitemapDaysAreRejected(): void
+    {
+        $this->expectException(InvalidConfigurationException::class);
+
+        (new SuluEventExtension())->load([['sitemap' => ['hide_past_after_days' => -1]]], new ContainerBuilder());
+    }
+
     public function testInvalidTimezoneIsRejected(): void
     {
         $this->expectException(InvalidConfigurationException::class);

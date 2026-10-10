@@ -8,7 +8,8 @@ use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
 use Manuxi\SuluEventBundle\Service\EventTimezoneResolver;
 use Manuxi\SuluEventBundle\Service\EventTypeSelect;
-use Sulu\Component\Webspace\Manager\WebspaceManagerInterface;
+use Manuxi\SuluEventBundle\Service\EventUrlResolver;
+use Manuxi\SuluEventBundle\Service\RequestParameters;
 use Sulu\Content\Application\ContentAggregator\ContentAggregatorInterface;
 use Sulu\Content\Domain\Model\DimensionContentInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -23,7 +24,7 @@ class CalendarApiController extends AbstractController
         private readonly EventRepository $eventRepository,
         private readonly EventTypeSelect $eventTypeSelect,
         private readonly ContentAggregatorInterface $contentAggregator,
-        private readonly WebspaceManagerInterface $webspaceManager,
+        private readonly EventUrlResolver $urlResolver,
         private readonly EventTimezoneResolver $timezoneResolver,
     ) {
     }
@@ -69,8 +70,12 @@ class CalendarApiController extends AbstractController
             'dataId' => $request->query->get('dataId', null),
             'includeSubFolders' => $request->query->getBoolean('includeSubFolders', false),
             // the repository validates the values; a filter without any usable value matches nothing
-            'categories' => array_values(array_filter($request->query->all('categories'), 'is_scalar')),
-            'tags' => array_values(array_map('trim', array_filter($request->query->all('tags'), 'is_string'))),
+            'categories' => RequestParameters::getList($request, 'categories'),
+            'tags' => RequestParameters::getList($request, 'tags'),
+            'types' => RequestParameters::getList($request, 'types'),
+            'attendanceModes' => RequestParameters::getList($request, 'attendanceMode'),
+            'countries' => RequestParameters::getList($request, 'country'),
+            'free' => RequestParameters::getFlag($request, 'free'),
             'location' => '' !== trim((string) $request->query->get('location', ''))
                 ? trim((string) $request->query->get('location'))
                 : null,
@@ -212,6 +217,6 @@ class CalendarApiController extends AbstractController
             return '';
         }
 
-        return $this->webspaceManager->findUrlByResourceLocator($slug, null, $locale, $dimensionContent->getMainWebspace()) ?? $slug;
+        return $this->urlResolver->findUrl($dimensionContent, $locale) ?? $slug;
     }
 }

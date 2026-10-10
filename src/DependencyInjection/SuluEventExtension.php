@@ -35,6 +35,8 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
 
         $container->setParameter('sulu_event.list_date_format', $config['list_date_format']);
         $container->setParameter('sulu_event.timezone', $config['timezone']);
+        $container->setParameter('sulu_event.category_root', $config['category_root']);
+        $container->setParameter('sulu_event.sitemap.hide_past_after_days', $config['sitemap']['hide_past_after_days']);
 
         $container->setParameter(
             'sulu_event.routing.route_schema',

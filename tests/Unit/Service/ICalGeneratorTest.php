@@ -9,6 +9,7 @@ use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
 use Manuxi\SuluEventBundle\Entity\Location;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
 use Manuxi\SuluEventBundle\Service\EventTimezoneResolver;
+use Manuxi\SuluEventBundle\Service\EventUrlResolver;
 use Manuxi\SuluEventBundle\Service\ICalGenerator;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -450,7 +451,7 @@ class ICalGeneratorTest extends TestCase
             static fn (Event $event) => $byUuid[$event->getUuid()]
         );
 
-        $generator = new ICalGenerator($repository, $aggregator, $webspaceManager ?? $this->webspaceManager, $this->requestStack, new EventTimezoneResolver($timezone));
+        $generator = new ICalGenerator($repository, $aggregator, new EventUrlResolver($webspaceManager ?? $this->webspaceManager), $this->requestStack, new EventTimezoneResolver($timezone));
 
         return $generator->generate([], 'de');
     }
@@ -460,7 +461,7 @@ class ICalGeneratorTest extends TestCase
         return new ICalGenerator(
             $this->eventRepository,
             $this->contentAggregator,
-            $this->webspaceManager,
+            new EventUrlResolver($this->webspaceManager),
             $this->requestStack,
             new EventTimezoneResolver($timezone),
         );

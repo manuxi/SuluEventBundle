@@ -6,6 +6,7 @@ namespace Manuxi\SuluEventBundle\Sitemap;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Sulu\Bundle\WebsiteBundle\Sitemap\Sitemap;
 use Sulu\Bundle\WebsiteBundle\Sitemap\SitemapAlternateLink;
@@ -24,6 +25,7 @@ class EventSitemapProvider implements SitemapProviderInterface
         private EntityManagerInterface $entityManager,
         private WebspaceManagerInterface $webspaceManager,
         private string $environment,
+        private ?int $hidePastAfterDays = null,
     ) {
         $this->entityRepository = $this->entityManager->getRepository(Event::class);
     }
@@ -145,6 +147,7 @@ class EventSitemapProvider implements SitemapProviderInterface
         $queryBuilder->setParameter('hide', false);
 
         $queryBuilder->andWhere('dimensionContent.id IS NOT NULL');
+        $this->hidePastEvents($queryBuilder);
 
         $queryBuilder->select([
             'event.uuid AS uuid',
@@ -231,7 +234,24 @@ class EventSitemapProvider implements SitemapProviderInterface
         $queryBuilder->setParameter('hide', false);
 
         $queryBuilder->andWhere('dimensionContent.id IS NOT NULL');
+        $this->hidePastEvents($queryBuilder);
 
         return (int) $queryBuilder->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * Leaves out the events that ended more than the configured number of days ago (sulu_event.sitemap.hide_past_after_days).
+     * Events without a date and cancelled or postponed events of the future stay in. Nothing happens by default.
+     */
+    private function hidePastEvents(QueryBuilder $queryBuilder): void
+    {
+        if (null === $this->hidePastAfterDays) {
+            return;
+        }
+
+        $limit = (new \DateTimeImmutable('today'))->modify('-'.$this->hidePastAfterDays.' days');
+
+        $queryBuilder->andWhere('dimensionContent.startDate IS NULL OR COALESCE(dimensionContent.endDate, dimensionContent.startDate) >= :sitemapPastLimit');
+        $queryBuilder->setParameter('sitemapPastLimit', $limit);
     }
 }

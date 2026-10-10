@@ -83,7 +83,7 @@ services:
             - '@Manuxi\SuluEventBundle\Repository\EventRepository'
             - '@sulu_event.type_selection'
             - '@sulu_content.content_aggregator'
-            - '@sulu_core.webspace.webspace_manager'
+            - '@sulu_event.url_resolver'
             - '@sulu_event.timezone_resolver'
         tags:
             - { name: controller.service_arguments }

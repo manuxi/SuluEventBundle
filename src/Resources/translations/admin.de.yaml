@@ -141,6 +141,7 @@ sulu_event:
     filter:
         pending: "Anstehend"
         expired: "Vergangen"
+        country: "Land"
 
     # List eventDate/time
     event_date: 'Datum'

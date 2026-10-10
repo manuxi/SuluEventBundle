@@ -7,6 +7,7 @@ namespace Manuxi\SuluEventBundle\Repository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
+use Manuxi\SuluEventBundle\Entity\AttendanceMode;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
 use Sulu\Content\Domain\Model\DimensionContentInterface;
@@ -212,6 +213,10 @@ class EventRepository extends ServiceEntityRepository
      *     tags?: string[],
      *     tagOperator?: 'AND'|'OR',
      *     location?: int|string|null,
+     *     types?: string[],
+     *     attendanceModes?: string[],
+     *     countries?: string[],
+     *     free?: bool,
      * } $filters
      *
      * @return Event[]
@@ -249,6 +254,10 @@ class EventRepository extends ServiceEntityRepository
      *     tags?: string[],
      *     tagOperator?: 'AND'|'OR',
      *     location?: int|string|null,
+     *     types?: string[],
+     *     attendanceModes?: string[],
+     *     countries?: string[],
+     *     free?: bool,
      * } $filters
      *
      * @return Event[]
@@ -372,6 +381,68 @@ class EventRepository extends ServiceEntityRepository
                     ->setParameter('feedLocationName', trim($location));
             }
         }
+
+        $this->applyDetailFilters($qb, $filters);
+    }
+
+    /**
+     * Event types (keys), ways to take part, country codes of the location and "free of charge only". Several values
+     * of one kind match with OR, the kinds with AND. Like categories and tags, a list that was passed without any
+     * usable value matches nothing.
+     *
+     * @param array<string, mixed> $filters
+     */
+    private function applyDetailFilters(QueryBuilder $qb, array $filters): void
+    {
+        $types = array_values(array_unique(array_filter(
+            array_map(static fn ($type): string => \is_string($type) ? trim($type) : '', (array) ($filters['types'] ?? [])),
+            static fn (string $type): bool => '' !== $type
+        )));
+        if ([] !== (array) ($filters['types'] ?? [])) {
+            $this->applyValueList($qb, 'dimensionContent.type', 'feedType', $types);
+        }
+
+        $modes = array_values(array_unique(array_filter(
+            array_map(static fn ($mode): string => \is_string($mode) ? trim($mode) : '', (array) ($filters['attendanceModes'] ?? [])),
+            static fn (string $mode): bool => \in_array($mode, AttendanceMode::values(), true)
+        )));
+        if ([] !== (array) ($filters['attendanceModes'] ?? [])) {
+            $this->applyValueList($qb, 'dimensionContent.attendanceMode', 'feedMode', $modes);
+        }
+
+        $countries = array_values(array_unique(array_filter(
+            array_map(static fn ($country): string => \is_string($country) ? strtoupper(trim($country)) : '', (array) ($filters['countries'] ?? [])),
+            static fn (string $country): bool => 1 === preg_match('/^[A-Z]{2}$/', $country)
+        )));
+        if ([] !== (array) ($filters['countries'] ?? [])) {
+            if ([] === $countries) {
+                $qb->andWhere('1 = 0');
+            } else {
+                $qb->innerJoin('dimensionContent.location', 'feedCountryLocation')
+                    ->andWhere('UPPER(feedCountryLocation.countryCode) IN (:feedCountries)')
+                    ->setParameter('feedCountries', $countries);
+            }
+        }
+
+        if (true === ($filters['free'] ?? false)) {
+            $qb->andWhere('dimensionContent.isFree = :feedFree')
+                ->setParameter('feedFree', true);
+        }
+    }
+
+    /**
+     * @param list<string> $values
+     */
+    private function applyValueList(QueryBuilder $qb, string $field, string $parameter, array $values): void
+    {
+        if ([] === $values) {
+            $qb->andWhere('1 = 0');
+
+            return;
+        }
+
+        $qb->andWhere($field . ' IN (:' . $parameter . ')')
+            ->setParameter($parameter, $values);
     }
 
     /**
