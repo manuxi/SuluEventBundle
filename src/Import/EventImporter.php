@@ -14,6 +14,7 @@ use Manuxi\SuluEventBundle\Entity\EventImport;
 use Manuxi\SuluEventBundle\Entity\Location;
 use Manuxi\SuluEventBundle\Import\Resolver\CategoryResolver;
 use Manuxi\SuluEventBundle\Import\Resolver\LocationResolver;
+use Manuxi\SuluEventBundle\Import\Resolver\MediaResolver;
 use Manuxi\SuluEventBundle\Import\Resolver\TagResolver;
 use Manuxi\SuluEventBundle\Repository\EventImportRepository;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
@@ -72,6 +73,7 @@ class EventImporter
         private readonly ImportUrlGenerator $urlGenerator,
         private readonly ImportUserSwitcher $userSwitcher,
         private readonly ImportSettings $settings,
+        private readonly MediaResolver $mediaResolver,
         ?\Closure $now = null,
     ) {
         $this->now = $now ?? static fn (): \DateTimeImmutable => new \DateTimeImmutable();
@@ -126,20 +128,8 @@ class EventImporter
 
                 $delivered[$candidate->externalId] = true;
 
-                try {
-                    $this->guard($dryRun, fn () => $this->processCandidate($key, $source->getPriority(), $candidate, $report, $dryRun, $runStart));
-                } catch (\Throwable $e) {
-                    $report->add(ImportReport::ACTION_ERROR, $key, $candidate->externalId, $this->titleOf($candidate), null, $e->getMessage());
-                    if (!$this->entityManager->isOpen()) {
-                        $report->add(ImportReport::ACTION_ERROR, $key, null, null, null, 'The database connection of the import was closed by the error above, the run is stopped.');
-
-                        return;
-                    }
-
-                    // drop what the failed candidate left half done
-                    $this->entityManager->clear();
-                    $this->locationResolver->reset();
-                    $this->tagResolver->reset();
+                if (!$this->runCandidate($key, $source->getPriority(), $candidate, $report, $dryRun, $runStart)) {
+                    return;
                 }
             }
         } catch (\Throwable $e) {
@@ -153,6 +143,44 @@ class EventImporter
         if ($complete) {
             $this->markVanished($key, $delivered, $report, $dryRun);
         }
+    }
+
+    /**
+     * Imports one candidate that does not come from a source (the MCP tool for the editorial work): the same matching,
+     * priority and lock rules as for a source, drafts only. It runs as the user who is logged in, not as the import
+     * user.
+     */
+    public function importCandidate(string $sourceKey, int $priority, EventCandidate $candidate, bool $dryRun = false): ImportReport
+    {
+        $report = new ImportReport();
+        $this->runCandidate($sourceKey, $priority, $candidate, $report, $dryRun, ($this->now)(), false);
+
+        return $report;
+    }
+
+    /**
+     * @return bool false if the entity manager is closed and nothing more can be done
+     */
+    private function runCandidate(string $key, int $priority, EventCandidate $candidate, ImportReport $report, bool $dryRun, \DateTimeImmutable $now, bool $asImportUser = true): bool
+    {
+        try {
+            $process = fn () => $this->processCandidate($key, $priority, $candidate, $report, $dryRun, $now);
+            $asImportUser ? $this->guard($dryRun, $process) : $process();
+        } catch (\Throwable $e) {
+            $report->add(ImportReport::ACTION_ERROR, $key, $candidate->externalId, $this->titleOf($candidate), null, $e->getMessage());
+            if (!$this->entityManager->isOpen()) {
+                $report->add(ImportReport::ACTION_ERROR, $key, null, null, null, 'The database connection of the import was closed by the error above, the run is stopped.');
+
+                return false;
+            }
+
+            // drop what the failed candidate left half done
+            $this->entityManager->clear();
+            $this->locationResolver->reset();
+            $this->tagResolver->reset();
+        }
+
+        return true;
     }
 
     /**
@@ -244,8 +272,9 @@ class EventImporter
 
     private function create(EventImport $import, EventCandidate $candidate, ?string $matchKey, int $priority, ?string $title, ImportReport $report, bool $dryRun, \DateTimeImmutable $now): void
     {
-        $location               = $this->resolveLocation($candidate, $dryRun, $report);
+        $location               = $this->resolveLocation($candidate, $dryRun, $report, $import->getSource());
         [$categoryIds, $tagIds] = $this->resolveTaxonomy($candidate, $dryRun, $report, $import->getSource());
+        $imageId                = $this->resolveImageId($candidate, $report, $import->getSource());
 
         $wanted   = $this->wantedValues($candidate, $location?->getId());
         $event    = new Event();
@@ -256,7 +285,7 @@ class EventImporter
         }
 
         foreach ($candidate->getLocales() as $locale) {
-            $lastData = $this->createData($candidate, $locale, $wanted, $categoryIds, $tagIds);
+            $lastData = $this->createData($candidate, $locale, $wanted, $categoryIds, $tagIds, $imageId);
             if (!$dryRun) {
                 $this->contentManager->persist($event, $lastData, ['locale' => $locale, 'stage' => DimensionContentInterface::STAGE_DRAFT]);
             }
@@ -320,8 +349,9 @@ class EventImporter
             throw new \RuntimeException(\sprintf('The event %s has no draft to compare with.', $uuid));
         }
 
-        $location               = $this->resolveLocation($candidate, $dryRun, $report);
+        $location               = $this->resolveLocation($candidate, $dryRun, $report, $source);
         [$categoryIds, $tagIds] = $this->resolveTaxonomy($candidate, $dryRun, $report, $source);
+        $imageId                = $this->resolveImageId($candidate, $report, $source);
 
         $wanted      = $this->wantedValues($candidate, $location?->getId());
         $current     = $this->currentValues(array_keys($wanted), $rows, $base);
@@ -355,7 +385,7 @@ class EventImporter
             }
         }
 
-        $fill = $this->fillData($candidate, $rows, $categoryIds, $tagIds);
+        $fill = $this->fillData($candidate, $rows, $categoryIds, $tagIds, $imageId);
 
         if ([] === $changes && [] === $fill) {
             if (!$dryRun) {
@@ -421,7 +451,7 @@ class EventImporter
 
             if (null === $row) {
                 // a language the event does not have yet
-                $data += $this->createData($candidate, $locale, $this->wantedValues($candidate, $final['locationId'] ?? null), $fill[$locale]['excerptCategories'] ?? [], $fill[$locale]['excerptTags'] ?? []);
+                $data += $this->createData($candidate, $locale, $this->wantedValues($candidate, $final['locationId'] ?? null), $fill[$locale]['excerptCategories'] ?? [], $fill[$locale]['excerptTags'] ?? [], $fill[$locale]['image'] ?? null);
             } else {
                 if (\array_key_exists('title:' . $locale, $changes)) {
                     $data['title'] = $changes['title:' . $locale];
@@ -468,7 +498,7 @@ class EventImporter
      *
      * @return array<string, mixed>
      */
-    private function createData(EventCandidate $candidate, string $locale, array $wanted, array $categoryIds, array $tagIds): array
+    private function createData(EventCandidate $candidate, string $locale, array $wanted, array $categoryIds, array $tagIds, ?int $imageId = null): array
     {
         $title = $candidate->titles[$locale];
         $data  = [
@@ -498,6 +528,10 @@ class EventImporter
         if ([] !== $tagIds) {
             $data['excerptTags'] = $tagIds;
         }
+        if (null !== $imageId) {
+            $data['image']   = $imageId;
+            $data['excerpt'] = ['image' => ['id' => $imageId]];
+        }
         if (null !== $this->settings->webspace) {
             $data['mainWebspace'] = $this->settings->webspace;
         }
@@ -514,12 +548,15 @@ class EventImporter
      *
      * @return array<string, array<string, mixed>> locale => data
      */
-    private function fillData(EventCandidate $candidate, array $rows, array $categoryIds, array $tagIds): array
+    private function fillData(EventCandidate $candidate, array $rows, array $categoryIds, array $tagIds, ?int $imageId = null): array
     {
         $fill = [];
         foreach ($rows as $locale => $row) {
             if (null === $row) {
                 $fill[$locale] = [];
+                if (null !== $imageId) {
+                    $fill[$locale]['image'] = $imageId;
+                }
                 if ([] !== $categoryIds) {
                     $fill[$locale]['excerptCategories'] = $categoryIds;
                 }
@@ -541,6 +578,13 @@ class EventImporter
             }
             if ([] !== $tagIds && [] === $row->getExcerptTags()) {
                 $data['excerptTags'] = $tagIds;
+            }
+            if (null !== $imageId && null === $row->getImage()) {
+                $data['image'] = $imageId;
+            }
+            if (null !== $imageId && null === $row->getExcerptImage()) {
+                // the excerpt data is replaced as a whole, so the other entries are carried along
+                $data['excerpt'] = array_replace($row->getExcerptData(), ['image' => ['id' => $imageId]]);
             }
 
             if ([] !== $data) {
@@ -569,9 +613,12 @@ class EventImporter
             }
         }
 
-        $wanted['startDate'] = $candidate->startDate?->format('Y-m-d H:i:s');
-        if (null !== $candidate->endDate) {
-            $wanted['endDate'] = $candidate->endDate->format('Y-m-d H:i:s');
+        // an all-day event covers whole days, as the draft stores it
+        $start               = $candidate->allDay ? $candidate->startDate?->setTime(0, 0, 0) : $candidate->startDate;
+        $end                 = $candidate->allDay ? $candidate->endDate?->setTime(23, 59, 59) : $candidate->endDate;
+        $wanted['startDate'] = $start?->format('Y-m-d H:i:s');
+        if (null !== $end) {
+            $wanted['endDate'] = $end->format('Y-m-d H:i:s');
         }
         $wanted['allDay']         = $candidate->allDay;
         $wanted['status']         = $candidate->status;
@@ -705,8 +752,17 @@ class EventImporter
         return true;
     }
 
-    private function resolveLocation(EventCandidate $candidate, bool $dryRun, ImportReport $report): ?Location
+    private function resolveLocation(EventCandidate $candidate, bool $dryRun, ImportReport $report, string $source): ?Location
     {
+        if (null !== $candidate->locationId) {
+            $known = $this->entityManager->find(Location::class, $candidate->locationId);
+            if ($known instanceof Location) {
+                return $known;
+            }
+
+            $report->addWarning($source, $candidate->externalId, \sprintf('The location with the id %d does not exist.', $candidate->locationId));
+        }
+
         if (null === $candidate->location || 'online' === $candidate->attendanceMode) {
             return null;
         }
@@ -717,6 +773,41 @@ class EventImporter
         }
 
         return $resolved->location;
+    }
+
+    /**
+     * The image of our own for a new event: the one of the source, otherwise the one of its first category that has one.
+     * Images of a source are never copied (they belong to the source).
+     */
+    private function resolveImageId(EventCandidate $candidate, ImportReport $report, string $source): ?int
+    {
+        $id = $this->pickImageId($candidate);
+        if (null === $id) {
+            return null;
+        }
+
+        if (!$this->mediaResolver->exists($id)) {
+            $report->addWarning($source, $candidate->externalId, \sprintf('The image with the id %d does not exist, the event gets no image.', $id));
+
+            return null;
+        }
+
+        return $id;
+    }
+
+    private function pickImageId(EventCandidate $candidate): ?int
+    {
+        if (null !== $candidate->imageMediaId) {
+            return $candidate->imageMediaId;
+        }
+
+        foreach ($candidate->categoryKeys as $key) {
+            if (isset($this->settings->categoryImages[$key])) {
+                return (int) $this->settings->categoryImages[$key];
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -849,6 +940,8 @@ class EventImporter
             $data[$field] = $candidate->{$field}?->format('Y-m-d H:i:s T');
         }
         $data['location'] = null !== $candidate->location ? get_object_vars($candidate->location) : null;
+        // a new image setting must reach events that are otherwise unchanged
+        $data['_image'] = $this->pickImageId($candidate);
 
         return sha1((string) json_encode($data, \JSON_UNESCAPED_UNICODE | \JSON_UNESCAPED_SLASHES | \JSON_PARTIAL_OUTPUT_ON_ERROR));
     }

@@ -24,6 +24,7 @@ use Manuxi\SuluEventBundle\Import\ImportUrlGenerator;
 use Manuxi\SuluEventBundle\Import\ImportUserSwitcher;
 use Manuxi\SuluEventBundle\Import\Resolver\CategoryResolver;
 use Manuxi\SuluEventBundle\Import\Resolver\LocationResolver;
+use Manuxi\SuluEventBundle\Import\Resolver\MediaResolver;
 use Manuxi\SuluEventBundle\Import\Resolver\TagResolver;
 use Manuxi\SuluEventBundle\Import\Resolver\TimezoneGuesser;
 use Manuxi\SuluEventBundle\Import\SourceRegistry;
@@ -381,6 +382,109 @@ class EventImporterTest extends AbstractEventDatabaseTestCase
         $this->assertSame(0, $report->getCounts()['rejected']);
     }
 
+    public function testNewEventGetsTheImageOfItsCategory(): void
+    {
+        $settings = new ImportSettings(true, 'import', false, '/events', null, 'default', 'event', ['other' => 5, 'web' => 77]);
+
+        $this->import([new ArraySource('ical.a', 50, [$this->candidate(categoryKeys: ['unmapped', 'web'])])], settings: $settings);
+
+        $data = $this->contentManager->calls[0]['data'];
+        $this->assertSame(77, $data['image']);
+        $this->assertSame(['image' => ['id' => 77]], $data['excerpt']);
+
+        $uuid = $this->importRepository->findBySourceAndExternalId('ical.a', 'conf-2027')->getEvent()->getUuid();
+        $this->assertSame(['id' => 77], $this->draft($uuid, 'en')->getExcerptImage());
+    }
+
+    public function testImageOfTheSourceWinsOverTheOneOfTheCategory(): void
+    {
+        $settings = new ImportSettings(true, 'import', false, '/events', null, 'default', 'event', ['web' => 77]);
+
+        $this->import([new ArraySource('ical.a', 50, [$this->candidate(categoryKeys: ['web'], imageMediaId: 55)])], settings: $settings);
+
+        $this->assertSame(55, $this->contentManager->calls[0]['data']['image']);
+    }
+
+    public function testNoImageConfiguredMeansNoImageKeys(): void
+    {
+        $this->import([new ArraySource('ical.a', 50, [$this->candidate()])]);
+
+        $this->assertArrayNotHasKey('image', $this->contentManager->calls[0]['data']);
+        $this->assertArrayNotHasKey('excerpt', $this->contentManager->calls[0]['data']);
+    }
+
+    public function testMissingMediaIsAWarningAndNotAnError(): void
+    {
+        $settings = new ImportSettings(true, 'import', false, '/events', null, 'default', 'event', ['web' => 77]);
+        $importer = $this->createImporter([new ArraySource('ical.a', 50, [$this->candidate()])], $settings, mediaExists: false);
+
+        $report = $importer->import();
+
+        $this->assertSame(1, $report->getCounts()['created']);
+        $this->assertSame(0, $report->getCounts()['errors']);
+        $this->assertStringContainsString('image with the id 77 does not exist', $report->getWarnings()[0]['message']);
+        $this->assertArrayNotHasKey('image', $this->contentManager->calls[0]['data']);
+    }
+
+    public function testImageIsFilledInOnAnExistingEventThatHasNone(): void
+    {
+        $source = new ArraySource('ical.a', 50, [$this->candidate()]);
+        $this->import([$source]);
+
+        $settings = new ImportSettings(true, 'import', false, '/events', null, 'default', 'event', ['web' => 77]);
+        $report   = $this->import([$source], settings: $settings);
+
+        $this->assertSame(1, $report->getCounts()['updated']);
+        $this->assertStringContainsString('image (filled in)', $report->getEntries()[0]['detail']);
+        $uuid = $this->importRepository->findBySourceAndExternalId('ical.a', 'conf-2027')->getEvent()->getUuid();
+        $this->assertSame(['id' => 77], $this->draft($uuid, 'en')->getExcerptImage());
+    }
+
+    public function testExistingLocationByIdIsUsed(): void
+    {
+        $id = $this->locations['Messe Berlin']->getId();
+
+        $report = $this->import([new ArraySource('ical.a', 50, [$this->candidate(location: null, locationId: $id)])]);
+
+        $this->assertSame(0, $report->getCounts()['newLocations']);
+        $uuid = $this->importRepository->findBySourceAndExternalId('ical.a', 'conf-2027')->getEvent()->getUuid();
+        $this->assertSame('Messe Berlin', $this->draft($uuid, 'en')->getLocation()->getName());
+    }
+
+    public function testUnknownLocationIdIsAWarningAndTheLocationOfTheCandidateIsUsed(): void
+    {
+        $importer = $this->createImporter([]);
+
+        $report = $importer->importCandidate('mcp.editorial', 30, $this->candidate(locationId: 99999));
+
+        $this->assertSame(1, $report->getCounts()['created']);
+        $this->assertSame(1, $report->getCounts()['newLocations']);
+        $this->assertStringContainsString('99999', $report->getWarnings()[0]['message']);
+    }
+
+    public function testSingleCandidateRunsThroughTheSameRules(): void
+    {
+        $importer = $this->createImporter([]);
+        $first    = $importer->importCandidate('mcp.editorial', 30, $this->candidate('claude-1'));
+        $this->entityManager->clear();
+        $again = $this->createImporter([])->importCandidate('mcp.editorial', 30, $this->candidate('claude-1'));
+        $this->entityManager->clear();
+        $changed = $this->createImporter([])->importCandidate('mcp.editorial', 30, $this->candidate('claude-1', startDate: new \DateTimeImmutable('2027-06-14 09:30:00', new \DateTimeZone('Europe/Berlin'))));
+
+        $this->assertSame(1, $first->getCounts()['created']);
+        $this->assertSame(1, $again->getCounts()['unchanged']);
+        $this->assertSame(1, $changed->getCounts()['updated']);
+        $this->assertNull($this->tokenStorage->getToken(), 'it does not switch the user');
+        $this->assertSame('mcp.editorial', $first->getEntries()[0]['source']);
+    }
+
+    public function testSingleCandidateErrorIsReportedNotThrown(): void
+    {
+        $report = $this->createImporter([])->importCandidate('mcp.editorial', 30, $this->candidate('claude-2', startDate: null));
+
+        $this->assertSame(1, $report->getCounts()['errors']);
+    }
+
     public function testSameRankKeepsTheOlderLink(): void
     {
         $first  = new ArraySource('ical.one', 50, [$this->candidate('one-1')]);
@@ -561,6 +665,19 @@ class EventImporterTest extends AbstractEventDatabaseTestCase
         // every run is a new process: nothing is kept from the one before
         $this->entityManager->clear();
 
+        $importer = $this->createImporter($sources, $settings, $now);
+
+        $report = $importer->import($sourceKey, $dryRun, $limit);
+        $this->entityManager->clear();
+
+        return $report;
+    }
+
+    /**
+     * @param list<ArraySource> $sources
+     */
+    private function createImporter(array $sources, ?ImportSettings $settings = null, string $now = '2027-03-01 12:00:00', bool $mediaExists = true): EventImporter
+    {
         $settings ??= new ImportSettings(true, 'import', false);
 
         $collector = $this->createMock(DomainEventCollectorInterface::class);
@@ -585,7 +702,10 @@ class EventImporterTest extends AbstractEventDatabaseTestCase
         $routes = $this->createStub(RouteRepositoryInterface::class);
         $routes->method('existBy')->willReturn(false);
 
-        $importer = new EventImporter(
+        $mediaResolver = $this->createStub(MediaResolver::class);
+        $mediaResolver->method('exists')->willReturn($mediaExists);
+
+        return new EventImporter(
             new SourceRegistry($sources),
             $this->entityManager,
             $this->importRepository,
@@ -599,13 +719,9 @@ class EventImporterTest extends AbstractEventDatabaseTestCase
             new ImportUrlGenerator($routes, '/events'),
             new ImportUserSwitcher($this->tokenStorage, $userRepository, $settings),
             $settings,
+            $mediaResolver,
             static fn (): \DateTimeImmutable => new \DateTimeImmutable($now, new \DateTimeZone('Europe/Berlin')),
         );
-
-        $report = $importer->import($sourceKey, $dryRun, $limit);
-        $this->entityManager->clear();
-
-        return $report;
     }
 
     /**

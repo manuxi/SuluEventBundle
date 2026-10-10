@@ -227,6 +227,7 @@ class JsonLdSource implements EventSourceInterface
             sourceUrl: $url ?? ($id && 1 === preg_match('#^https?://#i', $id) ? $id : null) ?? $pageUrl,
             sourceDescription: null === $description ? null : mb_substr($description, 0, 4000),
             series: $this->config->series,
+            imageMediaId: $this->config->image,
         );
     }
 

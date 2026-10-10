@@ -60,6 +60,11 @@ services:
             - '@sulu.repository.tag'
             - '@doctrine.orm.entity_manager'
 
+    sulu_event.import.media_resolver:
+        class: Manuxi\SuluEventBundle\Import\Resolver\MediaResolver
+        arguments:
+            - '@doctrine.orm.entity_manager'
+
     # Importer
     sulu_event.import.settings:
         class: Manuxi\SuluEventBundle\Import\ImportSettings
@@ -70,6 +75,9 @@ services:
             - '%sulu_event.import.url_prefix%'
             - '%sulu_event.import.webspace%'
             - '%sulu_event.default_type%'
+            - 'event'
+            - '%sulu_event.import.category_images%'
+            - '%sulu_event.import.locales%'
 
     sulu_event.import.source_registry:
         class: Manuxi\SuluEventBundle\Import\SourceRegistry
@@ -106,6 +114,20 @@ services:
             - '@sulu_event.import.url_generator'
             - '@sulu_event.import.user_switcher'
             - '@sulu_event.import.settings'
+            - '@sulu_event.import.media_resolver'
+
+    Manuxi\SuluEventBundle\Import\EventImporter:
+        alias: sulu_event.import.importer
+
+    sulu_event.import.pending_finder:
+        class: Manuxi\SuluEventBundle\Import\PendingEventFinder
+        arguments:
+            - '@Manuxi\SuluEventBundle\Repository\EventImportRepository'
+            - '@Manuxi\SuluEventBundle\Repository\EventRepository'
+            - '@sulu_event.import.settings'
+
+    Manuxi\SuluEventBundle\Import\PendingEventFinder:
+        alias: sulu_event.import.pending_finder
 
     sulu_event.import.state_listener:
         class: Manuxi\SuluEventBundle\Import\EventImportStateListener

@@ -26,6 +26,8 @@ final class EventCandidate
      * @param string|null           $timezone       IANA name of the zone the start and end are meant in, null = the one of the application
      * @param string                $status         see EventStatus
      * @param string                $attendanceMode see AttendanceMode
+     * @param int|null              $locationId     id of an existing location, used instead of $location
+     * @param int|null              $imageMediaId   id of an image of our own for the event; the import never copies images of a source
      */
     public function __construct(
         public string $externalId,
@@ -54,6 +56,8 @@ final class EventCandidate
         public ?string $sourceDescription = null,
         public ?string $series = null,
         public ?string $matchKey = null,
+        public ?int $locationId = null,
+        public ?int $imageMediaId = null,
     ) {
     }
 

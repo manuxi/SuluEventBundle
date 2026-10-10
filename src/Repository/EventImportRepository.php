@@ -69,6 +69,24 @@ class EventImportRepository extends ServiceEntityRepository
     }
 
     /**
+     * The entries that belong to an event (not rejected), the event fetched with them: the events the import maintains.
+     *
+     * @return EventImport[]
+     */
+    public function findAllWithEvent(): array
+    {
+        return $this->createQueryBuilder('import')
+            ->addSelect('event')
+            ->join('import.event', 'event')
+            ->where('import.state != :rejected')
+            ->setParameter('rejected', EventImport::STATE_REJECTED)
+            ->orderBy('import.priority', 'DESC')
+            ->addOrderBy('import.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
      * @return EventImport[]
      */
     public function findBySource(string $source): array

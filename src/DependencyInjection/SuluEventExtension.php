@@ -95,7 +95,7 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
     {
         $import = $config['import'];
 
-        foreach (['enabled', 'user', 'user_agent', 'timeout', 'auto_update_published_dates', 'url_prefix', 'webspace'] as $key) {
+        foreach (['enabled', 'user', 'user_agent', 'timeout', 'auto_update_published_dates', 'url_prefix', 'webspace', 'category_images', 'locales'] as $key) {
             $container->setParameter('sulu_event.import.' . $key, $import[$key]);
         }
 

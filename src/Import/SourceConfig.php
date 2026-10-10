@@ -22,6 +22,7 @@ final class SourceConfig
      * @param string[] $categories keys of Sulu categories every event of the source gets
      * @param string[] $tags       names of tags every event of the source gets
      * @param string[] $languages  language codes of the events of the source
+     * @param int|null $image      id of an image of our own (media) every event of the source gets if it has none
      */
     public function __construct(
         public readonly string $kind,
@@ -35,6 +36,7 @@ final class SourceConfig
         public readonly ?string $series = null,
         public readonly ?int $priority = null,
         public readonly array $languages = [],
+        public readonly ?int $image = null,
     ) {
     }
 
@@ -68,6 +70,7 @@ final class SourceConfig
             isset($config['series']) ? (string) $config['series'] : null,
             isset($config['priority']) ? (int) $config['priority'] : null,
             array_values((array) ($config['languages'] ?? [])),
+            isset($config['image']) ? (int) $config['image'] : null,
         );
     }
 }

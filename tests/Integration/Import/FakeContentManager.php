@@ -75,6 +75,10 @@ class FakeContentManager implements ContentManagerInterface
             $row->setExcerptTags(array_map(fn (int $id) => $this->entityManager->find(StubTag::class, $id), $data['excerptTags']));
         }
 
+        if (\array_key_exists('excerpt', $data)) {
+            $row->setExcerptData($data['excerpt']);
+        }
+
         $row->applyUnlocalizedDetails($data);
         $row->applyLocalizedDetails($data);
         $row->normalizeAllDayTimes();

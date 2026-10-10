@@ -198,6 +198,7 @@ class ICalSource implements EventSourceInterface
             sourceUrl: $sourceUrl,
             sourceDescription: null === $description ? null : mb_substr($description, 0, 4000),
             series: $this->config->series,
+            imageMediaId: $this->config->image,
         );
     }
 
