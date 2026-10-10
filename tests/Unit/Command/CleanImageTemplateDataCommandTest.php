@@ -59,8 +59,11 @@ class CleanImageTemplateDataCommandTest extends TestCase
         $exitCode = $tester->execute([]);
 
         $this->assertSame(Command::FAILURE, $exitCode);
-        $this->assertStringContainsString('Row 7', $tester->getDisplay());
-        $this->assertStringContainsString('Syntax error', $tester->getDisplay());
-        $this->assertStringContainsString('2 row(s) checked, 0 changed, 1 failed.', $tester->getDisplay());
+
+        // SymfonyStyle wraps the error block to the terminal width (80 columns on CI), so the line breaks vary
+        $output = \preg_replace('/\s+/', ' ', $tester->getDisplay());
+        $this->assertStringContainsString('Row 7', $output);
+        $this->assertStringContainsString('Syntax error', $output);
+        $this->assertStringContainsString('2 row(s) checked, 0 changed, 1 failed.', $output);
     }
 }
