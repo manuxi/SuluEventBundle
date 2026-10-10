@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Program</title>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@graph": [
+            {"@type": "WebSite", "@id": "https://summit.example.com/#website", "name": "Summit"},
+            {"@type": "Organization", "@id": "https://summit.example.com/#org", "name": "Summit Org"},
+            {
+                "@type": "BusinessEvent",
+                "@id": "https://summit.example.com/online-day",
+                "name": "Online day",
+                "startDate": "2027-09-15T09:00:00Z",
+                "endDate": "2027-09-15T12:00:00Z",
+                "eventAttendanceMode": "https://schema.org/OnlineEventAttendanceMode",
+                "location": {"@type": "VirtualLocation", "url": "https://stream.example.com/summit"}
+            },
+            {
+                "@type": "Festival",
+                "name": "Street festival",
+                "startDate": "2027-08-20",
+                "endDate": "2027-08-22",
+                "location": {
+                    "@type": "Place",
+                    "name": "Old town",
+                    "address": {"@type": "PostalAddress", "addressLocality": "Vancouver", "addressCountry": "Canada"},
+                    "geo": {"latitude": "49.28", "longitude": "-123.12"}
+                }
+            },
+            {
+                "@type": "MusicEvent",
+                "name": "Cancelled concert",
+                "startDate": "2027-10-01T20:00:00+02:00",
+                "eventStatus": "https://schema.org/EventCancelled",
+                "location": {"@type": "Place", "name": "Concert hall", "address": "Hauptstr. 1, 10115 Berlin"}
+            },
+            {
+                "@type": "Event",
+                "name": "Last year's event",
+                "startDate": "2026-01-10T10:00:00+01:00"
+            },
+            {
+                "@type": "EventSeries",
+                "name": "The series itself",
+                "startDate": "2027-01-01",
+                "subEvent": {"@type": "Event", "name": "Not read from here", "startDate": "2027-12-01"}
+            }
+        ]
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        "itemListElement": [
+            {"@type": "ListItem", "position": 1, "item": {"@type": "Event", "name": "Listed event", "startDate": "2027-11-05T18:00:00", "url": "https://summit.example.com/listed"}}
+        ]
+    }
+    </script>
+</head>
+<body></body>
+</html>

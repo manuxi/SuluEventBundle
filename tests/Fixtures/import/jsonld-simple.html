@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Conference</title>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Event",
+        "@id": "https://conf.example.com/2027#event",
+        "name": "Example Conf 2027",
+        "description": "<p>Two days about <b>PHP</b> &amp; friends.</p>",
+        "startDate": "2027-06-12T10:00:00+02:00",
+        "endDate": "2027-06-13T17:00:00+02:00",
+        "eventStatus": "https://schema.org/EventScheduled",
+        "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+        "url": "/2027",
+        "inLanguage": ["en", "de-DE"],
+        "isAccessibleForFree": false,
+        "location": {
+            "@type": "Place",
+            "name": "Messe Hall 3",
+            "address": {
+                "@type": "PostalAddress",
+                "streetAddress": "Messeplatz 1",
+                "postalCode": "50679",
+                "addressLocality": "Cologne",
+                "addressCountry": "DE"
+            },
+            "geo": {"@type": "GeoCoordinates", "latitude": 50.94, "longitude": 6.98}
+        },
+        "organizer": [
+            {"@type": "Person", "name": "Jane Doe", "url": "https://example.com/jane"},
+            {"@type": "Organization", "name": "Example e.V.", "url": "https://example.com"}
+        ],
+        "offers": {
+            "@type": "Offer",
+            "url": "https://conf.example.com/tickets",
+            "price": "199.00",
+            "priceCurrency": "EUR"
+        }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": ["SocialEvent", "Thing"],
+        "name": "Free community evening",
+        "startDate": "2027-05-04T19:00:00",
+        "location": "Pub Example, Cologne",
+        "offers": {"@type": "Offer", "price": "0", "priceCurrency": "EUR"},
+        "url": "https://conf.example.com/evening"
+    }
+    </script>
+</head>
+<body>
+<h1>Conference</h1>
+</body>
+</html>
