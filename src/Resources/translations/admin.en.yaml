@@ -424,6 +424,8 @@ sulu_event:
         run_state_info: "With \"Import now\" (above) you start the import of all sources. It runs in the background and takes one to two minutes; this page updates when it is done."
         run_state_ready: "Ready"
         run_state_off: "Off: the import is switched off or has no source (sulu_event.import)."
+        progress_label: "Imported: %done%/%total%"
+        run_state_source: "Source %index% of %count%: %source%"
         run_state_running: "Running since %time% …"
         import_now: "Import now"
         import_started: "The import was started."

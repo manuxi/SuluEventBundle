@@ -21,6 +21,11 @@ class ImportRunner
 {
     public const FLAG_KEY = 'sulu_event_import_running';
 
+    /** the progress of the run that is going or of the last one (state, done, known, source, ...); it stays for an hour after the end */
+    public const PROGRESS_KEY = 'sulu_event_import_progress';
+
+    public const PROGRESS_KEEP = 3600;
+
     /** a run longer than this is taken for dead */
     public const STALE_AFTER = 1800;
 
@@ -54,6 +59,18 @@ class ImportRunner
     }
 
     /**
+     * What the run that is going (or ended less than an hour ago) has done so far.
+     *
+     * @return array{state: string, done: int, known: int, source: string|null, sourceIndex: int, sourceCount: int, at: int}|null state is "running" or "done"
+     */
+    public function progress(): ?array
+    {
+        $item = $this->cache->getItem(self::PROGRESS_KEY);
+
+        return $item->isHit() ? $item->get() : null;
+    }
+
+    /**
      * Marks the import as running. False if one is running already or the import cannot run.
      */
     public function reserve(): bool
@@ -65,8 +82,17 @@ class ImportRunner
         $item = $this->cache->getItem(self::FLAG_KEY);
         $item->set(time())->expiresAfter(self::STALE_AFTER);
         $this->cache->save($item);
+        $this->saveProgress('running', 0, 0, null, 0, 0);
 
         return true;
+    }
+
+    private function saveProgress(string $state, int $done, int $known, ?string $source, int $sourceIndex, int $sourceCount): void
+    {
+        $item = $this->cache->getItem(self::PROGRESS_KEY);
+        $item->set(['state' => $state, 'done' => $done, 'known' => $known, 'source' => $source, 'sourceIndex' => $sourceIndex, 'sourceCount' => $sourceCount, 'at' => time()]);
+        $item->expiresAfter('running' === $state ? self::STALE_AFTER : self::PROGRESS_KEEP);
+        $this->cache->save($item);
     }
 
     /**
@@ -82,9 +108,22 @@ class ImportRunner
         $startedAt = new \DateTimeImmutable();
         $run       = new EventImportRun($startedAt, null, false);
 
+        $done = 0;
+        $known = 0;
+        $last = 0;
+        $tick = function (string $source, int $index, int $count, int $processed, int $total) use (&$done, &$known, &$last): void {
+            $done  = $processed;
+            $known = $total;
+            // the cache is written every few candidates, not every one
+            if (0 === $processed % 5 || $processed === $total || time() !== $last) {
+                $last = time();
+                $this->saveProgress('running', $processed, $total, $source, $index, $count);
+            }
+        };
+
         try {
             try {
-                $report = $this->importer->import(null, false, null);
+                $report = $this->importer->import(null, false, null, $tick);
                 $run->finish(new \DateTimeImmutable(), $report->getCounts(), $report->toArray());
                 $this->imageFiller->fill();
             } catch (\Throwable $e) {
@@ -97,6 +136,7 @@ class ImportRunner
             }
 
             $this->store($run);
+            $this->saveProgress('done', $done, max($known, $done), null, 0, 0);
 
             return $run;
         } finally {

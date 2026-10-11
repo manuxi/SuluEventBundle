@@ -127,6 +127,7 @@ class SettingsController extends AbstractRestController implements SecuredContro
             // The import: running now (the button "Import now" of the tab "Import" waits for it)
             'importRunning' => null !== $this->importRunner?->runningSince(),
             'importState' => $this->importState(),
+            'importProgressLabel' => $this->importProgressLabel(),
 
             // General Display
             'toggleHeader' => $entity->getToggleHeader(),
@@ -198,9 +199,26 @@ class SettingsController extends AbstractRestController implements SecuredContro
                 : $this->translate('sulu_event.import.run_state_off');
         }
 
-        $time = (new \DateTimeImmutable('@' . $since))->setTimezone(new \DateTimeZone(date_default_timezone_get()))->format('H:i:s');
+        $time     = (new \DateTimeImmutable('@' . $since))->setTimezone(new \DateTimeZone(date_default_timezone_get()))->format('H:i:s');
+        $progress = $this->importRunner->progress();
+        $source   = null !== $progress && null !== $progress['source']
+            ? $this->translate('sulu_event.import.run_state_source', ['%source%' => $progress['source'], '%index%' => (string) $progress['sourceIndex'], '%count%' => (string) $progress['sourceCount']])
+            : '';
 
-        return $this->translate('sulu_event.import.run_state_running', ['%time%' => $time]);
+        return trim($this->translate('sulu_event.import.run_state_running', ['%time%' => $time]) . ' ' . $source);
+    }
+
+    /**
+     * The metric on the button: "Imported: 120/345" while the import runs and for an hour after it, null otherwise.
+     */
+    private function importProgressLabel(): ?string
+    {
+        $progress = $this->importRunner?->progress();
+        if (null === $progress || ('running' === $progress['state'] && 0 === $progress['known'])) {
+            return null;
+        }
+
+        return $this->translate('sulu_event.import.progress_label', ['%done%' => (string) $progress['done'], '%total%' => (string) max($progress['known'], $progress['done'])]);
     }
 
     /**

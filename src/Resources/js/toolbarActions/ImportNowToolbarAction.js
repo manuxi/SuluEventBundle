@@ -43,7 +43,8 @@ export default class ImportNowToolbarAction extends AbstractFormToolbarAction {
         return {
             type: 'button',
             icon: 'su-process',
-            label: translate('sulu_event.import.import_now'),
+            // the metric replaces the label while the import runs and for an hour after it ("Imported: 120/345")
+            label: this.resourceFormStore.data.importProgressLabel || translate('sulu_event.import.import_now'),
             disabled: running,
             loading: running,
             onClick: this.handleClick,

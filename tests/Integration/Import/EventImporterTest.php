@@ -508,6 +508,22 @@ class EventImporterTest extends AbstractEventDatabaseTestCase
         $this->assertSame(['id' => 77], $this->draft($uuid, 'en')->getExcerptImage());
     }
 
+    public function testProgressIsReportedAfterEveryCandidateWithTheTotalSoFar(): void
+    {
+        $steps = [];
+        $importer = $this->createImporter([
+            new ArraySource('ical.a', 50, [$this->candidate('a-1'), $this->candidate('a-2')]),
+            new ArraySource('ical.b', 50, [$this->candidate('b-1', series: 'other')]),
+        ]);
+
+        $importer->import(null, false, null, static function (string $source, int $index, int $count, int $done, int $known) use (&$steps): void {
+            $steps[] = [$source, $index, $count, $done, $known];
+        });
+
+        // an array source knows its size at once: the total grows with every source
+        $this->assertSame([['ical.a', 1, 2, 1, 2], ['ical.a', 1, 2, 2, 2], ['ical.b', 2, 2, 3, 3]], $steps);
+    }
+
     public function testExistingLocationByIdIsUsed(): void
     {
         $id = $this->locations['Messe Berlin']->getId();

@@ -435,6 +435,8 @@ sulu_event:
         run_state_info: "Mit „Jetzt importieren“ (oben) starten Sie den Import aller Quellen. Er läuft im Hintergrund und dauert ein bis zwei Minuten; diese Seite aktualisiert sich, sobald er fertig ist."
         run_state_ready: "Bereit"
         run_state_off: "Aus: der Import ist ausgeschaltet oder hat keine Quelle (sulu_event.import)."
+        progress_label: "Importiert: %done%/%total%"
+        run_state_source: "Quelle %index% von %count%: %source%"
         run_state_running: "Läuft seit %time% Uhr …"
         import_now: "Jetzt importieren"
         import_started: "Der Import wurde gestartet."

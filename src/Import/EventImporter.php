@@ -87,10 +87,12 @@ class EventImporter
      * @param string|null $sourceKey only this source
      * @param bool        $dryRun    compute and report everything, write nothing
      * @param int|null    $limit     at most this many candidates per source (the check for vanished events is skipped then)
+     * @param (\Closure(string, int, int, int, int): void)|null $progress called after every candidate with the key of the source, its
+     *                                 position and the number of sources, the candidates done and the candidates known so far
      *
      * @throws \InvalidArgumentException for an unknown source key
      */
-    public function import(?string $sourceKey = null, bool $dryRun = false, ?int $limit = null): ImportReport
+    public function import(?string $sourceKey = null, bool $dryRun = false, ?int $limit = null, ?\Closure $progress = null): ImportReport
     {
         $sources = $this->sources->all();
         if (null !== $sourceKey) {
@@ -109,21 +111,35 @@ class EventImporter
         $report   = new ImportReport();
         $runStart = ($this->now)();
 
+        // the progress of the whole run: candidates done and known so far
+        $state = ['done' => 0, 'known' => 0, 'index' => 0, 'count' => \count($sources)];
         foreach ($sources as $key => $source) {
-            $this->importSource($key, $source, $report, $dryRun, $limit, $runStart);
+            ++$state['index'];
+            $this->importSource($key, $source, $report, $dryRun, $limit, $runStart, $progress, $state);
         }
 
         return $report;
     }
 
-    private function importSource(string $key, EventSourceInterface $source, ImportReport $report, bool $dryRun, ?int $limit, \DateTimeImmutable $runStart): void
+    /**
+     * @param (\Closure(string, int, int, int, int): void)|null $progress
+     * @param array{done: int, known: int, index: int, count: int}  $state
+     */
+    private function importSource(string $key, EventSourceInterface $source, ImportReport $report, bool $dryRun, ?int $limit, \DateTimeImmutable $runStart, ?\Closure $progress = null, array &$state = ['done' => 0, 'known' => 0, 'index' => 1, 'count' => 1]): void
     {
         $delivered = [];
         $complete  = true;
         $count     = 0;
 
         try {
-            foreach ($source->fetch() as $candidate) {
+            $candidates = $source->fetch();
+            // the candidates of the source are collected first (a few hundred small objects), so the progress knows the total
+            if (!\is_array($candidates)) {
+                $candidates = iterator_to_array($candidates, false);
+            }
+            $state['known'] += null !== $limit ? min($limit, \count($candidates)) : \count($candidates);
+
+            foreach ($candidates as $candidate) {
                 if (null !== $limit && $count >= $limit) {
                     $complete = false;
                     break;
@@ -134,6 +150,11 @@ class EventImporter
 
                 if (!$this->runCandidate($key, $source->getPriority(), $candidate, $report, $dryRun, $runStart)) {
                     return;
+                }
+
+                ++$state['done'];
+                if (null !== $progress) {
+                    $progress($key, $state['index'], $state['count'], $state['done'], $state['known']);
                 }
             }
         } catch (\Throwable $e) {
