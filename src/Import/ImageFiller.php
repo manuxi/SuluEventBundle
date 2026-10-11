@@ -69,7 +69,8 @@ class ImageFiller
     {
         $filled = false;
         foreach ($event->getDimensionContents() as $row) {
-            if (!$row instanceof EventDimensionContent || DimensionContentInterface::STAGE_DRAFT !== $row->getStage() || null === $row->getLocale()) {
+            // the current draft of a language, not the saved versions of it (they keep what they were)
+            if (!$row instanceof EventDimensionContent || DimensionContentInterface::STAGE_DRAFT !== $row->getStage() || null === $row->getLocale() || DimensionContentInterface::CURRENT_VERSION !== $row->getVersion()) {
                 continue;
             }
             if (null !== $row->getImage() || [] !== ($row->getExcerptData()['image'] ?? [])) {
