@@ -166,6 +166,17 @@ services:
         tags:
             - { name: kernel.event_subscriber }
 
+    sulu_event.import.runner:
+        class: Manuxi\SuluEventBundle\Import\ImportRunner
+        arguments:
+            - '@sulu_event.import.importer'
+            - '@sulu_event.import.image_filler'
+            - '@sulu_event.import.source_registry'
+            - '@sulu_event.import.settings'
+            - '@Manuxi\SuluEventBundle\Repository\EventImportRunRepository'
+            - '@doctrine.orm.entity_manager'
+            - '@cache.app'
+
     sulu_event.import.image_filler:
         class: Manuxi\SuluEventBundle\Import\ImageFiller
         arguments:

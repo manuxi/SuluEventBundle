@@ -1,0 +1,11 @@
+{
+    "name": "sulu-event-bundle",
+    "version": "0.0.1",
+    "private": true,
+    "main": "index.js",
+    "dependencies": {
+        "mobx": "^4.0.0",
+        "react": "^17.0.0",
+        "sulu-admin-bundle": "*"
+    }
+}

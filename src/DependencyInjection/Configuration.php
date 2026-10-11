@@ -181,6 +181,10 @@ class Configuration implements ConfigurationInterface
                     ->end()
                     ->info('Image of your own for the places the import creates (a place has no photo from a source): id of a media or name of its file. Places without an image get it with sulu:event:fill-images.')
                 ->end()
+                ->booleanNode('admin_button')
+                    ->defaultFalse()
+                    ->info('Shows the button "Import now" in the tab "Import" of the settings. It needs the JavaScript of the bundle in the admin build (see docs/import.en.md), so it is off by default.')
+                ->end()
                 ->arrayNode('location_aliases')
                     // the variants are names: no key normalization
                     ->normalizeKeys(false)

@@ -112,6 +112,12 @@ Use **file names** rather than ids where you can: the ids of the media differ be
 - **List of events**: the column **Source** (empty for events entered by hand) and the filters **State of the import** (active / no longer in the source) and **Publication state** in the filter of the list. With "imported" and "not published" you get the list of events that wait for approval.
 - **Settings > Import**: the last run (time, numbers, errors, new locations), read only.
 
+### The button "Import now" (optional)
+
+With `sulu_event.import.admin_button: true` the tab **Settings > Import** has a button **Import now**: it starts the import of all sources in the background (after the answer is sent to the browser; it takes a minute or two), then fills the images that are missing (`sulu:event:fill-images`) and shows the result in the same tab. While a run is going the button is locked and the tab says "Import running"; a run that is not done after 30 minutes counts as dead. A failed run is shown with its error message. What the button does **not** do: the report mail, coordinates for the map and other jobs of your project (your daily run does that).
+
+The button is a piece of JavaScript of the bundle and therefore **off** until it is part of the admin build, otherwise the tab breaks with "toolbar action not registered". To add it: the dependency `"sulu-event-bundle": "file:../../vendor/manuxi/sulu-event-bundle/src/Resources/js"` in `assets/admin/package.json`, the line `import 'sulu-event-bundle';` in `assets/admin/app.js`, then `npm install` and `npm run build` in `assets/admin`. The permission is "edit" of the settings. The import runs in the PHP process that sent the answer (`kernel.terminate`); with PHP-FPM (`fastcgi_finish_request`) that just works, other servers may make the browser wait for the end of the run.
+
 ## The user of the import
 
 `sulu_event.import.user` is the user whose name appears as creator of imported events. The command needs **no role**: it writes as that user without logging in, and no permission is checked. A role matters only if somebody logs in with this user, for example to use the MCP tools (those check the permissions). Give such a user a role that may **view, add and edit** events (`sulu.events.events`), locations, tags and categories (view) and media (view) and **not** the permission "live" (publish) of events, so that everything stays a draft until an editor publishes it.

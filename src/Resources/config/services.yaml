@@ -27,6 +27,7 @@ services:
         arguments:
             - '@sulu_admin.view_builder_factory'
             - '@sulu_security.security_checker'
+            - '%sulu_event.import.admin_button%'
         tags:
             - { name: sulu.admin }
             - { name: sulu.context, context: admin }

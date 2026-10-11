@@ -8,6 +8,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use FOS\RestBundle\View\ViewHandlerInterface;
 use Manuxi\SuluEventBundle\Domain\Event\Config\ModifiedEvent;
 use Manuxi\SuluEventBundle\Entity\EventSettings;
+use Manuxi\SuluEventBundle\Import\ImportRunner;
 use Manuxi\SuluEventBundle\Import\ImportRunSummary;
 use Manuxi\SuluEventBundle\Repository\EventImportRunRepository;
 use Sulu\Bundle\ActivityBundle\Application\Collector\DomainEventCollectorInterface;
@@ -15,7 +16,10 @@ use Sulu\Component\Rest\AbstractRestController;
 use Sulu\Component\Security\SecuredControllerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Event\TerminateEvent;
+use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
@@ -28,6 +32,8 @@ class SettingsController extends AbstractRestController implements SecuredContro
         ViewHandlerInterface $viewHandler,
         ?TokenStorageInterface $tokenStorage = null,
         private ?EventImportRunRepository $importRunRepository = null,
+        private ?ImportRunner $importRunner = null,
+        private ?EventDispatcherInterface $eventDispatcher = null,
     ) {
         parent::__construct($viewHandler, $tokenStorage);
     }
@@ -64,6 +70,11 @@ class SettingsController extends AbstractRestController implements SecuredContro
     )]
     public function putAction(Request $request): Response
     {
+        // the button "Import now" of the tab "Import": PUT ...?action=import
+        if ('import' === $request->query->get('action')) {
+            return $this->startImport();
+        }
+
         $entity = $this->entityManager->getRepository(EventSettings::class)->findOneBy([]);
         if (!$entity) {
             $entity = new EventSettings();
@@ -82,9 +93,39 @@ class SettingsController extends AbstractRestController implements SecuredContro
         // return new JsonResponse($this->getDataForEntity($entity));
     }
 
+    /**
+     * Starts the import of all sources after the answer is sent (the run takes a minute or more: the request must not wait for
+     * it). The tab shows the state and, when it is done, the result.
+     */
+    private function startImport(): Response
+    {
+        if (null === $this->importRunner || null === $this->eventDispatcher) {
+            return new JsonResponse(['code' => 400, 'message' => 'The import is not available.'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $runner = $this->importRunner;
+        if (!$runner->isAvailable()) {
+            return new JsonResponse(['code' => 400, 'message' => 'The import is switched off or has no source (sulu_event.import).'], Response::HTTP_BAD_REQUEST);
+        }
+
+        if (!$runner->reserve()) {
+            return new JsonResponse(['code' => 409, 'message' => 'The import is running already.'], Response::HTTP_CONFLICT);
+        }
+
+        $this->eventDispatcher->addListener(KernelEvents::TERMINATE, static function (TerminateEvent $event) use ($runner): void {
+            $runner->run();
+        });
+
+        return new JsonResponse(['importRunning' => true], Response::HTTP_ACCEPTED);
+    }
+
     protected function getDataForEntity(EventSettings $entity): array
     {
         return [
+            // The import: running now (the button "Import now" of the tab "Import" waits for it)
+            'importRunning' => null !== $this->importRunner?->runningSince(),
+            'importRunningText' => $this->importRunningText(),
+
             // General Display
             'toggleHeader' => $entity->getToggleHeader(),
             'toggleHero' => $entity->getToggleHero(),
@@ -139,6 +180,13 @@ class SettingsController extends AbstractRestController implements SecuredContro
      *
      * @return array<string, string|null>
      */
+    private function importRunningText(): ?string
+    {
+        $since = $this->importRunner?->runningSince();
+
+        return null === $since ? null : \sprintf('Running since %s', (new \DateTimeImmutable('@' . $since))->setTimezone(new \DateTimeZone(date_default_timezone_get()))->format('H:i:s'));
+    }
+
     private function getImportRunData(): array
     {
         $none = [

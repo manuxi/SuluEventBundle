@@ -44,6 +44,8 @@ services:
             - '@fos_rest.view_handler.default'
             - '@security.token_storage'
             - '@Manuxi\SuluEventBundle\Repository\EventImportRunRepository'
+            - '@sulu_event.import.runner'
+            - '@event_dispatcher'
         tags:
             - { name: controller.service_arguments }
             - { name: sulu.context, context: admin }

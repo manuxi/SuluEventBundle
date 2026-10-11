@@ -33,6 +33,7 @@ class SettingsAdmin extends Admin
     public function __construct(
         private ViewBuilderFactoryInterface $viewBuilderFactory,
         private SecurityCheckerInterface $securityChecker,
+        private bool $importButton = false,
     ) {
     }
 
@@ -101,8 +102,11 @@ class SettingsAdmin extends Admin
                     ->setResourceKey(EventSettings::RESOURCE_KEY)
                     ->setFormKey(static::FORM_KEY_SETTINGS_IMPORT)
                     ->setTabTitle('sulu_event.config.tab.import')
-                    // the form view throws without toolbar actions, also if it only shows values (the button stays disabled: nothing to save)
-                    ->addToolbarActions([new ToolbarAction('sulu_admin.save')])
+                    // the form view throws without toolbar actions, also if it only shows values (the button stays disabled: nothing to save);
+                    // "Import now" only if the JavaScript of the bundle is part of the admin build (sulu_event.import.admin_button)
+                    ->addToolbarActions($this->importButton
+                        ? [new ToolbarAction('sulu_admin.save'), new ToolbarAction('sulu_event.import_now')]
+                        : [new ToolbarAction('sulu_admin.save')])
                     ->setParent(static::TAB_VIEW)
             );
         }

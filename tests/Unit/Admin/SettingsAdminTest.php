@@ -273,6 +273,26 @@ class SettingsAdminTest extends TestCase
         $this->assertSame(4, $forms);
     }
 
+    public function testImportNowButtonOnlyWithTheOption(): void
+    {
+        $securityChecker = $this->createMock(SecurityCheckerInterface::class);
+        $securityChecker->method('hasPermission')->willReturn(true);
+
+        foreach ([false => ['sulu_admin.save'], true => ['sulu_admin.save', 'sulu_event.import_now']] as $button => $expected) {
+            $views = new ViewCollection();
+            (new SettingsAdmin(new ViewBuilderFactory(), $securityChecker, (bool) $button))->configureViews($views);
+
+            $actions = [];
+            foreach ($views->all() as $builder) {
+                $view = $builder->getView();
+                if (SettingsAdmin::FORM_VIEW_SETTINGS_IMPORT === $view->getName()) {
+                    $actions = array_map(static fn ($action): string => $action->getType(), $view->getOption('toolbarActions'));
+                }
+            }
+            $this->assertSame($expected, $actions, 'button: '.var_export((bool) $button, true));
+        }
+    }
+
     public function testConfigureViewsUsesCorrectResourceKey(): void
     {
         // Arrange
