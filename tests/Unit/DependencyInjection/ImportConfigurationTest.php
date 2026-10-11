@@ -14,6 +14,13 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 class ImportConfigurationTest extends TestCase
 {
+    public function testCategoryKeysWithADashStayAsTheyAre(): void
+    {
+        $container = $this->load(['import' => ['category_images' => ['web-php' => 'event-topic-web-php.jpg', 'open-source' => 7]]]);
+
+        $this->assertSame(['web-php' => 'event-topic-web-php.jpg', 'open-source' => 7], $container->getParameter('sulu_event.import.category_images'));
+    }
+
     public function testImportIsOffByDefaultAndNeedsNothing(): void
     {
         $container = $this->load([]);

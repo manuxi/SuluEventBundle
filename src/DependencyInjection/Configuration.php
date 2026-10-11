@@ -162,6 +162,8 @@ class Configuration implements ConfigurationInterface
                     ->info('Key of the webspace imported events belong to. Default: the default webspace of Sulu.')
                 ->end()
                 ->arrayNode('category_images')
+                    // keys are category keys such as "web-php": Symfony would turn the dash into an underscore and no image is found
+                    ->normalizeKeys(false)
                     ->useAttributeAsKey('key')
                     ->scalarPrototype()
                         ->validate()
