@@ -65,6 +65,10 @@ services:
         arguments:
             - '@doctrine.orm.entity_manager'
 
+    Manuxi\SuluEventBundle\Import\Resolver\MediaResolver:
+        alias: sulu_event.import.media_resolver
+        public: true
+
     # Importer
     sulu_event.import.settings:
         class: Manuxi\SuluEventBundle\Import\ImportSettings
