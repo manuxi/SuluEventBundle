@@ -57,6 +57,8 @@ class EventImporter
     /** @var \Closure(): \DateTimeImmutable */
     private \Closure $now;
 
+    private EventImageChooser $imageChooser;
+
     /**
      * @param (\Closure(): \DateTimeImmutable)|null $now replaceable for tests
      */
@@ -77,7 +79,8 @@ class EventImporter
         private readonly MediaResolver $mediaResolver,
         ?\Closure $now = null,
     ) {
-        $this->now = $now ?? static fn (): \DateTimeImmutable => new \DateTimeImmutable();
+        $this->now          = $now ?? static fn (): \DateTimeImmutable => new \DateTimeImmutable();
+        $this->imageChooser = new EventImageChooser($settings, $mediaResolver);
     }
 
     /**
@@ -311,7 +314,7 @@ class EventImporter
     {
         $location               = $this->resolveLocation($candidate, $dryRun, $report, $import->getSource());
         [$categoryIds, $tagIds] = $this->resolveTaxonomy($candidate, $dryRun, $report, $import->getSource());
-        $imageId                = $this->resolveImageId($candidate, $report, $import->getSource());
+        $imageId                = $this->resolveImageId($candidate, $report, $import->getSource(), $location);
 
         $wanted   = $this->wantedValues($candidate, $location?->getId());
         $event    = new Event();
@@ -388,7 +391,7 @@ class EventImporter
 
         $location               = $this->resolveLocation($candidate, $dryRun, $report, $source);
         [$categoryIds, $tagIds] = $this->resolveTaxonomy($candidate, $dryRun, $report, $source);
-        $imageId                = $this->resolveImageId($candidate, $report, $source);
+        $imageId                = $this->resolveImageId($candidate, $report, $source, $location);
 
         $wanted      = $this->wantedValues($candidate, $location?->getId());
         $current     = $this->currentValues(array_keys($wanted), $rows, $base);
@@ -842,12 +845,12 @@ class EventImporter
     }
 
     /**
-     * The image of our own for a new event: the one of the source, otherwise the one of its first category that has one.
-     * Images of a source are never copied (they belong to the source).
+     * The image of our own for a new event: a photo of the series, else the photo of the place, else the placeholder of its
+     * first category (see EventImageChooser). Images of a source are never copied (they belong to the source).
      */
-    private function resolveImageId(EventCandidate $candidate, ImportReport $report, string $source): ?int
+    private function resolveImageId(EventCandidate $candidate, ImportReport $report, string $source, ?Location $location = null): ?int
     {
-        $reference = $this->pickImageReference($candidate);
+        $reference = $this->pickImageReference($candidate, $location);
         if (null === $reference) {
             return null;
         }
@@ -863,19 +866,13 @@ class EventImporter
     /**
      * @return int|string|null id or file name of the image
      */
-    private function pickImageReference(EventCandidate $candidate): int|string|null
+    private function pickImageReference(EventCandidate $candidate, ?Location $location): int|string|null
     {
         if (null !== $candidate->imageMediaId) {
             return $candidate->imageMediaId;
         }
 
-        foreach ($candidate->categoryKeys as $key) {
-            if (isset($this->settings->categoryImages[$key]) && '' !== (string) $this->settings->categoryImages[$key]) {
-                return $this->settings->categoryImages[$key];
-            }
-        }
-
-        return null;
+        return $this->imageChooser->reference($candidate->series, $location, $candidate->categoryKeys);
     }
 
     /**
@@ -1009,7 +1006,7 @@ class EventImporter
         }
         $data['location'] = null !== $candidate->location ? get_object_vars($candidate->location) : null;
         // a new image setting must reach events that are otherwise unchanged
-        $reference      = $this->pickImageReference($candidate);
+        $reference      = $this->pickImageReference($candidate, null);
         $data['_image'] = null !== $reference ? $this->mediaResolver->resolve($reference) : null;
 
         return sha1((string) json_encode($data, \JSON_UNESCAPED_UNICODE | \JSON_UNESCAPED_SLASHES | \JSON_PARTIAL_OUTPUT_ON_ERROR));

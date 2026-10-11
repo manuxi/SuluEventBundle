@@ -18,6 +18,7 @@ final class ImportSettings
      * @param array<string, int|string> $categoryImages           category key => id or file name of an image of our own, for events that have none
      * @param string[]                  $requiredLocales          locales an imported event should have a text in (for the list of events that need work)
      * @param int|string|null           $locationImage            id or file name of the image a place gets that the import creates (and that has none)
+     * @param array<string, int|string> $seriesImages             series key => id or file name of a photo of that series, for its events (better than the placeholder of the topic)
      */
     public function __construct(
         public readonly bool $enabled = false,
@@ -30,6 +31,7 @@ final class ImportSettings
         public readonly array $categoryImages = [],
         public readonly array $requiredLocales = [],
         public readonly int|string|null $locationImage = null,
+        public readonly array $seriesImages = [],
     ) {
     }
 }
