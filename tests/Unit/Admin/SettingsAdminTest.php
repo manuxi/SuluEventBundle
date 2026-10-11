@@ -13,6 +13,7 @@ use Sulu\Bundle\AdminBundle\Admin\Navigation\NavigationItem;
 use Sulu\Bundle\AdminBundle\Admin\Navigation\NavigationItemCollection;
 use Sulu\Bundle\AdminBundle\Admin\View\FormViewBuilder;
 use Sulu\Bundle\AdminBundle\Admin\View\ResourceTabViewBuilder;
+use Sulu\Bundle\AdminBundle\Admin\View\ViewBuilderFactory;
 use Sulu\Bundle\AdminBundle\Admin\View\ViewBuilderFactoryInterface;
 use Sulu\Bundle\AdminBundle\Admin\View\ViewCollection;
 use Sulu\Component\Security\Authorization\PermissionTypes;
@@ -251,6 +252,27 @@ class SettingsAdminTest extends TestCase
         $this->assertContains(SettingsAdmin::FORM_VIEW_SETTINGS_IMPORT, $formViewNames);
     }
 
+    public function testEveryFormViewHasToolbarActions(): void
+    {
+        // the admin throws 'The view "Form" needs some defined toolbarActions' when a form view has none, also a read only one
+        $securityChecker = $this->createMock(SecurityCheckerInterface::class);
+        $securityChecker->method('hasPermission')->willReturn(true);
+        $admin = new SettingsAdmin(new ViewBuilderFactory(), $securityChecker);
+
+        $views = new ViewCollection();
+        $admin->configureViews($views);
+
+        $forms = 0;
+        foreach ($views->all() as $builder) {
+            $view = $builder->getView();
+            if ('sulu_admin.form' === $view->getType()) {
+                ++$forms;
+                $this->assertNotEmpty($view->getOption('toolbarActions'), $view->getName());
+            }
+        }
+        $this->assertSame(4, $forms);
+    }
+
     public function testConfigureViewsUsesCorrectResourceKey(): void
     {
         // Arrange
@@ -403,8 +425,8 @@ class SettingsAdminTest extends TestCase
         // Act
         $this->settingsAdmin->configureViews($viewCollection);
 
-        // Assert - All 3 form views should have toolbar actions
-        $this->assertEquals(3, $toolbarActionCount);
+        // Assert - All 4 form views should have toolbar actions (the read only import tab too: the view throws without)
+        $this->assertEquals(4, $toolbarActionCount);
     }
 
     public function testConfigureViewsSetsCorrectTabTitles(): void

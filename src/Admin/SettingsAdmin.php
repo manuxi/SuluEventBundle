@@ -101,6 +101,8 @@ class SettingsAdmin extends Admin
                     ->setResourceKey(EventSettings::RESOURCE_KEY)
                     ->setFormKey(static::FORM_KEY_SETTINGS_IMPORT)
                     ->setTabTitle('sulu_event.config.tab.import')
+                    // the form view throws without toolbar actions, also if it only shows values (the button stays disabled: nothing to save)
+                    ->addToolbarActions([new ToolbarAction('sulu_admin.save')])
                     ->setParent(static::TAB_VIEW)
             );
         }
