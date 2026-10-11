@@ -30,6 +30,9 @@ assets/website/js/app.js:
 ```javascript
 import '../../../vendor/manuxi/sulu-event-bundle/src/Resources/public/js/calendar.js';
 ```
+
+**Keeping pages small:** The script starts the calendars when it is imported, even if the page is built already. So it can be loaded on demand, for example only on pages with a calendar (`if (document.querySelector('.event-calendar')) { import('.../calendar.js'); }`), which keeps FullCalendar out of the main bundle. The function `initEventCalendars()` is exported as well.
+
 Insert Bootstrap-Icons:
 ```javascript
 import 'bootstrap-icons/font/bootstrap-icons.css';

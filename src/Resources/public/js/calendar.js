@@ -31,7 +31,7 @@ import enLocale from '@fullcalendar/core/locales/en-gb';
 // Import Bootstrap Popover for tooltips
 import { Popover } from 'bootstrap';
 
-document.addEventListener('DOMContentLoaded', function() {
+export function initEventCalendars() {
     const calendarElements = document.querySelectorAll('.event-calendar');
 
     if (calendarElements.length === 0) {
@@ -42,7 +42,15 @@ document.addEventListener('DOMContentLoaded', function() {
     calendarElements.forEach(function(calendarEl) {
         initializeCalendar(calendarEl);
     });
-});
+}
+
+// Importing the file starts the calendars. A page that loads it later (import() after the page was built, to keep the
+// size of the main bundle small) has no DOMContentLoaded to wait for any more.
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initEventCalendars);
+} else {
+    initEventCalendars();
+}
 
 function initializeCalendar(calendarEl) {
     if (!calendarEl) {
