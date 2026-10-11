@@ -8,6 +8,7 @@ use Manuxi\SuluEventBundle\Content\Merger\EventUnlocalizedFieldsMerger;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
 use PHPUnit\Framework\TestCase;
+use Sulu\Bundle\MediaBundle\Entity\MediaInterface;
 
 class EventUnlocalizedFieldsMergerTest extends TestCase
 {
@@ -30,6 +31,22 @@ class EventUnlocalizedFieldsMergerTest extends TestCase
         $target->expects($this->once())->method('setEmail')->with('mail@example.com');
 
         $this->merger->merge($target, $source);
+    }
+
+    public function testMergedContentHasTheImageInItsTemplateDataForTheWebsite(): void
+    {
+        // the image is a column; the website reads the property "image" from the template data (the cards of a list)
+        $image = $this->createStub(MediaInterface::class);
+        $image->method('getId')->willReturn(525);
+        $unlocalized = new EventDimensionContent(new Event());
+        $unlocalized->setImage($image);
+
+        $target = new EventDimensionContent(new Event());
+        $target->setTemplateData(['title' => 'Conf']);
+        $this->merger->merge($target, $unlocalized);
+
+        $this->assertSame(['id' => 525], $target->getTemplateData()['image']);
+        $this->assertSame('Conf', $target->getTemplateData()['title'], 'the rest of the template data stays');
     }
 
     public function testMergeCarriesTheEventDetailsOverAndKeepsTheLocalizedPriceInfo(): void

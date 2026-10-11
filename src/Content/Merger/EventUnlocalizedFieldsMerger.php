@@ -48,6 +48,16 @@ class EventUnlocalizedFieldsMerger implements MergerInterface
             $targetObject->setImage($sourceObject->getImage());
         }
 
+        // The image is a column owned by EventUnlocalizedDataMapper (the template property is skipped by the template data
+        // mapper), so it is not in the template data, which is what the website reads for the property "image" (the cards of
+        // a list, an event selection). The merged content gets it, as {id} like the form stores a media.
+        $image = $targetObject->getImage();
+        if (null !== $image) {
+            $templateData          = $targetObject->getTemplateData();
+            $templateData['image'] = ['id' => $image->getId()];
+            $targetObject->setTemplateData($templateData);
+        }
+
         if (null !== $sourceObject->getPdf()) {
             $targetObject->setPdf($sourceObject->getPdf());
         }
