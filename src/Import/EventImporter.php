@@ -806,6 +806,11 @@ class EventImporter
 
         $resolved = $this->locationResolver->resolve($candidate->location, !$dryRun, $candidate->timezone);
         if ($resolved->created) {
+            if (!$dryRun) {
+                // a new place has no id before it is written; the event gets the id, so it must exist now (waiting for a later
+                // query to write it left events without a place as soon as the categories and tags were known already)
+                $this->entityManager->flush();
+            }
             $this->giveNewLocationItsImage($resolved->location, $dryRun, $report, $source, $candidate->externalId);
             $report->addNewLocation($resolved->location->getName() ?? $candidate->location->name, $resolved->location->getTimezone(), $resolved->timezoneCertain);
         }

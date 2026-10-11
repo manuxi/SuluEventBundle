@@ -89,6 +89,8 @@ class EventImporterTest extends AbstractEventDatabaseTestCase
         $this->assertSame('2027-06-13 17:00:00', $row->getEndDate()->format('Y-m-d H:i:s'));
         $this->assertSame('Europe/Berlin', $row->getTimezone());
         $this->assertSame('Messe Hall 3', $row->getLocation()->getName());
+        // the content manager gets the id of the new place: a place that is not flushed has none, and the event had no place
+        $this->assertIsInt($this->contentManager->calls[0]['data']['locationId']);
         $this->assertCount(1, $row->getExcerptCategories());
         $this->assertCount(1, $row->getExcerptTags());
         $this->assertSame(WorkflowInterface::WORKFLOW_PLACE_UNPUBLISHED, $row->getWorkflowPlace());
