@@ -20,10 +20,21 @@ class LocationResolver
     /** @var list<Location>|null */
     private ?array $locations = null;
 
+    /** @var array<string, string> normalized variant => the name that leads */
+    private array $aliases = [];
+
+    /**
+     * @param array<string, string> $aliases other spellings of a name or city and the one that leads (sulu_event.import.location_aliases),
+     *                                       for example "Brüssel" => "Brussels": the place is found and created under the leading name
+     */
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly TimezoneGuesser $timezoneGuesser,
+        array $aliases = [],
     ) {
+        foreach ($aliases as $variant => $leading) {
+            $this->aliases[$this->normalize((string) $variant)] = trim((string) $leading);
+        }
     }
 
     /**
@@ -31,7 +42,8 @@ class LocationResolver
      */
     public function resolve(CandidateLocation $candidate, bool $persist = true, ?string $fallbackTimezone = null): ResolvedLocation
     {
-        $existing = $this->find($candidate);
+        $candidate = $this->withLeadingNames($candidate);
+        $existing  = $this->find($candidate);
         if (null !== $existing) {
             return new ResolvedLocation($existing, false);
         }
@@ -70,6 +82,24 @@ class LocationResolver
     public function reset(): void
     {
         $this->locations = null;
+    }
+
+    /**
+     * The name and the city of the candidate under the spelling that leads ("Köln" is "Cologne").
+     */
+    private function withLeadingNames(CandidateLocation $candidate): CandidateLocation
+    {
+        if ([] === $this->aliases) {
+            return $candidate;
+        }
+
+        $name = $this->aliases[$this->normalize($candidate->name)] ?? $candidate->name;
+        $city = null !== $candidate->city ? ($this->aliases[$this->normalizeCity($candidate->city)] ?? $candidate->city) : null;
+        if ($name === $candidate->name && $city === $candidate->city) {
+            return $candidate;
+        }
+
+        return new CandidateLocation($name, $candidate->street, $candidate->number, $candidate->postalCode, $city, $candidate->state, $candidate->countryCode, $candidate->latitude, $candidate->longitude);
     }
 
     private function find(CandidateLocation $candidate): ?Location

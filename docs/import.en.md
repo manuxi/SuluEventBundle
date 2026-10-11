@@ -56,6 +56,7 @@ sulu_event:
 | `webspace` | Webspace of imported events | default webspace |
 | `category_images` | Images of your own: category key => file name or id of a media, see "Images" | – |
 | `location_image` | Image (id or file name) for places the import creates: no source knows a photo of the place. Places without an image get it with `sulu:event:fill-images`; the editors replace it with a real photo | – |
+| `location_aliases` | Other spellings of a place or a city and the one that leads, for example `Brüssel: Brussels`, `Köln: Cologne`. The import finds and creates the place under the leading name, so a source that writes the city in German does not make a second place (a city with a state or country, "San Francisco CA", is the same city anyway) | – |
 | `locales` | Locales an imported event should have a text in. Each gets a draft with the title of the source and all the facts right away (also for events that exist already); while the text is missing the event is in the list of events that need work | – |
 
 Options of a source (`ical` and `jsonld` have the same):

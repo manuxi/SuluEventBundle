@@ -56,6 +56,7 @@ sulu_event:
 | `webspace` | Webspace importierter Events | Standard-Webspace |
 | `category_images` | Eigene Bilder: Kategorie-Schlüssel => Dateiname oder ID eines Mediums, siehe „Bilder“ | – |
 | `location_image` | Bild (Id oder Dateiname) für Orte, die der Import neu anlegt: keine Quelle kennt ein Foto vom Ort. Orte ohne Bild bekommen es mit `sulu:event:fill-images`; die Redaktion ersetzt es durch ein echtes Foto | – |
+| `location_aliases` | Andere Schreibweisen eines Ortes oder einer Stadt und die, die führt, zum Beispiel `Brüssel: Brussels`, `Köln: Cologne`. Der Import findet und legt den Ort unter dem führenden Namen an, eine deutsche Schreibweise der Quelle macht keinen zweiten Ort (Stadt mit Bundesstaat oder Land, „San Francisco CA“, ist ohnehin dieselbe Stadt) | – |
 | `locales` | Sprachen, in denen ein importiertes Event einen Text haben soll. Jede bekommt beim Import gleich einen Entwurf mit dem Titel der Quelle und allen Fakten (auch bei Events, die es schon gibt); fehlt der Text, steht das Event in der Liste der Events mit offener Arbeit | – |
 
 Optionen einer Quelle (`ical` und `jsonld` haben dieselben):

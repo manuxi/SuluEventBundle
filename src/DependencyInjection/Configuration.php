@@ -181,6 +181,13 @@ class Configuration implements ConfigurationInterface
                     ->end()
                     ->info('Image of your own for the places the import creates (a place has no photo from a source): id of a media or name of its file. Places without an image get it with sulu:event:fill-images.')
                 ->end()
+                ->arrayNode('location_aliases')
+                    // the variants are names: no key normalization
+                    ->normalizeKeys(false)
+                    ->useAttributeAsKey('variant')
+                    ->scalarPrototype()->end()
+                    ->info('Other spellings of a place or a city and the one that leads, for example "Brüssel: Brussels", "Köln: Cologne". The import finds and creates the place under the leading name, so a source that writes the city in German does not make a second place.')
+                ->end()
                 ->arrayNode('locales')
                     ->scalarPrototype()->end()
                     ->info('Locales an imported event should have a text in (for example ["de", "en"]). Events that lack one are listed as "needs work" (MCP tool sulu_event_import_pending).')

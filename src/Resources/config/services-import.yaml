@@ -48,6 +48,7 @@ services:
         arguments:
             - '@doctrine.orm.entity_manager'
             - '@sulu_event.import.timezone_guesser'
+            - '%sulu_event.import.location_aliases%'
 
     sulu_event.import.category_resolver:
         class: Manuxi\SuluEventBundle\Import\Resolver\CategoryResolver

@@ -46,6 +46,28 @@ class LocationResolverTest extends AbstractEventDatabaseTestCase
         }
     }
 
+    public function testAliasLetsTheLeadingNameFindThePlace(): void
+    {
+        $resolver = new LocationResolver($this->entityManager, new TimezoneGuesser(), ['Hauptstadt' => 'Berlin', 'Zentrum' => 'Example Hub']);
+
+        // the German variant of the city and of the name leads to the same place
+        $resolved = $resolver->resolve(new CandidateLocation('Zentrum', city: 'Hauptstadt'));
+
+        $this->assertFalse($resolved->created);
+        $this->assertSame('Example Hub', $resolved->location->getName());
+    }
+
+    public function testNewPlaceIsCreatedUnderTheLeadingName(): void
+    {
+        $resolver = new LocationResolver($this->entityManager, new TimezoneGuesser(), ['Brüssel' => 'Brussels']);
+
+        $resolved = $resolver->resolve(new CandidateLocation('Brüssel', city: 'Brüssel', countryCode: 'BE'), false);
+
+        $this->assertTrue($resolved->created);
+        $this->assertSame('Brussels', $resolved->location->getName());
+        $this->assertSame('Brussels', $resolved->location->getCity());
+    }
+
     public function testSameNameInAnotherCityIsAnotherPlace(): void
     {
         $resolved = $this->resolver->resolve(new CandidateLocation('Example Hub', city: 'Hamburg', countryCode: 'DE'));
