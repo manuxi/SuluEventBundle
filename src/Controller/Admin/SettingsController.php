@@ -194,13 +194,13 @@ class SettingsController extends AbstractRestController implements SecuredContro
         $since = $this->importRunner->runningSince();
         if (null === $since) {
             return $this->importRunner->isAvailable()
-                ? $this->translate('sulu_event.import.state_ready')
-                : $this->translate('sulu_event.import.state_off');
+                ? $this->translate('sulu_event.import.run_state_ready')
+                : $this->translate('sulu_event.import.run_state_off');
         }
 
         $time = (new \DateTimeImmutable('@' . $since))->setTimezone(new \DateTimeZone(date_default_timezone_get()))->format('H:i:s');
 
-        return $this->translate('sulu_event.import.state_running', ['%time%' => $time]);
+        return $this->translate('sulu_event.import.run_state_running', ['%time%' => $time]);
     }
 
     /**
