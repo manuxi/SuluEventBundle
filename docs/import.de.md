@@ -56,6 +56,7 @@ sulu_event:
 | `webspace` | Webspace importierter Events | Standard-Webspace |
 | `category_images` | Eigene Bilder: Kategorie-Schlüssel => Dateiname oder ID eines Mediums, siehe „Bilder“ | – |
 | `location_image` | Bild (Id oder Dateiname) für Orte, die der Import neu anlegt: keine Quelle kennt ein Foto vom Ort. Orte ohne Bild bekommen es mit `sulu:event:fill-images`; die Redaktion ersetzt es durch ein echtes Foto | – |
+| `series_images` | Foto einer Reihe: Schlüssel der Reihe (`series` der Quelle) => Id oder Dateiname. Die Events der Reihe nehmen es, wenn sie nichts Besseres haben | – |
 | `location_aliases` | Andere Schreibweisen eines Ortes oder einer Stadt und die, die führt, zum Beispiel `Brüssel: Brussels`, `Köln: Cologne`. Der Import findet und legt den Ort unter dem führenden Namen an, eine deutsche Schreibweise der Quelle macht keinen zweiten Ort (Stadt mit Bundesstaat oder Land, „San Francisco CA“, ist ohnehin dieselbe Stadt) | – |
 | `locales` | Sprachen, in denen ein importiertes Event einen Text haben soll. Jede bekommt beim Import gleich einen Entwurf mit dem Titel der Quelle und allen Fakten (auch bei Events, die es schon gibt); fehlt der Text, steht das Event in der Liste der Events mit offener Arbeit | – |
 
@@ -105,6 +106,8 @@ sulu_event:
 **Dateinamen** sind besser als IDs: Die IDs der Medien unterscheiden sich zwischen Testplattform und Live-Seite, die Namen nicht (genommen wird das erste Medium, dessen aktuelle Datei so heißt). Ein neues Event bekommt das Bild seiner Quelle, sonst das seiner ersten Kategorie, die aufgeführt ist; es wird als Bild und als Excerpt-Bild (Karten und Teaser) gesetzt. Ein Event ohne Bild bekommt beim nächsten Lauf ebenfalls eins; ein Bild, das jemand gewählt hat, wird nie ersetzt. Eine Medien-ID, die es nicht gibt, wird als Warnung gemeldet. „Bild fehlt“ erscheint auch in der Liste der Events, an denen noch etwas zu tun ist (MCP-Werkzeug `sulu_event_import_pending`).
 
 **Orte** haben kein Foto aus einer Quelle. Mit `location_image` (Dateiname oder ID) bekommt jeder Ort, den der Import neu anlegt, ein Bild; die Redaktion ersetzt es durch ein echtes Foto. **Nachträglich** füllt `php bin/adminconsole sulu:event:fill-images` (mit `--dry-run` zum Ansehen) alle Events und Orte ohne Bild: ein Event nimmt das Bild seines ersten Themas aus `category_images`, ein Ort das aus `location_image`. Ein vorhandenes Bild wird nie ersetzt; ein veröffentlichtes Event wird dabei zum Entwurf und ist mit dem Bild live, sobald es erneut veröffentlicht wird.
+
+**Welches Bild ein Event bekommt**, vom besten zum schlechtesten: (1) ein Foto der Reihe (`series_images`), (2) das Foto des Ortes, wenn der Ort ein echtes Foto hat (das Bild aller Orte, `location_image`, ist nur ein Platzhalter), (3) das Platzhalterbild seines ersten Themas (`category_images`). Bilder der Quellen werden nie übernommen, ein von Redakteuren gewähltes Bild nie ersetzt; nur ein Platzhalter weicht einem besseren Bild (zum Beispiel einem Ortsfoto, das später kommt) – `sulu:event:fill-images` erledigt das für vorhandene Events.
 
 ## Im Admin
 
