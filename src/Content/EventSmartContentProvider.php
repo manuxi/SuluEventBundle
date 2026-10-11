@@ -450,9 +450,10 @@ class EventSmartContentProvider implements SmartContentProviderInterface
     }
 
     /**
-     * Ways to take part, countries and "free of charge" a website visitor picked, e.g. from the query string:
-     * ?attendanceMode=online,mixed&country=DE,AT&free=1. The names of the parameters can be changed with
-     * attendance_mode_parameter, country_parameter and free_parameter in the params of the smart content field.
+     * Event types, ways to take part, countries and "free of charge" a website visitor picked, e.g. from the query
+     * string: ?type=conference,meetup&attendanceMode=online,mixed&country=DE,AT&free=1. The names of the parameters can
+     * be changed with type_parameter, attendance_mode_parameter, country_parameter and free_parameter in the params
+     * of the smart content field.
      * Several values of one kind match with OR, the kinds with AND; a list without a usable value matches nothing.
      *
      * @param array<string, mixed> $params
@@ -461,9 +462,15 @@ class EventSmartContentProvider implements SmartContentProviderInterface
     {
         $request = $this->requestStack?->getCurrentRequest() ?? new Request();
 
+        $typeParameter = \is_string($params['type_parameter'] ?? null) ? $params['type_parameter'] : 'type';
         $modeParameter = \is_string($params['attendance_mode_parameter'] ?? null) ? $params['attendance_mode_parameter'] : 'attendanceMode';
         $countryParameter = \is_string($params['country_parameter'] ?? null) ? $params['country_parameter'] : 'country';
         $freeParameter = \is_string($params['free_parameter'] ?? null) ? $params['free_parameter'] : 'free';
+
+        $requestedTypes = RequestParameters::getList($request, $typeParameter);
+        if ([] !== $requestedTypes) {
+            $this->addEventTypeFilter($queryBuilder, $dimensionContentAlias, $requestedTypes);
+        }
 
         $requestedModes = RequestParameters::getList($request, $modeParameter);
         if ([] !== $requestedModes) {
@@ -478,6 +485,22 @@ class EventSmartContentProvider implements SmartContentProviderInterface
         if (RequestParameters::getFlag($request, $freeParameter)) {
             $this->addFreeFilter($queryBuilder, $dimensionContentAlias);
         }
+    }
+
+    /**
+     * @param string[] $types keys of the configured event types (sulu_event.types); unknown ones are ignored
+     */
+    private function addEventTypeFilter(QueryBuilder $queryBuilder, string $alias, array $types): void
+    {
+        $types = \array_values(\array_intersect(\array_unique($types), \array_keys($this->eventTypes)));
+        if ([] === $types) {
+            $queryBuilder->andWhere('1 = 0');
+
+            return;
+        }
+
+        $queryBuilder->andWhere($alias.'.type IN (:detailTypes)')
+            ->setParameter('detailTypes', $types);
     }
 
     /**

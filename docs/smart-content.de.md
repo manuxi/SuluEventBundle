@@ -26,16 +26,17 @@ Der Smart-Content-Provider `events` wertet Kategorien und Tags aus, die ein Webs
 
 Welche Kategorien und Tags angeboten werden, entscheidet das Template: Nur Veranstaltungen mit Excerpt tragen sie, und nur die Live-Version zählt. Der Helfer [`sulu_event_filter_options`](#filter-optionen-für-eine-filterleiste) listet auf, was es gibt.
 
-## Weitere Filter: Teilnahme, Land, kostenlos
+## Weitere Filter: Typ, Teilnahme, Land, kostenlos
 
 | Parameter | Bedeutung | Beispiel |
 |---|---|---|
+| `type` | Schlüssel der Event-Typen (`sulu_event.types`), kommagetrennt. Unbekannte Schlüssel zählen nicht; bleibt keiner übrig, trifft der Filter auf nichts zu | `?type=conference,meetup` |
 | `attendanceMode` | `offline`, `online`, `mixed`, kommagetrennt. Exakte Werte: `online` schließt `mixed` nicht ein | `?attendanceMode=online,mixed` |
 | `country` | Ländercodes (ISO 3166-1 alpha-2) des Ortes, kommagetrennt | `?country=DE,AT` |
 | `free` | `1`, `true`, `yes` oder `on`: nur Events, die als kostenlos gekennzeichnet sind | `?free=1` |
 
 - Mehrere Werte einer Art gelten als **ODER**, die Arten untereinander als **UND** (auch mit Kategorien und Tags). Eine Liste ohne verwertbaren Wert (`?attendanceMode=hybrid`) trifft auf nichts zu.
-- Die Namen der Parameter lassen sich mit `attendance_mode_parameter`, `country_parameter` und `free_parameter` in den Params des Felds ändern.
+- Die Namen der Parameter lassen sich mit `type_parameter`, `attendance_mode_parameter`, `country_parameter` und `free_parameter` in den Params des Felds ändern.
 - Im Admin stehen dieselben Filter in der Liste der „Typen“ des Smart-Content-Felds bereit: neben *Anstehend*, *Vergangen* und den Event-Typen gibt es „Teilnahme: Vor Ort / Online / Vor Ort und online“, „Kostenlos“ und „Land: …“ (die Länder der verwendeten Orte). Das sind feste Filter des Felds; sie verbinden sich mit den Event-Typen (ODER innerhalb einer Art, UND zwischen den Arten).
 
 ## Filter-Optionen für eine Filterleiste

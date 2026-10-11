@@ -103,6 +103,18 @@ class EventSmartContentProviderFilterTest extends AbstractEventDatabaseTestCase
         $this->assertSame(['mixed-vegas'], $this->foundForRequest(['attendanceMode' => 'online,mixed', 'country' => 'US']));
     }
 
+    public function testWebsiteQueryParameterForTheEventType(): void
+    {
+        $this->assertSame(['mixed-vegas', 'online-free', 'past-online'], $this->foundForRequest(['type' => 'conference']));
+        $this->assertSame(['onsite-berlin'], $this->foundForRequest(['type' => 'meetup']));
+        $this->assertSame(['mixed-vegas', 'online-free', 'onsite-berlin', 'past-online'], $this->foundForRequest(['type' => ['conference', 'meetup']]));
+        // the kinds combine with AND
+        $this->assertSame(['mixed-vegas'], $this->foundForRequest(['type' => 'conference', 'country' => 'US']));
+        // a type that is not configured is ignored; with nothing else left the filter matches nothing
+        $this->assertSame(['onsite-berlin'], $this->foundForRequest(['type' => 'meetup,hackathon']));
+        $this->assertSame([], $this->foundForRequest(['type' => 'hackathon']));
+    }
+
     public function testWebsiteParametersWithoutUsableValueMatchNothing(): void
     {
         $this->assertSame([], $this->foundForRequest(['attendanceMode' => 'hybrid']));
@@ -118,6 +130,7 @@ class EventSmartContentProviderFilterTest extends AbstractEventDatabaseTestCase
         $this->assertSame($all, $this->foundForRequest(['free' => '0']));
         $this->assertSame(['online-free'], $this->foundForRequest(['kostenlos' => 'yes'], ['free_parameter' => 'kostenlos']));
         $this->assertSame(['onsite-berlin'], $this->foundForRequest(['land' => 'DE'], ['country_parameter' => 'land']));
+        $this->assertSame(['onsite-berlin'], $this->foundForRequest(['art' => 'meetup'], ['type_parameter' => 'art']));
     }
 
     /**

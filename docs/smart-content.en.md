@@ -26,16 +26,17 @@ The `events` smart content provider evaluates categories and tags that a website
 
 Which categories and tags to offer is up to the template: only events with an excerpt carry them, and only the live version counts. The helper [`sulu_event_filter_options`](#filter-options-for-a-filter-bar) lists what there is.
 
-## More filters: participation, country, free of charge
+## More filters: type, participation, country, free of charge
 
 | Parameter | Meaning | Example |
 |---|---|---|
+| `type` | Keys of the event types (`sulu_event.types`), comma separated. Unknown keys are ignored; if none is left the filter matches nothing | `?type=conference,meetup` |
 | `attendanceMode` | `offline`, `online`, `mixed`, comma separated. Exact values: `online` does not include `mixed` | `?attendanceMode=online,mixed` |
 | `country` | Country codes (ISO 3166-1 alpha-2) of the location, comma separated | `?country=DE,AT` |
 | `free` | `1`, `true`, `yes` or `on`: only events marked as free of charge | `?free=1` |
 
 - Several values of one kind match with **OR**, the kinds with **AND** (and with categories and tags). A list without a usable value (`?attendanceMode=hybrid`) matches nothing.
-- The names of the parameters can be changed with `attendance_mode_parameter`, `country_parameter` and `free_parameter` in the params of the field.
+- The names of the parameters can be changed with `type_parameter`, `attendance_mode_parameter`, `country_parameter` and `free_parameter` in the params of the field.
 - In the admin, the same filters are available in the list of "types" of the smart content field: next to *pending*, *expired* and the event types there are "Participation: On site / Online / On site and online", "Free of charge" and "Country: …" (the countries of the locations in use). They are fixed filters of the field and combine with the event types (OR within a kind, AND between the kinds).
 
 ## Filter options for a filter bar
