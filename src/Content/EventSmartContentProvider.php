@@ -279,6 +279,7 @@ class EventSmartContentProvider implements SmartContentProviderInterface
         $queryBuilder->addSelect($dimensionContentAlias.'.type');
         $queryBuilder->addSelect($dimensionContentAlias.'.startDate');
         $queryBuilder->addSelect($dimensionContentAlias.'.endDate');
+        $this->addSorting($queryBuilder, $dimensionContentAlias, $sortBys);
 
         $this->smartContentQueryEnhancer->addOrderBySelects($queryBuilder);
         $limit = isset($filters['limit']) ? (int) $filters['limit'] : null;
@@ -410,6 +411,32 @@ class EventSmartContentProvider implements SmartContentProviderInterface
                 $websiteTagNames,
                 $filters['websiteTagOperator'] ?? 'OR',
             );
+        }
+    }
+
+    /**
+     * The sorting chosen in the smart content field (for example the start date, ascending). The query enhancer of Sulu
+     * only knows the fields of the content it can sort itself, so without this the list came in the order of the database.
+     *
+     * @param array<string, string> $sortBys field => 'asc'|'desc'
+     */
+    private function addSorting(QueryBuilder $queryBuilder, string $dimensionContentAlias, array $sortBys): void
+    {
+        if ([] !== $queryBuilder->getDQLPart('orderBy')) {
+            return;
+        }
+
+        // fields that are selected anyway; the others have to be selected, too, because of DISTINCT
+        $selected = ['title', 'startDate', 'endDate', 'workflowPublished'];
+        foreach ($sortBys as $field => $direction) {
+            if (!\in_array($field, ['title', 'startDate', 'endDate', 'workflowPublished', 'created', 'changed'], true)) {
+                continue;
+            }
+
+            if (!\in_array($field, $selected, true)) {
+                $queryBuilder->addSelect($dimensionContentAlias.'.'.$field);
+            }
+            $queryBuilder->addOrderBy($dimensionContentAlias.'.'.$field, 'desc' === strtolower((string) $direction) ? 'DESC' : 'ASC');
         }
     }
 

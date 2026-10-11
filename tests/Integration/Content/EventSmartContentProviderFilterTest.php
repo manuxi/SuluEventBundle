@@ -182,6 +182,33 @@ class EventSmartContentProviderFilterTest extends AbstractEventDatabaseTestCase
         return $uuids;
     }
 
+    public function testSortingOfTheFieldIsAppliedAndStartsWithTheChosenDirection(): void
+    {
+        $queryBuilder = $this->entityManager->createQueryBuilder()
+            ->select('event.uuid as id')
+            ->from(Event::class, 'event')
+            ->innerJoin('event.dimensionContents', 'dimensionContent');
+
+        $this->callProtected('addSorting', $queryBuilder, 'dimensionContent', ['startDate' => 'desc', 'title' => 'asc', 'unknown' => 'asc']);
+
+        $this->assertStringContainsString('ORDER BY dimensionContent.startDate DESC, dimensionContent.title ASC', $queryBuilder->getDQL());
+        $this->assertStringNotContainsString('unknown', $queryBuilder->getDQL());
+    }
+
+    public function testSortingKeepsAnOrderThatIsThereAlready(): void
+    {
+        $queryBuilder = $this->entityManager->createQueryBuilder()
+            ->select('event.uuid as id')
+            ->from(Event::class, 'event')
+            ->innerJoin('event.dimensionContents', 'dimensionContent')
+            ->orderBy('event.uuid', 'ASC');
+
+        $this->callProtected('addSorting', $queryBuilder, 'dimensionContent', ['startDate' => 'desc']);
+
+        $this->assertStringContainsString('ORDER BY event.uuid ASC', $queryBuilder->getDQL());
+        $this->assertStringNotContainsString('startDate', $queryBuilder->getDQL());
+    }
+
     private function callProtected(string $method, mixed ...$arguments): mixed
     {
         return (new \ReflectionMethod($this->provider, $method))->invoke($this->provider, ...$arguments);
