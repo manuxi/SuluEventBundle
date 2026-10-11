@@ -37,6 +37,15 @@ class LocationResolverTest extends AbstractEventDatabaseTestCase
         $this->assertSame('Example Hub', $resolved->location->getName());
     }
 
+    public function testStateOrCountryBehindTheCityIsNotAnotherCity(): void
+    {
+        foreach (['Berlin, Germany', 'Berlin BE', 'berlin, DE'] as $city) {
+            $resolved = $this->resolver->resolve(new CandidateLocation('Example Hub', city: $city));
+
+            $this->assertFalse($resolved->created, $city);
+        }
+    }
+
     public function testSameNameInAnotherCityIsAnotherPlace(): void
     {
         $resolved = $this->resolver->resolve(new CandidateLocation('Example Hub', city: 'Hamburg', countryCode: 'DE'));

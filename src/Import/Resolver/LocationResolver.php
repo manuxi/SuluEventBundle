@@ -75,7 +75,7 @@ class LocationResolver
     private function find(CandidateLocation $candidate): ?Location
     {
         $name = $this->normalize($candidate->name);
-        $city = null !== $candidate->city ? $this->normalize($candidate->city) : null;
+        $city = null !== $candidate->city ? $this->normalizeCity($candidate->city) : null;
 
         $sameName = array_values(array_filter(
             $this->getLocations(),
@@ -84,7 +84,7 @@ class LocationResolver
 
         if (null !== $city && '' !== $city) {
             foreach ($sameName as $location) {
-                if ($this->normalize((string) $location->getCity()) === $city) {
+                if ($this->normalizeCity((string) $location->getCity()) === $city) {
                     return $location;
                 }
             }
@@ -124,6 +124,18 @@ class LocationResolver
         }
 
         return $this->locations;
+    }
+
+    /**
+     * The city without what sources add to it: the state ("San Francisco, CA", "San Francisco CA") or the country
+     * ("Copenhagen, Denmark").
+     */
+    private function normalizeCity(string $value): string
+    {
+        $city = trim(explode(',', $value)[0]);
+        $city = (string) preg_replace('/\s+[A-Z]{2}$/u', '', $city);
+
+        return $this->normalize($city);
     }
 
     private function normalize(string $value): string
