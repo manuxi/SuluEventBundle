@@ -65,6 +65,12 @@ services:
         arguments:
             - '@doctrine.orm.entity_manager'
 
+    Manuxi\SuluEventBundle\Import\Http\ImportHttpClient:
+        alias: sulu_event.import.http_client
+
+    Manuxi\SuluEventBundle\Import\Resolver\TimezoneGuesser:
+        alias: sulu_event.import.timezone_guesser
+
     Manuxi\SuluEventBundle\Import\Resolver\MediaResolver:
         alias: sulu_event.import.media_resolver
         public: true

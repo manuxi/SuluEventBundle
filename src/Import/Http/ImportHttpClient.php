@@ -100,7 +100,7 @@ class ImportHttpClient
             }
 
             if ($status >= 400) {
-                throw new FetchException(\sprintf('%s answered with HTTP %d.', $url, $status));
+                throw new FetchException(\sprintf('%s answered with HTTP %d.', $url, $status), $status);
             }
 
             if ((int) ($responseHeaders['content-length'][0] ?? 0) > self::MAX_BYTES) {
@@ -109,7 +109,7 @@ class ImportHttpClient
 
             $body = $response->getContent(false);
         } catch (ExceptionInterface $e) {
-            throw new FetchException(\sprintf('%s could not be fetched: %s', $url, $e->getMessage()), 0, $e);
+            throw new FetchException(\sprintf('%s could not be fetched: %s', $url, $e->getMessage()), null, $e);
         }
 
         if (mb_strlen($body) > self::MAX_BYTES) {

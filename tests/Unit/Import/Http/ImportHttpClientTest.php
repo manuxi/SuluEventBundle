@@ -136,10 +136,26 @@ class ImportHttpClientTest extends TestCase
     {
         $client = $this->createClient(static fn (string $url): MockResponse => str_ends_with($url, '/robots.txt') ? new MockResponse('') : new MockResponse('nope', ['http_code' => 500]));
 
-        $this->expectException(FetchException::class);
-        $this->expectExceptionMessage('HTTP 500');
+        try {
+            $client->get('https://example.com/feed.ics');
+            $this->fail('An error status must be an error.');
+        } catch (FetchException $e) {
+            $this->assertStringContainsString('HTTP 500', $e->getMessage());
+            $this->assertSame(500, $e->getStatusCode());
+            $this->assertFalse($e->isNotFound());
+        }
+    }
 
-        $client->get('https://example.com/feed.ics');
+    public function testNotFoundIsRecognizable(): void
+    {
+        $client = $this->createClient(static fn (string $url): MockResponse => str_ends_with($url, '/robots.txt') ? new MockResponse('') : new MockResponse('nope', ['http_code' => 404]));
+
+        try {
+            $client->get('https://example.com/2027/php.json');
+            $this->fail('A missing page must be an error.');
+        } catch (FetchException $e) {
+            $this->assertTrue($e->isNotFound());
+        }
     }
 
     public function testNetworkErrorIsAFetchException(): void
