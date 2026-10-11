@@ -569,7 +569,8 @@ class EventImporter
             $data['excerptTags'] = $tagIds;
         }
         if (null !== $imageId) {
-            $data['image']   = $imageId;
+            // the form of the admin: the template stores {id}, a bare id is not resolved on the website (no image on the cards)
+            $data['image']   = ['id' => $imageId];
             $data['excerpt'] = ['image' => ['id' => $imageId]];
         }
         if (null !== $this->settings->webspace) {
@@ -595,7 +596,7 @@ class EventImporter
             if (null === $row) {
                 $fill[$locale] = [];
                 if (null !== $imageId) {
-                    $fill[$locale]['image'] = $imageId;
+                    $fill[$locale]['image'] = ['id' => $imageId];
                 }
                 if ([] !== $categoryIds) {
                     $fill[$locale]['excerptCategories'] = $categoryIds;
@@ -620,7 +621,7 @@ class EventImporter
                 $data['excerptTags'] = $tagIds;
             }
             if (null !== $imageId && null === $row->getImage()) {
-                $data['image'] = $imageId;
+                $data['image'] = ['id' => $imageId];
             }
             if (null !== $imageId && null === $row->getExcerptImage()) {
                 // the excerpt data is replaced as a whole, so the other entries are carried along

@@ -436,7 +436,7 @@ class EventImporterTest extends AbstractEventDatabaseTestCase
         $this->import([new ArraySource('ical.a', 50, [$this->candidate(categoryKeys: ['unmapped', 'web'])])], settings: $settings);
 
         $data = $this->contentManager->calls[0]['data'];
-        $this->assertSame(77, $data['image']);
+        $this->assertSame(['id' => 77], $data['image']);
         $this->assertSame(['image' => ['id' => 77]], $data['excerpt']);
 
         $uuid = $this->importRepository->findBySourceAndExternalId('ical.a', 'conf-2027')->getEvent()->getUuid();
@@ -449,7 +449,7 @@ class EventImporterTest extends AbstractEventDatabaseTestCase
 
         $this->import([new ArraySource('ical.a', 50, [$this->candidate(categoryKeys: ['web'])])], settings: $settings);
 
-        $this->assertSame(901, $this->contentManager->calls[0]['data']['image']);
+        $this->assertSame(['id' => 901], $this->contentManager->calls[0]['data']['image']);
     }
 
     public function testFileThatIsNotInTheLibraryIsAWarning(): void
@@ -470,7 +470,7 @@ class EventImporterTest extends AbstractEventDatabaseTestCase
 
         $this->import([new ArraySource('ical.a', 50, [$this->candidate(categoryKeys: ['web'], imageMediaId: 55)])], settings: $settings);
 
-        $this->assertSame(55, $this->contentManager->calls[0]['data']['image']);
+        $this->assertSame(['id' => 55], $this->contentManager->calls[0]['data']['image']);
     }
 
     public function testNoImageConfiguredMeansNoImageKeys(): void

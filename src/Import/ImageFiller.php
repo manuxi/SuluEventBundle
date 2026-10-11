@@ -80,14 +80,25 @@ class ImageFiller
             if (!$row instanceof EventDimensionContent || DimensionContentInterface::STAGE_DRAFT !== $row->getStage() || null === $row->getLocale() || DimensionContentInterface::CURRENT_VERSION !== $row->getVersion()) {
                 continue;
             }
-            $current = $row->getImage()?->getId() ?? ($row->getExcerptData()['image']['id'] ?? null);
-            if (null !== $current && !$this->chooser->isPlaceholder((int) $current)) {
-                continue;
-            }
+            $current  = $row->getImage()?->getId() ?? ($row->getExcerptData()['image']['id'] ?? null);
+            // the image the website reads is the one in the template data ({id}); an event whose image was written as a bare id
+            // (older runs) has the image in the database but none on the cards
+            $inTemplate = $row->getTemplateData()['image']['id'] ?? null;
 
-            $imageId = $this->imageFor($event, $row, $media, $result);
-            if (null === $imageId || (null !== $current && ((int) $current === $imageId || $this->chooser->isPlaceholder($imageId)))) {
-                continue;
+            if (null !== $current && !$this->chooser->isPlaceholder((int) $current)) {
+                // a real image stays; it is only written to the template data if it is not there
+                if ((int) $current === (int) $inTemplate) {
+                    continue;
+                }
+                $imageId = (int) $current;
+            } else {
+                $imageId = $this->imageFor($event, $row, $media, $result);
+                if (null === $imageId || (null !== $current && $this->chooser->isPlaceholder($imageId) && (int) $current === (int) $inTemplate)) {
+                    continue;
+                }
+                if (null !== $current && (int) $current === $imageId && (int) $current === (int) $inTemplate) {
+                    continue;
+                }
             }
 
             $filled = true;
@@ -99,7 +110,7 @@ class ImageFiller
                 $event,
                 [
                     'template' => $row->getTemplateKey(),
-                    'image'    => $imageId,
+                    'image'    => ['id' => $imageId],
                     // the excerpt data is replaced as a whole, so the other entries are carried along
                     'excerpt'  => array_replace($row->getExcerptData(), ['image' => ['id' => $imageId]]),
                 ],

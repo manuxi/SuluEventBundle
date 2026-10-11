@@ -55,7 +55,7 @@ class ImageFillerTest extends AbstractEventDatabaseTestCase
         $this->assertSame(['Event a'], $result['events']);
         $this->assertCount(1, $this->contentManager->calls);
         // the first topic that has an image: "unmapped" has none, "ai" has
-        $this->assertSame(412, $this->contentManager->calls[0]['data']['image']);
+        $this->assertSame(['id' => 412], $this->contentManager->calls[0]['data']['image']);
         $this->assertSame(['image' => ['id' => 412]], $this->contentManager->calls[0]['data']['excerpt']);
         $this->assertSame('de', $this->contentManager->calls[0]['locale']);
     }
@@ -65,12 +65,26 @@ class ImageFillerTest extends AbstractEventDatabaseTestCase
         $this->createEvent('a', 'de', '2027-06-01 10:00:00', stage: DimensionContentInterface::STAGE_DRAFT, categories: ['ai']);
         $row = $this->draftOf('a');
         $row->setExcerptData(['title' => 'Mine', 'image' => ['id' => 5]]);
+        $row->setTemplateData(['image' => ['id' => 5]]);
         $this->entityManager->flush();
 
         $result = $this->filler()->fill();
 
         $this->assertSame([], $result['events']);
         $this->assertSame([], $this->contentManager->calls);
+    }
+
+    public function testRealImageThatIsNotInTheTemplateDataIsWrittenThereButNotChanged(): void
+    {
+        // older runs wrote the image as a bare id: it is in the database, the website resolves nothing (no image on the cards)
+        $this->createEvent('a', 'de', '2027-06-01 10:00:00', stage: DimensionContentInterface::STAGE_DRAFT, categories: ['ai']);
+        $row = $this->draftOf('a');
+        $row->setExcerptData(['image' => ['id' => 5]]);
+        $this->entityManager->flush();
+
+        $this->filler()->fill();
+
+        $this->assertSame(['id' => 5], $this->contentManager->calls[0]['data']['image'], 'the image of the editors stays, in the form of the website');
     }
 
     public function testEventWithoutAMappedTopicStaysAsItIs(): void
