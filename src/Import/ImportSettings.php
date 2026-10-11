@@ -17,6 +17,7 @@ final class ImportSettings
      * @param string                    $defaultType              event type for candidates without one
      * @param array<string, int|string> $categoryImages           category key => id or file name of an image of our own, for events that have none
      * @param string[]                  $requiredLocales          locales an imported event should have a text in (for the list of events that need work)
+     * @param int|string|null           $locationImage            id or file name of the image a place gets that the import creates (and that has none)
      */
     public function __construct(
         public readonly bool $enabled = false,
@@ -28,6 +29,7 @@ final class ImportSettings
         public readonly string $template = 'event',
         public readonly array $categoryImages = [],
         public readonly array $requiredLocales = [],
+        public readonly int|string|null $locationImage = null,
     ) {
     }
 }

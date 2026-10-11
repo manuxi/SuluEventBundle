@@ -19,6 +19,7 @@ use Manuxi\SuluEventBundle\Import\Resolver\TagResolver;
 use Manuxi\SuluEventBundle\Repository\EventImportRepository;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
 use Sulu\Bundle\ActivityBundle\Application\Collector\DomainEventCollectorInterface;
+use Sulu\Bundle\MediaBundle\Entity\Media;
 use Sulu\Content\Application\ContentManager\ContentManagerInterface;
 use Sulu\Content\Application\ContentWorkflow\ContentWorkflowInterface;
 use Sulu\Content\Domain\Model\DimensionContentInterface;
@@ -805,10 +806,34 @@ class EventImporter
 
         $resolved = $this->locationResolver->resolve($candidate->location, !$dryRun, $candidate->timezone);
         if ($resolved->created) {
+            $this->giveNewLocationItsImage($resolved->location, $dryRun, $report, $source, $candidate->externalId);
             $report->addNewLocation($resolved->location->getName() ?? $candidate->location->name, $resolved->location->getTimezone(), $resolved->timezoneCertain);
         }
 
         return $resolved->location;
+    }
+
+    /**
+     * A source does not know a photo of the place: a new place gets the image of its own (sulu_event.import.location_image),
+     * so that no place is without one. The editors replace it with a real photo.
+     */
+    private function giveNewLocationItsImage(Location $location, bool $dryRun, ImportReport $report, string $source, string $externalId): void
+    {
+        $reference = $this->settings->locationImage;
+        if (null === $reference || '' === (string) $reference) {
+            return;
+        }
+
+        $id = $this->mediaResolver->resolve($reference);
+        if (null === $id) {
+            $report->addWarning($source, $externalId, \sprintf('The image "%s" for new places does not exist.', $reference));
+
+            return;
+        }
+
+        if (!$dryRun) {
+            $location->setImage($this->entityManager->getReference(Media::class, $id));
+        }
     }
 
     /**

@@ -55,6 +55,7 @@ sulu_event:
 | `url_prefix` | Path the urls of imported events start with | `/events` |
 | `webspace` | Webspace of imported events | default webspace |
 | `category_images` | Images of your own: category key => file name or id of a media, see "Images" | – |
+| `location_image` | Image (id or file name) for places the import creates: no source knows a photo of the place. Places without an image get it with `sulu:event:fill-images`; the editors replace it with a real photo | – |
 | `locales` | Locales an imported event should have a text in. Each gets a draft with the title of the source and all the facts right away (also for events that exist already); while the text is missing the event is in the list of events that need work | – |
 
 Options of a source (`ical` and `jsonld` have the same):
@@ -101,6 +102,8 @@ sulu_event:
 ```
 
 Use **file names** rather than ids where you can: the ids of the media differ between a test platform and the live site, the names do not (the first media whose current file has the name is taken). A new event gets the image of its source, otherwise the one of its first category that is listed; it is set as the image and as the excerpt image (cards and teasers). An event that has no image yet gets one on the next run as well; an image someone chose is never replaced. A media id that does not exist is reported as a warning. "Image missing" also shows in the list of events that need work (MCP tool `sulu_event_import_pending`).
+
+**Places** have no photo from a source. With `location_image` (file name or id) every place the import creates gets an image; the editors replace it with a real photo. **Afterwards** `php bin/adminconsole sulu:event:fill-images` (with `--dry-run` to look) fills all events and places without an image: an event takes the image of its first topic from `category_images`, a place the one of `location_image`. An image that exists is never replaced; a published event becomes a draft and is live with the image once it is published again.
 
 ## In the admin
 

@@ -94,6 +94,7 @@ services:
             - 'event'
             - '%sulu_event.import.category_images%'
             - '%sulu_event.import.locales%'
+            - '%sulu_event.import.location_image%'
 
     sulu_event.import.source_registry:
         class: Manuxi\SuluEventBundle\Import\SourceRegistry
@@ -163,6 +164,24 @@ services:
             - '@doctrine.orm.entity_manager'
         tags:
             - { name: kernel.event_subscriber }
+
+    sulu_event.import.image_filler:
+        class: Manuxi\SuluEventBundle\Import\ImageFiller
+        arguments:
+            - '@doctrine.orm.entity_manager'
+            - '@Manuxi\SuluEventBundle\Repository\EventRepository'
+            - '@sulu_content.content_manager'
+            - '@sulu_content.content_workflow'
+            - '@sulu_event.import.media_resolver'
+            - '@sulu_event.import.settings'
+            - '@sulu_event.import.user_switcher'
+
+    sulu_event.command.fill_images:
+        class: Manuxi\SuluEventBundle\Command\FillImagesCommand
+        arguments:
+            - '@sulu_event.import.image_filler'
+        tags:
+            - { name: console.command }
 
     sulu_event.command.import:
         class: Manuxi\SuluEventBundle\Command\ImportEventsCommand

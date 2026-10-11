@@ -14,6 +14,16 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 class ImportConfigurationTest extends TestCase
 {
+    public function testLocationImageIsAnIdOrAFileName(): void
+    {
+        $this->assertNull($this->load([])->getParameter('sulu_event.import.location_image'));
+        $this->assertSame('event-venue.jpg', $this->load(['import' => ['location_image' => 'event-venue.jpg']])->getParameter('sulu_event.import.location_image'));
+        $this->assertSame(55, $this->load(['import' => ['location_image' => 55]])->getParameter('sulu_event.import.location_image'));
+
+        $this->expectException(InvalidConfigurationException::class);
+        $this->load(['import' => ['location_image' => ' ']]);
+    }
+
     public function testCategoryKeysWithADashStayAsTheyAre(): void
     {
         $container = $this->load(['import' => ['category_images' => ['web-php' => 'event-topic-web-php.jpg', 'open-source' => 7]]]);

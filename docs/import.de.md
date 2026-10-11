@@ -55,6 +55,7 @@ sulu_event:
 | `url_prefix` | Pfad, mit dem die URLs importierter Events beginnen | `/events` |
 | `webspace` | Webspace importierter Events | Standard-Webspace |
 | `category_images` | Eigene Bilder: Kategorie-Schlüssel => Dateiname oder ID eines Mediums, siehe „Bilder“ | – |
+| `location_image` | Bild (Id oder Dateiname) für Orte, die der Import neu anlegt: keine Quelle kennt ein Foto vom Ort. Orte ohne Bild bekommen es mit `sulu:event:fill-images`; die Redaktion ersetzt es durch ein echtes Foto | – |
 | `locales` | Sprachen, in denen ein importiertes Event einen Text haben soll. Jede bekommt beim Import gleich einen Entwurf mit dem Titel der Quelle und allen Fakten (auch bei Events, die es schon gibt); fehlt der Text, steht das Event in der Liste der Events mit offener Arbeit | – |
 
 Optionen einer Quelle (`ical` und `jsonld` haben dieselben):
@@ -101,6 +102,8 @@ sulu_event:
 ```
 
 **Dateinamen** sind besser als IDs: Die IDs der Medien unterscheiden sich zwischen Testplattform und Live-Seite, die Namen nicht (genommen wird das erste Medium, dessen aktuelle Datei so heißt). Ein neues Event bekommt das Bild seiner Quelle, sonst das seiner ersten Kategorie, die aufgeführt ist; es wird als Bild und als Excerpt-Bild (Karten und Teaser) gesetzt. Ein Event ohne Bild bekommt beim nächsten Lauf ebenfalls eins; ein Bild, das jemand gewählt hat, wird nie ersetzt. Eine Medien-ID, die es nicht gibt, wird als Warnung gemeldet. „Bild fehlt“ erscheint auch in der Liste der Events, an denen noch etwas zu tun ist (MCP-Werkzeug `sulu_event_import_pending`).
+
+**Orte** haben kein Foto aus einer Quelle. Mit `location_image` (Dateiname oder ID) bekommt jeder Ort, den der Import neu anlegt, ein Bild; die Redaktion ersetzt es durch ein echtes Foto. **Nachträglich** füllt `php bin/adminconsole sulu:event:fill-images` (mit `--dry-run` zum Ansehen) alle Events und Orte ohne Bild: ein Event nimmt das Bild seines ersten Themas aus `category_images`, ein Ort das aus `location_image`. Ein vorhandenes Bild wird nie ersetzt; ein veröffentlichtes Event wird dabei zum Entwurf und ist mit dem Bild live, sobald es erneut veröffentlicht wird.
 
 ## Im Admin
 
