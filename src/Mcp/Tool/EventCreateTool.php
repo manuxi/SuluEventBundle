@@ -8,6 +8,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Manuxi\SuluEventBundle\Domain\Event\Event\CreatedEvent;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Mcp\Capability\Attribute\McpTool;
+use Mcp\Capability\Attribute\Schema;
 use Sulu\Bundle\ActivityBundle\Application\Collector\DomainEventCollectorInterface;
 use Sulu\Component\Security\Authorization\PermissionTypes;
 use Sulu\Content\Application\ContentManager\ContentManagerInterface;
@@ -40,7 +41,13 @@ class EventCreateTool
     #[RequiresPermission(requirements: [
         new PermissionRequirement(Event::SECURITY_CONTEXT, PermissionTypes::ADD),
     ])]
-    public function createEvent(string $locale, string $title, string $template = 'event', ?array $content = null): array
+    public function createEvent(
+        string $locale,
+        string $title,
+        string $template = 'event',
+        #[Schema(type: 'object', description: 'Template fields as key-value pairs, e.g. {"url": "/events/my-event", "type": "conference", "startDate": "2026-11-05T09:00:00", "summary": "..."}', additionalProperties: true)]
+        ?array $content = null,
+    ): array
     {
         try {
             $data = ['template' => $template, 'title' => $title] + ($content ?? []);

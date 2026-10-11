@@ -11,6 +11,7 @@ use Manuxi\SuluEventBundle\Import\Resolver\CategoryResolver;
 use Manuxi\SuluEventBundle\Import\Resolver\TagResolver;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
 use Mcp\Capability\Attribute\McpTool;
+use Mcp\Capability\Attribute\Schema;
 use Sulu\Bundle\ActivityBundle\Application\Collector\DomainEventCollectorInterface;
 use Sulu\Component\Security\Authorization\PermissionTypes;
 use Sulu\Content\Application\ContentManager\ContentManagerInterface;
@@ -50,7 +51,13 @@ class EventUpdateTool
     #[RequiresPermission(requirements: [
         new PermissionRequirement(Event::SECURITY_CONTEXT, PermissionTypes::EDIT),
     ])]
-    public function updateEvent(string $uuid, string $locale, ?string $title = null, ?array $content = null): array
+    public function updateEvent(
+        string $uuid,
+        string $locale,
+        ?string $title = null,
+        #[Schema(type: 'object', description: 'The fields to change as key-value pairs, e.g. {"summary": "...", "text": "<p>...</p>", "categories": ["ai"], "tags": ["Symfony"]}', additionalProperties: true)]
+        ?array $content = null,
+    ): array
     {
         try {
             $event = $this->eventRepository->findByUuid($uuid);

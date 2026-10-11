@@ -7,6 +7,7 @@ namespace Manuxi\SuluEventBundle\Mcp\Tool;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Import\PendingEventFinder;
 use Mcp\Capability\Attribute\McpTool;
+use Mcp\Capability\Attribute\Schema;
 use Sulu\Component\Security\Authorization\PermissionTypes;
 use Sulu\Mcp\Domain\Security\PermissionRequirement;
 use Sulu\Mcp\Domain\Security\RequiresPermission;
@@ -33,7 +34,12 @@ class EventImportPendingTool
     #[RequiresPermission(requirements: [
         new PermissionRequirement(Event::SECURITY_CONTEXT, PermissionTypes::VIEW),
     ])]
-    public function pending(?array $locales = null, int $page = 1, int $limit = 20): array
+    public function pending(
+        #[Schema(type: 'array', description: 'Locales to check, e.g. ["de", "en"]', items: ['type' => 'string'])]
+        ?array $locales = null,
+        int $page = 1,
+        int $limit = 20,
+    ): array
     {
         try {
             $page  = max(1, $page);

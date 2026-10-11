@@ -10,6 +10,7 @@ use Manuxi\SuluEventBundle\Import\EventCandidate;
 use Manuxi\SuluEventBundle\Import\EventImporter;
 use Manuxi\SuluEventBundle\Import\ImportReport;
 use Mcp\Capability\Attribute\McpTool;
+use Mcp\Capability\Attribute\Schema;
 use Sulu\Component\Security\Authorization\PermissionTypes;
 use Sulu\Mcp\Domain\Security\PermissionRequirement;
 use Sulu\Mcp\Domain\Security\RequiresPermission;
@@ -50,6 +51,7 @@ class EventImportUpsertTool
     public function upsert(
         string $source,
         string $externalId,
+        #[Schema(type: 'object', description: 'Title per locale, e.g. {"en": "Example Conf 2027", "de": "Beispielkonferenz 2027"}', additionalProperties: ['type' => 'string'])]
         array $titles,
         string $startDate,
         ?string $endDate = null,
@@ -57,6 +59,7 @@ class EventImportUpsertTool
         bool $allDay = false,
         string $status = 'scheduled',
         string $attendanceMode = 'offline',
+        #[Schema(type: 'object', description: 'The place: {"name": "Messe Hall 3", "city": "Cologne", "countryCode": "DE"}, optional street, number, postalCode, state, latitude, longitude. Name is required.', additionalProperties: true)]
         ?array $location = null,
         ?int $locationId = null,
         ?string $onlineUrl = null,
@@ -64,13 +67,20 @@ class EventImportUpsertTool
         ?string $organizerName = null,
         ?string $organizerUrl = null,
         ?bool $isFree = null,
+        #[Schema(type: 'object', description: 'Price text per locale, e.g. {"en": "from 99 EUR", "de": "ab 99 EUR"}', additionalProperties: ['type' => 'string'])]
         ?array $priceInfos = null,
+        #[Schema(type: 'array', description: 'Languages of the event, e.g. ["en", "de"]', items: ['type' => 'string'])]
         ?array $languages = null,
         ?string $type = null,
+        #[Schema(type: 'array', description: 'Keys of the topic categories, e.g. ["ai", "web-php"]', items: ['type' => 'string'])]
         ?array $categories = null,
+        #[Schema(type: 'array', description: 'Tag names, e.g. ["Symfony", "PHP"]; new tags are created', items: ['type' => 'string'])]
         ?array $tags = null,
+        #[Schema(type: 'object', description: 'One line per locale, e.g. {"de": "...", "en": "..."}', additionalProperties: ['type' => 'string'])]
         ?array $subtitles = null,
+        #[Schema(type: 'object', description: 'Short text (2 to 3 sentences) per locale', additionalProperties: ['type' => 'string'])]
         ?array $summaries = null,
+        #[Schema(type: 'object', description: 'The text as HTML per locale, e.g. {"de": "<p>...</p>", "en": "<p>...</p>"}', additionalProperties: ['type' => 'string'])]
         ?array $texts = null,
         ?string $sourceUrl = null,
         ?string $sourceDescription = null,
