@@ -6,15 +6,15 @@
     <key>events_settings_import</key>
 
     <properties>
-        <section name="import-running" colspan="12">
+        <section name="import-state">
             <meta>
-                <title>sulu_event.import.running</title>
+                <title>sulu_event.import.state</title>
             </meta>
             <properties>
-                <property name="importRunningText" type="text_line" colspan="12" disabledCondition="true" visibleCondition="importRunning == true">
+                <property name="importState" type="text_line" colspan="12" disabledCondition="true">
                     <meta>
-                        <title>sulu_event.import.running_state</title>
-                        <info_text>sulu_event.import.running_info</info_text>
+                        <title>sulu_event.import.state_title</title>
+                        <info_text>sulu_event.import.state_info</info_text>
                     </meta>
                 </property>
             </properties>

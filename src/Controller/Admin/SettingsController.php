@@ -22,6 +22,7 @@ use Symfony\Component\HttpKernel\Event\TerminateEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[Route('/admin/api')]
 class SettingsController extends AbstractRestController implements SecuredControllerInterface
@@ -34,6 +35,7 @@ class SettingsController extends AbstractRestController implements SecuredContro
         private ?EventImportRunRepository $importRunRepository = null,
         private ?ImportRunner $importRunner = null,
         private ?EventDispatcherInterface $eventDispatcher = null,
+        private ?TranslatorInterface $translator = null,
     ) {
         parent::__construct($viewHandler, $tokenStorage);
     }
@@ -124,7 +126,7 @@ class SettingsController extends AbstractRestController implements SecuredContro
         return [
             // The import: running now (the button "Import now" of the tab "Import" waits for it)
             'importRunning' => null !== $this->importRunner?->runningSince(),
-            'importRunningText' => $this->importRunningText(),
+            'importState' => $this->importState(),
 
             // General Display
             'toggleHeader' => $entity->getToggleHeader(),
@@ -180,11 +182,33 @@ class SettingsController extends AbstractRestController implements SecuredContro
      *
      * @return array<string, string|null>
      */
-    private function importRunningText(): ?string
+    /**
+     * What the tab says about the import: running since when, or ready (and how it can be started).
+     */
+    private function importState(): ?string
     {
-        $since = $this->importRunner?->runningSince();
+        if (null === $this->importRunner) {
+            return null;
+        }
 
-        return null === $since ? null : \sprintf('Running since %s', (new \DateTimeImmutable('@' . $since))->setTimezone(new \DateTimeZone(date_default_timezone_get()))->format('H:i:s'));
+        $since = $this->importRunner->runningSince();
+        if (null === $since) {
+            return $this->importRunner->isAvailable()
+                ? $this->translate('sulu_event.import.state_ready')
+                : $this->translate('sulu_event.import.state_off');
+        }
+
+        $time = (new \DateTimeImmutable('@' . $since))->setTimezone(new \DateTimeZone(date_default_timezone_get()))->format('H:i:s');
+
+        return $this->translate('sulu_event.import.state_running', ['%time%' => $time]);
+    }
+
+    /**
+     * @param array<string, string> $parameters
+     */
+    private function translate(string $key, array $parameters = []): string
+    {
+        return null === $this->translator ? $key : $this->translator->trans($key, $parameters, 'admin');
     }
 
     private function getImportRunData(): array

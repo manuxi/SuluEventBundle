@@ -312,7 +312,7 @@
                     </meta>
                 </property>
 
-                <property name="text" type="text_editor" mandatory="true">
+                <property name="text" type="text_editor">
                     <meta>
                         <title>sulu_event.text</title>
                     </meta>

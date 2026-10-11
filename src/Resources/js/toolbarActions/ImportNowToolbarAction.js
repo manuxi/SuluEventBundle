@@ -1,5 +1,5 @@
 // @flow
-import {action, observable} from 'mobx';
+import {action, observable, reaction} from 'mobx';
 import {AbstractFormToolbarAction} from 'sulu-admin-bundle/views';
 import {ResourceRequester} from 'sulu-admin-bundle/services';
 import {translate} from 'sulu-admin-bundle/utils';
@@ -17,6 +17,25 @@ export default class ImportNowToolbarAction extends AbstractFormToolbarAction {
     @observable starting: boolean = false;
     timer: ?TimeoutID = null;
     waitedSince: number = 0;
+
+    constructor(...args: Array<any>) {
+        super(...args);
+
+        // a run that was started before the tab was opened (or by the daily job, with the button of another browser): look
+        // until it is done
+        this.disposer = reaction(
+            () => this.resourceFormStore.data.importRunning,
+            (running) => {
+                if (true === running && !this.timer) {
+                    this.waitedSince = Date.now();
+                    this.poll();
+                }
+            },
+            {fireImmediately: true}
+        );
+    }
+
+    disposer: ?Function = null;
 
     getToolbarItemConfig() {
         const running = this.starting || true === this.resourceFormStore.data.importRunning;
@@ -58,6 +77,8 @@ export default class ImportNowToolbarAction extends AbstractFormToolbarAction {
             this.timer = setTimeout(() => {
                 if (true === this.resourceFormStore.data.importRunning && Date.now() - this.waitedSince < POLL_LIMIT) {
                     this.poll();
+                } else {
+                    this.timer = null;
                 }
             }, 1500);
         }, POLL_INTERVAL);
@@ -67,5 +88,9 @@ export default class ImportNowToolbarAction extends AbstractFormToolbarAction {
         if (this.timer) {
             clearTimeout(this.timer);
         }
+        if (this.disposer) {
+            this.disposer();
+        }
+        super.destroy();
     }
 }

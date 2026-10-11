@@ -46,6 +46,7 @@ services:
             - '@Manuxi\SuluEventBundle\Repository\EventImportRunRepository'
             - '@sulu_event.import.runner'
             - '@event_dispatcher'
+            - '@translator'
         tags:
             - { name: controller.service_arguments }
             - { name: sulu.context, context: admin }
