@@ -382,6 +382,51 @@ class EventImporterTest extends AbstractEventDatabaseTestCase
         $this->assertSame(0, $report->getCounts()['rejected']);
     }
 
+    public function testRequiredLocalesGetADraftWithTheTitleOfTheSource(): void
+    {
+        $settings = new ImportSettings(true, 'import', false, '/events', null, 'default', 'event', [], ['de', 'en']);
+
+        $this->import([new ArraySource('ical.a', 50, [$this->candidate()])], settings: $settings);
+
+        $uuid = $this->importRepository->findBySourceAndExternalId('ical.a', 'conf-2027')->getEvent()->getUuid();
+        $this->assertSame('Example Conf 2027', $this->draft($uuid, 'en')->getTitle());
+        $german = $this->draft($uuid, 'de');
+        $this->assertSame('Example Conf 2027', $german->getTitle());
+        // the facts are there in every language
+        $this->assertSame('conference', $german->getType());
+        $this->assertSame('2027-06-12', $german->getStartDate()->format('Y-m-d'));
+    }
+
+    public function testExistingEventGetsALanguageThatIsRequiredLater(): void
+    {
+        $this->import([new ArraySource('ical.a', 50, [$this->candidate()])]);
+        $uuid = $this->importRepository->findBySourceAndExternalId('ical.a', 'conf-2027')->getEvent()->getUuid();
+        $this->assertNull($this->findDraft($uuid, 'de'));
+
+        $settings = new ImportSettings(true, 'import', false, '/events', null, 'default', 'event', [], ['de', 'en']);
+        $this->import([new ArraySource('ical.a', 50, [$this->candidate()])], settings: $settings);
+
+        $this->assertSame('Example Conf 2027', $this->draft($uuid, 'de')->getTitle());
+        $this->assertSame(1, $this->rowCount(Event::class));
+    }
+
+    public function testATitleThatWasWrittenForARequiredLanguageIsKept(): void
+    {
+        $settings = new ImportSettings(true, 'import', false, '/events', null, 'default', 'event', [], ['de', 'en']);
+        $this->import([new ArraySource('ical.a', 50, [$this->candidate()])], settings: $settings);
+        $uuid = $this->importRepository->findBySourceAndExternalId('ical.a', 'conf-2027')->getEvent()->getUuid();
+
+        // the editorial work translates the title
+        $row = $this->findDraft($uuid, 'de');
+        $row->setTitle('Beispielkonferenz 2027');
+        $this->entityManager->flush();
+
+        $report = $this->import([new ArraySource('ical.a', 50, [$this->candidate(startDate: new \DateTimeImmutable('2027-06-14 10:00:00', new \DateTimeZone('Europe/Berlin')))])], settings: $settings);
+
+        $this->assertSame('Beispielkonferenz 2027', $this->draft($uuid, 'de')->getTitle());
+        $this->assertSame(1, $report->getCounts()['updated']);
+    }
+
     public function testNewEventGetsTheImageOfItsCategory(): void
     {
         $settings = new ImportSettings(true, 'import', false, '/events', null, 'default', 'event', ['other' => 5, 'web' => 77]);
@@ -779,6 +824,18 @@ class EventImporterTest extends AbstractEventDatabaseTestCase
     private function rowCount(string $class): int
     {
         return (int) $this->entityManager->createQuery(\sprintf('SELECT COUNT(e) FROM %s e', $class))->getSingleScalarResult();
+    }
+
+    private function findDraft(string $uuid, string $locale): ?EventDimensionContent
+    {
+        $this->entityManager->clear();
+        foreach ($this->repository->findByUuid($uuid)->getDimensionContents() as $row) {
+            if (DimensionContentInterface::STAGE_DRAFT === $row->getStage() && $locale === $row->getLocale()) {
+                return $row;
+            }
+        }
+
+        return null;
     }
 
     private function draft(string $uuid, string $locale): EventDimensionContent

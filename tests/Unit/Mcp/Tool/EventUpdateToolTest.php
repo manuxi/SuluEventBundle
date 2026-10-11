@@ -7,11 +7,15 @@ namespace Manuxi\SuluEventBundle\Tests\Unit\Mcp\Tool;
 use Doctrine\ORM\EntityManagerInterface;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
+use Manuxi\SuluEventBundle\Import\Resolver\CategoryResolver;
+use Manuxi\SuluEventBundle\Import\Resolver\TagResolver;
 use Manuxi\SuluEventBundle\Mcp\Tool\EventUpdateTool;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Sulu\Bundle\ActivityBundle\Application\Collector\DomainEventCollectorInterface;
+use Sulu\Bundle\CategoryBundle\Entity\CategoryInterface;
+use Sulu\Bundle\TagBundle\Tag\TagInterface;
 use Sulu\Content\Application\ContentManager\ContentManagerInterface;
 use Sulu\Content\Application\ContentWorkflow\ContentWorkflowInterface;
 use Sulu\Content\Domain\Model\WorkflowInterface;
@@ -22,6 +26,8 @@ class EventUpdateToolTest extends TestCase
     private ContentManagerInterface&MockObject $contentManager;
     private ContentWorkflowInterface&MockObject $contentWorkflow;
     private EntityManagerInterface&MockObject $entityManager;
+    private CategoryResolver&MockObject $categoryResolver;
+    private TagResolver&MockObject $tagResolver;
     private EventUpdateTool $tool;
     private Event $event;
 
@@ -35,6 +41,8 @@ class EventUpdateToolTest extends TestCase
         $this->contentManager = $this->createMock(ContentManagerInterface::class);
         $this->contentWorkflow = $this->createMock(ContentWorkflowInterface::class);
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
+        $this->categoryResolver = $this->createMock(CategoryResolver::class);
+        $this->tagResolver = $this->createMock(TagResolver::class);
 
         $this->tool = new EventUpdateTool(
             $this->eventRepository,
@@ -42,6 +50,8 @@ class EventUpdateToolTest extends TestCase
             $this->contentManager,
             $this->contentWorkflow,
             $this->createMock(DomainEventCollectorInterface::class),
+            $this->categoryResolver,
+            $this->tagResolver,
         );
     }
 
@@ -106,6 +116,44 @@ class EventUpdateToolTest extends TestCase
         $this->tool->updateEvent($this->event->getUuid(), 'de', null, ['summary' => 'x']);
     }
 
+    public function testCategoryKeysAndTagNamesBecomeIds(): void
+    {
+        $current = $this->createDimensionContent('event', WorkflowInterface::WORKFLOW_PLACE_DRAFT);
+        $this->contentManager->method('resolve')->willReturn($current);
+
+        $category = $this->createMock(CategoryInterface::class);
+        $category->method('getId')->willReturn(22);
+        $this->categoryResolver->method('resolve')->with(['web-php', 'nope'])->willReturn([[$category], ['nope']]);
+        $tag = $this->createMock(TagInterface::class);
+        $tag->method('getId')->willReturn(7);
+        $this->tagResolver->method('resolve')->with(['Symfony'])->willReturn([$tag]);
+        // a new tag needs its id, then the update itself
+        $this->entityManager->expects($this->exactly(2))->method('flush');
+
+        $this->contentManager->expects($this->once())
+            ->method('persist')
+            ->with($this->anything(), ['summary' => 'S', 'excerptCategories' => [22], 'excerptTags' => [7], 'template' => 'event'], $this->anything())
+            ->willReturn($current);
+
+        $result = $this->tool->updateEvent($this->event->getUuid(), 'de', null, ['summary' => 'S', 'categories' => ['web-php', 'nope'], 'tags' => ['Symfony']]);
+
+        $this->assertTrue($result['success'] ?? false, json_encode($result));
+        $this->assertSame(['Unknown category keys: nope'], $result['warnings']);
+    }
+
+    public function testWithoutCategoriesAndTagsNothingIsResolved(): void
+    {
+        $current = $this->createDimensionContent('event', WorkflowInterface::WORKFLOW_PLACE_DRAFT);
+        $this->contentManager->method('resolve')->willReturn($current);
+        $this->contentManager->method('persist')->willReturn($current);
+        $this->categoryResolver->expects($this->never())->method('resolve');
+        $this->tagResolver->expects($this->never())->method('resolve');
+
+        $result = $this->tool->updateEvent($this->event->getUuid(), 'de', null, ['summary' => 'S']);
+
+        $this->assertArrayNotHasKey('warnings', $result);
+    }
+
     public function testUnknownEventReturnsAnError(): void
     {
         $repository = $this->createMock(EventRepository::class);
@@ -117,6 +165,8 @@ class EventUpdateToolTest extends TestCase
             $this->contentManager,
             $this->contentWorkflow,
             $this->createMock(DomainEventCollectorInterface::class),
+            $this->categoryResolver,
+            $this->tagResolver,
         );
 
         $this->contentManager->expects($this->never())->method('persist');

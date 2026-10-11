@@ -75,6 +75,12 @@ services:
         alias: sulu_event.import.media_resolver
         public: true
 
+    Manuxi\SuluEventBundle\Import\Resolver\CategoryResolver:
+        alias: sulu_event.import.category_resolver
+
+    Manuxi\SuluEventBundle\Import\Resolver\TagResolver:
+        alias: sulu_event.import.tag_resolver
+
     # Importer
     sulu_event.import.settings:
         class: Manuxi\SuluEventBundle\Import\ImportSettings

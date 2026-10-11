@@ -195,9 +195,45 @@ class EventImporter
         return $dryRun ? $callback() : $this->userSwitcher->runAsImportUser($callback);
     }
 
+    /**
+     * A source usually knows one language. The languages an event should have (sulu_event.import.locales) get a draft with
+     * the title of the source right away, so that the editors (or the MCP tools) only have to write the texts and the
+     * facts are there in every language. A title that someone changes later is locked like any other field.
+     */
+    private function withRequiredLocales(EventCandidate $candidate): EventCandidate
+    {
+        $first = null;
+        foreach ($candidate->titles as $title) {
+            if ('' !== trim($title)) {
+                $first = $title;
+
+                break;
+            }
+        }
+        if (null === $first || [] === $this->settings->requiredLocales) {
+            return $candidate;
+        }
+
+        $titles = $candidate->titles;
+        foreach ($this->settings->requiredLocales as $locale) {
+            if ('' === trim($titles[$locale] ?? '')) {
+                $titles[$locale] = $first;
+            }
+        }
+        if ($titles === $candidate->titles) {
+            return $candidate;
+        }
+
+        $copy         = clone $candidate;
+        $copy->titles = $titles;
+
+        return $copy;
+    }
+
     private function processCandidate(string $sourceKey, int $priority, EventCandidate $candidate, ImportReport $report, bool $dryRun, \DateTimeImmutable $now): void
     {
-        $title = $this->titleOf($candidate);
+        $candidate = $this->withRequiredLocales($candidate);
+        $title     = $this->titleOf($candidate);
         if (null === $candidate->startDate || [] === $candidate->getLocales()) {
             $report->add(ImportReport::ACTION_ERROR, $sourceKey, $candidate->externalId, $title, null, 'The source gives no title or no start date.');
 

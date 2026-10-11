@@ -55,7 +55,7 @@ sulu_event:
 | `url_prefix` | Pfad, mit dem die URLs importierter Events beginnen | `/events` |
 | `webspace` | Webspace importierter Events | Standard-Webspace |
 | `category_images` | Eigene Bilder: Kategorie-Schlüssel => Dateiname oder ID eines Mediums, siehe „Bilder“ | – |
-| `locales` | Sprachen, in denen ein importiertes Event einen Text haben soll, für die Liste der Events mit offener Arbeit | – |
+| `locales` | Sprachen, in denen ein importiertes Event einen Text haben soll. Jede bekommt beim Import gleich einen Entwurf mit dem Titel der Quelle und allen Fakten (auch bei Events, die es schon gibt); fehlt der Text, steht das Event in der Liste der Events mit offener Arbeit | – |
 
 Optionen einer Quelle (`ical` und `jsonld` haben dieselben):
 

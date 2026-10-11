@@ -66,6 +66,8 @@ Publishing is not part of the tools. Publish in the admin, or with the [bulk act
 
 Only the given fields are changed. Everything else (image, location, dates, categories and so on) stays as it is. A published event becomes a draft again and has to be published again.
 
+Categories and tags are easy to name: `"categories": ["ai", "web-php"]` (keys of the categories) and `"tags": ["Symfony", "AI"]` (names; a tag that does not exist is created). They replace the topics and tags of the locale; unknown category keys are listed in `warnings` of the answer. `excerptCategories` and `excerptTags` with ids still work.
+
 ## Tools for the import
 
 The three tools belong to the [event import](import.en.md). They are meant for research and editing work: an assistant finds events on the web, enters them, and later completes the ones the import created.

@@ -66,6 +66,8 @@ Veröffentlichen gehört nicht zu den Tools. Das geht im Admin oder mit den [Sam
 
 Geändert werden nur die übergebenen Felder. Alles andere (Bild, Ort, Termine, Kategorien usw.) bleibt unverändert. Ein veröffentlichtes Event wird wieder zum Entwurf und muss erneut veröffentlicht werden.
 
+Kategorien und Tags lassen sich einfach nennen: `"categories": ["ai", "web-php"]` (Schlüssel der Kategorien) und `"tags": ["Symfony", "KI"]` (Namen; ein Tag, den es nicht gibt, wird angelegt). Sie ersetzen Themen und Tags der Sprache; unbekannte Kategorie-Schlüssel stehen in `warnings` der Antwort. Statt dessen gehen weiterhin `excerptCategories` und `excerptTags` mit Ids.
+
 ## Werkzeuge für den Import
 
 Die drei Werkzeuge gehören zum [Event-Import](import.de.md). Sie sind für Recherche und Redaktion gedacht: Ein Assistent findet Events im Web, trägt sie ein und vervollständigt später die, die der Import angelegt hat.

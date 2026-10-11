@@ -55,7 +55,7 @@ sulu_event:
 | `url_prefix` | Path the urls of imported events start with | `/events` |
 | `webspace` | Webspace of imported events | default webspace |
 | `category_images` | Images of your own: category key => file name or id of a media, see "Images" | – |
-| `locales` | Locales an imported event should have a text in, for the list of events that need work | – |
+| `locales` | Locales an imported event should have a text in. Each gets a draft with the title of the source and all the facts right away (also for events that exist already); while the text is missing the event is in the list of events that need work | – |
 
 Options of a source (`ical` and `jsonld` have the same):
 
