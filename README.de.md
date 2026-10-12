@@ -126,6 +126,7 @@ Detaillierte Dokumentation im [docs/](docs/) Verzeichnis.
 - [Strukturierte Daten (schema.org)](docs/schema-org.de.md) - schema.org-Event, Zeiten in der Zone des Events
 - [Standorte](docs/locations.de.md) - Standorte, die Events zugeordnet werden
 - [Sitemap](docs/sitemap.de.md) - Sitemaps
+- [Suche](docs/search.de.md) - Was ein Event in den Suchindex schreibt (Treffer-Vorschau)
 - [Eigene Event-Types](docs/event-types.de.md) - Event-Types selber konfigurieren
 - [Listenansicht](docs/list-view.de.md) - Listen-Ansicht-Tweaks
 - [List-Transformer](docs/list-transformer.de.md) - Typ-Transformer für Listen

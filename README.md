@@ -126,6 +126,7 @@ Detailed documentation in the [docs/](docs/) directory.
 - [Event import](docs/import.en.md) - Drafts from iCal feeds and pages with schema.org data
 - [Locations](docs/locations.en.md) - Locations that are assigned to events
 - [Sitemap](docs/sitemap.en.md) - Sitemap
+- [Search](docs/search.en.md) - What an event writes into the search index (result preview)
 - [Custom Event Types](docs/event-types.en.md) - Own Event types for categorization
 - [List View](docs/list-view.en.md) - List View Tweaks
 - [List Transformer](docs/list-transformer.en.md) - Type transformer for lists
