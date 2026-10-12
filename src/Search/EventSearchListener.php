@@ -130,23 +130,17 @@ class EventSearchListener implements EventSubscriberInterface
     }
     private function indexForWebsite(Event $event, EventDimensionContent $dimensionContent, string $locale): void
     {
-        $content = array_filter([
-            $dimensionContent->getSubtitle(),
-            $dimensionContent->getSummary(),
-            $dimensionContent->getText(),
-            $dimensionContent->getFooter(),
-        ]);
-        $this->engine->saveDocument('website', [
-            'id' => $this->getDocumentId($event, $locale),
-            'resourceKey' => Event::RESOURCE_KEY,
-            'resourceId' => (string) $event->getId(),
-            'locale' => $locale,
-            'webspaces' => [],
-            'title' => $dimensionContent->getTitle() ?? '',
-            'url' => $dimensionContent->getRoute()?->getSlug() ?? '',
-            'content' => $content,
-            'mediaId' => $dimensionContent->getImage()?->getId(),
-        ]);
+        // the same document as the full reindex writes (EventWebsiteSearchProvider), including the webspaces: without them
+        // the search (filtered by webspace) would not find an event that was just published
+        $this->engine->saveDocument('website', EventWebsiteDocument::create($event, $dimensionContent, $locale, $this->getWebspaceKeys()));
+    }
+    private function getWebspaceKeys(): array
+    {
+        $keys = [];
+        foreach ($this->webspaceManager->getWebspaceCollection() as $webspace) {
+            $keys[] = $webspace->getKey();
+        }
+        return $keys;
     }
     private function getDocumentId(Event $event, string $locale): string
     {

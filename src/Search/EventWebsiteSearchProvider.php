@@ -82,29 +82,7 @@ class EventWebsiteSearchProvider implements ReindexProviderInterface
     }
     private function createDocument(Event $event, EventDimensionContent $dimensionContent, string $locale): array
     {
-        $content = array_filter([
-            $dimensionContent->getSubtitle(),
-            $dimensionContent->getSummary(),
-            $dimensionContent->getText(),
-            $dimensionContent->getFooter(),
-        ]);
         // All fields (including unlocalized) are now in the merged dimensionContent
-        $location = $dimensionContent->getLocation();
-        $locationName = $location?->getName();
-        return [
-            'id' => 'event-' . $event->getId() . '-' . $locale,
-            'resourceKey' => Event::RESOURCE_KEY,
-            'resourceId' => (string) $event->getId(),
-            'locale' => $locale,
-            'webspaces' => $this->getWebspaceKeys(),
-            'title' => $dimensionContent->getTitle() ?? '',
-            'url' => $dimensionContent->getRoute()?->getSlug() ?? '',
-            'content' => array_values($content),
-            'type' => $dimensionContent->getType(),
-            'startDate' => $dimensionContent->getStartDate()?->format('c'),
-            'endDate' => $dimensionContent->getEndDate()?->format('c'),
-            'location' => $locationName,
-            'mediaId' => $dimensionContent->getImage()?->getId(),
-        ];
+        return EventWebsiteDocument::create($event, $dimensionContent, $locale, $this->getWebspaceKeys());
     }
 }
