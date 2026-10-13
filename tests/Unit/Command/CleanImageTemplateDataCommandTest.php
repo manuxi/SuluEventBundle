@@ -33,7 +33,7 @@ class CleanImageTemplateDataCommandTest extends TestCase
         $exitCode = $tester->execute(['--dry-run' => true]);
 
         $this->assertSame(Command::SUCCESS, $exitCode);
-        $output = $tester->getDisplay();
+        $output = $this->getDisplay($tester);
         $this->assertStringContainsString('Dry run', $output);
         $this->assertStringContainsString('01a0e097', $output);
         $this->assertStringContainsString('{"id":241}', $output);
@@ -59,8 +59,18 @@ class CleanImageTemplateDataCommandTest extends TestCase
         $exitCode = $tester->execute([]);
 
         $this->assertSame(Command::FAILURE, $exitCode);
-        $this->assertStringContainsString('Row 7', $tester->getDisplay());
-        $this->assertStringContainsString('Syntax error', $tester->getDisplay());
-        $this->assertStringContainsString('2 row(s) checked, 0 changed, 1 failed.', $tester->getDisplay());
+        $output = $this->getDisplay($tester);
+        $this->assertStringContainsString('Row 7', $output);
+        $this->assertStringContainsString('Syntax error', $output);
+        $this->assertStringContainsString('2 row(s) checked, 0 changed, 1 failed.', $output);
+    }
+
+    /**
+     * SymfonyStyle wraps blocks at the terminal width, so line breaks and
+     * indentation are collapsed to keep the assertions independent of it.
+     */
+    private function getDisplay(CommandTester $tester): string
+    {
+        return (string) \preg_replace('/\s+/', ' ', $tester->getDisplay());
     }
 }
