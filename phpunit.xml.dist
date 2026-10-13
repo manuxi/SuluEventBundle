@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/schema/9.3/phpunit.xsd"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
          bootstrap="vendor/autoload.php"
          colors="true"
          executionOrder="random"
@@ -34,7 +34,7 @@
     </testsuite>
   </testsuites>
 
-  <coverage processUncoveredFiles="true">
+  <source>
     <include>
       <directory suffix=".php">src</directory>
     </include>
@@ -42,7 +42,7 @@
       <directory>src/Migrations</directory>
       <directory>src/DataFixtures</directory>
       <directory>src/DependencyInjection</directory>
-      <file>src/SuluNewsBundle.php</file>
+      <file>src/SuluEventBundle.php</file>
     </exclude>
-  </coverage>
+  </source>
 </phpunit>
