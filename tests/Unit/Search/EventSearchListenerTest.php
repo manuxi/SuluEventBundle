@@ -99,6 +99,61 @@ class EventSearchListenerTest extends TestCase
         $this->listener->onPublished($domainEvent);
     }
 
+    /**
+     * Sulu 3 leaves workflowPlace empty on the live-stage dimension content: the publish event itself is the signal.
+     */
+    public function testOnPublishedMarksTheAdminDocumentAsPublishedEvenWithoutWorkflowPlaceOnTheLiveRow(): void
+    {
+        $event = $this->createMock(Event::class);
+        $event->method('getId')->willReturn('019bf796-423c-7e1f-969c-5c4ece5e9b73');
+
+        $domainEvent = $this->createMock(PublishedEvent::class);
+        $domainEvent->method('getEntity')->willReturn($event);
+
+        $dimensionContent = $this->createMock(EventDimensionContent::class);
+        $dimensionContent->method('getTitle')->willReturn('Published in Sulu 3');
+        $dimensionContent->method('getWorkflowPlace')->willReturn(null);
+
+        $this->contentAggregator->method('aggregate')->willReturn($dimensionContent);
+
+        $adminDocument = null;
+        $this->engine->method('saveDocument')
+            ->willReturnCallback(function (string $index, array $document) use (&$adminDocument) {
+                if ('admin' === $index) {
+                    $adminDocument = $document;
+                }
+
+                return null;
+            });
+
+        $this->listener->onPublished($domainEvent);
+
+        $this->assertNotNull($adminDocument);
+        $this->assertSame('1', $adminDocument['published']);
+        $this->assertSame(WorkflowInterface::WORKFLOW_PLACE_PUBLISHED, $adminDocument['workflowPlace']);
+    }
+
+    public function testOnCreatedOrModifiedKeepsTheWorkflowPlaceOfTheDraft(): void
+    {
+        $event = $this->createMock(Event::class);
+        $event->method('getId')->willReturn('019bf796-423c-7e1f-969c-5c4ece5e9b73');
+
+        $domainEvent = $this->createMock(CreatedEvent::class);
+        $domainEvent->method('getEntity')->willReturn($event);
+
+        $dimensionContent = $this->createMock(EventDimensionContent::class);
+        $dimensionContent->method('getTitle')->willReturn('Draft');
+        $dimensionContent->method('getWorkflowPlace')->willReturn(WorkflowInterface::WORKFLOW_PLACE_DRAFT);
+
+        $this->contentAggregator->method('aggregate')->willReturn($dimensionContent);
+
+        $this->engine->expects($this->once())
+            ->method('saveDocument')
+            ->with('admin', $this->callback(static fn (array $doc): bool => '0' === $doc['published'] && 'draft' === $doc['workflowPlace']));
+
+        $this->listener->onCreatedOrModified($domainEvent);
+    }
+
     public function testOnRemoved(): void
     {
         $domainEvent = $this->createMock(RemovedEvent::class);

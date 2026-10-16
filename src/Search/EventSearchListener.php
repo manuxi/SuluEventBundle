@@ -69,7 +69,7 @@ class EventSearchListener implements EventSubscriberInterface
                 continue;
             }
             // Update both indexes
-            $this->indexForAdmin($event, $dimensionContent, $locale);
+            $this->indexForAdmin($event, $dimensionContent, $locale, true);
             $this->indexForWebsite($event, $dimensionContent, $locale);
         }
     }
@@ -105,8 +105,11 @@ class EventSearchListener implements EventSubscriberInterface
             $this->engine->deleteDocument('website', $documentId);
         }
     }
-    private function indexForAdmin(Event $event, EventDimensionContent $dimensionContent, string $locale): void
+    private function indexForAdmin(Event $event, EventDimensionContent $dimensionContent, string $locale, bool $live = false): void
     {
+        // workflowPlace is a draft-side concept: Sulu 3 leaves it empty on the live-stage dimension content, so a
+        // live row is itself the "published" signal (see EventRepository::countPublished()).
+        $workflowPlace = $live ? WorkflowInterface::WORKFLOW_PLACE_PUBLISHED : $dimensionContent->getWorkflowPlace();
         $content = array_filter([
             $dimensionContent->getSubtitle(),
             $dimensionContent->getSummary(),
@@ -124,8 +127,8 @@ class EventSearchListener implements EventSubscriberInterface
             'mediaId' => $dimensionContent->getImage()?->getId(),
             'changedAt' => $dimensionContent->getChanged()?->format('c'),
             'createdAt' => $dimensionContent->getCreated()?->format('c'),
-            'published' => WorkflowInterface::WORKFLOW_PLACE_PUBLISHED === $dimensionContent->getWorkflowPlace() ? '1' : '0',
-            'workflowPlace' => $dimensionContent->getWorkflowPlace(),
+            'published' => WorkflowInterface::WORKFLOW_PLACE_PUBLISHED === $workflowPlace ? '1' : '0',
+            'workflowPlace' => $workflowPlace,
         ]);
     }
     private function indexForWebsite(Event $event, EventDimensionContent $dimensionContent, string $locale): void
