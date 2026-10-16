@@ -56,7 +56,10 @@ class LinkProvider implements LinkProviderInterface
 
             $title = $dimensionContent->getTitle() ?? '';
             $url = $dimensionContent->getRoute()?->getSlug() ?? '';
-            $isPublished = $dimensionContent->getWorkflowPlace() === WorkflowInterface::WORKFLOW_PLACE_PUBLISHED;
+            // workflowPlace is a draft-side concept: Sulu 3 leaves it empty on the live-stage dimension content, so a
+            // live row is itself the "published" signal.
+            $isPublished = DimensionContentInterface::STAGE_LIVE === $stage
+                || WorkflowInterface::WORKFLOW_PLACE_PUBLISHED === $dimensionContent->getWorkflowPlace();
 
             yield new LinkItem((string) $event->getId(), $title, $url, $isPublished);
         }

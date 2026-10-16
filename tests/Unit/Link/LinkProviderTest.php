@@ -75,6 +75,47 @@ class LinkProviderTest extends TestCase
         $this->assertTrue($link->isPublished());
     }
 
+    public function testPreloadMarksLiveRowWithoutWorkflowPlaceAsPublished(): void
+    {
+        // Sulu 3 leaves workflowPlace NULL on the live row.
+        $links = $this->preloadWithWorkflowPlace(null, true);
+
+        $this->assertCount(1, $links);
+        $this->assertTrue($links[0]->isPublished());
+    }
+
+    public function testPreloadDraftRowWithDraftWorkflowPlaceIsNotPublished(): void
+    {
+        $links = $this->preloadWithWorkflowPlace(WorkflowInterface::WORKFLOW_PLACE_DRAFT, false);
+
+        $this->assertFalse($links[0]->isPublished());
+    }
+
+    public function testPreloadDraftRowWithPublishedWorkflowPlaceIsPublished(): void
+    {
+        $links = $this->preloadWithWorkflowPlace(WorkflowInterface::WORKFLOW_PLACE_PUBLISHED, false);
+
+        $this->assertTrue($links[0]->isPublished());
+    }
+
+    /**
+     * @return list<\Sulu\Bundle\MarkupBundle\Markup\Link\LinkItem>
+     */
+    private function preloadWithWorkflowPlace(?string $workflowPlace, bool $published): array
+    {
+        $event = $this->createMock(Event::class);
+        $event->method('getId')->willReturn('019bf796-423c-7e1f-969c-5c4ece5e9b73');
+
+        $dimensionContent = $this->createMock(EventDimensionContent::class);
+        $dimensionContent->method('getTitle')->willReturn('Test Event');
+        $dimensionContent->method('getWorkflowPlace')->willReturn($workflowPlace);
+
+        $this->eventRepository->method('findByUuids')->willReturn([$event]);
+        $this->contentAggregator->method('aggregate')->willReturn($dimensionContent);
+
+        return array_values(iterator_to_array($this->provider->preload(['019bf796-423c-7e1f-969c-5c4ece5e9b73'], 'en', $published)));
+    }
+
     public function testPreloadEmpty(): void
     {
         $links = iterator_to_array($this->provider->preload([], 'en'));
