@@ -7,8 +7,8 @@ namespace Manuxi\SuluEventBundle\Controller\Website;
 use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
 use Sulu\Content\Application\ContentAggregator\ContentAggregatorInterface;
+use Sulu\Content\Domain\Exception\ContentNotFoundException;
 use Sulu\Content\Domain\Model\DimensionContentInterface;
-use Sulu\Content\Domain\Model\WorkflowInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -31,18 +31,19 @@ class FeedController extends AbstractController
         // Resolve dimension content for each event
         $resolvedEvents = [];
         foreach ($events as $event) {
-            /** @var EventDimensionContent $dimensionContent */
-            $dimensionContent = $this->contentAggregator->aggregate(
-                $event,
-                [
-                    'locale' => $_locale,
-                    'stage' => DimensionContentInterface::STAGE_LIVE,
-                    'version' => DimensionContentInterface::CURRENT_VERSION,
-                ]
-            );
-
-            // Only published events
-            if ($dimensionContent->getWorkflowPlace() !== WorkflowInterface::WORKFLOW_PLACE_PUBLISHED) {
+            // workflowPlace is a draft-side concept: Sulu 3 leaves it empty on the live-stage dimension content, so
+            // having a live row for the locale is itself the "published" signal (see EventRepository::countPublished()).
+            try {
+                /** @var EventDimensionContent $dimensionContent */
+                $dimensionContent = $this->contentAggregator->aggregate(
+                    $event,
+                    [
+                        'locale' => $_locale,
+                        'stage' => DimensionContentInterface::STAGE_LIVE,
+                        'version' => DimensionContentInterface::CURRENT_VERSION,
+                    ]
+                );
+            } catch (ContentNotFoundException) {
                 continue;
             }
 
@@ -100,10 +101,10 @@ class FeedController extends AbstractController
 
             $item = $channel->addChild('item');
             $item->addChild('title', htmlspecialchars($content->getTitle() ?? '', ENT_XML1));
-            $item->addChild('link', htmlspecialchars($content->getUrl() ?? '', ENT_XML1));
+            $item->addChild('link', htmlspecialchars($content->getRoute()?->getSlug() ?? '', ENT_XML1));
             $item->addChild('description', htmlspecialchars($content->getSummary() ?? '', ENT_XML1));
 
-            if ($content->isPublished() && $content->getWorkflowPublished()) {
+            if ($content->getWorkflowPublished()) {
                 $item->addChild('pubDate', $content->getWorkflowPublished()->format(\DATE_RSS));
             }
 
@@ -140,13 +141,13 @@ class FeedController extends AbstractController
             $entry->addChild('id', (string) $event->getId());
 
             $entryLink = $entry->addChild('link');
-            $entryLink->addAttribute('href', htmlspecialchars($content->getUrl() ?? '', ENT_XML1));
+            $entryLink->addAttribute('href', htmlspecialchars($content->getRoute()?->getSlug() ?? '', ENT_XML1));
 
             if ($content->getSummary()) {
                 $entry->addChild('summary', htmlspecialchars($content->getSummary(), ENT_XML1));
             }
 
-            if ($content->isPublished() && $content->getWorkflowPublished()) {
+            if ($content->getWorkflowPublished()) {
                 $published = $content->getWorkflowPublished()->format(\DATE_ATOM);
                 $entry->addChild('published', $published);
                 $entry->addChild('updated', $published);
