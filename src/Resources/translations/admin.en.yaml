@@ -107,6 +107,7 @@ sulu_event:
     speaker: "Speaker"
     location: "Location"
     locations: "Locations"
+    select_location: "Select location"
     no_location_selected: "No location selected"
 
     # Webspace and shadow event settings
@@ -203,10 +204,10 @@ sulu_event:
             toggle_tags_info: "Turns tag display on/off in single view"
             toggle_categories: "Show categories"
             toggle_categories_info: "Turns category display on/off in single view"
-            toggle_tags_colour: "Tag colour"
-            toggle_tags_colour_info: "Background colour of tags"
-            toggle_categories_colour: "Colour categories"
-            toggle_categories_colour_info: "Background colour of categories"
+            toggle_tags_color: "Tag colour"
+            toggle_tags_color_info: "Background colour of tags"
+            toggle_categories_color: "Category colour"
+            toggle_categories_color_info: "Background colour of categories"
             toggle_feed_rss: "Link RSS feed"
             toggle_feed_rss_info: "Link RSS feed"
             toggle_feed_atom: "Link Atom feed"
@@ -265,6 +266,9 @@ sulu_event:
             enable_location_filter: "Enable Location Filter"
             enable_date_filter: "Enable Date Filter"
             enable_search_filter: "Enable Search Filter"
+            info:
+                author: "The author can be changed here"
+                authored_date: "The authored date can be changed here"
         # Calendar view options
         calendar_view:
             day_grid_month: "Month Grid"
