@@ -17,6 +17,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\Routing\Attribute\Route;
 
 class CalendarApiController extends AbstractController
@@ -30,6 +31,7 @@ class CalendarApiController extends AbstractController
         private readonly EventUrlResolver $urlResolver,
         private readonly EventTimezoneResolver $timezoneResolver,
         ?FeaturedTag $featuredTag = null,
+        private readonly ?RateLimiterFactory $calendarApiLimiter = null,
     ) {
         $this->featuredTag = $featuredTag ?? new FeaturedTag();
     }
@@ -52,19 +54,18 @@ class CalendarApiController extends AbstractController
 
     private function applyRateLimit(Request $request): void
     {
-        if (!$this->container->has('limiter')) {
+        if (null === $this->calendarApiLimiter) {
             return;
         }
 
-        try {
-            $limiter = $this->container->get('limiter');
-            $limit = $limiter->create('calendar_api', $request->getClientIp());
+        $limit = $this->calendarApiLimiter
+            ->create($request->getClientIp() ?? 'unknown')
+            ->consume(1);
 
-            if (false === $limit->consume(1)->isAccepted()) {
-                throw new TooManyRequestsHttpException();
-            }
-        } catch (\Exception $e) {
-            // Rate limiter not configured - continue
+        if (false === $limit->isAccepted()) {
+            $retryAfter = max(1, $limit->getRetryAfter()->getTimestamp() - time());
+
+            throw new TooManyRequestsHttpException($retryAfter, 'Too many requests.');
         }
     }
 

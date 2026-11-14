@@ -239,7 +239,7 @@ Only events that are published in the locale are shown. An event appears as soon
 
 ## Rate Limiting
 
-The calendar API is rate-limited to 100 requests per hour per IP address. Configure the rate limiter in your Symfony configuration if needed.
+The calendar API is rate-limited to 100 requests per minute per IP address (sliding window). When exceeded, the API answers `429 Too Many Requests` with a `Retry-After` header. The limiter `sulu_event_calendar_api` can be reconfigured in your Symfony configuration if needed.
 
 ## Frontend Implementation
 

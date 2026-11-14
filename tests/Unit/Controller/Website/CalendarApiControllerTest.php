@@ -21,6 +21,9 @@ use Sulu\Content\Application\ContentAggregator\ContentAggregatorInterface;
 use Sulu\Route\Domain\Model\Route;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
+use Symfony\Component\RateLimiter\Storage\InMemoryStorage;
 
 class CalendarApiControllerTest extends TestCase
 {
@@ -43,6 +46,32 @@ class CalendarApiControllerTest extends TestCase
         $this->eventTypeSelect = $eventTypeSelect;
         $this->controller      = new CalendarApiController($this->eventRepository, $eventTypeSelect, $this->contentAggregator, new EventUrlResolver($this->webspaceManager), new EventTimezoneResolver('Europe/Berlin'));
         $this->controller->setContainer(new Container());
+    }
+
+    public function testRequestsOverTheLimitGetTooManyRequestsWithRetryAfter(): void
+    {
+        $limiter    = new RateLimiterFactory(['id' => 'test', 'policy' => 'sliding_window', 'limit' => 3, 'interval' => '1 minute'], new InMemoryStorage());
+        $controller = new CalendarApiController($this->eventRepository, $this->eventTypeSelect, $this->contentAggregator, new EventUrlResolver($this->webspaceManager), new EventTimezoneResolver('Europe/Berlin'), null, $limiter);
+        $controller->setContainer(new Container());
+        $this->eventRepository->method('findForCalendar')->willReturn([]);
+
+        $request = Request::create('/api/events/calendar/de', 'GET', [], [], [], ['REMOTE_ADDR' => '203.0.113.7']);
+        for ($i = 0; $i < 3; ++$i) {
+            $this->assertSame(200, $controller->calendarAction($request, 'de')->getStatusCode());
+        }
+
+        try {
+            $controller->calendarAction($request, 'de');
+            $this->fail('The fourth request must be rejected.');
+        } catch (TooManyRequestsHttpException $e) {
+            $this->assertSame(429, $e->getStatusCode());
+            $this->assertArrayHasKey('Retry-After', $e->getHeaders());
+            $this->assertGreaterThanOrEqual(1, (int) $e->getHeaders()['Retry-After']);
+        }
+
+        // another client is not affected
+        $other = Request::create('/api/events/calendar/de', 'GET', [], [], [], ['REMOTE_ADDR' => '203.0.113.8']);
+        $this->assertSame(200, $controller->calendarAction($other, 'de')->getStatusCode());
     }
 
     public function testFiltersOfTheQueryStringReachTheRepository(): void
