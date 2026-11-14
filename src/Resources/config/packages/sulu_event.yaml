@@ -50,6 +50,9 @@ sulu_event:
         hackathon:
             name: 'sulu_event.types.hackathon'
             color: '#2e7d32'
+        launch:
+            name: 'sulu_event.types.launch'
+            color: '#a21caf'
 
     default_type: 'default'
 

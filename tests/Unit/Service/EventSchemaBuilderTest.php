@@ -175,6 +175,22 @@ class EventSchemaBuilderTest extends TestCase
         $this->assertArrayNotHasKey('location', $this->builder->build($content));
     }
 
+    public function testLaunchWithoutPlaceIsAnOnlineEventOnOneDay(): void
+    {
+        $content = $this->createContent('2027-10-26 00:00:00', null);
+        $content->setType('launch');
+        $content->setAllDay(true);
+        $content->setAttendanceMode('online');
+
+        $schema = $this->builder->build($content);
+
+        $this->assertSame('Event', $schema['@type']);
+        $this->assertSame('2027-10-26', $schema['startDate']);
+        $this->assertArrayNotHasKey('endDate', $schema);
+        $this->assertArrayNotHasKey('location', $schema);
+        $this->assertSame('https://schema.org/OnlineEventAttendanceMode', $schema['eventAttendanceMode']);
+    }
+
     public function testMixedEventHasPlaceAndVirtualLocation(): void
     {
         $content = $this->createContent();

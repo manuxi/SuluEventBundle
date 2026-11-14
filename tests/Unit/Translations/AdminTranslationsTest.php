@@ -27,6 +27,21 @@ class AdminTranslationsTest extends TestCase
         }
     }
 
+    public function testEveryDefaultEventTypeHasAColourAndANameInBothLanguages(): void
+    {
+        $root  = \dirname(__DIR__, 3).'/src/Resources/';
+        $types = Yaml::parseFile($root.'config/packages/sulu_event.yaml')['sulu_event']['types'];
+        $de    = $this->flatten(Yaml::parseFile($root.'translations/admin.de.yaml'));
+        $en    = $this->flatten(Yaml::parseFile($root.'translations/admin.en.yaml'));
+
+        $this->assertArrayHasKey('launch', $types);
+        foreach ($types as $key => $type) {
+            $this->assertMatchesRegularExpression('/^#[0-9a-f]{6}$/', $type['color'], $key);
+            $this->assertArrayHasKey('sulu_event.types.'.$key, $de, $key);
+            $this->assertArrayHasKey('sulu_event.types.'.$key, $en, $key);
+        }
+    }
+
     /**
      * @param array<string, mixed> $tree
      *

@@ -133,7 +133,7 @@ New and optional (only for projects that use the import): `sulu_event.import.aut
 
 ### New default event types
 
-`meetup`, `trade_fair`, `keynote`, `convention` and `hackathon` (with translations). Projects that define their own `sulu_event.types` replace the defaults completely and add the ones they want, with a name (translation key) and a colour.
+`meetup`, `trade_fair`, `keynote`, `convention`, `hackathon` and `launch` (with translations). Projects that define their own `sulu_event.types` replace the defaults completely and add the ones they want, with a name (translation key) and a colour.
 
 ### New dependency: sabre/vobject
 

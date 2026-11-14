@@ -175,6 +175,7 @@ sulu_event:
         keynote: "Keynote"
         convention: "Convention"
         hackathon: "Hackathon"
+        launch: "Launch"
 
     # Felder des Abschnitts "Teilnahme & Tickets" und der Datumszeile
     field:

@@ -179,6 +179,25 @@ class CalendarApiControllerTest extends TestCase
         $this->assertSame('2027-07-01T10:00:00+02:00', $calendarEvent['start']);
     }
 
+    public function testLaunchWithoutPlaceIsADayPointWithItsType(): void
+    {
+        $this->webspaceManager->method('findUrlByResourceLocator')->willReturn(null);
+        $content = $this->createContent('/events/live', null);
+        $content->setType('launch');
+        $content->setAllDay(true);
+        $content->setAttendanceMode('online');
+        $content->setStartDate(new \DateTimeImmutable('2027-10-26 00:00:00'));
+        $content->setEndDate(null);
+
+        $calendarEvent = $this->callWithOneEvent($content);
+
+        $this->assertTrue($calendarEvent['allDay']);
+        $this->assertSame('2027-10-26', $calendarEvent['start']);
+        $this->assertArrayNotHasKey('end', $calendarEvent);
+        $this->assertSame('launch', $calendarEvent['extendedProps']['type']);
+        $this->assertSame('online', $calendarEvent['extendedProps']['attendanceMode']);
+    }
+
     public function testStatusAndAttendanceModeAreExposed(): void
     {
         $this->webspaceManager->method('findUrlByResourceLocator')->willReturn(null);

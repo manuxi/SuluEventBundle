@@ -2,7 +2,9 @@
 
 The event type configuration includes the name and colour of the type.
 
-The default types are `default`, `conference`, `workshop`, `meeting`, `seminar`, `webinar`, `training`, `networking`, `presentation`, `celebration` and, since 3.6.0 (planned), `meetup`, `trade_fair`, `keynote`, `convention` and `hackathon`. Projects that define their own `types` have to add the new ones themselves (see below).
+The default types are `default`, `conference`, `workshop`, `meeting`, `seminar`, `webinar`, `training`, `networking`, `presentation`, `celebration` and, since 3.6.0 (planned), `meetup`, `trade_fair`, `keynote`, `convention`, `hackathon` and `launch`. Projects that define their own `types` have to add the new ones themselves (see below).
+
+**`launch`** stands for the release of a product or game (game, console, device). A launch usually has no place: participation "Online", all day, the link to the maker's page as the online link. The calendar, the iCal feed and schema.org (`OnlineEventAttendanceMode`, no `location`) work without a place.
 
 ### 1. Bundle
 

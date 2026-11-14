@@ -217,6 +217,23 @@ class ICalGeneratorTest extends TestCase
         $this->assertNull($this->singleEvent($this->parse($this->generateFeed([$offline])))->LOCATION);
     }
 
+    public function testLaunchWithoutPlaceIsAnAllDayEventWithoutLocation(): void
+    {
+        $launch = $this->createContent('2027-10-26 00:00:00', null);
+        $launch->setType('launch');
+        $launch->setAllDay(true);
+        $launch->setAttendanceMode('online');
+
+        $ical   = $this->generateFeed([$launch]);
+        $vevent = $this->singleEvent($this->parse($ical));
+
+        $this->assertStringContainsString("
+DTSTART;VALUE=DATE:20271026
+", $ical);
+        $this->assertStringNotContainsString('DTEND', $ical);
+        $this->assertNull($vevent->LOCATION);
+    }
+
     public function testEndBeforeStartIsLeftOut(): void
     {
         $content = $this->createContent('2027-07-01 18:30:00', '2027-07-01 17:00:00');
