@@ -163,6 +163,7 @@ services:
             - '@Manuxi\SuluEventBundle\Repository\EventImportRepository'
             - '@Manuxi\SuluEventBundle\Repository\EventRepository'
             - '@sulu_event.import.settings'
+            - '@sulu_event.import.auto_publisher'
 
     Manuxi\SuluEventBundle\Import\PendingEventFinder:
         alias: sulu_event.import.pending_finder
@@ -240,5 +241,36 @@ services:
             - '@Manuxi\SuluEventBundle\Repository\EventImportRunRepository'
             - '@doctrine.orm.entity_manager'
             - '@sulu_event.import.settings'
+        tags:
+            - { name: console.command }
+
+    # Automatic publishing of complete events (sulu_event.import.auto_publish)
+    sulu_event.import.auto_publish_rules:
+        class: Manuxi\SuluEventBundle\Import\AutoPublish\AutoPublishRules
+        factory: ['Manuxi\SuluEventBundle\Import\AutoPublish\AutoPublishRules', 'fromArray']
+        arguments:
+            - '%sulu_event.import.auto_publish%'
+
+    sulu_event.import.auto_publisher:
+        class: Manuxi\SuluEventBundle\Import\AutoPublish\AutoPublisher
+        public: true
+        arguments:
+            - '@Manuxi\SuluEventBundle\Repository\EventImportRepository'
+            - '@Manuxi\SuluEventBundle\Repository\EventRepository'
+            - '@doctrine.orm.entity_manager'
+            - '@sulu_content.content_workflow'
+            - '@sulu_activity.domain_event_collector'
+            - '@sulu_event.import.user_switcher'
+            - '@Manuxi\SuluEventBundle\Repository\EventImportRunRepository'
+            - '@sulu_event.import.auto_publish_rules'
+            - '@sulu_event.import.settings'
+
+    Manuxi\SuluEventBundle\Import\AutoPublish\AutoPublisher:
+        alias: sulu_event.import.auto_publisher
+
+    sulu_event.command.import_publish_ready:
+        class: Manuxi\SuluEventBundle\Command\PublishReadyCommand
+        arguments:
+            - '@sulu_event.import.auto_publisher'
         tags:
             - { name: console.command }

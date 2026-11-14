@@ -207,6 +207,7 @@ class Configuration implements ConfigurationInterface
                     ->scalarPrototype()->end()
                     ->info('Locales an imported event should have a text in (for example ["de", "en"]). Events that lack one are listed as "needs work" (MCP tool sulu_event_import_pending).')
                 ->end()
+                ->append($this->createAutoPublishNode())
                 ->append($this->createFiltersNode('filters', 'The sieve of the import: which candidates become events at all. Rules are empty by default, so everything passes; the bundle brings no lists of countries or regions, the project sets them. See docs/import.en.md ("Sieve").'))
                 ->arrayNode('source_filters')
                     // keys are source keys such as "jsonld.my-page": no key normalization
@@ -272,6 +273,73 @@ class Configuration implements ConfigurationInterface
         if ($global) {
             $node->addDefaultsIfNotSet();
         }
+
+        return $node;
+    }
+
+    /**
+     * Rules for publishing complete imported events without a click (command "sulu:event:import:publish-ready").
+     */
+    private function createAutoPublishNode(): ArrayNodeDefinition
+    {
+        $node = (new TreeBuilder('auto_publish'))->getRootNode();
+        $node
+            ->addDefaultsIfNotSet()
+            ->info('Publishes imported events by itself once they are complete (command "sulu:event:import:publish-ready"). Off by default. See docs/import.en.md ("Publish automatically").')
+            ->validate()
+                ->ifTrue(static fn (array $autoPublish): bool => $autoPublish['enabled'] && !$autoPublish['when']['series'] && [] === $autoPublish['when']['sources'] && [] === $autoPublish['when']['types'])
+                ->thenInvalid('sulu_event.import.auto_publish.when needs at least one condition when auto_publish is enabled: series: true, sources: [...] or types: [...]. Otherwise no event would qualify.')
+            ->end()
+            ->children()
+                ->booleanNode('enabled')
+                    ->defaultFalse()
+                    ->info('Switches the automatic publishing on. Without it the command only tells so.')
+                ->end()
+                ->arrayNode('when')
+                    ->addDefaultsIfNotSet()
+                    ->info('Which events may be published by themselves. One matching condition is enough (OR). Events that none of them matches stay drafts.')
+                    ->children()
+                        ->booleanNode('series')
+                            ->defaultFalse()
+                            ->info('true: events that belong to a series (the source or the import knows a series or a match key) qualify.')
+                        ->end()
+                        ->arrayNode('sources')
+                            ->scalarPrototype()->end()
+                            ->info('Source keys (for example "ical.my-group", "jsonld.my-page", "confs-tech"): events of these sources qualify.')
+                        ->end()
+                        ->arrayNode('types')
+                            ->scalarPrototype()->end()
+                            ->info('Event type keys (see sulu_event.types): events of these types qualify.')
+                        ->end()
+                    ->end()
+                ->end()
+                ->arrayNode('require')
+                    ->addDefaultsIfNotSet()
+                    ->info('What an event needs before it is published. Per language title, subtitle, summary and text must not be empty.')
+                    ->children()
+                        ->arrayNode('locales')
+                            ->scalarPrototype()->end()
+                            ->info('Languages that must be complete, for example ["de", "en"]; these are published, too. Empty = the languages the event has.')
+                        ->end()
+                        ->booleanNode('category')
+                            ->defaultTrue()
+                            ->info('The event needs at least one category (topic). Default: true.')
+                        ->end()
+                        ->booleanNode('image')
+                            ->defaultTrue()
+                            ->info('The event needs an image. Default: true.')
+                        ->end()
+                        ->booleanNode('place_or_online')
+                            ->defaultTrue()
+                            ->info('The event needs a location or a link to take part online. Default: true.')
+                        ->end()
+                    ->end()
+                ->end()
+                ->booleanNode('republish_changes')
+                    ->defaultFalse()
+                    ->info('true: an event that is published and got a new draft (a change of the source) is published again if it still meets the rules and no field was locked by hand. Default: false, such changes wait for an editor.')
+                ->end()
+            ->end();
 
         return $node;
     }

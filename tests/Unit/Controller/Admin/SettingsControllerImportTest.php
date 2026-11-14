@@ -36,6 +36,22 @@ class SettingsControllerImportTest extends TestCase
         $this->assertArrayHasKey('toggleHeader', $data, 'the other settings are still there');
     }
 
+    public function testLastAutoPublishIsPartOfTheSettingsData(): void
+    {
+        $run = new EventImportRun(new \DateTimeImmutable('2027-03-01 09:00:00'), EventImportRun::SOURCE_AUTO_PUBLISH);
+        $run->finish(new \DateTimeImmutable('2027-03-01 09:00:02'), ['created' => 0, 'updated' => 0, 'unchanged' => 0, 'locked' => 0, 'vanished' => 0, 'rejected' => 0, 'filtered' => 0, 'errors' => 0, 'newLocations' => 0], ['autoPublish' => ['published' => 4, 'waiting' => 2, 'skipped' => 30, 'errors' => 0]]);
+
+        $repository = $this->createStub(EventImportRunRepository::class);
+        $repository->method('findLast')->willReturn(null);
+        $repository->method('findLastAutoPublish')->willReturn($run);
+
+        $data = $this->settingsData($repository);
+
+        $this->assertNull($data['importLastRunWhen']);
+        $this->assertSame('2027-03-01 09:00', $data['importAutoPublishWhen']);
+        $this->assertSame('published 4, waiting 2, skipped 30, errors 0', $data['importAutoPublishSummary']);
+    }
+
     public function testNoRunYet(): void
     {
         $repository = $this->createStub(EventImportRunRepository::class);

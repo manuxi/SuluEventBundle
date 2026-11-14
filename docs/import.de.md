@@ -214,6 +214,49 @@ sulu_event:
 - **`sulu_event_import_reject`** (MCP-Werkzeug, [docs/mcp.de.md](mcp.de.md)): sagt mit einer Begründung, dass ein Event nicht gewünscht ist. Das Event wird nicht gelöscht; der Import legt es nie wieder an und ändert es nicht mehr (Zustand `rejected`).
 - **`sulu:event:import:prune [--dry-run] [--state=filtered|rejected] [--force]`**: verschiebt Events, deren Eintrag `filtered` oder `rejected` ist und die **nie veröffentlicht** waren, in den Sulu-Papierkorb (wie „Löschen“ im Admin, dort wiederherstellbar). Veröffentlichte Events und solche, die eine andere Quelle noch pflegt, werden nur aufgelistet („bitte im Admin entscheiden“). Ohne `--dry-run` fragt der Befehl nach; mit `--no-interaction` bricht er ab, außer `--force` ist gesetzt. Der Eintrag behält seinen Zustand, ein `filtered`-Kandidat wird also wieder importiert, wenn er später durchkommt.
 
+## Automatisch veröffentlichen
+
+Importierte Events bleiben Entwürfe, bis jemand sie freigibt. Wer das für bestimmte Quellen nicht von Hand tun will, schaltet die automatische Freigabe ein: Ein Event wird veröffentlicht, sobald es **vollständig** ist. Alles andere bleibt Entwurf. Standard: aus.
+
+```yaml
+# config/packages/sulu_event.yaml
+sulu_event:
+    import:
+        auto_publish:
+            enabled: true
+            when:                       # ODER: eine passende Bedingung genügt
+                series: true            # das Event gehört zu einer Reihe
+                sources: [confs-tech]   # oder stammt aus dieser Quelle
+                types: [keynote]        # oder hat diesen Typ
+            require:
+                locales: [de, en]       # je Sprache: Titel, Untertitel, Kurztext, Text nicht leer
+                category: true          # mindestens eine Kategorie (Standard: true)
+                image: true             # ein Bild (Standard: true)
+                place_or_online: true   # ein Ort oder ein Online-Link (Standard: true)
+            republish_changes: false    # Standard: false
+```
+
+- **`when`** braucht mindestens eine Bedingung, sonst lehnt die Konfiguration ab (es käme sonst kein Event infrage). „Reihe“ heißt: Die Quelle oder der Import kennt eine Reihe oder einen Abgleichschlüssel (wie beim Sieb). Quellen heißen wie in den Berichten (`ical.mein-kalender`, `jsonld.meine-seite`, `confs-tech`), Typen sind die Schlüssel aus `sulu_event.types`.
+- **`require.locales`**: Diese Sprachen müssen vollständig sein und werden veröffentlicht. Leer = die Sprachen, die das Event hat. Titel, Untertitel, Kurztext (`summary`) und Text dürfen nicht leer sein (HTML ohne Inhalt zählt als leer). Kategorie, Bild und Ort/Online-Link gelten für das Event als Ganzes; ein Online-Link ist die Online-URL.
+- **Nie angefasst** werden Events, die schon vorbei sind (Ende bzw. Start liegt in der Vergangenheit), Events, deren Importeintrag `filtered`, `rejected` oder `vanished` ist, eine Sprache, die ein Redakteur von Hand zurückgezogen hat (Zustand „unveröffentlicht“, nachdem sie schon einmal live war), und Sprachen in Prüfung („Review“). Bereits veröffentlichte Sprachen ohne neue Änderungen werden übersprungen.
+- **`republish_changes: true`**: Ein veröffentlichtes Event, das einen neuen Entwurf hat (der Import hat z. B. Datum, Ort oder Preis geändert), wird erneut veröffentlicht, wenn es die Regeln weiter erfüllt **und** keines seiner Felder von Hand gesperrt ist (Reiter „Quelle“). Sonst bleibt der neue Entwurf liegen, bis ein Redakteur ihn freigibt.
+
+### Der Befehl
+
+```
+bin/adminconsole sulu:event:import:publish-ready [--dry-run] [--limit=N] [-v]
+```
+
+Er veröffentlicht wie die Schaltfläche „Veröffentlichen“ im Admin (Workflow, als der Import-Benutzer, mit Suche, Aktivitätsprotokoll und Cache) und gibt drei Zahlen aus: **veröffentlicht**, **wartet** (mit den fehlenden Teilen je Event, z. B. `subtitle:en`, `text:de`, `locale:en`, `categories`, `image`, `place`) und **übersprungen** (mit `-v` samt Grund). `--dry-run` ändert nichts. Schauen Sie zuerst dort nach, bevor Sie den Befehl in Cron legen. Das Ergebnis wird gespeichert; `sulu_event_import_report` und der Reiter „Import“ der Einstellungen („Letzte automatische Freigabe“) zeigen es.
+
+Cron-Beispiel, nach Import und Redaktion:
+
+```
+0 9 * * * cd /var/www/project && bin/adminconsole sulu:event:import:publish-ready
+```
+
+`sulu_event_import_pending` nennt je Event unter `autoPublish`, was zur Freigabe noch fehlt, und listet auch Events, denen nur das fehlt (z. B. der Untertitel). So kann die Redaktion gezielt ergänzen.
+
 ## Regelmäßig ausführen
 
 Einmal am Tag genügt. Beispiel für Cron:

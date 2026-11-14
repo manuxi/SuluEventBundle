@@ -137,6 +137,12 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
             }
         }
 
+        $unknownTypes = array_diff($import['auto_publish']['when']['types'], $types);
+        if ([] !== $unknownTypes) {
+            throw new InvalidConfigurationException(\sprintf('Invalid configuration for sulu_event.import.auto_publish.when.types: "%s" is not an event type. Known types: %s (see sulu_event.types).', implode('", "', $unknownTypes), implode(', ', $types)));
+        }
+        $container->setParameter('sulu_event.import.auto_publish', $import['auto_publish']);
+
         $this->checkFilters($import['filters'], $sourceFilters, $types);
         $container->setParameter('sulu_event.import.filters', $import['filters']);
         $container->setParameter('sulu_event.import.source_filters', $sourceFilters);

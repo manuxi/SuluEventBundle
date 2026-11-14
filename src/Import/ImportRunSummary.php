@@ -12,6 +12,33 @@ use Manuxi\SuluEventBundle\Entity\EventImportRun;
 final class ImportRunSummary
 {
     /**
+     * The last run of the automatic publishing (sulu:event:import:publish-ready) as plain text.
+     *
+     * @return array{importAutoPublishWhen: string, importAutoPublishSummary: string}
+     */
+    public static function fromAutoPublishRun(EventImportRun $run): array
+    {
+        $result = $run->getReport()['autoPublish'] ?? [];
+
+        $when = $run->getStartedAt()->format('Y-m-d H:i');
+        if ($run->isDryRun()) {
+            $when .= ' (dry run)';
+        }
+
+        return [
+            'importAutoPublishWhen'    => $when,
+            'importAutoPublishSummary' => \sprintf(
+                '%s %d, waiting %d, skipped %d, errors %d',
+                $run->isDryRun() ? 'would publish' : 'published',
+                $result['published'] ?? 0,
+                $result['waiting']   ?? 0,
+                $result['skipped']   ?? 0,
+                $result['errors']    ?? 0,
+            ),
+        ];
+    }
+
+    /**
      * @return array{importLastRunWhen: string, importLastRunSummary: string, importLastRunErrors: string|null, importLastRunNewLocations: string|null}
      */
     public static function fromRun(EventImportRun $run): array

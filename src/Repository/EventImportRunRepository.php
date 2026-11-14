@@ -19,12 +19,34 @@ class EventImportRunRepository extends ServiceEntityRepository
     }
 
     /**
-     * The newest finished run, dry runs excluded unless asked for.
+     * The newest finished run of the import (not of the automatic publishing), dry runs excluded unless asked for.
      */
     public function findLast(bool $includeDryRuns = false): ?EventImportRun
     {
         $queryBuilder = $this->createQueryBuilder('run')
             ->where('run.finishedAt IS NOT NULL')
+            ->andWhere('run.source IS NULL OR run.source != :autoPublish')
+            ->setParameter('autoPublish', EventImportRun::SOURCE_AUTO_PUBLISH)
+            ->orderBy('run.startedAt', 'DESC')
+            ->addOrderBy('run.id', 'DESC')
+            ->setMaxResults(1);
+
+        if (!$includeDryRuns) {
+            $queryBuilder->andWhere('run.dryRun = :dryRun')->setParameter('dryRun', false);
+        }
+
+        return $queryBuilder->getQuery()->getOneOrNullResult();
+    }
+
+    /**
+     * The newest finished run of the automatic publishing, dry runs excluded unless asked for.
+     */
+    public function findLastAutoPublish(bool $includeDryRuns = false): ?EventImportRun
+    {
+        $queryBuilder = $this->createQueryBuilder('run')
+            ->where('run.finishedAt IS NOT NULL')
+            ->andWhere('run.source = :autoPublish')
+            ->setParameter('autoPublish', EventImportRun::SOURCE_AUTO_PUBLISH)
             ->orderBy('run.startedAt', 'DESC')
             ->addOrderBy('run.id', 'DESC')
             ->setMaxResults(1);

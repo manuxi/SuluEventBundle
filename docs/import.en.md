@@ -212,6 +212,49 @@ sulu_event:
 - **`sulu_event_import_reject`** (MCP tool, [docs/mcp.en.md](mcp.en.md)): says that an event is not wanted, with a reason. The event is not deleted; the import never creates or changes it again (state `rejected`).
 - **`sulu:event:import:prune [--dry-run] [--state=filtered|rejected] [--force]`**: moves events whose entry is `filtered` or `rejected` and that were **never published** to the trash of Sulu (like "delete" in the admin, they can be restored there). Events that were published, or that another source still maintains, are only listed ("please decide in the admin"). Without `--dry-run` the command asks first; with `--no-interaction` it stops unless `--force` is given. The entry keeps its state, so a `filtered` candidate is imported again if it passes later.
 
+## Publish automatically
+
+Imported events stay drafts until someone releases them. If you do not want to do that by hand for certain sources, switch on the automatic publishing: an event is published as soon as it is **complete**. Everything else stays a draft. Default: off.
+
+```yaml
+# config/packages/sulu_event.yaml
+sulu_event:
+    import:
+        auto_publish:
+            enabled: true
+            when:                       # OR: one matching condition is enough
+                series: true            # the event belongs to a series
+                sources: [confs-tech]   # or comes from this source
+                types: [keynote]        # or has this type
+            require:
+                locales: [de, en]       # per language: title, subtitle, summary, text not empty
+                category: true          # at least one category (default: true)
+                image: true             # an image (default: true)
+                place_or_online: true   # a location or an online link (default: true)
+            republish_changes: false    # default: false
+```
+
+- **`when`** needs at least one condition, otherwise the configuration is refused (no event would qualify). "Series" means: the source or the import knows a series or a match key (as with the sieve). Sources are named as in the reports (`ical.my-calendar`, `jsonld.my-page`, `confs-tech`), types are the keys of `sulu_event.types`.
+- **`require.locales`**: these languages must be complete and are published. Empty = the languages the event has. Title, subtitle, summary and text must not be empty (HTML without content counts as empty). Category, image and location/online link apply to the event as a whole; an online link is the online URL.
+- **Never touched**: events that are over already (end or start in the past), events whose import entry is `filtered`, `rejected` or `vanished`, a language an editor took back by hand (state "unpublished" after it had been live), and languages in review. Languages that are published already and have no new changes are skipped.
+- **`republish_changes: true`**: a published event with a new draft (the import changed the date, place or price, for example) is published again if it still meets the rules **and** none of its fields is locked by hand (tab "Source"). Otherwise the new draft waits until an editor releases it.
+
+### The command
+
+```
+bin/adminconsole sulu:event:import:publish-ready [--dry-run] [--limit=N] [-v]
+```
+
+It publishes like the "Publish" button of the admin (workflow, as the import user, with search, activity log and cache) and prints three numbers: **published**, **waiting** (with what each event still lacks, for example `subtitle:en`, `text:de`, `locale:en`, `categories`, `image`, `place`) and **skipped** (with the reason under `-v`). `--dry-run` changes nothing; look there first before you put the command in cron. The result is stored; `sulu_event_import_report` and the tab "Import" of the settings ("Last automatic publishing") show it.
+
+Cron example, after the import and the editorial run:
+
+```
+0 9 * * * cd /var/www/project && bin/adminconsole sulu:event:import:publish-ready
+```
+
+`sulu_event_import_pending` names under `autoPublish` what an event still lacks for it, and also lists events that only lack that (the subtitle, for example), so the editorial run can complete them on purpose.
+
 ## Running it regularly
 
 Once a day is enough. Example for cron:

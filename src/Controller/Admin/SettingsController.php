@@ -236,6 +236,8 @@ class SettingsController extends AbstractRestController implements SecuredContro
             'importLastRunSummary'      => null,
             'importLastRunErrors'       => null,
             'importLastRunNewLocations' => null,
+            'importAutoPublishWhen'     => null,
+            'importAutoPublishSummary'  => null,
         ];
 
         if (null === $this->importRunRepository) {
@@ -249,7 +251,15 @@ class SettingsController extends AbstractRestController implements SecuredContro
             return $none;
         }
 
-        return null === $run ? $none : ImportRunSummary::fromRun($run);
+        $data = null === $run ? $none : ImportRunSummary::fromRun($run) + ['importAutoPublishWhen' => null, 'importAutoPublishSummary' => null];
+
+        try {
+            $autoPublish = $this->importRunRepository->findLastAutoPublish(true);
+        } catch (\Throwable) {
+            return $data;
+        }
+
+        return null === $autoPublish ? $data : ImportRunSummary::fromAutoPublishRun($autoPublish) + $data;
     }
 
     protected function mapDataToEntity(array $data, EventSettings $entity): void

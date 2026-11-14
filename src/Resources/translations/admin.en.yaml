@@ -445,6 +445,8 @@ sulu_event:
         last_run_counts: "Result"
         last_run_errors: "Errors"
         last_run_none: "The import has not run yet."
+        auto_publish: "Last automatic publishing"
+        auto_publish_info: "Read only. Complete events are published with the command sulu:event:import:publish-ready (cron), see the documentation."
         state:
             active: "Active"
             vanished: "No longer in the source"

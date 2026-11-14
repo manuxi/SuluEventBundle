@@ -10,6 +10,9 @@ namespace Manuxi\SuluEventBundle\Entity;
  */
 class EventImportRun
 {
+    /** The "source" of a run of the automatic publishing (sulu:event:import:publish-ready): it is no run of the import. */
+    public const SOURCE_AUTO_PUBLISH = 'auto-publish';
+
     private ?int $id = null;
 
     private ?\DateTimeImmutable $finishedAt = null;

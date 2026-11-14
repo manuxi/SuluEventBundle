@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Manuxi\SuluEventBundle\Tests\Unit\DependencyInjection;
 
 use Manuxi\SuluEventBundle\DependencyInjection\SuluEventExtension;
+use Manuxi\SuluEventBundle\Import\AutoPublish\AutoPublishRules;
 use Manuxi\SuluEventBundle\Import\Source\ICalSource;
 use Manuxi\SuluEventBundle\Import\Source\JsonLdSource;
 use Manuxi\SuluEventBundle\Import\SourceConfig;
@@ -219,6 +220,53 @@ class ImportConfigurationTest extends TestCase
     /**
      * @param array<string, mixed> $config
      */
+    public function testAutoPublishIsOffByDefaultWithSafeRequirements(): void
+    {
+        $rules = AutoPublishRules::fromArray($this->load([])->getParameter('sulu_event.import.auto_publish'));
+
+        $this->assertFalse($rules->enabled);
+        $this->assertFalse($rules->hasConditions());
+        $this->assertTrue($rules->requireCategory);
+        $this->assertTrue($rules->requireImage);
+        $this->assertTrue($rules->requirePlaceOrOnline);
+        $this->assertFalse($rules->republishChanges);
+        $this->assertSame([], $rules->locales);
+    }
+
+    public function testAutoPublishIsRead(): void
+    {
+        $container = $this->load(['import' => ['auto_publish' => [
+            'enabled'           => true,
+            'when'              => ['series' => true, 'sources' => ['jsonld.conf'], 'types' => ['default']],
+            'require'           => ['locales' => ['de', 'en'], 'image' => false],
+            'republish_changes' => true,
+        ]]]);
+
+        $rules = AutoPublishRules::fromArray($container->getParameter('sulu_event.import.auto_publish'));
+
+        $this->assertTrue($rules->enabled);
+        $this->assertTrue($rules->series);
+        $this->assertSame(['jsonld.conf'], $rules->sources);
+        $this->assertSame(['de', 'en'], $rules->locales);
+        $this->assertFalse($rules->requireImage);
+        $this->assertTrue($rules->requireCategory);
+        $this->assertTrue($rules->republishChanges);
+    }
+
+    public function testAutoPublishNeedsAConditionAndKnownTypes(): void
+    {
+        try {
+            $this->load(['import' => ['auto_publish' => ['enabled' => true]]]);
+            $this->fail('no condition in "when" must be refused');
+        } catch (InvalidConfigurationException $e) {
+            $this->assertStringContainsString('auto_publish.when', $e->getMessage());
+        }
+
+        $this->expectException(InvalidConfigurationException::class);
+        $this->expectExceptionMessage('"nonsense" is not an event type');
+        $this->load(['import' => ['auto_publish' => ['enabled' => true, 'when' => ['types' => ['nonsense']]]]]);
+    }
+
     private function load(array $config): ContainerBuilder
     {
         $container = new ContainerBuilder();

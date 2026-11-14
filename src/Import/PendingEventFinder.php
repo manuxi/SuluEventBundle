@@ -7,6 +7,7 @@ namespace Manuxi\SuluEventBundle\Import;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
 use Manuxi\SuluEventBundle\Entity\EventImport;
+use Manuxi\SuluEventBundle\Import\AutoPublish\AutoPublisher;
 use Manuxi\SuluEventBundle\Repository\EventImportRepository;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
 use Sulu\Content\Domain\Model\DimensionContentInterface;
@@ -15,7 +16,8 @@ use Sulu\Content\Domain\Model\WorkflowInterface;
 /**
  * Finds the imported events that still need work before they are worth publishing: a text or summary is missing, a
  * language is missing, there is no topic or no image. The result carries what the source said about the event (link
- * and description) as an aid for whoever does the research.
+ * and description) as an aid for whoever does the research. With the automatic publishing on (sulu_event.import.auto_publish)
+ * it also says what an event still lacks for it, and lists the events that only lack that.
  */
 class PendingEventFinder
 {
@@ -29,6 +31,7 @@ class PendingEventFinder
         private readonly EventImportRepository $importRepository,
         private readonly EventRepository $eventRepository,
         private readonly ImportSettings $settings,
+        private readonly ?AutoPublisher $autoPublisher = null,
     ) {
     }
 
@@ -58,7 +61,7 @@ class PendingEventFinder
             }
 
             $item = $this->check($event, $imports, $locales);
-            if ([] !== $item['missing']) {
+            if ([] !== $item['missing'] || AutoPublisher::STATE_WAITING === ($item['autoPublish']['state'] ?? null)) {
                 $items[] = $item;
             }
         }
@@ -141,6 +144,7 @@ class PendingEventFinder
             'missing'           => $missing,
             'sourceUrl'         => $import->getSourceUrl(),
             'sourceDescription' => \is_string($values['_sourceDescription'] ?? null) ? $values['_sourceDescription'] : null,
+            'autoPublish'       => $this->autoPublisher?->assess($event),
         ];
     }
 

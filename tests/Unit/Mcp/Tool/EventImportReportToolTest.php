@@ -49,4 +49,22 @@ class EventImportReportToolTest extends TestCase
         $this->assertFalse($result['newLocations'][0]['certain']);
         $this->assertSame('Unknown category keys: nope', $result['warnings'][0]['message']);
     }
+
+    public function testAutoPublishResultIsPartOfTheReport(): void
+    {
+        $counts = ['created' => 0, 'updated' => 0, 'unchanged' => 0, 'locked' => 0, 'vanished' => 0, 'rejected' => 0, 'filtered' => 0, 'errors' => 0, 'newLocations' => 0];
+        $auto   = new EventImportRun(new \DateTimeImmutable('2027-03-01 09:00:00'), EventImportRun::SOURCE_AUTO_PUBLISH);
+        $auto->finish(new \DateTimeImmutable('2027-03-01 09:00:01'), $counts, ['autoPublish' => ['published' => 2, 'waiting' => 1, 'skipped' => 5, 'errors' => 0, 'waitingItems' => [['uuid' => 'u1', 'title' => 'Gap', 'missing' => ['subtitle:en']]]]]);
+
+        $repository = $this->createMock(EventImportRunRepository::class);
+        $repository->method('findLast')->willReturn(null);
+        $repository->method('findLastAutoPublish')->willReturn($auto);
+
+        $result = (new EventImportReportTool($repository))->report();
+
+        $this->assertNull($result['run']);
+        $this->assertSame(2, $result['autoPublish']['published']);
+        $this->assertFalse($result['autoPublish']['dryRun']);
+        $this->assertSame(['subtitle:en'], $result['autoPublish']['waitingItems'][0]['missing']);
+    }
 }

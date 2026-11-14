@@ -49,5 +49,24 @@
                 </property>
             </properties>
         </section>
+
+        <section name="import-auto-publish">
+            <meta>
+                <title>sulu_event.import.auto_publish</title>
+                <info_text>sulu_event.import.auto_publish_info</info_text>
+            </meta>
+            <properties>
+                <property name="importAutoPublishWhen" type="text_line" colspan="6" disabledCondition="true" visibleCondition="importAutoPublishWhen != null">
+                    <meta>
+                        <title>sulu_event.import.last_run_when</title>
+                    </meta>
+                </property>
+                <property name="importAutoPublishSummary" type="text_line" colspan="12" disabledCondition="true" visibleCondition="importAutoPublishWhen != null">
+                    <meta>
+                        <title>sulu_event.import.last_run_counts</title>
+                    </meta>
+                </property>
+            </properties>
+        </section>
     </properties>
 </form>

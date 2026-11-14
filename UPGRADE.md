@@ -127,6 +127,10 @@ ALTER TABLE app_event_import_run ADD filtered INT DEFAULT 0 NOT NULL;
 
 The constructor of `EventImporter` takes the sieve (`CandidateFilter`, optional) as 16th argument, `EventUpdateTool` as 8th (optional). The state of an entry deleted in the admin now also carries a reason. If your project overrides `Resources/config/lists/events.xml` or `forms/event_import_source.xml`, take over the new filter options and the field `importStateReason`.
 
+### Automatic publishing of complete events (F2)
+
+New and optional (only for projects that use the import): `sulu_event.import.auto_publish` (`enabled`, `when`, `require`, `republish_changes`) and the command `sulu:event:import:publish-ready`, see [docs/import.en.md](docs/import.en.md) ("Publish automatically"). Off by default; without it nothing changes. **No database change:** the result of a run is stored as a row of `app_event_import_run` with the source `auto-publish`; `EventImportRunRepository::findLast()` leaves these rows out, `findLastAutoPublish()` returns them. The constructor of `PendingEventFinder` takes the publisher (`AutoPublisher`, optional) as 4th argument; `sulu_event_import_pending` then adds `autoPublish` to each event. If your project overrides `forms/events_settings_import.xml`, take over the section `import-auto-publish`.
+
 ### New default event types
 
 `meetup`, `trade_fair`, `keynote`, `convention` and `hackathon` (with translations). Projects that define their own `sulu_event.types` replace the defaults completely and add the ones they want, with a name (translation key) and a colour.

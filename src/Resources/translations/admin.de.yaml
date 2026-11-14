@@ -452,6 +452,8 @@ sulu_event:
         last_run_counts: "Ergebnis"
         last_run_errors: "Fehler"
         last_run_none: "Der Import ist noch nicht gelaufen."
+        auto_publish: "Letzte automatische Freigabe"
+        auto_publish_info: "Nur zur Ansicht. Vollständige Events werden mit dem Befehl sulu:event:import:publish-ready veröffentlicht (Cron), siehe Dokumentation."
         state:
             active: "Aktiv"
             vanished: "Nicht mehr in der Quelle"
