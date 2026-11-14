@@ -172,7 +172,7 @@ sulu_event:
     import:
         filters:
             countries:
-                include: ['DE', 'AT', 'CH', 'NL']   # ISO 3166-1 alpha-2; nur diese kommen durch
+                include: ['DE', 'AT', 'CH', 'NL']   # ISO 3166-1 alpha-2 (und XK für den Kosovo); nur diese kommen durch
                 exclude: []                         # immer draußen
             unknown_country: allow                  # allow (Standard) | deny: ein Ort ohne Land
             online: allow                           # allow (Standard) | deny: nur online, ohne Ort
@@ -204,7 +204,7 @@ sulu_event:
 
 - Ein **neuer** Kandidat bekommt **kein Event**. Sein Eintrag in `app_event_import` erhält den Zustand `filtered` und den Grund in `state_reason` („The country US is not one of the allowed countries.“). Ändern sich die Regeln und er kommt durch, importiert ihn der nächste Lauf wie jeden anderen.
 - Ein Event, das es **schon gibt**, wird **nicht angefasst** (keine Änderung, kein Löschen). Sein Eintrag wird `filtered`; was mit dem Event geschieht, entscheidet `sulu:event:import:prune` (unten). Kommt es wieder durch, ist der Eintrag wieder `active` und die Änderungen der Quelle kommen an.
-- Der Lauf zählt sie (Spalte **Filtered**, auch mit dem Lauf gespeichert), behält aber die Liste nicht. Um zu sehen, was eine Regel bewirkt, fragen Sie danach: `bin/adminconsole sulu:event:import --dry-run --explain` listet Quelle, Titel, Land und Grund jedes ausgesiebten Kandidaten.
+- Der Lauf zählt sie (Spalte **Filtered**, auch mit dem Lauf gespeichert) und behält im Bericht die Summe je Grund (`filteredReasons`: Code, bei den Länderregeln das Land, Anzahl; das Projekt kann daraus „Was das Sieb getan hat“ in seiner Report-Mail zeigen), aber nicht die Liste der Kandidaten. Um zu sehen, was eine Regel bewirkt, fragen Sie danach: `bin/adminconsole sulu:event:import --dry-run --explain` listet Quelle, Titel, Land und Grund jedes ausgesiebten Kandidaten.
 - `sulu_event_import_pending` zeigt Events im Zustand `filtered` oder `rejected` nicht. Im Admin zeigt der Reiter „Quelle“ Zustand und Grund, und die Liste der Events lässt sich nach „von den Regeln ausgesiebt“ und „abgelehnt“ filtern.
 
 ### Erlaubte Tags

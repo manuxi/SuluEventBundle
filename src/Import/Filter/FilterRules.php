@@ -27,6 +27,9 @@ final class FilterRules
 
     public const DEFAULT_BYPASS = [self::COUNTRIES, self::UNKNOWN_COUNTRY, self::ONLINE];
 
+    /** Codes that are no ISO 3166-1 alpha-2 country but are in wide use (the data of the sources and of Wikidata use them): Kosovo. */
+    private const USER_ASSIGNED_CODES = ['XK'];
+
     /** The keys of the configuration, in the order of the documentation. */
     public const KEYS = ['countries', 'unknown_country', 'online', 'types', 'topics', 'title_exclude', 'host_exclude', 'max_months_ahead', 'series_bypass', 'tags_allowed'];
 
@@ -172,7 +175,7 @@ final class FilterRules
         $codes = [];
         foreach (self::strings($value, $path) as $code) {
             $code = strtoupper($code);
-            if (!Countries::exists($code)) {
+            if (!Countries::exists($code) && !\in_array($code, self::USER_ASSIGNED_CODES, true)) {
                 throw new \InvalidArgumentException(\sprintf('%s: "%s" is not a country code (ISO 3166-1 alpha-2, for example "DE").', $path, $code));
             }
             $codes[] = $code;

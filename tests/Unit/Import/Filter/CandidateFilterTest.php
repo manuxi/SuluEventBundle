@@ -192,6 +192,14 @@ class CandidateFilterTest extends TestCase
         $this->assertSame([['Anything'], []], (new CandidateFilter())->filterTags('ical.a', ['Anything']), 'no list: all tags');
     }
 
+    public function testKosovoIsAcceptedAlthoughItHasNoIsoCode(): void
+    {
+        $filter = new CandidateFilter(['countries' => ['include' => ['xk']]]);
+
+        $this->assertTrue($this->evaluate($filter, $this->candidate(country: 'XK'))->passed);
+        $this->assertFalse($this->evaluate($filter, $this->candidate(country: 'DE'))->passed);
+    }
+
     public function testWrongRulesAreReportedWhenTheFilterIsBuilt(): void
     {
         foreach ([

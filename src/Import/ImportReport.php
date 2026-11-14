@@ -34,6 +34,9 @@ class ImportReport
     /** @var list<array<string, mixed>> */
     private array $entries = [];
 
+    /** @var array<string, array{code: string, country: string|null, count: int}> why candidates were sieved out, grouped (see addFiltered) */
+    private array $filteredReasons = [];
+
     /** @var list<array{name: string, timezone: string|null, certain: bool}> */
     private array $newLocations = [];
 
@@ -87,6 +90,26 @@ class ImportReport
             'country'      => $country,
             'code'         => $code,
         ];
+
+        // the reasons by kind: the code, and for the country rules the country (the text of the reason holds dates and lists)
+        $byCountry = str_starts_with($code, 'country_');
+        $group     = $code . ($byCountry ? ':' . $country : '');
+        $this->filteredReasons[$group] ??= ['code' => $code, 'country' => $byCountry ? $country : null, 'count' => 0];
+        ++$this->filteredReasons[$group]['count'];
+    }
+
+    /**
+     * Why candidates were sieved out, the most frequent reason first. Small (a few dozen lines at most), so it is stored
+     * with the run: the report mail and the admin can say what the sieve did without keeping every candidate.
+     *
+     * @return list<array{code: string, country: string|null, count: int}>
+     */
+    public function getFilteredReasons(): array
+    {
+        $reasons = array_values($this->filteredReasons);
+        usort($reasons, static fn (array $a, array $b): int => [$b['count'], $a['code'], (string) $a['country']] <=> [$a['count'], $b['code'], (string) $b['country']]);
+
+        return $reasons;
     }
 
     /**
@@ -146,12 +169,14 @@ class ImportReport
     public function toArray(): array
     {
         return [
-            'entries' => array_values(array_filter(
+            'entries'         => array_values(array_filter(
                 $this->entries,
                 static fn (array $entry): bool => self::ACTION_FILTERED !== $entry['action'] && (self::ACTION_UNCHANGED !== $entry['action'] || [] !== $entry['lockedFields'])
             )),
-            'newLocations' => $this->newLocations,
-            'warnings'     => $this->warnings,
+            'newLocations'    => $this->newLocations,
+            'warnings'        => $this->warnings,
+            // only the sum per reason: the sieved candidates themselves are not kept
+            'filteredReasons' => $this->getFilteredReasons(),
         ];
     }
 }

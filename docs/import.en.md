@@ -170,7 +170,7 @@ sulu_event:
     import:
         filters:
             countries:
-                include: ['DE', 'AT', 'CH', 'NL']   # ISO 3166-1 alpha-2; only these pass
+                include: ['DE', 'AT', 'CH', 'NL']   # ISO 3166-1 alpha-2 (and XK for Kosovo); only these pass
                 exclude: []                         # always out
             unknown_country: allow                  # allow (default) | deny: a place without a country
             online: allow                           # allow (default) | deny: online only, without a place
@@ -202,7 +202,7 @@ sulu_event:
 
 - A **new** candidate gets **no event**. Its entry in `app_event_import` gets the state `filtered` and the reason in `state_reason` ("The country US is not one of the allowed countries."). If the rules change and it passes, the next run imports it like any other candidate.
 - An event that **exists** is **not touched** (no change, no deletion). Its entry becomes `filtered`; what happens to the event is decided by `sulu:event:import:prune` (below). If it passes again, the entry is `active` again and the changes of the source arrive.
-- The run counts them (column **Filtered**, also stored with the run), but does not keep the list. To see what a rule does, ask for it: `bin/adminconsole sulu:event:import --dry-run --explain` lists source, title, country and reason of every candidate that was left out.
+- The run counts them (column **Filtered**, also stored with the run) and keeps the sum per reason in its report (`filteredReasons`: code, country for the country rules, count; the project can show "what the sieve did" in its report mail), but does not keep the list of candidates. To see what a rule does, ask for it: `bin/adminconsole sulu:event:import --dry-run --explain` lists source, title, country and reason of every candidate that was left out.
 - `sulu_event_import_pending` does not show events that are `filtered` or `rejected`. In the admin, the tab "Source" shows state and reason, and the list of events can be filtered by "left out by the rules" and "rejected".
 
 ### Allowed tags
