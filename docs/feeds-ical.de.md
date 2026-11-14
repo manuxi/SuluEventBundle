@@ -178,6 +178,7 @@ Kalender-Feeds können über Query-Parameter gefiltert werden:
 - `attendanceMode[]`: `offline`, `online` oder `mixed`
 - `country[]`: Ländercodes des Ortes (`DE`, `US`, …)
 - `free=1`: nur Events, die als kostenlos gekennzeichnet sind
+- `featured=1`: nur Highlights, also Events mit dem Tag aus `sulu_event.featured_tag` (siehe [Smart Content](smart-content.de.md#highlights)); ohne diesen Tag liefert der Feed keine Events
 
 Listen lassen sich auch kommagetrennt schreiben (`categories=12,15`). Beispiel: alle Online-Events zum Thema 12 als Abo: `webcal://example.com/events/calendar.de.ics?categories=12&attendanceMode=online,mixed`.
 

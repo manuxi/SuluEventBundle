@@ -94,6 +94,7 @@ services:
             - '@translator.default'
             - '%sulu_event.types%'
             - '@request_stack'
+            - '@sulu_event.featured_tag'
         tags:
             - { name: sulu_content.smart_content_provider, type: events }
 
@@ -118,6 +119,16 @@ services:
             - '%sulu_event.types%'
             - '%sulu_event.default_type%'
         public: true
+
+    # The tag that marks highlights (sulu_event.featured_tag; without a name the feature is off)
+    sulu_event.featured_tag:
+        class: Manuxi\SuluEventBundle\Service\FeaturedTag
+        arguments:
+            - '%sulu_event.featured_tag%'
+        public: true
+
+    Manuxi\SuluEventBundle\Service\FeaturedTag:
+        alias: sulu_event.featured_tag
 
     # Selects of the event form (status, attendance mode, time zone, languages)
     sulu_event.status_select:
@@ -160,6 +171,8 @@ services:
             - '@translator'
             - '%sulu_event.category_root%'
             - '@?cache.app.taggable'
+            - 3600
+            - '@sulu_event.featured_tag'
         public: true
 
     sulu_event.filter_options_cache_listener:
@@ -453,5 +466,6 @@ services:
             - '@sulu_event.status_select'
             - '@sulu_event.attendance_mode_select'
             - '@sulu_event.import.info_provider'
+            - '@sulu_event.featured_tag'
         tags:
             - { name: sulu_content.normalizer }

@@ -12,6 +12,8 @@ use Manuxi\SuluEventBundle\Import\Resolver\CategoryResolver;
 use Manuxi\SuluEventBundle\Import\Resolver\TagResolver;
 use Manuxi\SuluEventBundle\Mcp\Tool\EventUpdateTool;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
+use Manuxi\SuluEventBundle\Service\FeaturedTag;
+use Manuxi\SuluEventBundle\Tests\Integration\Stub\StubTag;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Sulu\Bundle\ActivityBundle\Application\Collector\DomainEventCollectorInterface;
@@ -170,6 +172,64 @@ class EventUpdateToolTest extends TestCase
         $this->assertStringContainsString('Whatever', $result['warnings'][0]);
     }
 
+    public function testTheTagOfTheHighlightsStaysWhenTagsAreReplaced(): void
+    {
+        $current = $this->createDimensionContent('event', WorkflowInterface::WORKFLOW_PLACE_DRAFT);
+        $current->setExcerptTags([new StubTag('Symfony'), new StubTag('Highlight')]);
+        $this->contentManager->method('resolve')->willReturn($current);
+        $this->contentManager->method('persist')->willReturn($current);
+
+        $tag = $this->createMock(TagInterface::class);
+        $tag->method('getId')->willReturn(7);
+        // the list of allowed tags does not name the highlight, it passes anyway
+        $this->tagResolver->expects($this->once())->method('resolve')->with(['php', 'Highlight'])->willReturn([$tag]);
+
+        $result = $this->createToolWithFeaturedTag('Highlight', new CandidateFilter(['tags_allowed' => ['php']]))
+            ->updateEvent($this->event->getUuid(), 'de', null, ['tags' => ['php']]);
+
+        $this->assertTrue($result['success'] ?? false, json_encode($result));
+        $this->assertArrayNotHasKey('warnings', $result);
+    }
+
+    public function testFeaturedFalseTakesTheTagOfTheHighlightsAwayAndKeepsTheOthers(): void
+    {
+        $current = $this->createDimensionContent('event', WorkflowInterface::WORKFLOW_PLACE_DRAFT);
+        $current->setExcerptTags([new StubTag('Symfony'), new StubTag('Highlight')]);
+        $this->contentManager->method('resolve')->willReturn($current);
+        $this->contentManager->method('persist')->willReturn($current);
+        $this->tagResolver->expects($this->once())->method('resolve')->with(['Symfony'])->willReturn([]);
+
+        $result = $this->createToolWithFeaturedTag('Highlight')->updateEvent($this->event->getUuid(), 'de', null, ['featured' => false]);
+
+        $this->assertTrue($result['success'] ?? false, json_encode($result));
+    }
+
+    public function testFeaturedTrueAddsTheTagToTheCurrentOnes(): void
+    {
+        $current = $this->createDimensionContent('event', WorkflowInterface::WORKFLOW_PLACE_DRAFT);
+        $current->setExcerptTags([new StubTag('Symfony')]);
+        $this->contentManager->method('resolve')->willReturn($current);
+        $this->contentManager->method('persist')->willReturn($current);
+        $this->tagResolver->expects($this->once())->method('resolve')->with(['Symfony', 'Highlight'])->willReturn([]);
+
+        $this->createToolWithFeaturedTag('Highlight')->updateEvent($this->event->getUuid(), 'de', null, ['featured' => true]);
+    }
+
+    public function testFeaturedIsIgnoredWithAWarningWithoutTheFeaturedTag(): void
+    {
+        $current = $this->createDimensionContent('event', WorkflowInterface::WORKFLOW_PLACE_DRAFT);
+        $this->contentManager->method('resolve')->willReturn($current);
+        $this->contentManager->expects($this->once())
+            ->method('persist')
+            ->with($this->anything(), ['summary' => 'S', 'template' => 'event'], $this->anything())
+            ->willReturn($current);
+        $this->tagResolver->expects($this->never())->method('resolve');
+
+        $result = $this->tool->updateEvent($this->event->getUuid(), 'de', null, ['summary' => 'S', 'featured' => true]);
+
+        $this->assertStringContainsString('sulu_event.featured_tag', $result['warnings'][0]);
+    }
+
     public function testWithoutCategoriesAndTagsNothingIsResolved(): void
     {
         $current = $this->createDimensionContent('event', WorkflowInterface::WORKFLOW_PLACE_DRAFT);
@@ -203,6 +263,21 @@ class EventUpdateToolTest extends TestCase
         $result = $tool->updateEvent('missing', 'de', null, ['summary' => 'x']);
 
         $this->assertSame(['error' => 'Event "missing" not found.'], $result);
+    }
+
+    private function createToolWithFeaturedTag(string $name, ?CandidateFilter $filter = null): EventUpdateTool
+    {
+        return new EventUpdateTool(
+            $this->eventRepository,
+            $this->entityManager,
+            $this->contentManager,
+            $this->contentWorkflow,
+            $this->createMock(DomainEventCollectorInterface::class),
+            $this->categoryResolver,
+            $this->tagResolver,
+            $filter,
+            new FeaturedTag($name),
+        );
     }
 
     private function createDimensionContent(string $templateKey, string $workflowPlace): EventDimensionContent

@@ -60,6 +60,7 @@ sulu_event:
 | `location_aliases` | Andere Schreibweisen eines Ortes oder einer Stadt und die, die führt, zum Beispiel `Brüssel: Brussels`, `Köln: Cologne`. Der Import findet und legt den Ort unter dem führenden Namen an, eine deutsche Schreibweise der Quelle macht keinen zweiten Ort (Stadt mit Bundesstaat oder Land, „San Francisco CA“, ist ohnehin dieselbe Stadt) | – |
 | `filters` | Das Sieb: welche Kandidaten überhaupt zu Events werden, siehe „Das Sieb“ | keine Regeln |
 | `source_filters` | Regeln einzelner Quellen nach Quellschlüssel (auch für Quellen Ihres Projekts) | – |
+| `featured_sources` | Quellschlüssel (z. B. `confs-tech`), deren Events den Tag der Highlights bekommen: für Quellen Ihres Projekts, die keine eigene Option `featured` haben. Braucht `sulu_event.featured_tag` | – |
 | `locales` | Sprachen, in denen ein importiertes Event einen Text haben soll. Jede bekommt beim Import gleich einen Entwurf mit dem Titel der Quelle und allen Fakten (auch bei Events, die es schon gibt); fehlt der Text, steht das Event in der Liste der Events mit offener Arbeit | – |
 
 Optionen einer Quelle (`ical` und `jsonld` haben dieselben):
@@ -78,6 +79,7 @@ Optionen einer Quelle (`ical` und `jsonld` haben dieselben):
 | `languages` | Sprachkürzel, in denen die Events gehalten werden |
 | `filters` | Regeln des Siebs für diese Quelle, ersetzen die globalen Regel für Regel, siehe „Das Sieb“ |
 | `image` | ID eines Mediums (ein eigenes Bild), das jedes Event der Quelle bekommt, siehe „Bilder“ |
+| `featured` | `true`: die Events der Quelle bekommen den Tag der Highlights (`sulu_event.featured_tag`), siehe „Highlights“. Standard: `false` |
 
 Fehler in der Konfiguration werden beim Aufbau des Caches gemeldet, mit dem Pfad der Option.
 
@@ -213,6 +215,16 @@ sulu_event:
 
 - **`sulu_event_import_reject`** (MCP-Werkzeug, [docs/mcp.de.md](mcp.de.md)): sagt mit einer Begründung, dass ein Event nicht gewünscht ist. Das Event wird nicht gelöscht; der Import legt es nie wieder an und ändert es nicht mehr (Zustand `rejected`).
 - **`sulu:event:import:prune [--dry-run] [--state=filtered|rejected] [--force]`**: verschiebt Events, deren Eintrag `filtered` oder `rejected` ist und die **nie veröffentlicht** waren, in den Sulu-Papierkorb (wie „Löschen“ im Admin, dort wiederherstellbar). Veröffentlichte Events und solche, die eine andere Quelle noch pflegt, werden nur aufgelistet („bitte im Admin entscheiden“). Ohne `--dry-run` fragt der Befehl nach; mit `--no-interaction` bricht er ab, außer `--force` ist gesetzt. Der Eintrag behält seinen Zustand, ein `filtered`-Kandidat wird also wieder importiert, wenn er später durchkommt.
+
+## Highlights
+
+Mit `sulu_event.featured_tag` (Name eines Tags, siehe [Smart Content](smart-content.de.md#highlights)) und `featured: true` an einer Quelle (oder dem Schlüssel in `featured_sources`) bekommen deren Events den Tag der Highlights:
+
+- Ein **neues** Event hat den Tag von Anfang an; bei einem **bestehenden** Event kommt er beim nächsten Lauf dazu, auch wenn es schon andere Tags hat.
+- Er wird **einmal** gesetzt. Nimmt ein Redakteur ihn weg, setzt der Import ihn nicht wieder. Umgekehrt nimmt der Import ihn nie weg, wenn eine Quelle nicht mehr `featured` ist.
+- Der Tag gilt auch dann, wenn `tags_allowed` ihn nicht nennt.
+- Bei einem veröffentlichten Event entsteht damit ein neuer Entwurf; live geht der Tag erst mit der nächsten Freigabe (von Hand oder mit `republish_changes`).
+- Ist `featured_tag` nicht gesetzt, steht im Bericht eine Warnung und es wird nichts markiert. Das MCP-Werkzeug `sulu_event_import_upsert` kennt dafür den Parameter `featured`.
 
 ## Automatisch veröffentlichen
 

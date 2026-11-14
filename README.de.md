@@ -36,7 +36,7 @@ Dieses Bundle wurde im Laufe der Zeit mit immer mehr Funktionen ausgestattet: Er
 - **iCal-Export** - Einzelne Events oder vollständige Kalender-Abonnements (webcal://), nach Kategorie und Tag filterbar, mit korrekten Zeiten und absoluten Links
 - **Online-Events, Zeitzonen, Tickets** - Teilnahme (vor Ort, online, beides), Zeitzone je Event oder Ort, ganztägige Events, Status (abgesagt, verschoben ...), Ticket- und Stream-Links, Preis, Veranstalter, Sprachen
 - **RSS/Atom-Feeds** - Abonnenten über neue Events auf dem Laufenden halten
-- **Smart Content** - Als Content-Block in jeder Sulu-Seite verwendbar, filterbar nach Thema, Tag, Typ, Teilnahme, Land und kostenlos (mit Filter-Optionen für eine Filterleiste)
+- **Smart Content** - Als Content-Block in jeder Sulu-Seite verwendbar, filterbar nach Thema, Tag, Typ, Teilnahme, Land, kostenlos und Highlights (mit Filter-Optionen für eine Filterleiste)
 - **Strukturierte Daten** - schema.org-Event als Array für den eigenen JSON-LD-Graphen
 
 ## 📋 Voraussetzungen
@@ -117,7 +117,7 @@ Detaillierte Dokumentation im [docs/](docs/) Verzeichnis.
 
 - [Kalender-Integration](docs/calendar.de.md) - FullCalendar.js-Integration
 - [MCP-Tools](docs/mcp.de.md) - Tools für KI-Assistenten (Sulu MCP)
-- [Smart Content](docs/smart-content.de.md) - Filtern auf der Website (Kategorien, Tags, Teilnahme, Land, kostenlos) und Filter-Optionen
+- [Smart Content](docs/smart-content.de.md) - Filtern auf der Website (Kategorien, Tags, Teilnahme, Land, kostenlos, Highlights) und Filter-Optionen
 - [Social Media](docs/social-media.de.md) - Social-Sharing-Konfiguration
 - [Wiederkehrende Events](docs/recurrence.de.md) - Wiederholende Event-Muster
 - [Feeds/iCal](docs/feeds-ical.de.md) - Feeds und iCal Handling

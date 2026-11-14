@@ -85,6 +85,37 @@ class ImportConfigurationTest extends TestCase
         $this->assertSame('en', $built->locale);
     }
 
+    public function testTheFeaturedTagIsOffByDefaultAndMustBeAName(): void
+    {
+        $this->assertNull($this->load([])->getParameter('sulu_event.featured_tag'));
+        $this->assertSame('Highlight', $this->load(['featured_tag' => 'Highlight'])->getParameter('sulu_event.featured_tag'));
+        $this->assertSame([], $this->load([])->getParameter('sulu_event.import.featured_sources'));
+
+        $this->expectException(InvalidConfigurationException::class);
+        $this->load(['featured_tag' => '  ']);
+    }
+
+    public function testASourceOfHighlightsNeedsTheFeaturedTag(): void
+    {
+        $source    = ['key' => 'a', 'url' => 'https://example.com/a.ics', 'featured' => true];
+        $container = $this->load(['featured_tag' => 'Highlight', 'import' => ['sources' => ['ical' => [$source]], 'featured_sources' => ['confs-tech']]]);
+
+        $this->assertSame(['confs-tech'], $container->getParameter('sulu_event.import.featured_sources'));
+        $built = SourceConfig::fromArray('ical', $container->getDefinition('sulu_event.import.source.ical.a')->getArgument(0)->getArgument(1));
+        $this->assertTrue($built->featured);
+
+        try {
+            $this->load(['import' => ['sources' => ['ical' => [$source]]]]);
+            $this->fail('A source of highlights without the tag must be refused.');
+        } catch (InvalidConfigurationException $e) {
+            $this->assertStringContainsString('sulu_event.featured_tag', $e->getMessage());
+        }
+
+        $this->expectException(InvalidConfigurationException::class);
+        $this->expectExceptionMessage('featured_sources');
+        $this->load(['import' => ['featured_sources' => ['confs-tech']]]);
+    }
+
     public function testEnabledImportNeedsAUser(): void
     {
         $this->expectException(InvalidConfigurationException::class);

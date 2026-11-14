@@ -34,10 +34,11 @@ Which categories and tags to offer is up to the template: only events with an ex
 | `attendanceMode` | `offline`, `online`, `mixed`, comma separated. Exact values: `online` does not include `mixed` | `?attendanceMode=online,mixed` |
 | `country` | Country codes (ISO 3166-1 alpha-2) of the location, comma separated | `?country=DE,AT` |
 | `free` | `1`, `true`, `yes` or `on`: only events marked as free of charge | `?free=1` |
+| `featured` | `1`, `true`, `yes` or `on`: only highlights (see [Highlights](#highlights)); without `featured_tag` the filter matches nothing | `?featured=1` |
 
 - Several values of one kind match with **OR**, the kinds with **AND** (and with categories and tags). A list without a usable value (`?attendanceMode=hybrid`) matches nothing.
-- The names of the parameters can be changed with `type_parameter`, `attendance_mode_parameter`, `country_parameter` and `free_parameter` in the params of the field.
-- In the admin, the same filters are available in the list of "types" of the smart content field: next to *pending*, *expired* and the event types there are "Participation: On site / Online / On site and online", "Free of charge" and "Country: …" (the countries of the locations in use). They are fixed filters of the field and combine with the event types (OR within a kind, AND between the kinds).
+- The names of the parameters can be changed with `type_parameter`, `attendance_mode_parameter`, `country_parameter`, `free_parameter` and `featured_parameter` in the params of the field.
+- In the admin, the same filters are available in the list of "types" of the smart content field: next to *pending*, *expired* and the event types there are "Participation: On site / Online / On site and online", "Free of charge", "Highlights" (only with `featured_tag`) and "Country: …" (the countries of the locations in use). They are fixed filters of the field and combine with the event types (OR within a kind, AND between the kinds).
 
 ## Filter options for a filter bar
 
@@ -53,6 +54,7 @@ Which categories and tags to offer is up to the template: only events with an ex
 {% for country in options.countries %}<a href="?country={{ country.code }}">{{ country.name }}</a>{% endfor %}
 {% for mode in options.attendanceModes %}<a href="?attendanceMode={{ mode.key }}">{{ mode.name }}</a>{% endfor %}
 {% if options.free %}<a href="?free=1">Free ({{ options.free.count }})</a>{% endif %}
+{% if options.featured %}<a href="?featured=1">Highlights ({{ options.featured.count }})</a>{% endif %}
 ```
 
 | Key | Entries |
@@ -62,6 +64,7 @@ Which categories and tags to offer is up to the template: only events with an ex
 | `countries` | `code`, `name` (in the locale), `count`, sorted by name |
 | `attendanceModes` | `key`, `name`, `count` |
 | `free` | `['count' => n]` or `null` if no upcoming event is free |
+| `featured` | `['count' => n]` or `null` if `featured_tag` is not set or no upcoming event is a highlight |
 
 Topics are categories. Set the key of a root category and only its descendants are listed:
 
@@ -74,3 +77,20 @@ sulu_event:
 Without the option every category in use is listed; with an unknown key no topics. The selection of categories in the **admin** (excerpt tab) is a generic field of Sulu and is not restricted by this option.
 
 The result is cached per locale (one hour, in `cache.app.taggable` if it exists) and cleared whenever an event is created, changed, published, unpublished, copied, removed or restored.
+
+## Highlights
+
+Flagship events can be emphasised and filtered without a new database field: an event is a **highlight** if it carries a certain tag. The project chooses the name; without a name the feature is off (default).
+
+```yaml
+# config/packages/sulu_event.yaml
+sulu_event:
+    featured_tag: 'Highlight'
+```
+
+- The tag is set on the event like any other (tab "Excerpt") or by the import (`featured: true` on the source, see [Import](import.en.md)). Via MCP: `featured: true` for `sulu_event_import_upsert`, `"featured": true/false` in `content` of `sulu_event_update`.
+- Names are compared without regard to case.
+- **Filter**: `?featured=1` for smart content, the [calendar API](calendar.en.md) and the [iCal feed](feeds-ical.en.md); in the admin "Highlights" in the types list of the smart content field.
+- **Display**: `event.featured` (true/false) is part of the data of every event (Twig), `extendedProps.featured` of the calendar API.
+- Without `featured_tag` no event is a highlight, and the filter `featured` deliberately returns nothing instead of all events.
+- The filter options contain `featured` with the number of upcoming highlights (see above).

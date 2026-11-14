@@ -42,7 +42,7 @@ class EventImportUpsertTool
     #[McpTool(
         name: 'sulu_event_import_upsert',
         title: 'Import Event (create or update a draft)',
-        description: 'Create or update ONE event as a draft, with the same matching and protection rules as the import command. Use it for events found by research. "source" names where the event comes from (for example "editorial"), "externalId" is a stable id inside that source (for example the url of the page): the same source + externalId always updates the same event. If another source delivers the same event, give both the same "series" (for example "ces") and the event is found by series + year of the start: the source with the higher "priority" (default 30) maintains it. Texts, summaries, categories, tags and the image are only filled in when the event has none; fields that someone changed in the admin are locked and reported in "lockedFields", not overwritten. An event that was deleted in the admin or turned down with sulu_event_import_reject is not created again ("rejected"). If the project set rules for the import (country, topic, title, ...) and the event does not meet them, nothing is created and the action is "filtered" with the reason in "detail"; of "tags" only those on the list of allowed tags (if the project sets one) are taken, the others are named in "warnings". The result is always a draft, publishing is done in the admin. Pass "titles" (locale => title), "startDate" (e.g. 2027-06-12T10:00:00 or with offset) and "timezone" (IANA name of the zone the times are meant in, e.g. Europe/Berlin; leave out if unknown). Place: "location" object (name required, plus city, countryCode, latitude, longitude; an existing place is found by name and city or coordinates, a new one is created) or "locationId" from sulu_location_list. Texts per locale in "texts"/"summaries"/"subtitles" must be written by you, do not copy the text of a page; put what you read in "sourceDescription" (not published, only a hint for editors). "categories" are category keys, "tags" names. Use dryRun to see the result without saving.',
+        description: 'Create or update ONE event as a draft, with the same matching and protection rules as the import command. Use it for events found by research. "source" names where the event comes from (for example "editorial"), "externalId" is a stable id inside that source (for example the url of the page): the same source + externalId always updates the same event. If another source delivers the same event, give both the same "series" (for example "ces") and the event is found by series + year of the start: the source with the higher "priority" (default 30) maintains it. Texts, summaries, categories, tags and the image are only filled in when the event has none; fields that someone changed in the admin are locked and reported in "lockedFields", not overwritten. An event that was deleted in the admin or turned down with sulu_event_import_reject is not created again ("rejected"). If the project set rules for the import (country, topic, title, ...) and the event does not meet them, nothing is created and the action is "filtered" with the reason in "detail"; of "tags" only those on the list of allowed tags (if the project sets one) are taken, the others are named in "warnings". With "featured": true the event also gets the tag of the highlights (if the project sets sulu_event.featured_tag). The result is always a draft, publishing is done in the admin. Pass "titles" (locale => title), "startDate" (e.g. 2027-06-12T10:00:00 or with offset) and "timezone" (IANA name of the zone the times are meant in, e.g. Europe/Berlin; leave out if unknown). Place: "location" object (name required, plus city, countryCode, latitude, longitude; an existing place is found by name and city or coordinates, a new one is created) or "locationId" from sulu_location_list. Texts per locale in "texts"/"summaries"/"subtitles" must be written by you, do not copy the text of a page; put what you read in "sourceDescription" (not published, only a hint for editors). "categories" are category keys, "tags" names. Use dryRun to see the result without saving.',
     )]
     #[RequiresPermission(requirements: [
         new PermissionRequirement(Event::SECURITY_CONTEXT, PermissionTypes::ADD),
@@ -86,6 +86,8 @@ class EventImportUpsertTool
         ?string $sourceDescription = null,
         ?string $series = null,
         ?int $priority = null,
+        #[Schema(type: 'boolean', description: 'true: the event is a highlight and gets the tag of the highlights (sulu_event.featured_tag); the tag is added once, an editor can take it away. Ignored (with a warning) if the project does not set that tag.')]
+        ?bool $featured = null,
         bool $dryRun = false,
     ): array {
         try {
@@ -123,6 +125,7 @@ class EventImportUpsertTool
                 sourceDescription: $sourceDescription,
                 series: $series,
                 locationId: $locationId,
+                featured: true === $featured,
             );
 
             $report = $this->importer->importCandidate($source, $priority ?? self::DEFAULT_PRIORITY, $candidate, $dryRun);

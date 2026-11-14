@@ -6,6 +6,7 @@ namespace Manuxi\SuluEventBundle\Controller\Website;
 
 use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
+use Manuxi\SuluEventBundle\Service\FeaturedTag;
 use Manuxi\SuluEventBundle\Service\ICalGenerator;
 use Manuxi\SuluEventBundle\Service\RequestParameters;
 use Sulu\Content\Application\ContentAggregator\ContentAggregatorInterface;
@@ -24,11 +25,15 @@ class ICalController extends AbstractController
      */
     public const UUID_REQUIREMENT = '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}';
 
+    private readonly FeaturedTag $featuredTag;
+
     public function __construct(
         private readonly ICalGenerator $icalGenerator,
         private readonly EventRepository $eventRepository,
         private readonly ContentAggregatorInterface $contentAggregator,
+        ?FeaturedTag $featuredTag = null,
     ) {
+        $this->featuredTag = $featuredTag ?? new FeaturedTag();
     }
 
     #[Route('/{_locale}/events/calendar.ics', name: 'sulu_event.ical_feed')]
@@ -42,6 +47,8 @@ class ICalController extends AbstractController
             'attendanceModes' => RequestParameters::getList($request, 'attendanceMode'),
             'countries'       => RequestParameters::getList($request, 'country'),
             'free'            => RequestParameters::getFlag($request, 'free'),
+            'featured'        => RequestParameters::getFlag($request, 'featured'),
+            'featuredTag'     => $this->featuredTag->getName(),
         ];
 
         $ical = $this->icalGenerator->generate($filters, $_locale);

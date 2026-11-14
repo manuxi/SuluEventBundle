@@ -217,6 +217,8 @@ class EventRepository extends ServiceEntityRepository
      *     attendanceModes?: string[],
      *     countries?: string[],
      *     free?: bool,
+     *     featured?: bool,
+     *     featuredTag?: string|null,
      * } $filters
      *
      * @return Event[]
@@ -258,6 +260,8 @@ class EventRepository extends ServiceEntityRepository
      *     attendanceModes?: string[],
      *     countries?: string[],
      *     free?: bool,
+     *     featured?: bool,
+     *     featuredTag?: string|null,
      * } $filters
      *
      * @return Event[]
@@ -428,6 +432,27 @@ class EventRepository extends ServiceEntityRepository
             $qb->andWhere('dimensionContent.isFree = :feedFree')
                 ->setParameter('feedFree', true);
         }
+
+        if (true === ($filters['featured'] ?? false)) {
+            $this->applyFeaturedFilter($qb, $filters['featuredTag'] ?? null);
+        }
+    }
+
+    /**
+     * Highlights only: events that carry the tag sulu_event.featured_tag. Without a name of the tag (the feature is
+     * off) no event is a highlight, so nothing matches.
+     */
+    private function applyFeaturedFilter(QueryBuilder $qb, mixed $tagName): void
+    {
+        if (!\is_string($tagName) || '' === trim($tagName)) {
+            $qb->andWhere('1 = 0');
+
+            return;
+        }
+
+        $qb->innerJoin('dimensionContent.excerptTags', 'featuredTag')
+            ->andWhere('LOWER(featuredTag.name) = :featuredTagName')
+            ->setParameter('featuredTagName', mb_strtolower(trim($tagName)));
     }
 
     /**

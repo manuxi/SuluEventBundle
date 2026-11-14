@@ -17,6 +17,7 @@ services:
             - '@sulu_event.ical_generator'
             - '@Manuxi\SuluEventBundle\Repository\EventRepository'
             - '@sulu_content.content_aggregator'
+            - '@sulu_event.featured_tag'
         tags:
             - { name: controller.service_arguments }
             - { name: sulu.context, context: website }

@@ -7,6 +7,7 @@ namespace Manuxi\SuluEventBundle\Tests\Integration\Content;
 use Doctrine\ORM\QueryBuilder;
 use Manuxi\SuluEventBundle\Content\EventSmartContentProvider;
 use Manuxi\SuluEventBundle\Entity\Event;
+use Manuxi\SuluEventBundle\Service\FeaturedTag;
 use Manuxi\SuluEventBundle\Tests\Integration\AbstractEventDatabaseTestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -37,6 +38,7 @@ class EventSmartContentProviderFilterTest extends AbstractEventDatabaseTestCase
             'entityManager' => $this->entityManager,
             'translator'    => $translator,
             'requestStack'  => $this->requestStack,
+            'featuredTag'   => new FeaturedTag('Highlight'),
             'eventTypes'    => ['conference' => ['name' => 'c', 'color' => '#fff'], 'meetup' => ['name' => 'm', 'color' => '#000']],
         ] as $property => $value) {
             $reflection->getProperty($property)->setValue($this->provider, $value);
@@ -44,9 +46,9 @@ class EventSmartContentProviderFilterTest extends AbstractEventDatabaseTestCase
 
         $tomorrow  = (new \DateTimeImmutable('+1 day'))->format('Y-m-d 10:00:00');
         $yesterday = (new \DateTimeImmutable('-3 days'))->format('Y-m-d 10:00:00');
-        $this->createEvent('online-free', 'de', $tomorrow, type: 'conference', attendanceMode: 'online', isFree: true);
+        $this->createEvent('online-free', 'de', $tomorrow, tags: ['highlight'], type: 'conference', attendanceMode: 'online', isFree: true);
         $this->createEvent('onsite-berlin', 'de', $tomorrow, type: 'meetup', attendanceMode: 'offline', location: 'Messe Berlin');
-        $this->createEvent('mixed-vegas', 'de', $tomorrow, type: 'conference', attendanceMode: 'mixed', location: 'Convention Center', isFree: false);
+        $this->createEvent('mixed-vegas', 'de', $tomorrow, tags: ['highlight', 'llm'], type: 'conference', attendanceMode: 'mixed', location: 'Convention Center', isFree: false);
         $this->createEvent('past-online', 'de', $yesterday, type: 'conference', attendanceMode: 'online');
     }
 
@@ -65,6 +67,43 @@ class EventSmartContentProviderFilterTest extends AbstractEventDatabaseTestCase
         $this->assertArrayHasKey('country:US', $types);
         $this->assertArrayNotHasKey('country:FR', $types);
         $this->assertStringStartsWith('[sulu_event.filter.country]: ', $types['country:DE']);
+    }
+
+    public function testHighlightsAreOfferedAsFilterOnlyWithTheFeaturedTag(): void
+    {
+        $types = array_column($this->callProtected('getTypes'), 'title', 'type');
+        $this->assertSame('[sulu_event.filter.featured]', $types['featured']);
+
+        $reflection = new \ReflectionProperty($this->provider, 'featuredTag');
+        $reflection->setValue($this->provider, new FeaturedTag());
+        $this->assertArrayNotHasKey('featured', array_column($this->callProtected('getTypes'), 'title', 'type'));
+    }
+
+    public function testAdminFilterByHighlights(): void
+    {
+        $this->assertSame(['mixed-vegas', 'online-free'], $this->found(['featured']));
+        $this->assertSame(['mixed-vegas'], $this->found(['featured', 'country:US']));
+        $this->assertSame(['online-free'], $this->found(['featured', 'free']));
+        $this->assertSame([], $this->found(['featured', 'meetup']));
+    }
+
+    public function testWebsiteQueryParameterForHighlights(): void
+    {
+        $this->assertSame(['mixed-vegas', 'online-free'], $this->foundForRequest(['featured' => '1']));
+        $this->assertSame(['mixed-vegas'], $this->foundForRequest(['featured' => 'true', 'country' => 'US']));
+        // a highlight is no duplicate of an event with several tags
+        $this->assertCount(2, $this->foundForRequest(['featured' => '1']));
+        $this->assertSame(['mixed-vegas', 'online-free', 'onsite-berlin', 'past-online'], $this->foundForRequest(['featured' => '0']));
+        $this->assertSame(['online-free'], $this->foundForRequest(['top' => '1', 'free' => '1'], ['featured_parameter' => 'top']));
+    }
+
+    public function testWithoutTheFeaturedTagHighlightsMatchNothing(): void
+    {
+        $reflection = new \ReflectionProperty($this->provider, 'featuredTag');
+        $reflection->setValue($this->provider, new FeaturedTag());
+
+        $this->assertSame([], $this->found(['featured']));
+        $this->assertSame([], $this->foundForRequest(['featured' => '1']));
     }
 
     public function testAdminFilterByAttendanceMode(): void

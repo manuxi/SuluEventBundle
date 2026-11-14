@@ -11,6 +11,9 @@ use Manuxi\SuluEventBundle\Repository\EventRepository;
 use Manuxi\SuluEventBundle\Service\EventTimezoneResolver;
 use Manuxi\SuluEventBundle\Service\EventTypeSelect;
 use Manuxi\SuluEventBundle\Service\EventUrlResolver;
+use Manuxi\SuluEventBundle\Service\FeaturedTag;
+use Manuxi\SuluEventBundle\Tests\Integration\Stub\StubCategory;
+use Manuxi\SuluEventBundle\Tests\Integration\Stub\StubTag;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Sulu\Component\Webspace\Manager\WebspaceManagerInterface;
@@ -25,6 +28,7 @@ class CalendarApiControllerTest extends TestCase
     private ContentAggregatorInterface&MockObject $contentAggregator;
     private WebspaceManagerInterface&MockObject $webspaceManager;
     private CalendarApiController $controller;
+    private EventTypeSelect $eventTypeSelect;
 
     protected function setUp(): void
     {
@@ -36,7 +40,8 @@ class CalendarApiControllerTest extends TestCase
         $eventTypeSelect->method('getColor')->willReturn('#0d6efd');
         $eventTypeSelect->method('getTypeName')->willReturn('Conference');
 
-        $this->controller = new CalendarApiController($this->eventRepository, $eventTypeSelect, $this->contentAggregator, new EventUrlResolver($this->webspaceManager), new EventTimezoneResolver('Europe/Berlin'));
+        $this->eventTypeSelect = $eventTypeSelect;
+        $this->controller      = new CalendarApiController($this->eventRepository, $eventTypeSelect, $this->contentAggregator, new EventUrlResolver($this->webspaceManager), new EventTimezoneResolver('Europe/Berlin'));
         $this->controller->setContainer(new Container());
     }
 
@@ -87,6 +92,7 @@ class CalendarApiControllerTest extends TestCase
                 $this->assertNull($filters['location']);
                 $this->assertSame([], $filters['types']);
                 $this->assertFalse($filters['free']);
+                $this->assertFalse($filters['featured']);
 
                 return true;
             }))
@@ -209,6 +215,66 @@ class CalendarApiControllerTest extends TestCase
 
         $this->assertSame('cancelled', $calendarEvent['extendedProps']['status']);
         $this->assertSame('online', $calendarEvent['extendedProps']['attendanceMode']);
+    }
+
+    public function testTheFeaturedParameterAndTheNameOfTheTagReachTheRepository(): void
+    {
+        $this->eventRepository->expects($this->once())
+            ->method('findForCalendar')
+            ->with($this->callback(function (array $filters): bool {
+                $this->assertTrue($filters['featured']);
+                $this->assertSame('Highlight', $filters['featuredTag']);
+
+                return true;
+            }))
+            ->willReturn([]);
+
+        $this->createControllerWithFeaturedTag('Highlight')->calendarAction(Request::create('/api/events/calendar/de', 'GET', ['featured' => '1']), 'de');
+    }
+
+    public function testEventsExposeTheFlagCategoriesAndTags(): void
+    {
+        $this->webspaceManager->method('findUrlByResourceLocator')->willReturn(null);
+        $content = $this->createContent('/events/live', null);
+        $content->setExcerptCategories([new StubCategory('ai'), new StubCategory(null), new StubCategory('web-php')]);
+        $content->setExcerptTags([new StubTag('Symfony'), new StubTag('highlight')]);
+        $this->eventRepository->method('findForCalendar')->willReturn([$content->getEvent()]);
+        $this->contentAggregator->method('aggregate')->willReturn($content);
+
+        $response = $this->createControllerWithFeaturedTag('Highlight')->calendarAction(Request::create('/api/events/calendar/de'), 'de');
+        $props    = json_decode((string) $response->getContent(), true, flags: \JSON_THROW_ON_ERROR)[0]['extendedProps'];
+
+        $this->assertTrue($props['featured']);
+        $this->assertSame(['ai', 'web-php'], $props['categories']);
+        $this->assertSame(['Symfony', 'highlight'], $props['tags']);
+    }
+
+    public function testWithoutTheFeaturedTagNoEventIsFeaturedButCategoriesAndTagsAreStillThere(): void
+    {
+        $this->webspaceManager->method('findUrlByResourceLocator')->willReturn(null);
+        $content = $this->createContent('/events/live', null);
+        $content->setExcerptTags([new StubTag('Highlight')]);
+
+        $props = $this->callWithOneEvent($content)['extendedProps'];
+
+        $this->assertFalse($props['featured']);
+        $this->assertSame([], $props['categories']);
+        $this->assertSame(['Highlight'], $props['tags']);
+    }
+
+    private function createControllerWithFeaturedTag(string $name): CalendarApiController
+    {
+        $controller = new CalendarApiController(
+            $this->eventRepository,
+            $this->eventTypeSelect,
+            $this->contentAggregator,
+            new EventUrlResolver($this->webspaceManager),
+            new EventTimezoneResolver('Europe/Berlin'),
+            new FeaturedTag($name),
+        );
+        $controller->setContainer(new Container());
+
+        return $controller;
     }
 
     /**

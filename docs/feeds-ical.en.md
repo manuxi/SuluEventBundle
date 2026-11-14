@@ -184,6 +184,7 @@ You can filter the calendar feed using query parameters:
 - `attendanceMode[]`: `offline`, `online` or `mixed`
 - `country[]`: Country codes of the location (`DE`, `US`, …)
 - `free=1`: only events marked as free of charge
+- `featured=1`: only highlights, i.e. events with the tag of `sulu_event.featured_tag` (see [smart content](smart-content.en.md#highlights)); without that tag the feed has no events
 
 Lists can also be written comma separated (`categories=12,15`). Example: all online events about topic 12 as a subscription: `webcal://example.com/events/calendar.en.ics?categories=12&attendanceMode=online,mixed`.
 

@@ -28,6 +28,7 @@ final class EventCandidate
      * @param string                $attendanceMode see AttendanceMode
      * @param int|null              $locationId     id of an existing location, used instead of $location
      * @param int|null              $imageMediaId   id of an image of our own for the event; the import never copies images of a source
+     * @param bool                  $featured       the event is a highlight: it gets the tag sulu_event.featured_tag
      */
     public function __construct(
         public string $externalId,
@@ -58,6 +59,7 @@ final class EventCandidate
         public ?string $matchKey = null,
         public ?int $locationId = null,
         public ?int $imageMediaId = null,
+        public bool $featured = false,
     ) {
     }
 

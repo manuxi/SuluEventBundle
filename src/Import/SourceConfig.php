@@ -23,6 +23,7 @@ final class SourceConfig
      * @param string[] $tags       names of tags every event of the source gets
      * @param string[] $languages  language codes of the events of the source
      * @param int|null $image      id of an image of our own (media) every event of the source gets if it has none
+     * @param bool     $featured   the events of the source get the tag of the highlights (sulu_event.featured_tag)
      */
     public function __construct(
         public readonly string $kind,
@@ -37,6 +38,7 @@ final class SourceConfig
         public readonly ?int $priority = null,
         public readonly array $languages = [],
         public readonly ?int $image = null,
+        public readonly bool $featured = false,
     ) {
     }
 
@@ -71,6 +73,7 @@ final class SourceConfig
             isset($config['priority']) ? (int) $config['priority'] : null,
             array_values((array) ($config['languages'] ?? [])),
             isset($config['image']) ? (int) $config['image'] : null,
+            (bool) ($config['featured'] ?? false),
         );
     }
 }

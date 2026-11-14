@@ -63,7 +63,7 @@ abstract class AbstractEventDatabaseTestCase extends TestCase
             $this->entityManager->persist($this->categories[$key]);
         }
 
-        foreach (['symfony', 'llm'] as $name) {
+        foreach (['symfony', 'llm', 'highlight'] as $name) {
             $this->tags[$name] = new StubTag($name);
             $this->entityManager->persist($this->tags[$name]);
         }

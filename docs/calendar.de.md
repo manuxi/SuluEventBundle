@@ -187,6 +187,7 @@ Die Kalender-API (`sulu_event.api.calendar`, `/api/events/calendar/{locale}`) we
 | `attendanceMode[]` | `offline`, `online`, `mixed` | `?attendanceMode[]=online&attendanceMode[]=mixed` |
 | `country[]` | Ländercodes des Ortes | `?country[]=DE` |
 | `free` | `1`: nur kostenlose Events | `?free=1` |
+| `featured` | `1`: nur Highlights (Tag aus `sulu_event.featured_tag`, siehe [Smart Content](smart-content.de.md#highlights)); ohne den Tag trifft der Filter auf nichts zu | `?featured=1` |
 | `start`, `end` | Sichtbarer Zeitraum (setzt FullCalendar selbst) | `?start=2027-03-01&end=2027-04-01` |
 
 Listen lassen sich als Array (`categories[]=12&categories[]=15`) oder kommagetrennt (`categories=12,15`) angeben. Kategorien, Tags und die weiteren Filter werden wie bei Smart Content ausgewertet (siehe [Smart Content](smart-content.de.md)); mehrere Werte einer Art gelten als ODER, die Arten untereinander als UND. Ein Filter, der nur ungültige Werte enthält (etwa `categories[]=abc`), liefert bewusst keine Events statt aller.
@@ -260,4 +261,4 @@ Das Bundle bietet eine grundlegende Kalenderimplementierung. Für erweiterte Anp
 
 Events mit gesetztem Häkchen **Ganztägig** werden mit `allDay: true`, `start` als Datum (`2027-03-02`) und `end` als Tag nach dem letzten Tag gesendet (FullCalendar nimmt das Ende ganztägiger Events als exklusiv). Die Zeiten werden nicht mehr geraten: Ein Event ohne Ende oder eines, das um Mitternacht beginnt, wird mit seiner Uhrzeit gezeigt, solange das Häkchen nicht gesetzt ist.
 
-Alle anderen Events tragen den Offset ihrer Zeitzone (Event, Ort, `sulu_event.timezone`, PHP-Standard), z. B. `2027-07-01T10:00:00-07:00`. In `extendedProps` stehen außerdem `status` und `attendanceMode`, damit ein Frontend abgesagte oder Online-Events kennzeichnen kann. Siehe [Teilnahme, Zeitzone und Tickets](online-events.de.md).
+Alle anderen Events tragen den Offset ihrer Zeitzone (Event, Ort, `sulu_event.timezone`, PHP-Standard), z. B. `2027-07-01T10:00:00-07:00`. In `extendedProps` stehen außerdem `status` und `attendanceMode`, damit ein Frontend abgesagte oder Online-Events kennzeichnen kann, sowie `featured` (true/false, Highlight), `categories` (Schlüssel der Kategorien) und `tags` (Namen der Tags), damit ein Frontend ohne weitere Abfrage nach Thema filtern oder Highlights betonen kann. Siehe [Teilnahme, Zeitzone und Tickets](online-events.de.md).

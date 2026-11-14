@@ -11,6 +11,7 @@ use Manuxi\SuluEventBundle\Entity\AttendanceMode;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
 use Manuxi\SuluEventBundle\Entity\Location;
+use Manuxi\SuluEventBundle\Service\FeaturedTag;
 use Manuxi\SuluEventBundle\Service\RequestParameters;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
 use Sulu\Bundle\AdminBundle\SmartContent\Configuration\Builder;
@@ -74,6 +75,8 @@ class EventSmartContentProvider implements SmartContentProviderInterface
     public const COUNTRY_PREFIX = 'country:';
     /** Filter value for free of charge events */
     public const FREE_TYPE = 'free';
+    /** Filter value for highlights (events with the tag sulu_event.featured_tag); only offered when that is set */
+    public const FEATURED_TYPE = 'featured';
 
     /**
      * @var class-string<EventDimensionContent>
@@ -81,6 +84,8 @@ class EventSmartContentProvider implements SmartContentProviderInterface
     private string $eventDimensionContentClassName;
 
     private ?EventRepository $eventRepository = null;
+
+    private FeaturedTag $featuredTag;
 
     /**
      * @param array<string, array{name: string, color: string}> $eventTypes
@@ -92,7 +97,9 @@ class EventSmartContentProvider implements SmartContentProviderInterface
         private TranslatorInterface $translator,
         private array $eventTypes = [],
         private ?RequestStack $requestStack = null,
+        ?FeaturedTag $featuredTag = null,
     ) {
+        $this->featuredTag = $featuredTag ?? new FeaturedTag();
         $entityDimensionContentRepository = $entityManager->getRepository(EventDimensionContent::class);
         $this->eventDimensionContentClassName = $entityDimensionContentRepository->getClassName();
     }
@@ -157,6 +164,13 @@ class EventSmartContentProvider implements SmartContentProviderInterface
             'type' => self::FREE_TYPE,
             'title' => $this->translator->trans('sulu_event.field.is_free', [], 'admin'),
         ];
+
+        if ($this->featuredTag->isEnabled()) {
+            $types[] = [
+                'type' => self::FEATURED_TYPE,
+                'title' => $this->translator->trans('sulu_event.filter.featured', [], 'admin'),
+            ];
+        }
 
         foreach ($this->findCountryCodes() as $code) {
             $types[] = [
@@ -478,8 +492,8 @@ class EventSmartContentProvider implements SmartContentProviderInterface
 
     /**
      * Event types, ways to take part, countries and "free of charge" a website visitor picked, e.g. from the query
-     * string: ?type=conference,meetup&attendanceMode=online,mixed&country=DE,AT&free=1. The names of the parameters can
-     * be changed with type_parameter, attendance_mode_parameter, country_parameter and free_parameter in the params
+     * string: ?type=conference,meetup&attendanceMode=online,mixed&country=DE,AT&free=1&featured=1. The names of the parameters can
+     * be changed with type_parameter, attendance_mode_parameter, country_parameter, free_parameter and featured_parameter in the params
      * of the smart content field.
      * Several values of one kind match with OR, the kinds with AND; a list without a usable value matches nothing.
      *
@@ -493,6 +507,7 @@ class EventSmartContentProvider implements SmartContentProviderInterface
         $modeParameter = \is_string($params['attendance_mode_parameter'] ?? null) ? $params['attendance_mode_parameter'] : 'attendanceMode';
         $countryParameter = \is_string($params['country_parameter'] ?? null) ? $params['country_parameter'] : 'country';
         $freeParameter = \is_string($params['free_parameter'] ?? null) ? $params['free_parameter'] : 'free';
+        $featuredParameter = \is_string($params['featured_parameter'] ?? null) ? $params['featured_parameter'] : 'featured';
 
         $requestedTypes = RequestParameters::getList($request, $typeParameter);
         if ([] !== $requestedTypes) {
@@ -511,6 +526,10 @@ class EventSmartContentProvider implements SmartContentProviderInterface
 
         if (RequestParameters::getFlag($request, $freeParameter)) {
             $this->addFreeFilter($queryBuilder, $dimensionContentAlias);
+        }
+
+        if (RequestParameters::getFlag($request, $featuredParameter)) {
+            $this->addFeaturedFilter($queryBuilder, $dimensionContentAlias);
         }
     }
 
@@ -573,6 +592,23 @@ class EventSmartContentProvider implements SmartContentProviderInterface
     }
 
     /**
+     * Highlights only. Without sulu_event.featured_tag no event is a highlight, so nothing matches.
+     */
+    private function addFeaturedFilter(QueryBuilder $queryBuilder, string $alias): void
+    {
+        $name = $this->featuredTag->getName();
+        if (null === $name) {
+            $queryBuilder->andWhere('1 = 0');
+
+            return;
+        }
+
+        $queryBuilder->innerJoin($alias.'.excerptTags', 'detailFeaturedTag')
+            ->andWhere('LOWER(detailFeaturedTag.name) = :detailFeaturedTagName')
+            ->setParameter('detailFeaturedTagName', \mb_strtolower($name));
+    }
+
+    /**
      * @param string[] $types
      */
     protected function addTypeFilters(QueryBuilder $queryBuilder, array $types, string $alias): void
@@ -609,6 +645,9 @@ class EventSmartContentProvider implements SmartContentProviderInterface
         }
         if (\in_array(self::FREE_TYPE, $types, true)) {
             $this->addFreeFilter($queryBuilder, $alias);
+        }
+        if (\in_array(self::FEATURED_TYPE, $types, true)) {
+            $this->addFeaturedFilter($queryBuilder, $alias);
         }
 
         if ($hasPending && $hasExpired) {

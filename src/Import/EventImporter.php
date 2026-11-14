@@ -18,6 +18,7 @@ use Manuxi\SuluEventBundle\Import\Resolver\CategoryResolver;
 use Manuxi\SuluEventBundle\Import\Resolver\LocationResolver;
 use Manuxi\SuluEventBundle\Import\Resolver\MediaResolver;
 use Manuxi\SuluEventBundle\Import\Resolver\TagResolver;
+use Manuxi\SuluEventBundle\Service\FeaturedTag;
 use Manuxi\SuluEventBundle\Repository\EventImportRepository;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
 use Sulu\Bundle\ActivityBundle\Application\Collector\DomainEventCollectorInterface;
@@ -65,6 +66,8 @@ class EventImporter
 
     private CandidateFilter $filter;
 
+    private FeaturedTag $featuredTag;
+
     /**
      * Entries whose source changed the external id of the event: source key and new id => id of the entry.
      *
@@ -75,6 +78,7 @@ class EventImporter
     /**
      * @param (\Closure(): \DateTimeImmutable)|null $now    replaceable for tests
      * @param CandidateFilter|null                  $filter the sieve; without it everything passes
+     * @param FeaturedTag|null                      $featuredTag the tag of the highlights; without it nothing is marked
      */
     public function __construct(
         private readonly SourceRegistry $sources,
@@ -93,7 +97,9 @@ class EventImporter
         private readonly MediaResolver $mediaResolver,
         ?\Closure $now = null,
         ?CandidateFilter $filter = null,
+        ?FeaturedTag $featuredTag = null,
     ) {
+        $this->featuredTag  = $featuredTag ?? new FeaturedTag();
         $this->now          = $now    ?? static fn (): \DateTimeImmutable => new \DateTimeImmutable();
         $this->filter       = $filter ?? new CandidateFilter();
         $this->imageChooser = new EventImageChooser($settings, $mediaResolver);
@@ -305,6 +311,7 @@ class EventImporter
         }
 
         $candidate = $this->limitTags($sourceKey, $candidate, $report);
+        $candidate = $this->withFeaturedTag($sourceKey, $candidate, $report);
 
         if (null !== $import) {
             if (!$dryRun && $import->getExternalId() !== $candidate->externalId) {
@@ -413,6 +420,52 @@ class EventImporter
 
         $this->importRepository->add($import);
         $this->entityManager->flush();
+    }
+
+    /**
+     * Highlights: a candidate of a source marked "featured" (or one that is flagged itself) gets the tag of the
+     * highlights (sulu_event.featured_tag), also if the list of allowed tags does not name it. Without that tag
+     * configured nothing can be marked, which is said in the report.
+     */
+    private function withFeaturedTag(string $sourceKey, EventCandidate $candidate, ImportReport $report): EventCandidate
+    {
+        $wanted = $candidate->featured || \in_array($sourceKey, $this->settings->featuredSources, true);
+        if (!$wanted) {
+            return $candidate;
+        }
+
+        $name = $this->featuredTag->getName();
+        if (null === $name) {
+            $report->addWarning($sourceKey, $candidate->externalId, 'The event is marked as a highlight, but sulu_event.featured_tag is not set: no tag was added.');
+
+            $copy           = clone $candidate;
+            $copy->featured = false;
+
+            return $copy;
+        }
+
+        $copy           = clone $candidate;
+        $copy->featured = true;
+        if (!$this->featuredTag->isFeatured($copy->tags)) {
+            $copy->tags[] = $name;
+        }
+
+        return $copy;
+    }
+
+    /**
+     * The id of the tag of the highlights, if the candidate is one.
+     */
+    private function featuredTagId(EventCandidate $candidate, bool $dryRun): ?int
+    {
+        $name = $this->featuredTag->getName();
+        if (!$candidate->featured || null === $name) {
+            return null;
+        }
+
+        $tags = $this->tagResolver->resolve([$name], !$dryRun);
+
+        return [] === $tags ? null : $tags[0]->getId();
     }
 
     /**
@@ -542,7 +595,8 @@ class EventImporter
 
         if (!$dryRun) {
             $import->setEvent($event);
-            $this->fillImport($import, $candidate, $matchKey, $priority, $wanted, [], $now);
+            // the tag of the highlights was set with the event; an editor may take it away again later
+            $this->fillImport($import, $candidate, $matchKey, $priority, $candidate->featured ? $wanted + ['_featured' => true] : $wanted, [], $now);
             $this->importRepository->add($import);
             $this->domainEventCollector->collect(new CreatedEvent($event, $lastData));
             $this->entityManager->flush();
@@ -634,7 +688,14 @@ class EventImporter
             }
         }
 
-        $fill = $this->fillData($candidate, $rows, $categoryIds, $tagIds, $imageId);
+        // the tag of the highlights is added once; if an editor takes it away, the import does not put it back
+        $featuredTagId = $this->featuredTagId($candidate, $dryRun);
+        $addFeatured   = null !== $featuredTagId && !($imported['_featured'] ?? false);
+        if ($addFeatured) {
+            $newImported['_featured'] = true;
+        }
+
+        $fill = $this->fillData($candidate, $rows, $categoryIds, $tagIds, $imageId, $addFeatured ? $featuredTagId : null);
 
         if ([] === $changes && [] === $fill) {
             if (!$dryRun) {
@@ -798,7 +859,7 @@ class EventImporter
      *
      * @return array<string, array<string, mixed>> locale => data
      */
-    private function fillData(EventCandidate $candidate, array $rows, array $categoryIds, array $tagIds, ?int $imageId = null): array
+    private function fillData(EventCandidate $candidate, array $rows, array $categoryIds, array $tagIds, ?int $imageId = null, ?int $featuredTagId = null): array
     {
         $fill = [];
         foreach ($rows as $locale => $row) {
@@ -828,6 +889,12 @@ class EventImporter
             }
             if ([] !== $tagIds && [] === $row->getExcerptTags()) {
                 $data['excerptTags'] = $tagIds;
+            }
+            if (null !== $featuredTagId) {
+                $current = $data['excerptTags'] ?? array_values(array_filter(array_map(static fn ($tag): ?int => $tag->getId(), $row->getExcerptTags())));
+                if (!\in_array($featuredTagId, $current, true)) {
+                    $data['excerptTags'] = [...$current, $featuredTagId];
+                }
             }
             if (null !== $imageId && null === $row->getImage()) {
                 $data['image'] = ['id' => $imageId];
@@ -1211,6 +1278,10 @@ class EventImporter
     private function fingerprint(EventCandidate $candidate): string
     {
         $data = get_object_vars($candidate);
+        if (!$candidate->featured) {
+            // not part of the fingerprint of candidates that are no highlights: their entries stay as they are
+            unset($data['featured']);
+        }
         foreach (['startDate', 'endDate'] as $field) {
             $data[$field] = $candidate->{$field}?->format('Y-m-d H:i:s T');
         }

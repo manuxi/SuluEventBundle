@@ -6,6 +6,7 @@ namespace Manuxi\SuluEventBundle\Tests\Integration\Service;
 
 use Manuxi\SuluEventBundle\Service\EventFilterOptions;
 use Manuxi\SuluEventBundle\Service\EventTypeSelect;
+use Manuxi\SuluEventBundle\Service\FeaturedTag;
 use Manuxi\SuluEventBundle\Tests\Integration\AbstractEventDatabaseTestCase;
 use Manuxi\SuluEventBundle\Tests\Integration\Stub\StubCategory;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
@@ -119,7 +120,7 @@ class EventFilterOptionsTest extends AbstractEventDatabaseTestCase
     {
         $options = $this->createOptions()->getOptions('fr');
 
-        $this->assertSame(['topics' => [], 'types' => [], 'countries' => [], 'attendanceModes' => [], 'free' => null], $options);
+        $this->assertSame(['topics' => [], 'types' => [], 'countries' => [], 'attendanceModes' => [], 'free' => null, 'featured' => null], $options);
     }
 
     public function testResultIsCachedPerLocaleUntilCleared(): void
@@ -137,8 +138,22 @@ class EventFilterOptionsTest extends AbstractEventDatabaseTestCase
         $this->assertCount(3, $options->getOptions('de')['types']);
     }
 
-    private function createOptions(?string $root = null, ?TagAwareAdapter $cache = null): EventFilterOptions
+    public function testHighlightsAreOnlyOfferedWithTheFeaturedTagAndCountUpcomingPublishedEvents(): void
     {
-        return new EventFilterOptions($this->entityManager, $this->typeSelect, $this->translator, $root, $cache);
+        $this->createEvent('hl-1', 'de', $this->tomorrow, tags: ['highlight'], type: 'conference');
+        $this->createEvent('hl-2', 'de', $this->tomorrow, tags: ['highlight', 'symfony']);
+        $this->createEvent('hl-past', 'de', (new \DateTimeImmutable('-5 days'))->format('Y-m-d 10:00:00'), tags: ['highlight']);
+        $this->createEvent('hl-draft', 'de', $this->tomorrow, tags: ['highlight'], stage: 'draft');
+        $this->createEvent('hl-en', 'en', $this->tomorrow, tags: ['highlight']);
+
+        $this->assertNull($this->createOptions()->getOptions('de')['featured'], 'no featured tag set: the feature is off');
+        $this->assertSame(['count' => 2], $this->createOptions(featuredTag: new FeaturedTag('Highlight'))->getOptions('de')['featured']);
+        $this->assertSame(['count' => 1], $this->createOptions(featuredTag: new FeaturedTag('highlight'))->getOptions('en')['featured']);
+        $this->assertNull($this->createOptions(featuredTag: new FeaturedTag('Unknown'))->getOptions('de')['featured'], 'no event carries the tag');
+    }
+
+    private function createOptions(?string $root = null, ?TagAwareAdapter $cache = null, ?FeaturedTag $featuredTag = null): EventFilterOptions
+    {
+        return new EventFilterOptions($this->entityManager, $this->typeSelect, $this->translator, $root, $cache, 3600, $featuredTag);
     }
 }

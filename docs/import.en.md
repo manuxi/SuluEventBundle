@@ -60,6 +60,7 @@ sulu_event:
 | `location_aliases` | Other spellings of a place or a city and the one that leads, for example `Brüssel: Brussels`, `Köln: Cologne`. The import finds and creates the place under the leading name, so a source that writes the city in German does not make a second place (a city with a state or country, "San Francisco CA", is the same city anyway) | – |
 | `filters` | The sieve: which candidates become events at all, see "The sieve" | no rules |
 | `source_filters` | Rules of single sources by source key (also for sources of your project) | – |
+| `featured_sources` | Source keys (for example `confs-tech`) whose events get the tag of the highlights: for sources of your project that have no `featured` option of their own. Needs `sulu_event.featured_tag` | – |
 | `locales` | Locales an imported event should have a text in. Each gets a draft with the title of the source and all the facts right away (also for events that exist already); while the text is missing the event is in the list of events that need work | – |
 
 Options of a source (`ical` and `jsonld` have the same):
@@ -78,6 +79,7 @@ Options of a source (`ical` and `jsonld` have the same):
 | `languages` | Language codes the events are held in |
 | `filters` | Rules of the sieve for this source, replace the global ones rule by rule, see "The sieve" |
 | `image` | Id of a media (an image of your own) every event of the source gets, see "Images" |
+| `featured` | `true`: the events of the source get the tag of the highlights (`sulu_event.featured_tag`), see "Highlights". Default: `false` |
 
 Mistakes in the configuration are reported when the cache is built, with the path of the option.
 
@@ -211,6 +213,16 @@ sulu_event:
 
 - **`sulu_event_import_reject`** (MCP tool, [docs/mcp.en.md](mcp.en.md)): says that an event is not wanted, with a reason. The event is not deleted; the import never creates or changes it again (state `rejected`).
 - **`sulu:event:import:prune [--dry-run] [--state=filtered|rejected] [--force]`**: moves events whose entry is `filtered` or `rejected` and that were **never published** to the trash of Sulu (like "delete" in the admin, they can be restored there). Events that were published, or that another source still maintains, are only listed ("please decide in the admin"). Without `--dry-run` the command asks first; with `--no-interaction` it stops unless `--force` is given. The entry keeps its state, so a `filtered` candidate is imported again if it passes later.
+
+## Highlights
+
+With `sulu_event.featured_tag` (the name of a tag, see [smart content](smart-content.en.md#highlights)) and `featured: true` on a source (or its key in `featured_sources`) the events of that source get the tag of the highlights:
+
+- A **new** event has the tag from the start; an **existing** event gets it with the next run, even if it has other tags already.
+- It is set **once**. If an editor takes it away, the import does not put it back. Likewise the import never removes it when a source stops being `featured`.
+- The tag counts even if `tags_allowed` does not name it.
+- For a published event this creates a new draft; the tag goes live with the next publication (by hand or with `republish_changes`).
+- Without `featured_tag` the report carries a warning and nothing is marked. The MCP tool `sulu_event_import_upsert` has the parameter `featured` for it.
 
 ## Publish automatically
 

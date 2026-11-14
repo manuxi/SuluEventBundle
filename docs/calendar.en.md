@@ -175,6 +175,7 @@ The calendar API (`sulu_event.api.calendar`, `/api/events/calendar/{locale}`) ev
 | `attendanceMode[]` | `offline`, `online`, `mixed` | `?attendanceMode[]=online&attendanceMode[]=mixed` |
 | `country[]` | Country codes of the location | `?country[]=DE` |
 | `free` | `1`: only free events | `?free=1` |
+| `featured` | `1`: only highlights (the tag of `sulu_event.featured_tag`, see [smart content](smart-content.en.md#highlights)); without that tag the filter matches nothing | `?featured=1` |
 | `start`, `end` | Visible date range (set by FullCalendar itself) | `?start=2027-03-01&end=2027-04-01` |
 
 Lists can be given as arrays (`categories[]=12&categories[]=15`) or comma separated (`categories=12,15`). Categories, tags and the further filters are evaluated like in Smart Content (see [Smart Content](smart-content.en.md)); several values of one kind match with OR, the kinds with AND. A filter that only contains invalid values (e.g. `categories[]=abc`) deliberately returns no events instead of all of them.
@@ -248,4 +249,4 @@ The bundle provides a basic calendar implementation. For advanced customization,
 
 Events with the box **All day** checked are sent with `allDay: true`, `start` as a date (`2027-03-02`) and `end` as the day after the last day (FullCalendar takes the end of all-day events as exclusive). The times are not guessed any more: an event without an end or one that starts at midnight is shown with its time unless the box is checked.
 
-All other events carry the offset of their time zone (event, location, `sulu_event.timezone`, PHP default), e.g. `2027-07-01T10:00:00-07:00`. `extendedProps` also holds `status` and `attendanceMode`, so a front end can mark cancelled or online events. See [Participation, time zone and tickets](online-events.en.md).
+All other events carry the offset of their time zone (event, location, `sulu_event.timezone`, PHP default), e.g. `2027-07-01T10:00:00-07:00`. `extendedProps` also holds `status` and `attendanceMode`, so a front end can mark cancelled or online events, and `featured` (true/false, highlight), `categories` (keys of the categories) and `tags` (names of the tags), so a front end can filter by topic or emphasise highlights without another request. See [Participation, time zone and tickets](online-events.en.md).

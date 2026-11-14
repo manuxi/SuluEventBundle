@@ -10,6 +10,7 @@ use Manuxi\SuluEventBundle\Import\EventImportInfoProvider;
 use Manuxi\SuluEventBundle\Service\AttendanceModeSelect;
 use Manuxi\SuluEventBundle\Service\EventStatusSelect;
 use Manuxi\SuluEventBundle\Service\EventTypeSelect;
+use Manuxi\SuluEventBundle\Service\FeaturedTag;
 use Manuxi\SuluEventBundle\Service\TimezoneSelect;
 use Sulu\Bundle\MediaBundle\Media\Manager\MediaManagerInterface;
 use Sulu\Content\Application\ContentNormalizer\Normalizer\NormalizerInterface;
@@ -17,6 +18,8 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class EventNormalizer implements NormalizerInterface
 {
+    private readonly FeaturedTag $featuredTag;
+
     public function __construct(
         private TranslatorInterface $translator,
         private EventTypeSelect $eventTypeSelect,
@@ -24,7 +27,9 @@ class EventNormalizer implements NormalizerInterface
         private EventStatusSelect $eventStatusSelect,
         private AttendanceModeSelect $attendanceModeSelect,
         private ?EventImportInfoProvider $importInfoProvider = null,
+        ?FeaturedTag $featuredTag = null,
     ) {
+        $this->featuredTag = $featuredTag ?? new FeaturedTag();
     }
 
     public function getIgnoredAttributes(object $object): array
@@ -81,6 +86,9 @@ class EventNormalizer implements NormalizerInterface
         // Type
         $type                       = $object->getType() ?? 'default';
         $normalizedData['typeName'] = $this->eventTypeSelect->getTypeName($type);
+
+        // Highlight: the event carries the tag sulu_event.featured_tag (false when that is not set)
+        $normalizedData['featured'] = $this->featuredTag->isFeatured($object->getExcerptTags());
 
         // Status, attendance mode and the other details. The form shows "auto" for "no own time zone".
         $normalizedData['allDay']             = $object->getAllDay();

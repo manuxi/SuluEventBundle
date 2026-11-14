@@ -73,6 +73,22 @@ class EventImportUpsertToolTest extends TestCase
         $this->assertFalse($result['dryRun']);
     }
 
+    public function testFeaturedMarksTheCandidateAsAHighlight(): void
+    {
+        $captured = [];
+        $this->importer->method('importCandidate')->willReturnCallback(function (string $source, int $priority, EventCandidate $candidate) use (&$captured): ImportReport {
+            $captured[] = $candidate;
+
+            return new ImportReport();
+        });
+
+        $this->tool->upsert(source: 'editorial', externalId: 'a', titles: ['en' => 'A'], startDate: '2027-06-12T10:00:00', featured: true);
+        $this->tool->upsert(source: 'editorial', externalId: 'b', titles: ['en' => 'B'], startDate: '2027-06-12T10:00:00');
+
+        $this->assertTrue($captured[0]->featured);
+        $this->assertFalse($captured[1]->featured);
+    }
+
     public function testDateWithOffsetIsConvertedIntoTheGivenZone(): void
     {
         $captured = null;

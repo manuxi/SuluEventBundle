@@ -11,6 +11,8 @@ use Manuxi\SuluEventBundle\Entity\Location;
 use Manuxi\SuluEventBundle\Service\AttendanceModeSelect;
 use Manuxi\SuluEventBundle\Service\EventStatusSelect;
 use Manuxi\SuluEventBundle\Service\EventTypeSelect;
+use Manuxi\SuluEventBundle\Service\FeaturedTag;
+use Manuxi\SuluEventBundle\Tests\Integration\Stub\StubTag;
 use PHPUnit\Framework\TestCase;
 use Sulu\Bundle\MediaBundle\Api\Media as ApiMedia;
 use Sulu\Bundle\MediaBundle\Entity\MediaInterface;
@@ -72,6 +74,21 @@ class EventNormalizerTest extends TestCase
         $this->assertSame('mixed', $result['attendanceMode']);
         $this->assertSame('mode:mixed', $result['attendanceModeName']);
         $this->assertSame(['de', 'en'], $result['languages']);
+    }
+
+    public function testEnhanceMarksHighlightsWithTheFeaturedTag(): void
+    {
+        $content = new EventDimensionContent(new Event('019bf796-423c-7e1f-969c-5c4ece5e9b73'));
+        $content->setLocale('de');
+        $content->setExcerptTags([new StubTag('Symfony'), new StubTag('highlight')]);
+
+        $withTag = new EventNormalizer($this->translator, $this->eventTypeSelect, $this->mediaManager, $this->statusSelect, $this->attendanceModeSelect, null, new FeaturedTag('Highlight'));
+
+        $this->assertTrue($withTag->enhance($content, [])['featured']);
+        $this->assertFalse($this->createNormalizer()->enhance($content, [])['featured'], 'without a configured tag nothing is a highlight');
+
+        $content->setExcerptTags([new StubTag('Symfony')]);
+        $this->assertFalse($withTag->enhance($content, [])['featured']);
     }
 
     public function testEnhanceShowsAutoForAnEventWithoutOwnTimezoneAndTheDefaults(): void

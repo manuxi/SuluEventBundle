@@ -131,6 +131,15 @@ The constructor of `EventImporter` takes the sieve (`CandidateFilter`, optional)
 
 New and optional (only for projects that use the import): `sulu_event.import.auto_publish` (`enabled`, `when`, `require`, `republish_changes`) and the command `sulu:event:import:publish-ready`, see [docs/import.en.md](docs/import.en.md) ("Publish automatically"). Off by default; without it nothing changes. **No database change:** the result of a run is stored as a row of `app_event_import_run` with the source `auto-publish`; `EventImportRunRepository::findLast()` leaves these rows out, `findLastAutoPublish()` returns them. The constructor of `PendingEventFinder` takes the publisher (`AutoPublisher`, optional) as 4th argument; `sulu_event_import_pending` then adds `autoPublish` to each event. If your project overrides `forms/events_settings_import.xml`, take over the section `import-auto-publish`.
 
+### Highlights (F4)
+
+No database change. New option `sulu_event.featured_tag` (name of a tag, default `null` = off): an event that carries this tag is a **highlight**. With it:
+
+- the calendar API (`extendedProps.featured`, `extendedProps.categories` as keys, `extendedProps.tags` as names), the iCal feed, smart content and the filter options (`sulu_event_filter_options(locale).featured`) accept `featured=1` / offer "Highlights" with a count; the normalizer (and so Twig) gives `event.featured`;
+- an import source can set the tag: `featured: true` on a source or `sulu_event.import.featured_sources: [source-key]` for sources of your project; `sulu_event_import_upsert` takes `featured`, `sulu_event_update` takes `featured` in `content`.
+
+Without `featured_tag` nothing changes, except that every calendar event now also carries `featured: false`, `categories` and `tags` in `extendedProps` and `sulu_event_filter_options` has the key `featured` (`null`). The cache key of the filter options changed, so old cache entries are not read. New service `sulu_event.featured_tag` (`FeaturedTag`); `CalendarApiController`, `ICalController`, `EventNormalizer`, `EventSmartContentProvider`, `EventFilterOptions`, `EventImporter` and `EventUpdateTool` take it as an optional last constructor argument, `ImportSettings` the list `featuredSources`.
+
 ### New default event types
 
 `meetup`, `trade_fair`, `keynote`, `convention`, `hackathon` and `launch` (with translations). Projects that define their own `sulu_event.types` replace the defaults completely and add the ones they want, with a name (translation key) and a colour.

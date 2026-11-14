@@ -45,6 +45,7 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
         $container->setParameter('sulu_event.list_date_format', $config['list_date_format']);
         $container->setParameter('sulu_event.timezone', $config['timezone']);
         $container->setParameter('sulu_event.category_root', $config['category_root']);
+        $container->setParameter('sulu_event.featured_tag', $config['featured_tag']);
         $container->setParameter('sulu_event.sitemap.hide_past_after_days', $config['sitemap']['hide_past_after_days']);
 
         $container->setParameter(
@@ -96,7 +97,7 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
     {
         $import = $config['import'];
 
-        foreach (['enabled', 'user', 'user_agent', 'timeout', 'auto_update_published_dates', 'url_prefix', 'webspace', 'category_images', 'location_image', 'location_aliases', 'series_images', 'admin_button', 'locales'] as $key) {
+        foreach (['enabled', 'user', 'user_agent', 'timeout', 'auto_update_published_dates', 'url_prefix', 'webspace', 'category_images', 'location_image', 'location_aliases', 'series_images', 'admin_button', 'locales', 'featured_sources'] as $key) {
             $container->setParameter('sulu_event.import.' . $key, $import[$key]);
         }
 
@@ -117,6 +118,10 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
 
                 if (!empty($source['filters'])) {
                     $sourceFilters[$kind . '.' . $source['key']] = FilterRules::merge($sourceFilters[$kind . '.' . $source['key']] ?? [], $source['filters']);
+                }
+
+                if ($source['featured'] && null === ($config['featured_tag'] ?? null)) {
+                    throw new InvalidConfigurationException(\sprintf('Invalid configuration for path "%s.featured": the source cannot mark highlights without sulu_event.featured_tag (the name of the tag).', $path));
                 }
 
                 if (null !== $source['type'] && !\in_array($source['type'], $types, true)) {
@@ -142,6 +147,10 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
             throw new InvalidConfigurationException(\sprintf('Invalid configuration for sulu_event.import.auto_publish.when.types: "%s" is not an event type. Known types: %s (see sulu_event.types).', implode('", "', $unknownTypes), implode(', ', $types)));
         }
         $container->setParameter('sulu_event.import.auto_publish', $import['auto_publish']);
+
+        if ([] !== $import['featured_sources'] && null === ($config['featured_tag'] ?? null)) {
+            throw new InvalidConfigurationException('Invalid configuration for sulu_event.import.featured_sources: it needs sulu_event.featured_tag (the name of the tag).');
+        }
 
         $this->checkFilters($import['filters'], $sourceFilters, $types);
         $container->setParameter('sulu_event.import.filters', $import['filters']);

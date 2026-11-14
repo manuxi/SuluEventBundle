@@ -15,14 +15,16 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * The values a filter bar for events can offer: topics (categories), types, countries, ways to take part and "free of
- * charge". Only values with at least one upcoming, published event of the locale are listed, each with the number of
- * those events. The result is cached per locale and cleared when an event changes (see FilterOptionsCacheListener).
+ * charge" and, if sulu_event.featured_tag is set, "highlights". Only values with at least one upcoming, published event
+ * of the locale are listed, each with the number of those events. The result is cached per locale and cleared when an event changes (see FilterOptionsCacheListener).
  */
 class EventFilterOptions
 {
     public const CACHE_TAG = 'sulu_event.filter_options';
 
     private const CACHE_KEY = 'sulu_event.filter_options.';
+
+    private readonly FeaturedTag $featuredTag;
 
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
@@ -31,7 +33,9 @@ class EventFilterOptions
         private readonly ?string $categoryRoot = null,
         private readonly ?TagAwareCacheInterface $cache = null,
         private readonly int $cacheLifetime = 3600,
+        ?FeaturedTag $featuredTag = null,
     ) {
+        $this->featuredTag = $featuredTag ?? new FeaturedTag();
     }
 
     /**
@@ -41,6 +45,7 @@ class EventFilterOptions
      *     countries: list<array{code: string, name: string, count: int}>,
      *     attendanceModes: list<array{key: string, name: string, count: int}>,
      *     free: array{count: int}|null,
+     *     featured: array{count: int}|null,
      * }
      */
     public function getOptions(string $locale): array
@@ -50,7 +55,8 @@ class EventFilterOptions
         }
 
         return $this->cache->get(
-            self::CACHE_KEY . $locale,
+            // the name of the featured tag is part of the key: a changed configuration shows at once
+            self::CACHE_KEY . $locale . '.' . md5((string) $this->featuredTag->getName()),
             function (ItemInterface $item) use ($locale): array {
                 $item->tag(self::CACHE_TAG);
                 $item->expiresAfter($this->cacheLifetime);
@@ -106,7 +112,29 @@ class EventFilterOptions
             'countries'       => $this->buildCountries($countries, $locale),
             'attendanceModes' => $this->buildAttendanceModes($modes, $locale),
             'free'            => $freeCount > 0 ? ['count' => $freeCount] : null,
+            'featured'        => $this->buildFeatured($locale),
         ];
+    }
+
+    /**
+     * @return array{count: int}|null null when highlights are off (no sulu_event.featured_tag) or none is upcoming
+     */
+    private function buildFeatured(string $locale): ?array
+    {
+        $name = $this->featuredTag->getName();
+        if (null === $name) {
+            return null;
+        }
+
+        $count = (int) $this->createUpcomingQuery($locale)
+            ->select('COUNT(DISTINCT dimensionContent.id)')
+            ->innerJoin('dimensionContent.excerptTags', 'featuredTag')
+            ->andWhere('LOWER(featuredTag.name) = :featuredTagName')
+            ->setParameter('featuredTagName', mb_strtolower($name))
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return $count > 0 ? ['count' => $count] : null;
     }
 
     private function createUpcomingQuery(string $locale): \Doctrine\ORM\QueryBuilder

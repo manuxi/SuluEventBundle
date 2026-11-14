@@ -9,6 +9,7 @@ use Manuxi\SuluEventBundle\Repository\EventRepository;
 use Manuxi\SuluEventBundle\Service\EventTimezoneResolver;
 use Manuxi\SuluEventBundle\Service\EventTypeSelect;
 use Manuxi\SuluEventBundle\Service\EventUrlResolver;
+use Manuxi\SuluEventBundle\Service\FeaturedTag;
 use Manuxi\SuluEventBundle\Service\RequestParameters;
 use Sulu\Content\Application\ContentAggregator\ContentAggregatorInterface;
 use Sulu\Content\Domain\Model\DimensionContentInterface;
@@ -20,13 +21,17 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class CalendarApiController extends AbstractController
 {
+    private readonly FeaturedTag $featuredTag;
+
     public function __construct(
         private readonly EventRepository $eventRepository,
         private readonly EventTypeSelect $eventTypeSelect,
         private readonly ContentAggregatorInterface $contentAggregator,
         private readonly EventUrlResolver $urlResolver,
         private readonly EventTimezoneResolver $timezoneResolver,
+        ?FeaturedTag $featuredTag = null,
     ) {
+        $this->featuredTag = $featuredTag ?? new FeaturedTag();
     }
 
     #[Route(
@@ -76,6 +81,9 @@ class CalendarApiController extends AbstractController
             'attendanceModes' => RequestParameters::getList($request, 'attendanceMode'),
             'countries' => RequestParameters::getList($request, 'country'),
             'free' => RequestParameters::getFlag($request, 'free'),
+            // highlights only; without sulu_event.featured_tag no event is one
+            'featured' => RequestParameters::getFlag($request, 'featured'),
+            'featuredTag' => $this->featuredTag->getName(),
             'location' => '' !== trim((string) $request->query->get('location', ''))
                 ? trim((string) $request->query->get('location'))
                 : null,
@@ -147,6 +155,9 @@ class CalendarApiController extends AbstractController
                     'typeColor' => $typeColor,
                     'status' => $dimensionContent->getStatus(),
                     'attendanceMode' => $dimensionContent->getAttendanceMode(),
+                    'featured' => $this->featuredTag->isFeatured($dimensionContent->getExcerptTags()),
+                    'categories' => $this->categoryKeys($dimensionContent),
+                    'tags' => $this->tagNames($dimensionContent),
                 ],
             ];
 
@@ -170,6 +181,38 @@ class CalendarApiController extends AbstractController
         }
 
         return $result;
+    }
+
+    /**
+     * @return list<string> keys of the categories (topics) of the event
+     */
+    private function categoryKeys(EventDimensionContent $dimensionContent): array
+    {
+        $keys = [];
+        foreach ($dimensionContent->getExcerptCategories() as $category) {
+            $key = $category->getKey();
+            if (\is_string($key) && '' !== $key) {
+                $keys[] = $key;
+            }
+        }
+
+        return $keys;
+    }
+
+    /**
+     * @return list<string> names of the tags of the event
+     */
+    private function tagNames(EventDimensionContent $dimensionContent): array
+    {
+        $names = [];
+        foreach ($dimensionContent->getExcerptTags() as $tag) {
+            $name = $tag->getName();
+            if ('' !== $name) {
+                $names[] = $name;
+            }
+        }
+
+        return $names;
     }
 
     /**

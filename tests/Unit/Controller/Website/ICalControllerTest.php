@@ -8,12 +8,14 @@ use Manuxi\SuluEventBundle\Controller\Website\ICalController;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
+use Manuxi\SuluEventBundle\Service\FeaturedTag;
 use Manuxi\SuluEventBundle\Service\ICalGenerator;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Sulu\Content\Application\ContentAggregator\ContentAggregatorInterface;
 use Sulu\Content\Domain\Exception\ContentNotFoundException;
 use Symfony\Component\Config\FileLocator;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 use Symfony\Component\Routing\Loader\YamlFileLoader;
@@ -91,6 +93,27 @@ class ICalControllerTest extends TestCase
         $this->expectException(NotFoundHttpException::class);
 
         $this->controller->singleAction(self::UUID, 'en');
+    }
+
+    public function testTheFeedPassesTheFeaturedFilterWithTheNameOfTheTag(): void
+    {
+        $captured = [];
+        $this->generator->method('generate')->willReturnCallback(function (array $filters) use (&$captured): string {
+            $captured[] = $filters;
+
+            return 'BEGIN:VCALENDAR';
+        });
+
+        $controller = new ICalController($this->generator, $this->repository, $this->aggregator, new FeaturedTag('Highlight'));
+        $controller->feedAction(Request::create('/de/events/calendar.ics', 'GET', ['featured' => '1']), 'de');
+        $controller->feedAction(Request::create('/de/events/calendar.ics'), 'de');
+        $this->controller->feedAction(Request::create('/de/events/calendar.ics', 'GET', ['featured' => '1']), 'de');
+
+        $this->assertTrue($captured[0]['featured']);
+        $this->assertSame('Highlight', $captured[0]['featuredTag']);
+        $this->assertFalse($captured[1]['featured']);
+        $this->assertTrue($captured[2]['featured']);
+        $this->assertNull($captured[2]['featuredTag'], 'the feature is off without a tag: the repository matches nothing');
     }
 
     public function testSingleRouteMatchesUuidsOnly(): void

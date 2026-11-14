@@ -97,6 +97,7 @@ services:
             - '%sulu_event.import.locales%'
             - '%sulu_event.import.location_image%'
             - '%sulu_event.import.series_images%'
+            - '%sulu_event.import.featured_sources%'
 
     sulu_event.import.image_chooser:
         class: Manuxi\SuluEventBundle\Import\EventImageChooser
@@ -153,6 +154,7 @@ services:
             - '@sulu_event.import.media_resolver'
             - null
             - '@sulu_event.import.filter'
+            - '@sulu_event.featured_tag'
 
     Manuxi\SuluEventBundle\Import\EventImporter:
         alias: sulu_event.import.importer

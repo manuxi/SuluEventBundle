@@ -30,6 +30,7 @@ use Manuxi\SuluEventBundle\Import\Resolver\TagResolver;
 use Manuxi\SuluEventBundle\Import\Resolver\TimezoneGuesser;
 use Manuxi\SuluEventBundle\Import\SourceRegistry;
 use Manuxi\SuluEventBundle\Repository\EventImportRepository;
+use Manuxi\SuluEventBundle\Service\FeaturedTag;
 use Manuxi\SuluEventBundle\Tests\Integration\AbstractEventDatabaseTestCase;
 use Sulu\Bundle\ActivityBundle\Application\Collector\DomainEventCollectorInterface;
 use Sulu\Bundle\CategoryBundle\Entity\CategoryInterface;
@@ -892,6 +893,89 @@ class EventImporterTest extends AbstractEventDatabaseTestCase
         $this->assertCount(0, $this->draft($import->getEvent()->getUuid(), 'en')->getExcerptTags());
     }
 
+    public function testAFeaturedCandidateGetsTheTagOfTheHighlights(): void
+    {
+        $source = new ArraySource('ical.a', 50, [$this->candidate(tags: [], featured: true), $this->candidate('plain-1', title: 'Plain Conf', series: 'plain')]);
+
+        $report = $this->import([$source], featuredTag: new FeaturedTag('Highlight'));
+
+        $this->assertSame(2, $report->getCounts()['created']);
+        $featured = $this->importRepository->findBySourceAndExternalId('ical.a', 'conf-2027');
+        $plain    = $this->importRepository->findBySourceAndExternalId('ical.a', 'plain-1');
+        $this->assertSame([$this->tags['highlight']->getId()], $this->tagIds($this->draft($featured->getEvent()->getUuid(), 'en')));
+        $this->assertSame([$this->tags['symfony']->getId()], $this->tagIds($this->draft($plain->getEvent()->getUuid(), 'en')));
+    }
+
+    public function testASourceFromTheSettingsMarksItsEventsAsHighlights(): void
+    {
+        $source   = new ArraySource('confs-tech', 50, [$this->candidate()]);
+        $settings = new ImportSettings(true, 'import', false, featuredSources: ['confs-tech']);
+
+        $this->import([$source], settings: $settings, featuredTag: new FeaturedTag('Highlight'));
+
+        $import = $this->importRepository->findBySourceAndExternalId('confs-tech', 'conf-2027');
+        $this->assertEqualsCanonicalizing(
+            [$this->tags['symfony']->getId(), $this->tags['highlight']->getId()],
+            $this->tagIds($this->draft($import->getEvent()->getUuid(), 'en')),
+            'the tags of the source and the highlight'
+        );
+    }
+
+    public function testTheTagOfTheHighlightsPassesTheListOfAllowedTags(): void
+    {
+        $source = new ArraySource('ical.a', 50, [$this->candidate(tags: ['Symfony', 'Odd Tag'], featured: true)]);
+
+        $report = $this->import([$source], filter: new CandidateFilter(['tags_allowed' => ['symfony']]), featuredTag: new FeaturedTag('Highlight'));
+
+        $this->assertSame(1, $report->getCounts()['created']);
+        $this->assertCount(1, $report->getWarnings(), 'only the odd tag is named');
+        $this->assertStringNotContainsString('Highlight', $report->getWarnings()[0]['message']);
+        $import = $this->importRepository->findBySourceAndExternalId('ical.a', 'conf-2027');
+        $this->assertContains($this->tags['highlight']->getId(), $this->tagIds($this->draft($import->getEvent()->getUuid(), 'en')));
+    }
+
+    public function testAnEventThatBecomesAHighlightGetsTheTagOnceAndAnEditorCanTakeItAway(): void
+    {
+        $this->import([new ArraySource('ical.a', 50, [$this->candidate()])], featuredTag: new FeaturedTag('Highlight'));
+        $uuid = $this->importRepository->findBySourceAndExternalId('ical.a', 'conf-2027')->getEvent()->getUuid();
+        $this->assertSame([$this->tags['symfony']->getId()], $this->tagIds($this->draft($uuid, 'en')));
+
+        // the source is a source of highlights from now on: the tag is added to the event that has others already
+        $report = $this->import([new ArraySource('ical.a', 50, [$this->candidate(featured: true)])], featuredTag: new FeaturedTag('Highlight'));
+        $this->assertSame(1, $report->getCounts()['updated']);
+        $this->assertEqualsCanonicalizing([$this->tags['symfony']->getId(), $this->tags['highlight']->getId()], $this->tagIds($this->draft($uuid, 'en')));
+
+        // an editor takes it away; a later change of the source does not put it back
+        $row = $this->draft($uuid, 'en');
+        $row->setExcerptTags([$this->entityManager->find($this->tags['symfony']::class, $this->tags['symfony']->getId())]);
+        $this->entityManager->flush();
+        $this->import([new ArraySource('ical.a', 50, [$this->candidate(title: 'Example Conf 2027 (new date)', featured: true)])], featuredTag: new FeaturedTag('Highlight'));
+        $this->assertSame([$this->tags['symfony']->getId()], $this->tagIds($this->draft($uuid, 'en')));
+    }
+
+    public function testWithoutTheFeaturedTagNothingIsMarkedAndTheReportSaysSo(): void
+    {
+        $source = new ArraySource('ical.a', 50, [$this->candidate(featured: true)]);
+
+        $report = $this->import([$source]);
+
+        $this->assertSame(1, $report->getCounts()['created']);
+        $this->assertStringContainsString('sulu_event.featured_tag', $report->getWarnings()[0]['message']);
+        $import = $this->importRepository->findBySourceAndExternalId('ical.a', 'conf-2027');
+        $this->assertSame([$this->tags['symfony']->getId()], $this->tagIds($this->draft($import->getEvent()->getUuid(), 'en')));
+    }
+
+    public function testADryRunDoesNotMarkAnExistingEvent(): void
+    {
+        $this->import([new ArraySource('ical.a', 50, [$this->candidate()])], featuredTag: new FeaturedTag('Highlight'));
+        $uuid = $this->importRepository->findBySourceAndExternalId('ical.a', 'conf-2027')->getEvent()->getUuid();
+
+        $report = $this->import([new ArraySource('ical.a', 50, [$this->candidate(featured: true)])], dryRun: true, featuredTag: new FeaturedTag('Highlight'));
+
+        $this->assertSame(1, $report->getCounts()['updated']);
+        $this->assertSame([$this->tags['symfony']->getId()], $this->tagIds($this->draft($uuid, 'en')));
+    }
+
     public function testTheSameEventTwiceInOneDeliveryIsOneCandidate(): void
     {
         $source = new ArraySource('ical.a', 50, [
@@ -1001,11 +1085,12 @@ class EventImporterTest extends AbstractEventDatabaseTestCase
         ?ImportSettings $settings = null,
         string $now = '2027-03-01 12:00:00',
         ?CandidateFilter $filter = null,
+        ?FeaturedTag $featuredTag = null,
     ): ImportReport {
         // every run is a new process: nothing is kept from the one before
         $this->entityManager->clear();
 
-        $importer = $this->createImporter($sources, $settings, $now, filter: $filter);
+        $importer = $this->createImporter($sources, $settings, $now, filter: $filter, featuredTag: $featuredTag);
 
         $report = $importer->import($sourceKey, $dryRun, $limit);
         $this->entityManager->clear();
@@ -1016,7 +1101,7 @@ class EventImporterTest extends AbstractEventDatabaseTestCase
     /**
      * @param list<ArraySource> $sources
      */
-    private function createImporter(array $sources, ?ImportSettings $settings = null, string $now = '2027-03-01 12:00:00', bool $mediaExists = true, ?CandidateFilter $filter = null): EventImporter
+    private function createImporter(array $sources, ?ImportSettings $settings = null, string $now = '2027-03-01 12:00:00', bool $mediaExists = true, ?CandidateFilter $filter = null, ?FeaturedTag $featuredTag = null): EventImporter
     {
         $settings ??= new ImportSettings(true, 'import', false);
 
@@ -1030,10 +1115,22 @@ class EventImporterTest extends AbstractEventDatabaseTestCase
         $categoryResolver = $this->createStub(CategoryResolver::class);
         $categoryResolver->method('resolve')->willReturnCallback(static fn (array $keys): array => [[] === $keys ? [] : [$category], []]);
 
-        $tag = $this->createStub(TagInterface::class);
-        $tag->method('getId')->willReturn($this->tags['symfony']->getId());
+        // the tag of the highlights is "highlight", any other name is the tag "symfony"
+        $tagStubs = [];
+        foreach (['symfony', 'highlight'] as $key) {
+            $tagStubs[$key] = $this->createStub(TagInterface::class);
+            $tagStubs[$key]->method('getId')->willReturn($this->tags[$key]->getId());
+        }
         $tagResolver = $this->createStub(TagResolver::class);
-        $tagResolver->method('resolve')->willReturnCallback(static fn (array $names): array => [] === $names ? [] : [$tag]);
+        $tagResolver->method('resolve')->willReturnCallback(static function (array $names) use ($tagStubs): array {
+            $found = [];
+            foreach ($names as $name) {
+                $key         = 'highlight' === mb_strtolower((string) $name) ? 'highlight' : 'symfony';
+                $found[$key] = $tagStubs[$key];
+            }
+
+            return array_values($found);
+        });
 
         $user           = $this->createStub(UserInterface::class);
         $userRepository = $this->createStub(UserRepositoryInterface::class);
@@ -1064,6 +1161,7 @@ class EventImporterTest extends AbstractEventDatabaseTestCase
             $mediaResolver,
             static fn (): \DateTimeImmutable => new \DateTimeImmutable($now, new \DateTimeZone('Europe/Berlin')),
             $filter,
+            $featuredTag,
         );
     }
 
@@ -1091,6 +1189,14 @@ class EventImporterTest extends AbstractEventDatabaseTestCase
         }
 
         return new EventCandidate(...array_merge($defaults, $overrides));
+    }
+
+    /**
+     * @return list<int|null>
+     */
+    private function tagIds(EventDimensionContent $row): array
+    {
+        return array_values(array_map(static fn ($tag): ?int => $tag->getId(), $row->getExcerptTags()));
     }
 
     /**
