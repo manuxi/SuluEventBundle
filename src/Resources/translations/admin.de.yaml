@@ -416,6 +416,8 @@ sulu_event:
         title: "Quelle des Imports"
         source: "Quelle"
         state_title: "Zustand"
+        state_reason: "Grund"
+        state_reason_info: "Warum der Import dieses Event in Ruhe lässt: Die Regeln des Imports lassen es nicht durch, oder es wurde abgelehnt."
         last_synced: "Zuletzt abgeglichen"
         source_url: "Seite des Events bei der Quelle"
         source_url_info: "Hier hat der Import das Event gefunden. Fakten bitte hier prüfen."
@@ -453,7 +455,8 @@ sulu_event:
         state:
             active: "Aktiv"
             vanished: "Nicht mehr in der Quelle"
-            rejected: "Gelöscht, wird nicht erneut importiert"
+            filtered: "Von den Regeln ausgesiebt"
+            rejected: "Abgelehnt, wird nicht erneut importiert"
         field:
             startDate: "Beginn"
             endDate: "Ende"

@@ -130,7 +130,7 @@ class ImportRunner
                 // a failed run is a run as well: the tab shows the error instead of the result of the run before
                 $run->finish(
                     new \DateTimeImmutable(),
-                    ['created' => 0, 'updated' => 0, 'unchanged' => 0, 'locked' => 0, 'vanished' => 0, 'rejected' => 0, 'errors' => 1, 'newLocations' => 0],
+                    ['created' => 0, 'updated' => 0, 'unchanged' => 0, 'locked' => 0, 'vanished' => 0, 'rejected' => 0, 'filtered' => 0, 'errors' => 1, 'newLocations' => 0],
                     ['entries' => [['action' => ImportReport::ACTION_ERROR, 'source' => 'import', 'title' => null, 'externalId' => null, 'detail' => $e->getMessage(), 'lockedFields' => []]], 'newLocations' => [], 'warnings' => []]
                 );
             }

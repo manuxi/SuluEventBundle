@@ -8,6 +8,8 @@ use Manuxi\SuluEventBundle\Admin\EventAdmin;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\Location;
 use Manuxi\SuluEventBundle\Import\EventSourceInterface;
+use Manuxi\SuluEventBundle\Import\Filter\CandidateFilter;
+use Manuxi\SuluEventBundle\Import\Filter\FilterRules;
 use Manuxi\SuluEventBundle\Import\Source\ICalSource;
 use Manuxi\SuluEventBundle\Import\Source\JsonLdSource;
 use Manuxi\SuluEventBundle\Import\SourceConfig;
@@ -100,8 +102,9 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
 
         $container->registerForAutoconfiguration(EventSourceInterface::class)->addTag('sulu_event.import_source');
 
-        $types    = array_keys($config['types'] ?? []);
-        $usedKeys = [];
+        $types         = array_keys($config['types'] ?? []);
+        $usedKeys      = [];
+        $sourceFilters = $import['source_filters'];
 
         foreach ([SourceConfig::KIND_ICAL => ICalSource::class, SourceConfig::KIND_JSONLD => JsonLdSource::class] as $kind => $class) {
             foreach ($import['sources'][$kind] as $index => $source) {
@@ -111,6 +114,10 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
                     throw new InvalidConfigurationException(\sprintf('Invalid configuration for path "%s": the key "%s" is used twice for %s sources. Every source needs its own key.', $path, $source['key'], $kind));
                 }
                 $usedKeys[$kind . '.' . $source['key']] = true;
+
+                if (!empty($source['filters'])) {
+                    $sourceFilters[$kind . '.' . $source['key']] = FilterRules::merge($sourceFilters[$kind . '.' . $source['key']] ?? [], $source['filters']);
+                }
 
                 if (null !== $source['type'] && !\in_array($source['type'], $types, true)) {
                     throw new InvalidConfigurationException(\sprintf('Invalid configuration for path "%s.type": "%s" is not an event type. Known types: %s (see sulu_event.types).', $path, $source['type'], implode(', ', $types)));
@@ -128,6 +135,33 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
 
                 $container->setDefinition('sulu_event.import.source.' . $kind . '.' . $source['key'], $definition);
             }
+        }
+
+        $this->checkFilters($import['filters'], $sourceFilters, $types);
+        $container->setParameter('sulu_event.import.filters', $import['filters']);
+        $container->setParameter('sulu_event.import.source_filters', $sourceFilters);
+    }
+
+    /**
+     * Checks the rules of the sieve when the configuration is loaded, so that a wrong country code or pattern is
+     * reported at once and not in the middle of a run.
+     *
+     * @param array<string, mixed>                $global
+     * @param array<string, array<string, mixed>> $sources
+     * @param string[]                            $knownTypes
+     */
+    private function checkFilters(array $global, array $sources, array $knownTypes): void
+    {
+        try {
+            $filter = new CandidateFilter($global, $sources);
+            foreach ([null, ...array_map('strval', array_keys($sources))] as $key) {
+                $unknown = array_diff($filter->rulesFor($key)->types, $knownTypes);
+                if ([] !== $unknown) {
+                    throw new \InvalidArgumentException(\sprintf('"%s" is not an event type. Known types: %s (see sulu_event.types).', implode('", "', $unknown), implode(', ', $knownTypes)));
+                }
+            }
+        } catch (\InvalidArgumentException $e) {
+            throw new InvalidConfigurationException('Invalid configuration for sulu_event.import: ' . $e->getMessage(), 0, $e);
         }
     }
 

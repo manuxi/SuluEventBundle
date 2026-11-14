@@ -116,6 +116,17 @@ The class `Event` has a new read only collection `imports` (the inverse side of 
 
 New requirements, installed by Composer with the bundle: `symfony/http-client` and `symfony/string` (`composer update manuxi/sulu-event-bundle`). New services are `sulu_event.import.*` and the command `sulu:event:import`; sources that you tag with `sulu_event.import_source` are picked up. No existing behaviour changes.
 
+### Sieve, rejecting and cleaning up in the import (F1)
+
+New and optional (only for projects that use the import): `sulu_event.import.filters`, `sulu_event.import.source_filters` and `filters` per source leave candidates out by rules of the project (countries, online, types, topics, title, host, months ahead; `tags_allowed` limits the tags), see [docs/import.en.md](docs/import.en.md) ("The sieve"). Without rules nothing changes. New: the state `filtered` and the column `state_reason` of an import entry, the counter `filtered` of a run, the option `--explain` of `sulu:event:import`, the command `sulu:event:import:prune` and the MCP tool `sulu_event_import_reject`. The importer also treats the same event twice in one delivery as one candidate and follows a source that changes the id of an event (no second event, no "vanished" for the old one).
+
+```sql
+ALTER TABLE app_event_import ADD state_reason VARCHAR(255) DEFAULT NULL;
+ALTER TABLE app_event_import_run ADD filtered INT DEFAULT 0 NOT NULL;
+```
+
+The constructor of `EventImporter` takes the sieve (`CandidateFilter`, optional) as 16th argument, `EventUpdateTool` as 8th (optional). The state of an entry deleted in the admin now also carries a reason. If your project overrides `Resources/config/lists/events.xml` or `forms/event_import_source.xml`, take over the new filter options and the field `importStateReason`.
+
 ### New default event types
 
 `meetup`, `trade_fair`, `keynote`, `convention` and `hackathon` (with translations). Projects that define their own `sulu_event.types` replace the defaults completely and add the ones they want, with a name (translation key) and a colour.

@@ -40,6 +40,7 @@ class ImportEventsCommand extends Command
             ->setDescription('Imports events from the configured sources (iCal feeds, pages with schema.org data) as drafts')
             ->addOption('source', 's', InputOption::VALUE_REQUIRED, 'Only this source, for example "ical.my-group" (see the list the command prints when no source is configured)')
             ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Show what would happen, change nothing')
+            ->addOption('explain', null, InputOption::VALUE_NONE, 'List every candidate the sieve left out (source, title, country, reason)')
             ->addOption('limit', 'l', InputOption::VALUE_REQUIRED, 'At most this many events per source')
             ->setHelp(<<<'HELP'
                 The command reads the sources under <info>sulu_event.import.sources</info> and creates or updates drafts. It never
@@ -48,6 +49,11 @@ class ImportEventsCommand extends Command
                 Example for a daily run at 5 o'clock (crontab):
 
                     0 5 * * * cd /var/www/project && bin/adminconsole sulu:event:import
+
+                The rules under <info>sulu_event.import.filters</info> leave candidates out (the column "Filtered"). <info>--explain</info> lists every one
+                of them with the reason, so you can see what a rule does before you rely on it:
+
+                    bin/adminconsole sulu:event:import --dry-run --explain
 
                 Exit code: 0 if everything worked, 1 if a source or an event had an error.
                 HELP);
@@ -97,7 +103,7 @@ class ImportEventsCommand extends Command
             return Command::FAILURE;
         }
 
-        $this->printReport($io, $report);
+        $this->printReport($io, $report, (bool) $input->getOption('explain'));
 
         $run->finish(new \DateTimeImmutable(), $report->getCounts(), $report->toArray());
         $this->storeRun($run, $io);
@@ -113,16 +119,20 @@ class ImportEventsCommand extends Command
         return Command::SUCCESS;
     }
 
-    private function printReport(SymfonyStyle $io, ImportReport $report): void
+    private function printReport(SymfonyStyle $io, ImportReport $report, bool $explain = false): void
     {
         $counts = $report->getCounts();
         $io->table(
-            ['New', 'Changed', 'Unchanged', 'Locked', 'Vanished', 'Rejected', 'Errors', 'New locations'],
-            [[$counts['created'], $counts['updated'], $counts['unchanged'], $counts['locked'], $counts['vanished'], $counts['rejected'], $counts['errors'], $counts['newLocations']]]
+            ['New', 'Changed', 'Unchanged', 'Locked', 'Vanished', 'Rejected', 'Filtered', 'Errors', 'New locations'],
+            [[$counts['created'], $counts['updated'], $counts['unchanged'], $counts['locked'], $counts['vanished'], $counts['rejected'], $counts['filtered'], $counts['errors'], $counts['newLocations']]]
         );
 
         $rows = [];
         foreach ($report->getEntries() as $entry) {
+            if (ImportReport::ACTION_FILTERED === $entry['action']) {
+                continue;
+            }
+
             if (ImportReport::ACTION_UNCHANGED === $entry['action'] && [] === $entry['lockedFields'] && '' === $entry['detail']) {
                 continue;
             }
@@ -138,6 +148,22 @@ class ImportEventsCommand extends Command
         if ([] !== $rows) {
             $io->section('Details');
             $io->table(['Result', 'Source', 'Event', 'Note'], $rows);
+        }
+
+        if ($explain) {
+            $left = [];
+            foreach ($report->getEntries() as $entry) {
+                if (ImportReport::ACTION_FILTERED === $entry['action']) {
+                    $left[] = [$entry['source'], $entry['title'] ?? $entry['externalId'] ?? '', $entry['country'] ?? '-', $entry['detail']];
+                }
+            }
+
+            $io->section('Left out by the sieve');
+            if ([] === $left) {
+                $io->writeln('Nothing was left out.');
+            } else {
+                $io->table(['Source', 'Event', 'Country', 'Reason'], $left);
+            }
         }
 
         if ([] !== $report->getNewLocations()) {

@@ -15,9 +15,10 @@ class ImportReport
     public const ACTION_UNCHANGED = 'unchanged';
     public const ACTION_VANISHED  = 'vanished';
     public const ACTION_REJECTED  = 'rejected';
+    public const ACTION_FILTERED  = 'filtered';
     public const ACTION_ERROR     = 'error';
 
-    /** @var array{created: int, updated: int, unchanged: int, locked: int, vanished: int, rejected: int, errors: int, newLocations: int} */
+    /** @var array{created: int, updated: int, unchanged: int, locked: int, vanished: int, rejected: int, filtered: int, errors: int, newLocations: int} */
     private array $counts = [
         'created'      => 0,
         'updated'      => 0,
@@ -25,6 +26,7 @@ class ImportReport
         'locked'       => 0,
         'vanished'     => 0,
         'rejected'     => 0,
+        'filtered'     => 0,
         'errors'       => 0,
         'newLocations' => 0,
     ];
@@ -68,6 +70,26 @@ class ImportReport
     }
 
     /**
+     * A candidate the sieve did not let pass (sulu_event.import.filters). Counted, and listed by "--explain", but not kept
+     * in the stored report: there are many of them in every run.
+     */
+    public function addFiltered(string $source, string $externalId, ?string $title, ?string $country, string $code, string $reason, ?string $eventUuid = null): void
+    {
+        ++$this->counts['filtered'];
+        $this->entries[] = [
+            'action'       => self::ACTION_FILTERED,
+            'source'       => $source,
+            'externalId'   => $externalId,
+            'title'        => $title,
+            'eventUuid'    => $eventUuid,
+            'detail'       => $reason,
+            'lockedFields' => [],
+            'country'      => $country,
+            'code'         => $code,
+        ];
+    }
+
+    /**
      * A remark that is no error and not counted (an unknown category key, ...).
      */
     public function addWarning(string $source, ?string $externalId, string $message): void
@@ -82,7 +104,7 @@ class ImportReport
     }
 
     /**
-     * @return array{created: int, updated: int, unchanged: int, locked: int, vanished: int, rejected: int, errors: int, newLocations: int}
+     * @return array{created: int, updated: int, unchanged: int, locked: int, vanished: int, rejected: int, filtered: int, errors: int, newLocations: int}
      */
     public function getCounts(): array
     {
@@ -119,14 +141,14 @@ class ImportReport
     }
 
     /**
-     * @return array<string, mixed> the part stored with the run: entries that are more than "unchanged"
+     * @return array<string, mixed> the part stored with the run: entries that are more than "unchanged" (and not sieved out)
      */
     public function toArray(): array
     {
         return [
             'entries' => array_values(array_filter(
                 $this->entries,
-                static fn (array $entry): bool => self::ACTION_UNCHANGED !== $entry['action'] || [] !== $entry['lockedFields']
+                static fn (array $entry): bool => self::ACTION_FILTERED !== $entry['action'] && (self::ACTION_UNCHANGED !== $entry['action'] || [] !== $entry['lockedFields'])
             )),
             'newLocations' => $this->newLocations,
             'warnings'     => $this->warnings,

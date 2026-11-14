@@ -58,6 +58,8 @@ sulu_event:
 | `location_image` | Image (id or file name) for places the import creates: no source knows a photo of the place. Places without an image get it with `sulu:event:fill-images`; the editors replace it with a real photo | – |
 | `series_images` | A photo of a series: series key (`series` of a source) => id or file name. The events of the series take it when they have nothing better | – |
 | `location_aliases` | Other spellings of a place or a city and the one that leads, for example `Brüssel: Brussels`, `Köln: Cologne`. The import finds and creates the place under the leading name, so a source that writes the city in German does not make a second place (a city with a state or country, "San Francisco CA", is the same city anyway) | – |
+| `filters` | The sieve: which candidates become events at all, see "The sieve" | no rules |
+| `source_filters` | Rules of single sources by source key (also for sources of your project) | – |
 | `locales` | Locales an imported event should have a text in. Each gets a draft with the title of the source and all the facts right away (also for events that exist already); while the text is missing the event is in the list of events that need work | – |
 
 Options of a source (`ical` and `jsonld` have the same):
@@ -74,6 +76,7 @@ Options of a source (`ical` and `jsonld` have the same):
 | `series` | Name of an event series, see "Several sources" |
 | `priority` | Which source wins, see "Several sources". Default 100 for pages, 50 for calendars |
 | `languages` | Language codes the events are held in |
+| `filters` | Rules of the sieve for this source, replace the global ones rule by rule, see "The sieve" |
 | `image` | Id of a media (an image of your own) every event of the source gets, see "Images" |
 
 Mistakes in the configuration are reported when the cache is built, with the path of the option.
@@ -134,7 +137,8 @@ The button is a piece of JavaScript of the bundle and therefore **off** until it
 | Unchanged | Nothing to do |
 | Locked | A field was changed in the admin after the last import. It is **not overwritten**, the run reports the difference |
 | Vanished | A future event is not in the source any more. It stays, but is marked; it is never deleted |
-| Rejected | The event was deleted in the admin. It is not created again. Restoring it from the trash lifts this |
+| Rejected | The event was deleted in the admin or rejected with `sulu_event_import_reject`. It is not created again. Restoring it from the trash lifts this |
+| Filtered | The rules of the project (the sieve) do not let the candidate pass: no event is created, an existing one is not touched, see "The sieve" |
 | Errors | A source or an event failed. The exit code of the command is 1 |
 | New locations | A place was created (name, time zone; "guessed" if the country has several zones). Please have a look |
 
@@ -146,11 +150,67 @@ Changes always go to the **draft**. If the event is published, the live version 
 
 **Several sources for one event**: if two sources deliver the same event (a conference page and a calendar), give both the same `series` (for example `example-conf`). With the year of the start it makes the key `example-conf-2027`; the second source then links to the existing event instead of creating another. The source with the higher `priority` maintains the event. Use `series` only for sources that deliver *one event per year*; events of one source are never joined.
 
+**The same event twice in one delivery** (a list names a conference under every topic it belongs to) is one candidate: the first stays, categories and tags of the others are added. **A source that changes the id of an event** (a page that gave no id and has an address now) keeps its event: if a source delivers exactly one candidate for a key (`series` and year), has exactly one active entry with that key, and the id of that entry is no longer delivered, the entry follows the event to the new id (the report says so in `warnings`) instead of creating a second event and marking the first one "vanished".
+
 The result of each run is stored (table `app_event_import_run`), the command prints it as a table:
 
 ```
- New   Changed   Unchanged   Locked   Vanished   Rejected   Errors   New locations
+ New   Changed   Unchanged   Locked   Vanished   Rejected   Filtered   Errors   New locations
 ```
+
+## The sieve
+
+Sources deliver more than you want: events in regions you do not cover, webinars, far-away dates. The **sieve** decides before anything is created. The bundle is neutral and brings **no lists of countries or regions**; every rule is empty until your project sets it, so by default everything passes.
+
+```yaml
+# config/packages/sulu_event.yaml
+sulu_event:
+    import:
+        filters:
+            countries:
+                include: ['DE', 'AT', 'CH', 'NL']   # ISO 3166-1 alpha-2; only these pass
+                exclude: []                         # always out
+            unknown_country: allow                  # allow (default) | deny: a place without a country
+            online: allow                           # allow (default) | deny: online only, without a place
+            types: []                               # allowed event types; empty = all
+            topics: []                              # category keys, one must match; empty = all
+            title_exclude: ['^Webinar', 'free trial']   # regular expressions, case does not matter
+            host_exclude: ['tickets.spam.example']  # hosts of the event link, subdomains included
+            max_months_ahead: 18                    # later events are not imported yet; null = no limit
+            series_bypass: [countries, unknown_country, online]   # see below (this is the default)
+            tags_allowed: []                        # not a rule, see "Allowed tags"
+        # rules of single sources, any source (also those of your project): they replace the global rules rule by rule
+        source_filters:
+            my-list:
+                max_months_ahead: 12
+        sources:
+            jsonld:
+                - key: conf
+                  url: https://conf.example.com/
+                  filters:
+                      online: deny
+```
+
+- **Country**: the country code of the place of the candidate. With `include` only these pass, `exclude` is always out. A candidate **with** a place but **without** a country is decided by `unknown_country`; an event that takes place **online only** (no place) is judged by `online`, not by its country.
+- **Series**: a candidate that has a series (the source names one, or gives the key that joins it with the same event of other sources, see "Several sources for one event") bypasses the rules in `series_bypass`. Default: `countries`, `unknown_country`, `online`; also possible are `topics`, `types` and `max_months_ahead`. Whoever curates a series (a flagship conference in another region) should not lose it to a regional rule. `title_exclude` and `host_exclude` **always** apply.
+- **Per source**: `filters` of a source (or `source_filters.<key>` for any source) replace the global rules rule by rule; what is not set stays as it is globally. `countries.include` and `countries.exclude` count as one rule each.
+- The rules are **checked when the container is built**: a wrong country code, an invalid pattern or an unknown type stops with a clear message.
+
+**What happens to a candidate that does not pass:**
+
+- A **new** candidate gets **no event**. Its entry in `app_event_import` gets the state `filtered` and the reason in `state_reason` ("The country US is not one of the allowed countries."). If the rules change and it passes, the next run imports it like any other candidate.
+- An event that **exists** is **not touched** (no change, no deletion). Its entry becomes `filtered`; what happens to the event is decided by `sulu:event:import:prune` (below). If it passes again, the entry is `active` again and the changes of the source arrive.
+- The run counts them (column **Filtered**, also stored with the run), but does not keep the list. To see what a rule does, ask for it: `bin/adminconsole sulu:event:import --dry-run --explain` lists source, title, country and reason of every candidate that was left out.
+- `sulu_event_import_pending` does not show events that are `filtered` or `rejected`. In the admin, the tab "Source" shows state and reason, and the list of events can be filtered by "left out by the rules" and "rejected".
+
+### Allowed tags
+
+`tags_allowed` (global or per source) is a fixed list of the tags an event may get; the comparison ignores case. When it is set, the import and the MCP tools `sulu_event_import_upsert` and `sulu_event_update` take over only these tags and name the others in the report (`warnings`), so the tags stay manageable for visitors. Empty (default) = all tags.
+
+### Rejecting and cleaning up
+
+- **`sulu_event_import_reject`** (MCP tool, [docs/mcp.en.md](mcp.en.md)): says that an event is not wanted, with a reason. The event is not deleted; the import never creates or changes it again (state `rejected`).
+- **`sulu:event:import:prune [--dry-run] [--state=filtered|rejected] [--force]`**: moves events whose entry is `filtered` or `rejected` and that were **never published** to the trash of Sulu (like "delete" in the admin, they can be restored there). Events that were published, or that another source still maintains, are only listed ("please decide in the admin"). Without `--dry-run` the command asks first; with `--no-interaction` it stops unless `--force` is given. The entry keeps its state, so a `filtered` candidate is imported again if it passes later.
 
 ## Running it regularly
 
@@ -160,7 +220,7 @@ Once a day is enough. Example for cron:
 0 5 * * * cd /var/www/project && bin/adminconsole sulu:event:import
 ```
 
-`--source=ical.dev-calendar` runs a single source, `--limit=20` imports at most 20 events per source.
+`--source=ical.dev-calendar` runs a single source, `--limit=20` imports at most 20 events per source, `--explain` lists the candidates the sieve left out with the reason (best with `--dry-run`).
 
 ## Politeness, terms of use and privacy
 

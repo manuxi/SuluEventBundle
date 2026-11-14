@@ -104,6 +104,17 @@ services:
             - '@sulu_event.import.settings'
             - '@sulu_event.import.media_resolver'
 
+    # The sieve: rules of the project (sulu_event.import.filters and the filters of single sources)
+    sulu_event.import.filter:
+        class: Manuxi\SuluEventBundle\Import\Filter\CandidateFilter
+        arguments:
+            - '%sulu_event.import.filters%'
+            - '%sulu_event.import.source_filters%'
+
+    Manuxi\SuluEventBundle\Import\Filter\CandidateFilter:
+        alias: sulu_event.import.filter
+        public: true
+
     sulu_event.import.source_registry:
         class: Manuxi\SuluEventBundle\Import\SourceRegistry
         arguments:
@@ -140,6 +151,8 @@ services:
             - '@sulu_event.import.user_switcher'
             - '@sulu_event.import.settings'
             - '@sulu_event.import.media_resolver'
+            - null
+            - '@sulu_event.import.filter'
 
     Manuxi\SuluEventBundle\Import\EventImporter:
         alias: sulu_event.import.importer
@@ -200,6 +213,22 @@ services:
         class: Manuxi\SuluEventBundle\Command\FillImagesCommand
         arguments:
             - '@sulu_event.import.image_filler'
+        tags:
+            - { name: console.command }
+
+    sulu_event.import.pruner:
+        class: Manuxi\SuluEventBundle\Import\ImportPruner
+        arguments:
+            - '@Manuxi\SuluEventBundle\Repository\EventImportRepository'
+            - '@Manuxi\SuluEventBundle\Repository\EventRepository'
+            - '@doctrine.orm.entity_manager'
+            - '@sulu_trash.trash_manager'
+            - '@sulu_activity.domain_event_collector'
+
+    sulu_event.command.import_prune:
+        class: Manuxi\SuluEventBundle\Command\PruneImportCommand
+        arguments:
+            - '@sulu_event.import.pruner'
         tags:
             - { name: console.command }
 

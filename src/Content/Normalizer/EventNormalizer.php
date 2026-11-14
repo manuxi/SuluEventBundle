@@ -201,6 +201,7 @@ class EventNormalizer implements NormalizerInterface
 
         $normalizedData['importSource']            = $info['source'];
         $normalizedData['importState']             = $this->translator->trans('sulu_event.import.state.' . $info['state'], [], 'admin', $locale);
+        $normalizedData['importStateReason']       = $info['stateReason'];
         $normalizedData['importSourceUrl']         = $info['sourceUrl'];
         $normalizedData['importLastSyncedAt']      = $info['lastSyncedAt'];
         $normalizedData['importSourceDescription'] = $info['sourceDescription'];

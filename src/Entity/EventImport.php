@@ -19,6 +19,9 @@ class EventImport
     /** The event was deleted in the admin; the candidate is not imported again. */
     public const STATE_REJECTED = 'rejected';
 
+    /** The sieve of the import (sulu_event.import.filters) does not let the candidate pass; the reason is in "stateReason". */
+    public const STATE_FILTERED = 'filtered';
+
     private ?int $id = null;
 
     private ?string $matchKey = null;
@@ -36,6 +39,8 @@ class EventImport
     private array $lockedFields = [];
 
     private string $state = self::STATE_ACTIVE;
+
+    private ?string $stateReason = null;
 
     private ?string $sourceUrl = null;
 
@@ -177,15 +182,24 @@ class EventImport
         return $this->state;
     }
 
-    public function setState(string $state): self
+    /**
+     * @param string|null $reason why the entry is in this state (filtered, rejected); it is cleared when the state changes
+     */
+    public function setState(string $state, ?string $reason = null): self
     {
-        if (!\in_array($state, [self::STATE_ACTIVE, self::STATE_VANISHED, self::STATE_REJECTED], true)) {
+        if (!\in_array($state, [self::STATE_ACTIVE, self::STATE_VANISHED, self::STATE_REJECTED, self::STATE_FILTERED], true)) {
             throw new \InvalidArgumentException(\sprintf('"%s" is not a state of an import entry.', $state));
         }
 
-        $this->state = $state;
+        $this->state       = $state;
+        $this->stateReason = null !== $reason && '' !== trim($reason) ? mb_substr(trim($reason), 0, 255) : null;
 
         return $this;
+    }
+
+    public function getStateReason(): ?string
+    {
+        return $this->stateReason;
     }
 
     public function getSourceUrl(): ?string

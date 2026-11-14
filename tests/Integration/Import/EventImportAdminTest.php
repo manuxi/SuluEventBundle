@@ -67,6 +67,31 @@ class EventImportAdminTest extends AbstractEventDatabaseTestCase
         $this->assertSame('About the conf', $info['sourceDescription']);
     }
 
+    public function testInfoAndNormalizerShowTheReasonOfASievedOutEvent(): void
+    {
+        $filtered = new Event();
+        $this->entityManager->persist($filtered);
+        $this->contentManager->persist($filtered, ['title' => 'Faraway'], ['locale' => 'de', 'stage' => DimensionContentInterface::STAGE_DRAFT]);
+        $import = new EventImport('confs-tech', 'far');
+        $import->setEvent($filtered)->setState(EventImport::STATE_FILTERED, 'The country NZ is not one of the allowed countries.');
+        $this->entityManager->persist($import);
+        $this->entityManager->flush();
+        $this->entityManager->clear();
+
+        $provider = new EventImportInfoProvider($this->importRepository);
+        $info     = $provider->getInfo($filtered->getUuid());
+        $this->assertSame('filtered', $info['state']);
+        $this->assertSame('The country NZ is not one of the allowed countries.', $info['stateReason']);
+
+        $this->assertNull($provider->getInfo($this->event->getUuid())['stateReason'] ?? null);
+
+        $translator = $this->createStub(TranslatorInterface::class);
+        $translator->method('trans')->willReturnCallback(static fn (string $id): string => $id);
+        $normalized = $this->normalize($translator, $provider, $filtered);
+        $this->assertSame('sulu_event.import.state.filtered', $normalized['importState']);
+        $this->assertSame('The country NZ is not one of the allowed countries.', $normalized['importStateReason']);
+    }
+
     public function testInfoIsNullForAnEventThatIsNotImported(): void
     {
         $provider = new EventImportInfoProvider($this->importRepository);

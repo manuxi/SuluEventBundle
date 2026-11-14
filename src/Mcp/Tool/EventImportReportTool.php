@@ -26,7 +26,7 @@ class EventImportReportTool
     #[McpTool(
         name: 'sulu_event_import_report',
         title: 'Result of the last import run',
-        description: 'The result of the last run of the import command: when it ran, the counts (created, updated, unchanged, locked, vanished, rejected, errors, newLocations), the errors, the locations that were created (please check their name and time zone; "certain": false means the zone was guessed), events the source does not deliver any more ("vanished") and events with locked fields. "includeDryRuns" also considers test runs. Returns nothing if the import never ran.',
+        description: 'The result of the last run of the import command: when it ran, the counts (created, updated, unchanged, locked, vanished, rejected, filtered = left out by the sieve, errors, newLocations), the errors, the locations that were created (please check their name and time zone; "certain": false means the zone was guessed), events the source does not deliver any more ("vanished") and events with locked fields. "includeDryRuns" also considers test runs. Returns nothing if the import never ran.',
     )]
     #[RequiresPermission(requirements: [
         new PermissionRequirement(Event::SECURITY_CONTEXT, PermissionTypes::VIEW),

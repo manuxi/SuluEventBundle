@@ -13,6 +13,7 @@ If [sulu/mcp-bundle](https://github.com/sulu/SuluMcpBundle) is installed, the bu
 | `sulu_event_import_upsert` | Create or update one event as a draft with the rules of the import | add and edit |
 | `sulu_event_import_pending` | Imported events that still need work | view |
 | `sulu_event_import_report` | Result of the last import run | view |
+| `sulu_event_import_reject` | Turn down an imported event: the import leaves it alone from now on (not deleted) | edit |
 
 The permissions are those of the events security context (`sulu.events.events`).
 
@@ -66,11 +67,11 @@ Publishing is not part of the tools. Publish in the admin, or with the [bulk act
 
 Only the given fields are changed. Everything else (image, location, dates, categories and so on) stays as it is. A published event becomes a draft again and has to be published again.
 
-Categories and tags are easy to name: `"categories": ["ai", "web-php"]` (keys of the categories) and `"tags": ["Symfony", "AI"]` (names; a tag that does not exist is created). They replace the topics and tags of the locale; unknown category keys are listed in `warnings` of the answer. `excerptCategories` and `excerptTags` with ids still work.
+Categories and tags are easy to name: `"categories": ["ai", "web-php"]` (keys of the categories) and `"tags": ["Symfony", "AI"]` (names; a tag that does not exist is created). They replace the topics and tags of the locale; unknown category keys are listed in `warnings` of the answer. If the project sets `sulu_event.import.filters.tags_allowed`, only these tags are taken over (case does not matter) and the others are named in `warnings` too. `excerptCategories` and `excerptTags` with ids still work.
 
 ## Tools for the import
 
-The three tools belong to the [event import](import.en.md). They are meant for research and editing work: an assistant finds events on the web, enters them, and later completes the ones the import created.
+The four tools belong to the [event import](import.en.md). They are meant for research and editing work: an assistant finds events on the web, enters them, and later completes the ones the import created.
 
 **`sulu_event_import_upsert`** creates or updates **one** event as a draft with the same matching and protection rules as the import command. It takes `source` (where the event comes from, e.g. `editorial`), `externalId` (a stable id inside that source, e.g. the url of the page) and the facts: `titles` (locale => title), `startDate`, `endDate`, `timezone`, `allDay`, `status`, `attendanceMode`, `location` (object) or `locationId`, `onlineUrl`, `registrationUrl`, `organizerName`, `organizerUrl`, `isFree`, `priceInfos`, `languages`, `type`, `categories` (**keys**), `tags` (**names**), `subtitles`, `summaries`, `texts`, `sourceUrl`, `sourceDescription`, `series`, `priority` (default 30) and `dryRun`.
 
@@ -91,10 +92,12 @@ The three tools belong to the [event import](import.en.md). They are meant for r
 }
 ```
 
-The answer has `action` (`created`, `updated`, `unchanged`, `rejected`), `uuid`, `detail`, `lockedFields` (fields someone changed in the admin: they are not overwritten), `warnings` (an unknown category key, a missing image) and `newLocations`. Calling it again with the same `source` and `externalId` updates the same event. An event that was deleted in the admin is not created again (`rejected`). Texts, summaries, categories, tags and the image are only filled in when the event has none. Write the texts yourself: the text of a source is not yours to copy; what you read goes into `sourceDescription`, which is not published.
+The answer has `action` (`created`, `updated`, `unchanged`, `rejected`, `filtered`), `uuid`, `detail`, `lockedFields` (fields someone changed in the admin: they are not overwritten), `warnings` (an unknown category key, a missing image) and `newLocations`. Calling it again with the same `source` and `externalId` updates the same event. An event that was deleted in the admin or turned down with `sulu_event_import_reject` is not created again (`rejected`). If the project set rules for the import (the [sieve](import.en.md)) and the event does not meet them, nothing is created: the action is `filtered` and `detail` gives the reason. Of `tags` only those on the list `tags_allowed` (if the project sets one) are taken, the others are named in `warnings`. Texts, summaries, categories, tags and the image are only filled in when the event has none. Write the texts yourself: the text of a source is not yours to copy; what you read goes into `sourceDescription`, which is not published.
 
 **`sulu_event_import_pending`** lists imported events that lack something: `text:de`, `summary:en` (empty), `locale:en` (no draft in that language), `categories` (no topic), `image`. Each entry has `sourceUrl` (the page of the event) and `sourceDescription` as an aid for research, and `published`. `locales` limits the languages that are checked (default: `sulu_event.import.locales`, otherwise the languages the event has). Paginated with `page` and `limit`.
 
-**`sulu_event_import_report`** returns the last run of the import command: counts, errors, vanished events, events with protected fields, new locations (`certain: false` means the time zone was guessed). `includeDryRuns` also considers test runs.
+**`sulu_event_import_reject`** says that an imported event is not wanted: `reason` (required, short and factual, e.g. "outside the target region") and either `uuid` or `source` + `externalId` (this also works for a candidate that is not an event yet, so it is never created). The event is **not deleted** (the tools never delete); the import never creates or changes it again, and it no longer shows up in `sulu_event_import_pending`. Drafts that were never published can be moved to the trash later with `sulu:event:import:prune`.
+
+**`sulu_event_import_report`** returns the last run of the import command: counts (including `filtered`: left out by the sieve), errors, vanished events, events with protected fields, new locations (`certain: false` means the time zone was guessed). `includeDryRuns` also considers test runs.
 
 The permissions are those of the events security context. The tools run as the user who is logged in to the MCP server, not as `sulu_event.import.user`.

@@ -30,6 +30,13 @@
                     </meta>
                 </property>
 
+                <property name="importStateReason" type="text_line" disabledCondition="true" visibleCondition="importStateReason != null">
+                    <meta>
+                        <title>sulu_event.import.state_reason</title>
+                        <info_text>sulu_event.import.state_reason_info</info_text>
+                    </meta>
+                </property>
+
                 <property name="importSourceUrl" type="text_line" disabledCondition="true">
                     <meta>
                         <title>sulu_event.import.source_url</title>

@@ -17,6 +17,7 @@ use Manuxi\SuluEventBundle\Entity\Location;
 use Manuxi\SuluEventBundle\Import\CandidateLocation;
 use Manuxi\SuluEventBundle\Import\EventCandidate;
 use Manuxi\SuluEventBundle\Import\EventImporter;
+use Manuxi\SuluEventBundle\Import\Filter\CandidateFilter;
 use Manuxi\SuluEventBundle\Import\EventImportStateListener;
 use Manuxi\SuluEventBundle\Import\ImportReport;
 use Manuxi\SuluEventBundle\Import\ImportSettings;
@@ -111,7 +112,7 @@ class EventImporterTest extends AbstractEventDatabaseTestCase
 
         $report = $this->import([$source]);
 
-        $this->assertSame(['created' => 0, 'updated' => 0, 'unchanged' => 1, 'locked' => 0, 'vanished' => 0, 'rejected' => 0, 'errors' => 0, 'newLocations' => 0], $report->getCounts());
+        $this->assertSame(['created' => 0, 'updated' => 0, 'unchanged' => 1, 'locked' => 0, 'vanished' => 0, 'rejected' => 0, 'filtered' => 0, 'errors' => 0, 'newLocations' => 0], $report->getCounts());
         $this->assertCount($calls, $this->contentManager->calls);
         $this->assertSame(1, $this->rowCount(Event::class));
         $this->assertSame(4, $this->rowCount(Location::class), 'the three of the harness and the new one');
@@ -701,6 +702,196 @@ class EventImporterTest extends AbstractEventDatabaseTestCase
         $this->assertSame(3, $this->import([$source])->getCounts()['vanished']);
     }
 
+    public function testNewCandidateThatDoesNotPassTheSieveGetsNoEvent(): void
+    {
+        $locations = $this->rowCount(Location::class);
+        $filter    = new CandidateFilter(['countries' => ['include' => ['FR']]]);
+        $source    = new ArraySource('ical.a', 50, [$this->candidate(series: null)]);
+
+        $report = $this->import([$source], filter: $filter);
+
+        $this->assertSame(1, $report->getCounts()['filtered']);
+        $this->assertSame(0, $report->getCounts()['created']);
+        $this->assertSame(0, $this->rowCount(Event::class));
+        $this->assertSame($locations, $this->rowCount(Location::class), 'no place is created for a candidate that is left out');
+        $this->assertSame([], $this->contentManager->calls);
+
+        $entry = $report->getEntries()[0];
+        $this->assertSame(ImportReport::ACTION_FILTERED, $entry['action']);
+        $this->assertSame('DE', $entry['country']);
+        $this->assertSame('country_not_included', $entry['code']);
+        $this->assertStringContainsString('DE', $entry['detail']);
+        $this->assertSame([], $report->toArray()['entries'], 'sieved out candidates are counted, not stored with the run');
+
+        $import = $this->importRepository->findBySourceAndExternalId('ical.a', 'conf-2027');
+        $this->assertNotNull($import);
+        $this->assertSame(EventImport::STATE_FILTERED, $import->getState());
+        $this->assertStringContainsString('DE', (string) $import->getStateReason());
+        $this->assertNull($import->getEvent());
+
+        // the second run says the same and does not add a second entry
+        $this->assertSame(1, $this->import([$source], filter: $filter)->getCounts()['filtered']);
+        $this->assertSame(1, $this->rowCount(EventImport::class));
+    }
+
+    public function testFilteredCandidateIsImportedWhenTheRulesLetItPassLater(): void
+    {
+        $source = new ArraySource('ical.a', 50, [$this->candidate(series: null)]);
+        $this->import([$source], filter: new CandidateFilter(['countries' => ['include' => ['FR']]]));
+
+        $report = $this->import([$source], filter: new CandidateFilter(['countries' => ['include' => ['DE']]]));
+
+        $this->assertSame(1, $report->getCounts()['created']);
+        $this->assertSame(0, $report->getCounts()['filtered']);
+        $import = $this->importRepository->findBySourceAndExternalId('ical.a', 'conf-2027');
+        $this->assertSame(EventImport::STATE_ACTIVE, $import->getState());
+        $this->assertNull($import->getStateReason());
+        $this->assertNotNull($import->getEvent());
+        $this->assertSame(1, $this->rowCount(EventImport::class));
+        $this->assertSame(1, $this->rowCount(Event::class));
+    }
+
+    public function testExistingEventThatIsSievedOutNowIsLeftAlone(): void
+    {
+        $source = new ArraySource('ical.a', 50, [$this->candidate(series: null)]);
+        $this->import([$source]);
+        $uuid  = $this->importRepository->findBySourceAndExternalId('ical.a', 'conf-2027')->getEvent()->getUuid();
+        $calls = \count($this->contentManager->calls);
+
+        // the source changes the event, and the rules do not let it pass any more
+        $source->candidates = [$this->candidate(series: null, title: 'Example Conf 2027 - new name')];
+        $report             = $this->import([$source], filter: new CandidateFilter(['title_exclude' => ['new name']]));
+
+        $this->assertSame(1, $report->getCounts()['filtered']);
+        $this->assertSame(0, $report->getCounts()['updated']);
+        $this->assertCount($calls, $this->contentManager->calls, 'the event is not touched');
+        $this->assertSame('Example Conf 2027', $this->draft($uuid, 'en')->getTitle());
+        $this->assertSame($uuid, $report->getEntries()[0]['eventUuid']);
+
+        $import = $this->importRepository->findBySourceAndExternalId('ical.a', 'conf-2027');
+        $this->assertSame(EventImport::STATE_FILTERED, $import->getState());
+        $this->assertSame($uuid, $import->getEvent()->getUuid(), 'the event stays linked, prune decides');
+
+        // it passes again: back to normal, the change of the source arrives
+        $report = $this->import([$source]);
+        $this->assertSame(1, $report->getCounts()['updated']);
+        $this->assertSame('Example Conf 2027 - new name', $this->draft($uuid, 'en')->getTitle());
+        $this->assertSame(EventImport::STATE_ACTIVE, $this->importRepository->findBySourceAndExternalId('ical.a', 'conf-2027')->getState());
+    }
+
+    public function testFilteredEventIsNotMarkedAsVanishedAndNotListedAsPending(): void
+    {
+        $source = new ArraySource('ical.a', 50, [$this->candidate(series: null)]);
+        $this->import([$source]);
+
+        $this->import([$source], filter: new CandidateFilter(['online' => 'deny', 'countries' => ['exclude' => ['DE']]]));
+        $source->candidates = [];
+        $report             = $this->import([$source]);
+
+        $this->assertSame(0, $report->getCounts()['vanished']);
+        $this->assertSame(EventImport::STATE_FILTERED, $this->importRepository->findBySourceAndExternalId('ical.a', 'conf-2027')->getState());
+        $this->assertSame([], $this->importRepository->findAllWithEvent());
+    }
+
+    public function testDryRunWritesNothingForASievedOutCandidate(): void
+    {
+        $source = new ArraySource('ical.a', 50, [$this->candidate(series: null)]);
+
+        $report = $this->import([$source], dryRun: true, filter: new CandidateFilter(['types' => ['meetup']]));
+
+        $this->assertSame(1, $report->getCounts()['filtered']);
+        $this->assertSame(0, $this->rowCount(EventImport::class));
+        $this->assertSame(0, $this->rowCount(Event::class));
+    }
+
+    public function testCandidateOfASeriesBypassesTheCountryRules(): void
+    {
+        $filter = new CandidateFilter(['countries' => ['include' => ['FR']], 'topics' => ['games']]);
+        $source = new ArraySource('ical.a', 50, [
+            $this->candidate('in-series', title: 'Series Conf 2027', series: 'series-conf', categoryKeys: ['games']),
+            $this->candidate('no-series', title: 'Other Conf 2027', series: null, categoryKeys: ['games']),
+        ]);
+
+        $report = $this->import([$source], filter: $filter);
+
+        $this->assertSame(1, $report->getCounts()['created']);
+        $this->assertSame(1, $report->getCounts()['filtered']);
+        $this->assertSame(EventImport::STATE_ACTIVE, $this->importRepository->findBySourceAndExternalId('ical.a', 'in-series')->getState());
+        $this->assertSame(EventImport::STATE_FILTERED, $this->importRepository->findBySourceAndExternalId('ical.a', 'no-series')->getState());
+
+        // title and host rules are not bypassed
+        $report = $this->import([$source], filter: new CandidateFilter(['title_exclude' => ['^Series']]));
+        $this->assertSame(1, $report->getCounts()['filtered']);
+        $this->assertSame(1, $report->getCounts()['created'], 'the other one passes now');
+        $this->assertSame(EventImport::STATE_FILTERED, $this->importRepository->findBySourceAndExternalId('ical.a', 'in-series')->getState());
+    }
+
+    public function testRulesOfASourceReplaceTheGlobalOnesForThatSource(): void
+    {
+        $filter = new CandidateFilter(['countries' => ['include' => ['FR']]], ['ical.b' => ['countries' => ['include' => ['DE']]]]);
+        $a      = new ArraySource('ical.a', 50, [$this->candidate('a-1', series: null)]);
+        $b      = new ArraySource('ical.b', 50, [$this->candidate('b-1', title: 'Other Conf 2027', series: null)]);
+
+        $report = $this->import([$a, $b], filter: $filter);
+
+        $this->assertSame(1, $report->getCounts()['filtered']);
+        $this->assertSame(1, $report->getCounts()['created']);
+        $this->assertSame(EventImport::STATE_FILTERED, $this->importRepository->findBySourceAndExternalId('ical.a', 'a-1')->getState());
+        $this->assertSame(EventImport::STATE_ACTIVE, $this->importRepository->findBySourceAndExternalId('ical.b', 'b-1')->getState());
+    }
+
+    public function testCountryOfAPlaceThatIsOnlyGivenByIdIsLookedUp(): void
+    {
+        $filter = new CandidateFilter(['countries' => ['include' => ['DE']], 'unknown_country' => 'deny']);
+        $source = new ArraySource('ical.a', 50, [
+            $this->candidate('berlin', series: null, location: null, locationId: $this->locations['Messe Berlin']->getId()),
+            $this->candidate('us', title: 'US Conf 2027', series: null, location: null, locationId: $this->locations['Convention Center']->getId()),
+            $this->candidate('nowhere', title: 'Nowhere Conf 2027', series: null, location: null, locationId: $this->locations['Online']->getId()),
+        ]);
+
+        $report = $this->import([$source], filter: $filter);
+
+        $this->assertSame(1, $report->getCounts()['created']);
+        $this->assertSame(2, $report->getCounts()['filtered']);
+        $this->assertSame(EventImport::STATE_ACTIVE, $this->importRepository->findBySourceAndExternalId('ical.a', 'berlin')->getState());
+        $this->assertSame(EventImport::STATE_FILTERED, $this->importRepository->findBySourceAndExternalId('ical.a', 'us')->getState());
+        $this->assertSame(EventImport::STATE_FILTERED, $this->importRepository->findBySourceAndExternalId('ical.a', 'nowhere')->getState());
+    }
+
+    public function testRejectedCandidateStaysRejectedWhateverTheRulesSay(): void
+    {
+        $source = new ArraySource('ical.a', 50, [$this->candidate()]);
+        $this->import([$source]);
+        $import = $this->importRepository->findBySourceAndExternalId('ical.a', 'conf-2027');
+        $import->setState(EventImport::STATE_REJECTED, 'Not relevant for us.');
+        $this->entityManager->flush();
+
+        $report = $this->import([$source], filter: new CandidateFilter(['types' => ['meetup']]));
+
+        $this->assertSame(1, $report->getCounts()['rejected']);
+        $this->assertSame(0, $report->getCounts()['filtered']);
+        $this->assertSame('Not relevant for us.', $report->getEntries()[0]['detail']);
+        $this->assertSame(EventImport::STATE_REJECTED, $this->importRepository->findBySourceAndExternalId('ical.a', 'conf-2027')->getState());
+    }
+
+    public function testOnlyAllowedTagsAreTakenOverAndTheOthersAreReported(): void
+    {
+        $source = new ArraySource('ical.a', 50, [$this->candidate(tags: ['Symfony', 'Some Odd Tag'])]);
+
+        $report = $this->import([$source], filter: new CandidateFilter(['tags_allowed' => ['symfony']]));
+
+        $this->assertSame(1, $report->getCounts()['created']);
+        $this->assertCount(1, $report->getWarnings());
+        $this->assertStringContainsString('Some Odd Tag', $report->getWarnings()[0]['message']);
+        $this->assertArrayHasKey('warnings', $report->toArray());
+
+        // nothing of the candidate is allowed: the event gets no tag
+        $other  = new ArraySource('ical.b', 50, [$this->candidate('b-1', title: 'Other Conf 2027', series: 'other', tags: ['Some Odd Tag'])]);
+        $report = $this->import([$other], filter: new CandidateFilter(['tags_allowed' => ['symfony']]));
+        $import = $this->importRepository->findBySourceAndExternalId('ical.b', 'b-1');
+        $this->assertCount(0, $this->draft($import->getEvent()->getUuid(), 'en')->getExcerptTags());
+    }
+
     public function testTheSameEventTwiceInOneDeliveryIsOneCandidate(): void
     {
         $source = new ArraySource('ical.a', 50, [
@@ -731,7 +922,7 @@ class EventImporterTest extends AbstractEventDatabaseTestCase
         $source->candidates = [$this->candidate('https://conf.example.com/2027', series: 'goto-cph', registrationUrl: 'https://conf.example.com/2027/tickets')];
 
         $dry = $this->import([$source], dryRun: true);
-        $this->assertSame(['created' => 0, 'updated' => 1, 'unchanged' => 0, 'locked' => 0, 'vanished' => 0, 'rejected' => 0, 'errors' => 0, 'newLocations' => 0], $dry->getCounts());
+        $this->assertSame(['created' => 0, 'updated' => 1, 'unchanged' => 0, 'locked' => 0, 'vanished' => 0, 'rejected' => 0, 'filtered' => 0, 'errors' => 0, 'newLocations' => 0], $dry->getCounts());
         $this->assertSame('hash-of-title', $this->importRepository->findBySourceAndExternalId('jsonld.conf', 'hash-of-title')?->getExternalId(), 'a dry run changes nothing');
 
         $report = $this->import([$source]);
@@ -809,11 +1000,12 @@ class EventImporterTest extends AbstractEventDatabaseTestCase
         ?string $sourceKey = null,
         ?ImportSettings $settings = null,
         string $now = '2027-03-01 12:00:00',
+        ?CandidateFilter $filter = null,
     ): ImportReport {
         // every run is a new process: nothing is kept from the one before
         $this->entityManager->clear();
 
-        $importer = $this->createImporter($sources, $settings, $now);
+        $importer = $this->createImporter($sources, $settings, $now, filter: $filter);
 
         $report = $importer->import($sourceKey, $dryRun, $limit);
         $this->entityManager->clear();
@@ -824,7 +1016,7 @@ class EventImporterTest extends AbstractEventDatabaseTestCase
     /**
      * @param list<ArraySource> $sources
      */
-    private function createImporter(array $sources, ?ImportSettings $settings = null, string $now = '2027-03-01 12:00:00', bool $mediaExists = true): EventImporter
+    private function createImporter(array $sources, ?ImportSettings $settings = null, string $now = '2027-03-01 12:00:00', bool $mediaExists = true, ?CandidateFilter $filter = null): EventImporter
     {
         $settings ??= new ImportSettings(true, 'import', false);
 
@@ -871,6 +1063,7 @@ class EventImporterTest extends AbstractEventDatabaseTestCase
             $settings,
             $mediaResolver,
             static fn (): \DateTimeImmutable => new \DateTimeImmutable($now, new \DateTimeZone('Europe/Berlin')),
+            $filter,
         );
     }
 

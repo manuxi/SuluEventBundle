@@ -42,13 +42,14 @@ final class ImportRunSummary
         return [
             'importLastRunWhen'         => $when,
             'importLastRunSummary'      => \sprintf(
-                'new %d, changed %d, unchanged %d, locked %d, vanished %d, rejected %d, errors %d, new locations %d',
+                'new %d, changed %d, unchanged %d, locked %d, vanished %d, rejected %d, filtered %d, errors %d, new locations %d',
                 $counts['created'],
                 $counts['updated'],
                 $counts['unchanged'],
                 $counts['locked'],
                 $counts['vanished'],
                 $counts['rejected'],
+                $counts['filtered'],
                 $counts['errors'],
                 $counts['newLocations'],
             ),

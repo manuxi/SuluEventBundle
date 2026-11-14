@@ -35,8 +35,8 @@ class EventImportStateListener implements EventSubscriberInterface
     {
         // the foreign key to the event is emptied by the database, "last_event_uuid" still names the event
         $this->update(
-            'UPDATE %s SET state = :new, event_uuid = NULL WHERE last_event_uuid = :uuid AND state != :new',
-            ['new' => EventImport::STATE_REJECTED, 'uuid' => $domainEvent->getResourceId()]
+            'UPDATE %s SET state = :new, state_reason = :reason, event_uuid = NULL WHERE last_event_uuid = :uuid AND state != :new',
+            ['new' => EventImport::STATE_REJECTED, 'reason' => 'The event was deleted in the admin and is not imported again.', 'uuid' => $domainEvent->getResourceId()]
         );
     }
 
@@ -49,7 +49,7 @@ class EventImportStateListener implements EventSubscriberInterface
         $oldUuid = isset($payload['id']) && \is_string($payload['id']) ? $payload['id'] : $uuid;
 
         $this->update(
-            'UPDATE %s SET state = :active, event_uuid = :uuid, last_event_uuid = :uuid WHERE last_event_uuid = :old AND state = :rejected',
+            'UPDATE %s SET state = :active, state_reason = NULL, event_uuid = :uuid, last_event_uuid = :uuid WHERE last_event_uuid = :old AND state = :rejected',
             ['active' => EventImport::STATE_ACTIVE, 'rejected' => EventImport::STATE_REJECTED, 'uuid' => $uuid, 'old' => $oldUuid]
         );
     }

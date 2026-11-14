@@ -13,6 +13,7 @@ Ist [sulu/mcp-bundle](https://github.com/sulu/SuluMcpBundle) installiert, bringt
 | `sulu_event_import_upsert` | Ein Event mit den Regeln des Imports als Entwurf anlegen oder aktualisieren | Hinzufügen und Bearbeiten |
 | `sulu_event_import_pending` | Importierte Events, an denen noch etwas zu tun ist | Ansehen |
 | `sulu_event_import_report` | Ergebnis des letzten Import-Laufs | Ansehen |
+| `sulu_event_import_reject` | Ein importiertes Event ablehnen: Der Import lässt es ab jetzt in Ruhe (nicht gelöscht) | Bearbeiten |
 
 Die Rechte sind die des Sicherheitskontexts der Veranstaltungen (`sulu.events.events`).
 
@@ -66,11 +67,11 @@ Veröffentlichen gehört nicht zu den Tools. Das geht im Admin oder mit den [Sam
 
 Geändert werden nur die übergebenen Felder. Alles andere (Bild, Ort, Termine, Kategorien usw.) bleibt unverändert. Ein veröffentlichtes Event wird wieder zum Entwurf und muss erneut veröffentlicht werden.
 
-Kategorien und Tags lassen sich einfach nennen: `"categories": ["ai", "web-php"]` (Schlüssel der Kategorien) und `"tags": ["Symfony", "KI"]` (Namen; ein Tag, den es nicht gibt, wird angelegt). Sie ersetzen Themen und Tags der Sprache; unbekannte Kategorie-Schlüssel stehen in `warnings` der Antwort. Statt dessen gehen weiterhin `excerptCategories` und `excerptTags` mit Ids.
+Kategorien und Tags lassen sich einfach nennen: `"categories": ["ai", "web-php"]` (Schlüssel der Kategorien) und `"tags": ["Symfony", "KI"]` (Namen; ein Tag, den es nicht gibt, wird angelegt). Sie ersetzen Themen und Tags der Sprache; unbekannte Kategorie-Schlüssel stehen in `warnings` der Antwort. Setzt das Projekt `sulu_event.import.filters.tags_allowed`, werden nur diese Tags übernommen (Groß-/Kleinschreibung egal), die anderen stehen ebenfalls in `warnings`. Statt dessen gehen weiterhin `excerptCategories` und `excerptTags` mit Ids.
 
 ## Werkzeuge für den Import
 
-Die drei Werkzeuge gehören zum [Event-Import](import.de.md). Sie sind für Recherche und Redaktion gedacht: Ein Assistent findet Events im Web, trägt sie ein und vervollständigt später die, die der Import angelegt hat.
+Die vier Werkzeuge gehören zum [Event-Import](import.de.md). Sie sind für Recherche und Redaktion gedacht: Ein Assistent findet Events im Web, trägt sie ein und vervollständigt später die, die der Import angelegt hat.
 
 **`sulu_event_import_upsert`** legt **ein** Event als Entwurf an oder aktualisiert es, mit denselben Abgleich- und Schutzregeln wie der Import-Befehl. Parameter: `source` (woher das Event stammt, z. B. `editorial`), `externalId` (eine stabile Kennung innerhalb der Quelle, z. B. die URL der Seite) und die Fakten: `titles` (Sprache => Titel), `startDate`, `endDate`, `timezone`, `allDay`, `status`, `attendanceMode`, `location` (Objekt) oder `locationId`, `onlineUrl`, `registrationUrl`, `organizerName`, `organizerUrl`, `isFree`, `priceInfos`, `languages`, `type`, `categories` (**Schlüssel**), `tags` (**Namen**), `subtitles`, `summaries`, `texts`, `sourceUrl`, `sourceDescription`, `series`, `priority` (Standard 30) und `dryRun`.
 
@@ -91,10 +92,12 @@ Die drei Werkzeuge gehören zum [Event-Import](import.de.md). Sie sind für Rech
 }
 ```
 
-Die Antwort enthält `action` (`created`, `updated`, `unchanged`, `rejected`), `uuid`, `detail`, `lockedFields` (Felder, die jemand im Admin geändert hat: sie werden nicht überschrieben), `warnings` (ein unbekannter Kategorie-Schlüssel, ein fehlendes Bild) und `newLocations`. Ein erneuter Aufruf mit derselben `source` und `externalId` aktualisiert dasselbe Event. Ein im Admin gelöschtes Event wird nicht neu angelegt (`rejected`). Texte, Kurztexte, Kategorien, Tags und das Bild werden nur ergänzt, wenn das Event noch keine hat. Die Texte selbst schreiben: der Text einer Quelle darf nicht kopiert werden; was gelesen wurde, gehört in `sourceDescription`, das nicht veröffentlicht wird.
+Die Antwort enthält `action` (`created`, `updated`, `unchanged`, `rejected`, `filtered`), `uuid`, `detail`, `lockedFields` (Felder, die jemand im Admin geändert hat: sie werden nicht überschrieben), `warnings` (ein unbekannter Kategorie-Schlüssel, ein fehlendes Bild) und `newLocations`. Ein erneuter Aufruf mit derselben `source` und `externalId` aktualisiert dasselbe Event. Ein im Admin gelöschtes oder mit `sulu_event_import_reject` abgelehntes Event wird nicht neu angelegt (`rejected`). Hat das Projekt Regeln für den Import gesetzt (das [Sieb](import.de.md)) und das Event erfüllt sie nicht, wird nichts angelegt: Die Aktion ist `filtered`, `detail` nennt den Grund. Von `tags` werden nur die der Liste `tags_allowed` übernommen (wenn das Projekt eine setzt), die anderen stehen in `warnings`. Texte, Kurztexte, Kategorien, Tags und das Bild werden nur ergänzt, wenn das Event noch keine hat. Die Texte selbst schreiben: der Text einer Quelle darf nicht kopiert werden; was gelesen wurde, gehört in `sourceDescription`, das nicht veröffentlicht wird.
 
 **`sulu_event_import_pending`** listet importierte Events, denen etwas fehlt: `text:de`, `summary:en` (leer), `locale:en` (kein Entwurf in dieser Sprache), `categories` (kein Thema), `image` (kein Bild). Jeder Eintrag trägt `sourceUrl` (die Seite des Events) und `sourceDescription` als Recherchehilfe sowie `published`. `locales` begrenzt die geprüften Sprachen (Standard: `sulu_event.import.locales`, sonst die Sprachen des Events). Seitenweise mit `page` und `limit`.
 
-**`sulu_event_import_report`** liefert den letzten Lauf des Import-Befehls: Zahlen, Fehler, verschwundene Events, Events mit geschützten Feldern, neue Orte (`certain: false` heißt: Zeitzone geraten). `includeDryRuns` berücksichtigt auch Testläufe.
+**`sulu_event_import_reject`** sagt, dass ein importiertes Event nicht gewünscht ist: `reason` (Pflicht, kurz und sachlich, z. B. „außerhalb der Zielregion“) und entweder `uuid` oder `source` + `externalId` (das geht auch für einen Kandidaten, der noch kein Event ist, er wird dann nie angelegt). Das Event wird **nicht gelöscht** (die Werkzeuge löschen nie); der Import legt es nie wieder an und ändert es nicht mehr, und es erscheint nicht mehr in `sulu_event_import_pending`. Entwürfe, die nie veröffentlicht waren, lassen sich später mit `sulu:event:import:prune` in den Papierkorb verschieben.
+
+**`sulu_event_import_report`** liefert den letzten Lauf des Import-Befehls: Zahlen (auch `filtered`: vom Sieb ausgelassen), Fehler, verschwundene Events, Events mit geschützten Feldern, neue Orte (`certain: false` heißt: Zeitzone geraten). `includeDryRuns` berücksichtigt auch Testläufe.
 
 Die Rechte sind die des Security-Kontexts der Events. Die Werkzeuge laufen als der Benutzer, der am MCP-Server angemeldet ist, nicht als `sulu_event.import.user`.

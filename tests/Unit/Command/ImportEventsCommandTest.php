@@ -85,6 +85,50 @@ class ImportEventsCommandTest extends TestCase
         $this->assertSame('Messe Hall 3', $stored->getReport()['newLocations'][0]['name']);
     }
 
+    public function testExplainListsEverySievedOutCandidateWithTheReason(): void
+    {
+        $report = new ImportReport();
+        $report->add(ImportReport::ACTION_CREATED, 'ical.a', 'e1', 'Kept Conf', 'uuid-1', 'Created as a draft.');
+        $report->addFiltered('confs-tech', 'e2', 'Faraway Conf', 'NZ', 'country_not_included', 'The country NZ is not one of the allowed countries.');
+        $report->addFiltered('confs-tech', 'e3', 'Webinar: Intro', null, 'title', 'The title matches the excluded pattern "^Webinar".');
+        $this->importer->method('import')->willReturn($report);
+
+        $tester = $this->createTester(new ImportSettings(true, 'import'));
+        $this->assertSame(Command::SUCCESS, $tester->execute(['--dry-run' => true]));
+
+        // without --explain only the number is shown
+        $plain = $tester->getDisplay();
+        $this->assertStringContainsString('Filtered', $plain);
+        $this->assertStringNotContainsString('Faraway Conf', $plain);
+
+        $this->assertSame(Command::SUCCESS, $tester->execute(['--dry-run' => true, '--explain' => true]));
+        $display = $tester->getDisplay();
+        $this->assertStringContainsString('Left out by the sieve', $display);
+        $this->assertStringContainsString('Faraway Conf', $display);
+        $this->assertStringContainsString('NZ', $display);
+        $this->assertStringContainsString('The country NZ is not one of the allowed countries.', $display);
+        $this->assertStringContainsString('Webinar: Intro', $display);
+        $this->assertStringContainsString('excluded pattern', $display);
+        $this->assertStringContainsString('Kept Conf', $display);
+    }
+
+    public function testTheCountOfSievedOutCandidatesIsStoredWithTheRunButNotTheList(): void
+    {
+        $report = new ImportReport();
+        $report->addFiltered('confs-tech', 'e2', 'Faraway Conf', 'NZ', 'country_not_included', 'Out.');
+        $this->importer->method('import')->willReturn($report);
+
+        $stored = null;
+        $this->runRepository->method('add')->willReturnCallback(static function (EventImportRun $run) use (&$stored): void {
+            $stored = $run;
+        });
+
+        $this->createTester(new ImportSettings(true, 'import'))->execute([]);
+
+        $this->assertSame(1, $stored->getCounts()['filtered']);
+        $this->assertSame([], $stored->getReport()['entries']);
+    }
+
     public function testDryRunAndOptionsArePassedOn(): void
     {
         $this->importer->expects($this->once())->method('import')->with('ical.a', true, 5)->willReturn(new ImportReport());

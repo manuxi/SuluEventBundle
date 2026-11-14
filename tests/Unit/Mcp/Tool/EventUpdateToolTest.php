@@ -7,6 +7,7 @@ namespace Manuxi\SuluEventBundle\Tests\Unit\Mcp\Tool;
 use Doctrine\ORM\EntityManagerInterface;
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
+use Manuxi\SuluEventBundle\Import\Filter\CandidateFilter;
 use Manuxi\SuluEventBundle\Import\Resolver\CategoryResolver;
 use Manuxi\SuluEventBundle\Import\Resolver\TagResolver;
 use Manuxi\SuluEventBundle\Mcp\Tool\EventUpdateTool;
@@ -139,6 +140,34 @@ class EventUpdateToolTest extends TestCase
 
         $this->assertTrue($result['success'] ?? false, json_encode($result));
         $this->assertSame(['Unknown category keys: nope'], $result['warnings']);
+    }
+
+    public function testOnlyAllowedTagsAreResolvedAndTheOthersAreNamedInTheWarnings(): void
+    {
+        $current = $this->createDimensionContent('event', WorkflowInterface::WORKFLOW_PLACE_DRAFT);
+        $this->contentManager->method('resolve')->willReturn($current);
+        $this->contentManager->method('persist')->willReturn($current);
+
+        $tag = $this->createMock(TagInterface::class);
+        $tag->method('getId')->willReturn(7);
+        $this->tagResolver->expects($this->once())->method('resolve')->with(['Symfony'])->willReturn([$tag]);
+
+        $tool = new EventUpdateTool(
+            $this->eventRepository,
+            $this->entityManager,
+            $this->contentManager,
+            $this->contentWorkflow,
+            $this->createMock(DomainEventCollectorInterface::class),
+            $this->categoryResolver,
+            $this->tagResolver,
+            new CandidateFilter(['tags_allowed' => ['symfony', 'php']]),
+        );
+
+        $result = $tool->updateEvent($this->event->getUuid(), 'de', null, ['tags' => ['Symfony', 'Whatever']]);
+
+        $this->assertTrue($result['success'] ?? false, json_encode($result));
+        $this->assertCount(1, $result['warnings']);
+        $this->assertStringContainsString('Whatever', $result['warnings'][0]);
     }
 
     public function testWithoutCategoriesAndTagsNothingIsResolved(): void

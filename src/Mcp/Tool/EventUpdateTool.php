@@ -7,6 +7,7 @@ namespace Manuxi\SuluEventBundle\Mcp\Tool;
 use Doctrine\ORM\EntityManagerInterface;
 use Manuxi\SuluEventBundle\Domain\Event\Event\ModifiedEvent;
 use Manuxi\SuluEventBundle\Entity\Event;
+use Manuxi\SuluEventBundle\Import\Filter\CandidateFilter;
 use Manuxi\SuluEventBundle\Import\Resolver\CategoryResolver;
 use Manuxi\SuluEventBundle\Import\Resolver\TagResolver;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
@@ -35,6 +36,7 @@ class EventUpdateTool
         private readonly DomainEventCollectorInterface $domainEventCollector,
         private readonly CategoryResolver $categoryResolver,
         private readonly TagResolver $tagResolver,
+        private readonly ?CandidateFilter $filter = null,
     ) {
     }
 
@@ -46,7 +48,7 @@ class EventUpdateTool
     #[McpTool(
         name: 'sulu_event_update',
         title: 'Update Event',
-        description: 'Change fields of an event (draft). Only the fields you pass in "content" are changed, for example {"summary": "...", "startDate": "2026-11-06T09:00:00"}; "title" is a separate parameter. A published event becomes a draft again and must be published again in the admin. Besides the fields of sulu_event_create (start/end date, "locationId", ...) you can pass: Participation and time: "allDay" (true: whole days, times are set to 00:00:00 and 23:59:59), "timezone" (IANA name such as "America/Los_Angeles" for the time of day in startDate/endDate; leave it out to use the zone of the location or of the website), "status" (scheduled, postponed, rescheduled, cancelled, moved_online), "attendanceMode" (offline, online, mixed), "onlineUrl" (stream or meeting link), "registrationUrl" (tickets or registration), "isFree" (true/false), "priceInfo" (short text per locale, e.g. "from 99 EUR"), "organizerName", "organizerUrl", "languages" (e.g. ["de", "en"]). Urls must start with http:// or https://. Topics and image for cards: "excerptCategories" (category ids from sulu_category_list), "excerptTags" (tag ids from sulu_tag_list or sulu_tag_create, not names; unknown ids are ignored) and "excerpt": {"image": {"id": 12}, "title": "...", "description": "..."}. Easier: "categories" (keys of categories, for example ["ai", "web-php"]) and "tags" (names; a tag that does not exist is created) are turned into ids for you; they replace the topics and tags of the locale. Unknown category keys are named in "warnings".',
+        description: 'Change fields of an event (draft). Only the fields you pass in "content" are changed, for example {"summary": "...", "startDate": "2026-11-06T09:00:00"}; "title" is a separate parameter. A published event becomes a draft again and must be published again in the admin. Besides the fields of sulu_event_create (start/end date, "locationId", ...) you can pass: Participation and time: "allDay" (true: whole days, times are set to 00:00:00 and 23:59:59), "timezone" (IANA name such as "America/Los_Angeles" for the time of day in startDate/endDate; leave it out to use the zone of the location or of the website), "status" (scheduled, postponed, rescheduled, cancelled, moved_online), "attendanceMode" (offline, online, mixed), "onlineUrl" (stream or meeting link), "registrationUrl" (tickets or registration), "isFree" (true/false), "priceInfo" (short text per locale, e.g. "from 99 EUR"), "organizerName", "organizerUrl", "languages" (e.g. ["de", "en"]). Urls must start with http:// or https://. Topics and image for cards: "excerptCategories" (category ids from sulu_category_list), "excerptTags" (tag ids from sulu_tag_list or sulu_tag_create, not names; unknown ids are ignored) and "excerpt": {"image": {"id": 12}, "title": "...", "description": "..."}. Easier: "categories" (keys of categories, for example ["ai", "web-php"]) and "tags" (names; a tag that does not exist is created) are turned into ids for you; they replace the topics and tags of the locale. Unknown category keys and tags that are not on the list of allowed tags (sulu_event.import.filters.tags_allowed, if the project sets one) are named in "warnings".',
     )]
     #[RequiresPermission(requirements: [
         new PermissionRequirement(Event::SECURITY_CONTEXT, PermissionTypes::EDIT),
@@ -81,7 +83,14 @@ class EventUpdateTool
                 }
             }
             if (isset($content['tags'])) {
-                $tags = $this->tagResolver->resolve(array_map('strval', (array) $content['tags']));
+                $names = array_map('strval', (array) $content['tags']);
+                if (null !== $this->filter) {
+                    [$names, $dropped] = $this->filter->filterTags(null, $names);
+                    if ([] !== $dropped) {
+                        $warnings[] = 'Tags that are not on the list of allowed tags were left out: '.implode(', ', $dropped).'.';
+                    }
+                }
+                $tags = $this->tagResolver->resolve($names);
                 // new tags need their id
                 $this->entityManager->flush();
                 $content['excerptTags'] = array_values(array_filter(array_map(static fn ($tag): ?int => $tag->getId(), $tags)));

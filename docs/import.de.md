@@ -58,6 +58,8 @@ sulu_event:
 | `location_image` | Bild (Id oder Dateiname) für Orte, die der Import neu anlegt: keine Quelle kennt ein Foto vom Ort. Orte ohne Bild bekommen es mit `sulu:event:fill-images`; die Redaktion ersetzt es durch ein echtes Foto | – |
 | `series_images` | Foto einer Reihe: Schlüssel der Reihe (`series` der Quelle) => Id oder Dateiname. Die Events der Reihe nehmen es, wenn sie nichts Besseres haben | – |
 | `location_aliases` | Andere Schreibweisen eines Ortes oder einer Stadt und die, die führt, zum Beispiel `Brüssel: Brussels`, `Köln: Cologne`. Der Import findet und legt den Ort unter dem führenden Namen an, eine deutsche Schreibweise der Quelle macht keinen zweiten Ort (Stadt mit Bundesstaat oder Land, „San Francisco CA“, ist ohnehin dieselbe Stadt) | – |
+| `filters` | Das Sieb: welche Kandidaten überhaupt zu Events werden, siehe „Das Sieb“ | keine Regeln |
+| `source_filters` | Regeln einzelner Quellen nach Quellschlüssel (auch für Quellen Ihres Projekts) | – |
 | `locales` | Sprachen, in denen ein importiertes Event einen Text haben soll. Jede bekommt beim Import gleich einen Entwurf mit dem Titel der Quelle und allen Fakten (auch bei Events, die es schon gibt); fehlt der Text, steht das Event in der Liste der Events mit offener Arbeit | – |
 
 Optionen einer Quelle (`ical` und `jsonld` haben dieselben):
@@ -74,6 +76,7 @@ Optionen einer Quelle (`ical` und `jsonld` haben dieselben):
 | `series` | Name einer Veranstaltungsreihe, siehe „Mehrere Quellen“ |
 | `priority` | Welche Quelle gewinnt, siehe „Mehrere Quellen“. Standard 100 für Seiten, 50 für Kalender |
 | `languages` | Sprachkürzel, in denen die Events gehalten werden |
+| `filters` | Regeln des Siebs für diese Quelle, ersetzen die globalen Regel für Regel, siehe „Das Sieb“ |
 | `image` | ID eines Mediums (ein eigenes Bild), das jedes Event der Quelle bekommt, siehe „Bilder“ |
 
 Fehler in der Konfiguration werden beim Aufbau des Caches gemeldet, mit dem Pfad der Option.
@@ -134,7 +137,8 @@ Der Knopf ist ein Stück JavaScript des Bundles und deshalb **aus**, solange es 
 | Unverändert | Nichts zu tun |
 | Gesperrt | Ein Feld wurde nach dem letzten Import im Admin geändert. Es wird **nicht überschrieben**, der Lauf meldet den Unterschied |
 | Verschwunden | Ein zukünftiges Event steht nicht mehr in der Quelle. Es bleibt, wird aber markiert; gelöscht wird nie |
-| Abgelehnt | Das Event wurde im Admin gelöscht. Es wird nicht wieder angelegt. Wiederherstellen aus dem Papierkorb hebt das auf |
+| Abgelehnt | Das Event wurde im Admin gelöscht oder mit `sulu_event_import_reject` abgelehnt. Es wird nicht wieder angelegt. Wiederherstellen aus dem Papierkorb hebt das auf |
+| Ausgesiebt | Die Regeln des Projekts (das Sieb) lassen den Kandidaten nicht durch: kein Event wird angelegt, ein vorhandenes nicht angefasst, siehe „Das Sieb“ |
 | Fehler | Eine Quelle oder ein Event ist fehlgeschlagen. Der Exit-Code des Befehls ist 1 |
 | Neue Orte | Ein Ort wurde angelegt (Name, Zeitzone; „geraten“, wenn das Land mehrere Zonen hat). Bitte ansehen |
 
@@ -146,13 +150,69 @@ Der Knopf ist ein Stück JavaScript des Bundles und deshalb **aus**, solange es 
 
 **Mehrere Quellen für ein Event**: Liefern zwei Quellen dasselbe Event (eine Konferenzseite und ein Kalender), bekommen beide dieselbe `series` (zum Beispiel `example-conf`). Zusammen mit dem Jahr des Beginns ergibt sich der Schlüssel `example-conf-2027`; die zweite Quelle verknüpft sich dann mit dem vorhandenen Event, statt ein weiteres anzulegen. Die Quelle mit der höheren `priority` pflegt das Event. `series` nur für Quellen verwenden, die *ein Event pro Jahr* liefern; Events derselben Quelle werden nie zusammengeführt.
 
+**Dasselbe Event zweimal in einer Lieferung** (eine Liste nennt eine Konferenz unter jedem Thema, zu dem sie gehört) ist ein Kandidat: Der erste bleibt, Kategorien und Tags der anderen werden ergänzt. **Eine Quelle, die die ID eines Events ändert** (eine Seite, die keine ID nannte und jetzt eine Adresse hat), behält ihr Event: Liefert eine Quelle genau einen Kandidaten zu einem Schlüssel (`series` und Jahr), hat genau einen aktiven Eintrag mit diesem Schlüssel, und dessen ID wird nicht mehr geliefert, folgt der Eintrag dem Event auf die neue ID (der Bericht sagt es in `warnings`), statt ein zweites Event anzulegen und das erste als „verschwunden“ zu markieren.
+
 Das Ergebnis jedes Laufs wird gespeichert (Tabelle `app_event_import_run`), der Befehl gibt es als Tabelle aus:
 
 ```
- Neu   Geändert   Unverändert   Gesperrt   Verschwunden   Abgelehnt   Fehler   Neue Orte
+ Neu   Geändert   Unverändert   Gesperrt   Verschwunden   Abgelehnt   Ausgesiebt   Fehler   Neue Orte
 ```
 
-(Die Ausgabe des Befehls ist englisch: New, Changed, Unchanged, Locked, Vanished, Rejected, Errors, New locations.)
+(Die Ausgabe des Befehls ist englisch: New, Changed, Unchanged, Locked, Vanished, Rejected, Filtered, Errors, New locations.)
+
+## Das Sieb
+
+Quellen liefern mehr, als Sie wollen: Events in Regionen, die Sie nicht abdecken, Webinare, Termine in ferner Zukunft. Das **Sieb** entscheidet, bevor etwas angelegt wird. Das Bundle ist neutral und bringt **keine Länder- oder Regionslisten** mit; jede Regel ist leer, bis Ihr Projekt sie setzt, standardmäßig kommt also alles durch.
+
+```yaml
+# config/packages/sulu_event.yaml
+sulu_event:
+    import:
+        filters:
+            countries:
+                include: ['DE', 'AT', 'CH', 'NL']   # ISO 3166-1 alpha-2; nur diese kommen durch
+                exclude: []                         # immer draußen
+            unknown_country: allow                  # allow (Standard) | deny: ein Ort ohne Land
+            online: allow                           # allow (Standard) | deny: nur online, ohne Ort
+            types: []                               # erlaubte Event-Typen; leer = alle
+            topics: []                              # Kategorie-Schlüssel, einer muss passen; leer = alle
+            title_exclude: ['^Webinar', 'free trial']   # reguläre Ausdrücke, Groß-/Kleinschreibung egal
+            host_exclude: ['tickets.spam.example']  # Hosts des Event-Links, Subdomains eingeschlossen
+            max_months_ahead: 18                    # spätere Events werden noch nicht importiert; null = keine Grenze
+            series_bypass: [countries, unknown_country, online]   # siehe unten (das ist der Standard)
+            tags_allowed: []                        # keine Regel, siehe „Erlaubte Tags“
+        # Regeln einzelner Quellen, jede Quelle (auch die des Projekts): sie ersetzen die globalen Regeln Regel für Regel
+        source_filters:
+            my-list:
+                max_months_ahead: 12
+        sources:
+            jsonld:
+                - key: conf
+                  url: https://conf.example.com/
+                  filters:
+                      online: deny
+```
+
+- **Land**: der Ländercode des Ortes des Kandidaten. Mit `include` kommen nur diese durch, `exclude` ist immer draußen. Ein Kandidat **mit** Ort, aber **ohne** Land wird von `unknown_country` entschieden; ein Event, das **nur online** stattfindet (kein Ort), beurteilt `online`, nicht sein Land.
+- **Reihe**: Ein Kandidat mit Reihe (die Quelle nennt eine oder gibt den Schlüssel, der ihn mit demselben Event anderer Quellen verbindet, siehe „Mehrere Quellen für ein Event“) umgeht die Regeln aus `series_bypass`. Standard: `countries`, `unknown_country`, `online`; möglich sind außerdem `topics`, `types` und `max_months_ahead`. Wer eine Reihe kuratiert (eine Leitmesse in einer anderen Region), soll sie nicht an eine regionale Regel verlieren. `title_exclude` und `host_exclude` gelten **immer**.
+- **Je Quelle**: `filters` einer Quelle (oder `source_filters.<Schlüssel>` für jede Quelle) ersetzen die globalen Regeln Regel für Regel; was nicht gesetzt ist, bleibt wie global. `countries.include` und `countries.exclude` zählen je als eine Regel.
+- Die Regeln werden **beim Laden der Konfiguration geprüft**: ein falscher Ländercode, ein ungültiges Muster oder ein unbekannter Typ stoppt mit einer klaren Meldung.
+
+**Was mit einem Kandidaten passiert, der nicht durchkommt:**
+
+- Ein **neuer** Kandidat bekommt **kein Event**. Sein Eintrag in `app_event_import` erhält den Zustand `filtered` und den Grund in `state_reason` („The country US is not one of the allowed countries.“). Ändern sich die Regeln und er kommt durch, importiert ihn der nächste Lauf wie jeden anderen.
+- Ein Event, das es **schon gibt**, wird **nicht angefasst** (keine Änderung, kein Löschen). Sein Eintrag wird `filtered`; was mit dem Event geschieht, entscheidet `sulu:event:import:prune` (unten). Kommt es wieder durch, ist der Eintrag wieder `active` und die Änderungen der Quelle kommen an.
+- Der Lauf zählt sie (Spalte **Filtered**, auch mit dem Lauf gespeichert), behält aber die Liste nicht. Um zu sehen, was eine Regel bewirkt, fragen Sie danach: `bin/adminconsole sulu:event:import --dry-run --explain` listet Quelle, Titel, Land und Grund jedes ausgesiebten Kandidaten.
+- `sulu_event_import_pending` zeigt Events im Zustand `filtered` oder `rejected` nicht. Im Admin zeigt der Reiter „Quelle“ Zustand und Grund, und die Liste der Events lässt sich nach „von den Regeln ausgesiebt“ und „abgelehnt“ filtern.
+
+### Erlaubte Tags
+
+`tags_allowed` (global oder je Quelle) ist eine feste Liste der Tags, die ein Event bekommen darf; der Vergleich ignoriert Groß-/Kleinschreibung. Ist sie gesetzt, übernehmen der Import und die MCP-Werkzeuge `sulu_event_import_upsert` und `sulu_event_update` nur diese Tags und nennen die anderen im Bericht (`warnings`), damit die Schlagwörter für Besucher überschaubar bleiben. Leer (Standard) = alle Tags.
+
+### Ablehnen und aufräumen
+
+- **`sulu_event_import_reject`** (MCP-Werkzeug, [docs/mcp.de.md](mcp.de.md)): sagt mit einer Begründung, dass ein Event nicht gewünscht ist. Das Event wird nicht gelöscht; der Import legt es nie wieder an und ändert es nicht mehr (Zustand `rejected`).
+- **`sulu:event:import:prune [--dry-run] [--state=filtered|rejected] [--force]`**: verschiebt Events, deren Eintrag `filtered` oder `rejected` ist und die **nie veröffentlicht** waren, in den Sulu-Papierkorb (wie „Löschen“ im Admin, dort wiederherstellbar). Veröffentlichte Events und solche, die eine andere Quelle noch pflegt, werden nur aufgelistet („bitte im Admin entscheiden“). Ohne `--dry-run` fragt der Befehl nach; mit `--no-interaction` bricht er ab, außer `--force` ist gesetzt. Der Eintrag behält seinen Zustand, ein `filtered`-Kandidat wird also wieder importiert, wenn er später durchkommt.
 
 ## Regelmäßig ausführen
 
@@ -162,7 +222,7 @@ Einmal am Tag genügt. Beispiel für Cron:
 0 5 * * * cd /var/www/project && bin/adminconsole sulu:event:import
 ```
 
-`--source=ical.dev-kalender` führt nur eine Quelle aus, `--limit=20` importiert höchstens 20 Events je Quelle.
+`--source=ical.dev-kalender` führt nur eine Quelle aus, `--limit=20` importiert höchstens 20 Events je Quelle, `--explain` listet die Kandidaten, die das Sieb ausgelassen hat, mit Grund (am besten mit `--dry-run`).
 
 ## Höflichkeit, Nutzungsbedingungen und Datenschutz
 

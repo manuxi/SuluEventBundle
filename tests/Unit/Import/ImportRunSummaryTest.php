@@ -25,7 +25,7 @@ class ImportRunSummaryTest extends TestCase
         $text = ImportRunSummary::fromRun($run);
 
         $this->assertSame('2027-03-01 05:00 (dry run) - ical.a', $text['importLastRunWhen']);
-        $this->assertSame('new 1, changed 0, unchanged 0, locked 0, vanished 0, rejected 0, errors 1, new locations 2', $text['importLastRunSummary']);
+        $this->assertSame('new 1, changed 0, unchanged 0, locked 0, vanished 0, rejected 0, filtered 0, errors 1, new locations 2', $text['importLastRunSummary']);
         $this->assertSame('jsonld.b Broken Conf: No start date', $text['importLastRunErrors']);
         $this->assertSame("Hall 3 (Europe/Berlin)\nPub (?, guessed)", $text['importLastRunNewLocations']);
     }

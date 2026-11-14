@@ -37,6 +37,7 @@
         <field name="importedValues" type="json" column="imported_values"/>
         <field name="lockedFields" type="json" column="locked_fields"/>
         <field name="state" type="string" length="16" column="state"/>
+        <field name="stateReason" type="string" length="255" nullable="true" column="state_reason"/>
         <field name="sourceUrl" type="string" length="2048" nullable="true" column="source_url"/>
         <field name="priority" type="integer" column="priority"/>
         <field name="lastSeenAt" type="datetime_immutable" nullable="true" column="last_seen_at"/>

@@ -409,6 +409,8 @@ sulu_event:
         title: "Import source"
         source: "Source"
         state_title: "State"
+        state_reason: "Reason"
+        state_reason_info: "Why the import leaves this event alone: the rules of the import do not let it pass, or it was rejected."
         last_synced: "Last compared"
         source_url: "Page of the event at the source"
         source_url_info: "Where the import found the event. Check the facts here."
@@ -446,7 +448,8 @@ sulu_event:
         state:
             active: "Active"
             vanished: "No longer in the source"
-            rejected: "Deleted, not imported again"
+            filtered: "Left out by the rules"
+            rejected: "Rejected, not imported again"
         field:
             startDate: "Start"
             endDate: "End"

@@ -266,6 +266,8 @@
                     <param name="options" type="collection">
                         <param name="active" value="sulu_event.import.state.active"/>
                         <param name="vanished" value="sulu_event.import.state.vanished"/>
+                        <param name="filtered" value="sulu_event.import.state.filtered"/>
+                        <param name="rejected" value="sulu_event.import.state.rejected"/>
                     </param>
                 </params>
             </filter>

@@ -22,6 +22,11 @@
         <field name="locked" type="integer" column="locked"/>
         <field name="vanished" type="integer" column="vanished"/>
         <field name="rejected" type="integer" column="rejected"/>
+        <field name="filtered" type="integer" column="filtered">
+            <options>
+                <option name="default">0</option>
+            </options>
+        </field>
         <field name="errors" type="integer" column="errors"/>
         <field name="newLocations" type="integer" column="new_locations"/>
         <field name="report" type="json" column="report"/>

@@ -12,6 +12,8 @@ use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
 use Manuxi\SuluEventBundle\Entity\EventImport;
 use Manuxi\SuluEventBundle\Entity\Location;
+use Manuxi\SuluEventBundle\Import\Filter\CandidateFilter;
+use Manuxi\SuluEventBundle\Import\Filter\FilterResult;
 use Manuxi\SuluEventBundle\Import\Resolver\CategoryResolver;
 use Manuxi\SuluEventBundle\Import\Resolver\LocationResolver;
 use Manuxi\SuluEventBundle\Import\Resolver\MediaResolver;
@@ -36,6 +38,8 @@ use Sulu\Content\Domain\Model\WorkflowInterface;
  *   from what the import wrote) is locked: it is not overwritten, the difference is reported.
  * - Texts, categories and tags are only filled in, never replaced. A candidate whose event was deleted in the admin
  *   is not imported again.
+ * - The sieve (CandidateFilter, rules of the project) runs before anything is created or changed: a candidate that does
+ *   not pass gets no event, its entry is marked "filtered" with the reason; an event that exists is left alone.
  */
 class EventImporter
 {
@@ -59,6 +63,8 @@ class EventImporter
 
     private EventImageChooser $imageChooser;
 
+    private CandidateFilter $filter;
+
     /**
      * Entries whose source changed the external id of the event: source key and new id => id of the entry.
      *
@@ -67,7 +73,8 @@ class EventImporter
     private array $adopted = [];
 
     /**
-     * @param (\Closure(): \DateTimeImmutable)|null $now replaceable for tests
+     * @param (\Closure(): \DateTimeImmutable)|null $now    replaceable for tests
+     * @param CandidateFilter|null                  $filter the sieve; without it everything passes
      */
     public function __construct(
         private readonly SourceRegistry $sources,
@@ -85,8 +92,10 @@ class EventImporter
         private readonly ImportSettings $settings,
         private readonly MediaResolver $mediaResolver,
         ?\Closure $now = null,
+        ?CandidateFilter $filter = null,
     ) {
-        $this->now          = $now ?? static fn (): \DateTimeImmutable => new \DateTimeImmutable();
+        $this->now          = $now    ?? static fn (): \DateTimeImmutable => new \DateTimeImmutable();
+        $this->filter       = $filter ?? new CandidateFilter();
         $this->imageChooser = new EventImageChooser($settings, $mediaResolver);
     }
 
@@ -281,31 +290,46 @@ class EventImporter
         $import   = $this->importRepository->findBySourceAndExternalId($sourceKey, $candidate->externalId) ?? $this->findAdopted($sourceKey, $candidate->externalId);
         $event    = null;
 
+        if (null !== $import && EventImport::STATE_REJECTED === $import->getState()) {
+            $this->touch($import, $now, $dryRun);
+            $report->add(ImportReport::ACTION_REJECTED, $sourceKey, $candidate->externalId, $title, null, $import->getStateReason() ?? 'The event was deleted in the admin and is not imported again.');
+
+            return;
+        }
+
+        $verdict = $this->evaluateFilter($sourceKey, $candidate, $now);
+        if (!$verdict->passed) {
+            $this->recordFiltered($sourceKey, $priority, $candidate, $import, $matchKey, $verdict, $title, $report, $dryRun, $now);
+
+            return;
+        }
+
+        $candidate = $this->limitTags($sourceKey, $candidate, $report);
+
         if (null !== $import) {
-            if (EventImport::STATE_REJECTED === $import->getState()) {
-                $this->touch($import, $now, $dryRun);
-                $report->add(ImportReport::ACTION_REJECTED, $sourceKey, $candidate->externalId, $title, null, 'The event was deleted in the admin and is not imported again.');
-
-                return;
-            }
-
             if (!$dryRun && $import->getExternalId() !== $candidate->externalId) {
                 $report->addWarning($sourceKey, $candidate->externalId, \sprintf('The source delivers this event under a new id (before: %s), the entry follows it.', $import->getExternalId()));
                 $import->setExternalId($candidate->externalId);
+            }
+            if (!$dryRun && EventImport::STATE_FILTERED === $import->getState()) {
+                // it passes the sieve now (the rules changed): it is imported like any other candidate
+                $import->setState(EventImport::STATE_ACTIVE);
             }
 
             $event = $import->getEvent();
             if (null === $event && null !== $import->getLastEventUuid()) {
                 // the event is gone and the listener did not see it (deleted by hand in the database, ...)
                 if (!$dryRun) {
-                    $import->setState(EventImport::STATE_REJECTED);
+                    $import->setState(EventImport::STATE_REJECTED, 'The linked event does not exist any more.');
                     $this->touch($import, $now, false);
                 }
                 $report->add(ImportReport::ACTION_REJECTED, $sourceKey, $candidate->externalId, $title, null, 'The linked event does not exist any more.');
 
                 return;
             }
-        } elseif (null !== $matchKey) {
+        }
+
+        if (null === $event && null !== $matchKey) {
             if ([] !== $this->otherSources($sourceKey, $this->importRepository->findRejectedByMatchKey($matchKey))) {
                 $report->add(ImportReport::ACTION_REJECTED, $sourceKey, $candidate->externalId, $title, null, \sprintf('An event "%s" was deleted in the admin and is not imported again.', $matchKey));
 
@@ -346,6 +370,67 @@ class EventImporter
     private function otherSources(string $sourceKey, array $imports): array
     {
         return array_values(array_filter($imports, static fn (EventImport $import): bool => $import->getSource() !== $sourceKey));
+    }
+
+    /**
+     * Asks the sieve; the country of a place that is only given by its id is looked up.
+     */
+    private function evaluateFilter(string $sourceKey, EventCandidate $candidate, \DateTimeImmutable $now): FilterResult
+    {
+        $country = null;
+        if (null === $candidate->location && null !== $candidate->locationId) {
+            $known   = $this->entityManager->find(Location::class, $candidate->locationId);
+            $country = $known instanceof Location ? $known->getCountryCode() : null;
+        }
+
+        return $this->filter->evaluate($sourceKey, $candidate, $now, $country, $candidate->type ?? $this->settings->defaultType);
+    }
+
+    /**
+     * A candidate that does not pass the sieve gets no event; its entry says why (state "filtered"). An event that exists
+     * is not touched, "sulu:event:import:prune" decides what happens to it.
+     */
+    private function recordFiltered(string $sourceKey, int $priority, EventCandidate $candidate, ?EventImport $import, ?string $matchKey, FilterResult $verdict, ?string $title, ImportReport $report, bool $dryRun, \DateTimeImmutable $now): void
+    {
+        $country = $candidate->location?->countryCode;
+        $report->addFiltered($sourceKey, $candidate->externalId, $title, null !== $country ? strtoupper($country) : null, $verdict->code, $verdict->reason, $import?->getEvent()?->getUuid());
+
+        if ($dryRun) {
+            return;
+        }
+
+        $import ??= new EventImport($sourceKey, $candidate->externalId);
+        if ($import->getExternalId() !== $candidate->externalId) {
+            $import->setExternalId($candidate->externalId);
+        }
+
+        $import->setMatchKey($matchKey)
+            ->setPriority($priority)
+            ->setSourceUrl($candidate->sourceUrl)
+            ->setLastSeenAt($now)
+            ->setLastError(null)
+            ->setState(EventImport::STATE_FILTERED, $verdict->reason);
+
+        $this->importRepository->add($import);
+        $this->entityManager->flush();
+    }
+
+    /**
+     * Only the tags the project allows (sulu_event.import.filters.tags_allowed) go to the event; the others are named in the report.
+     */
+    private function limitTags(string $sourceKey, EventCandidate $candidate, ImportReport $report): EventCandidate
+    {
+        [$kept, $dropped] = $this->filter->filterTags($sourceKey, $candidate->tags);
+        if ([] === $dropped) {
+            return $candidate;
+        }
+
+        $report->addWarning($sourceKey, $candidate->externalId, 'Tags that are not on the list of allowed tags were left out: ' . implode(', ', $dropped) . '.');
+
+        $copy       = clone $candidate;
+        $copy->tags = array_values($kept);
+
+        return $copy;
     }
 
     /**
@@ -433,7 +518,6 @@ class EventImporter
 
         return null !== $id ? $this->importRepository->find($id) : null;
     }
-
 
     private function create(EventImport $import, EventCandidate $candidate, ?string $matchKey, int $priority, ?string $title, ImportReport $report, bool $dryRun, \DateTimeImmutable $now): void
     {

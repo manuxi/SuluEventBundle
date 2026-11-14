@@ -166,6 +166,56 @@ class ImportConfigurationTest extends TestCase
         $this->load(['import' => ['url_prefix' => 'events']]);
     }
 
+    public function testTheSieveIsEmptyByDefault(): void
+    {
+        $container = $this->load([]);
+
+        $this->assertSame([], $container->getParameter('sulu_event.import.filters'));
+        $this->assertSame([], $container->getParameter('sulu_event.import.source_filters'));
+        $this->assertTrue($container->hasDefinition('sulu_event.import.filter'));
+    }
+
+    public function testFiltersOfASourceAndOfTheProjectAreCollectedPerSourceKey(): void
+    {
+        $container = $this->load(['import' => [
+            'filters'        => ['countries' => ['include' => ['de', 'at']], 'unknown_country' => 'deny'],
+            'source_filters' => ['confs-tech' => ['max_months_ahead' => 12]],
+            'sources'        => ['jsonld' => [
+                ['key' => 'conf', 'url' => 'https://conf.example.com/', 'filters' => ['online' => 'deny']],
+                ['key' => 'plain', 'url' => 'https://plain.example.com/'],
+            ]],
+        ]]);
+
+        $this->assertSame(['countries' => ['include' => ['de', 'at']], 'unknown_country' => 'deny'], $container->getParameter('sulu_event.import.filters'));
+        $this->assertSame(['confs-tech' => ['max_months_ahead' => 12], 'jsonld.conf' => ['online' => 'deny']], $container->getParameter('sulu_event.import.source_filters'));
+    }
+
+    /**
+     * @dataProvider wrongFilters
+     *
+     * @param array<string, mixed> $import
+     */
+    public function testWrongRulesOfTheSieveAreRefusedWhenTheConfigurationIsLoaded(array $import, string $message): void
+    {
+        $this->expectException(InvalidConfigurationException::class);
+        $this->expectExceptionMessage($message);
+
+        $this->load(['import' => $import]);
+    }
+
+    /**
+     * @return iterable<string, array{array<string, mixed>, string}>
+     */
+    public static function wrongFilters(): iterable
+    {
+        yield 'country code' => [['filters' => ['countries' => ['include' => ['DE', 'XX']]]], '"XX" is not a country code'];
+        yield 'regular expression' => [['filters' => ['title_exclude' => ['(open']]], 'not a valid regular expression'];
+        yield 'unknown rule' => [['filters' => ['colour' => 'red']], 'Unrecognized option "colour"'];
+        yield 'rule of a source' => [['sources' => ['ical' => [['key' => 'a', 'url' => 'https://a.example.com/a.ics', 'filters' => ['online' => 'sometimes']]]]], 'ical.a'];
+        yield 'rule of a source by key' => [['source_filters' => ['confs-tech' => ['countries' => ['exclude' => ['ZZ']]]]], 'source_filters.confs-tech'];
+        yield 'unknown type' => [['filters' => ['types' => ['party']]], '"party" is not an event type'];
+    }
+
     /**
      * @param array<string, mixed> $config
      */

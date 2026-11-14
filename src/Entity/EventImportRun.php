@@ -26,6 +26,8 @@ class EventImportRun
 
     private int $rejected = 0;
 
+    private int $filtered = 0;
+
     private int $errors = 0;
 
     private int $newLocations = 0;
@@ -66,7 +68,7 @@ class EventImportRun
     }
 
     /**
-     * @param array{created: int, updated: int, unchanged: int, locked: int, vanished: int, rejected: int, errors: int, newLocations: int} $counts
+     * @param array{created: int, updated: int, unchanged: int, locked: int, vanished: int, rejected: int, filtered?: int, errors: int, newLocations: int} $counts
      * @param array<string, mixed>                                                                                                         $report
      */
     public function finish(\DateTimeImmutable $finishedAt, array $counts, array $report): self
@@ -78,6 +80,7 @@ class EventImportRun
         $this->locked       = $counts['locked'];
         $this->vanished     = $counts['vanished'];
         $this->rejected     = $counts['rejected'];
+        $this->filtered     = $counts['filtered'] ?? 0;
         $this->errors       = $counts['errors'];
         $this->newLocations = $counts['newLocations'];
         $this->report       = $report;
@@ -86,7 +89,7 @@ class EventImportRun
     }
 
     /**
-     * @return array{created: int, updated: int, unchanged: int, locked: int, vanished: int, rejected: int, errors: int, newLocations: int}
+     * @return array{created: int, updated: int, unchanged: int, locked: int, vanished: int, rejected: int, filtered?: int, errors: int, newLocations: int}
      */
     public function getCounts(): array
     {
@@ -97,6 +100,7 @@ class EventImportRun
             'locked'       => $this->locked,
             'vanished'     => $this->vanished,
             'rejected'     => $this->rejected,
+            'filtered'     => $this->filtered,
             'errors'       => $this->errors,
             'newLocations' => $this->newLocations,
         ];

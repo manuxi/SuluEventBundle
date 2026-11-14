@@ -207,6 +207,14 @@ class Configuration implements ConfigurationInterface
                     ->scalarPrototype()->end()
                     ->info('Locales an imported event should have a text in (for example ["de", "en"]). Events that lack one are listed as "needs work" (MCP tool sulu_event_import_pending).')
                 ->end()
+                ->append($this->createFiltersNode('filters', 'The sieve of the import: which candidates become events at all. Rules are empty by default, so everything passes; the bundle brings no lists of countries or regions, the project sets them. See docs/import.en.md ("Sieve").'))
+                ->arrayNode('source_filters')
+                    // keys are source keys such as "jsonld.my-page": no key normalization
+                    ->normalizeKeys(false)
+                    ->useAttributeAsKey('source')
+                    ->variablePrototype()->end()
+                    ->info('Rules of the sieve for single sources, any source (also those of the project, for example "my-list"): source key => the same keys as under "filters". A rule set here replaces the global one for this source; what is not set stays as it is globally. Sources from the configuration take them in their own "filters" as well.')
+                ->end()
                 ->arrayNode('sources')
                     ->addDefaultsIfNotSet()
                     ->children()
@@ -215,6 +223,55 @@ class Configuration implements ConfigurationInterface
                     ->end()
                 ->end()
             ->end();
+
+        return $node;
+    }
+
+    /**
+     * The rules of the sieve. Every rule is a variable node: a rule that is not set must stay absent (for a source it
+     * means "as globally"), and the content is checked by FilterRules when the container is built.
+     */
+    private function createFiltersNode(string $name, string $info, bool $global = true): ArrayNodeDefinition
+    {
+        $node = (new TreeBuilder($name))->getRootNode();
+        $node
+            ->info($info)
+            ->children()
+                ->variableNode('countries')
+                    ->info('Countries (ISO 3166-1 alpha-2, "DE"): {include: [...], exclude: [...]}. With "include" only these pass; "exclude" is always out. A candidate without a country is decided by unknown_country.')
+                ->end()
+                ->variableNode('unknown_country')
+                    ->info('"allow" (default) or "deny": what happens to a candidate with a place but no country.')
+                ->end()
+                ->variableNode('online')
+                    ->info('"allow" (default) or "deny": events that take place online only, without a place.')
+                ->end()
+                ->variableNode('types')
+                    ->info('Allowed event types (keys of sulu_event.types); empty = all.')
+                ->end()
+                ->variableNode('topics')
+                    ->info('Allowed topics (category keys); one of them must match; empty = all.')
+                ->end()
+                ->variableNode('title_exclude')
+                    ->info('Regular expressions (without delimiters, case does not matter, for example "^Webinar"): a title that matches is sieved out. Always applies, also to series.')
+                ->end()
+                ->variableNode('host_exclude')
+                    ->info('Host names (for example "tickets.example.com" or "example.com" with all subdomains): events whose link points there are sieved out. Always applies, also to series.')
+                ->end()
+                ->variableNode('max_months_ahead')
+                    ->info('Events that start later than this many months from now are not imported yet (default: no limit).')
+                ->end()
+                ->variableNode('series_bypass')
+                    ->info('Rules that candidates with a series do not have to meet: countries, unknown_country, online, topics, types, max_months_ahead (default: countries, unknown_country, online).')
+                ->end()
+                ->variableNode('tags_allowed')
+                    ->info('Not a rule of the sieve: the tags an event may get (names, case does not matter). The import and the MCP tools take over only these and name the others in the report; empty = all.')
+                ->end()
+            ->end();
+
+        if ($global) {
+            $node->addDefaultsIfNotSet();
+        }
 
         return $node;
     }
@@ -284,6 +341,7 @@ class Configuration implements ConfigurationInterface
                         ->scalarPrototype()->end()
                         ->info('Language codes the events of the source are held in ("en", "de").')
                     ->end()
+                    ->append($this->createFiltersNode('filters', 'Rules of the sieve for this source: they replace the global ones (sulu_event.import.filters) rule by rule; what is not set stays as it is globally.', false))
                 ->end()
             ->end();
 

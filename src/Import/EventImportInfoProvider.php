@@ -17,7 +17,7 @@ class EventImportInfoProvider
     }
 
     /**
-     * @return array{source: string, state: string, sourceUrl: string|null, lastSyncedAt: string|null, lockedFields: string[], lastError: string|null, sourceDescription: string|null}|null
+     * @return array{source: string, state: string, stateReason: string|null, sourceUrl: string|null, lastSyncedAt: string|null, lockedFields: string[], lastError: string|null, sourceDescription: string|null}|null
      *                                                                                                                                                                                      null if the event does not come from the import (or the tables of the import do not exist yet)
      */
     public function getInfo(string $eventUuid): ?array
@@ -49,6 +49,7 @@ class EventImportInfoProvider
         return [
             'source'            => implode(', ', array_map(static fn (EventImport $entry): string => $entry->getSource(), $entries)),
             'state'             => $main->getState(),
+            'stateReason'       => $main->getStateReason(),
             'sourceUrl'         => $main->getSourceUrl(),
             'lastSyncedAt'      => $synced?->format('Y-m-d H:i'),
             'lockedFields'      => array_values(array_unique($locked)),

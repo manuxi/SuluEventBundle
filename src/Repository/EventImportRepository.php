@@ -69,7 +69,8 @@ class EventImportRepository extends ServiceEntityRepository
     }
 
     /**
-     * The entries that belong to an event (not rejected), the event fetched with them: the events the import maintains.
+     * The entries that belong to an event (not rejected, not sieved out), the event fetched with them: the events the
+     * import maintains.
      *
      * @return EventImport[]
      */
@@ -78,8 +79,8 @@ class EventImportRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('import')
             ->addSelect('event')
             ->join('import.event', 'event')
-            ->where('import.state != :rejected')
-            ->setParameter('rejected', EventImport::STATE_REJECTED)
+            ->where('import.state NOT IN (:excluded)')
+            ->setParameter('excluded', [EventImport::STATE_REJECTED, EventImport::STATE_FILTERED])
             ->orderBy('import.priority', 'DESC')
             ->addOrderBy('import.id', 'ASC')
             ->getQuery()
@@ -102,6 +103,25 @@ class EventImportRepository extends ServiceEntityRepository
     public function findByLastEventUuid(string $uuid): array
     {
         return $this->findBy(['lastEventUuid' => $uuid]);
+    }
+
+    /**
+     * The entries of events that are sieved out or rejected, with their event: what "sulu:event:import:prune" works on.
+     *
+     * @param string[] $states STATE_FILTERED and / or STATE_REJECTED
+     *
+     * @return EventImport[]
+     */
+    public function findWithEventInStates(array $states): array
+    {
+        return $this->createQueryBuilder('import')
+            ->addSelect('event')
+            ->join('import.event', 'event')
+            ->where('import.state IN (:states)')
+            ->setParameter('states', $states)
+            ->orderBy('import.id', 'ASC')
+            ->getQuery()
+            ->getResult();
     }
 
     public function add(EventImport $import): void
