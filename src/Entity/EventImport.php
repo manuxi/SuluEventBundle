@@ -71,6 +71,16 @@ class EventImport
         return $this->externalId;
     }
 
+    /**
+     * A source can change the id it gives an event (a page that has an address for it now): the entry follows.
+     */
+    public function setExternalId(string $externalId): self
+    {
+        $this->externalId = $externalId;
+
+        return $this;
+    }
+
     public function getMatchKey(): ?string
     {
         return $this->matchKey;

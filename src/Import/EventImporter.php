@@ -60,6 +60,13 @@ class EventImporter
     private EventImageChooser $imageChooser;
 
     /**
+     * Entries whose source changed the external id of the event: source key and new id => id of the entry.
+     *
+     * @var array<string, int>
+     */
+    private array $adopted = [];
+
+    /**
      * @param (\Closure(): \DateTimeImmutable)|null $now replaceable for tests
      */
     public function __construct(
@@ -136,6 +143,11 @@ class EventImporter
             // the candidates of the source are collected first (a few hundred small objects), so the progress knows the total
             if (!\is_array($candidates)) {
                 $candidates = iterator_to_array($candidates, false);
+            }
+            $candidates = $this->mergeDuplicates($candidates);
+            foreach ($this->findRenamed($key, $candidates) as $oldId) {
+                // the old id is not "gone": the entry follows the event to its new id
+                $delivered[$oldId] = true;
             }
             $state['known'] += null !== $limit ? min($limit, \count($candidates)) : \count($candidates);
 
@@ -266,7 +278,7 @@ class EventImporter
         }
 
         $matchKey = $candidate->resolveMatchKey();
-        $import   = $this->importRepository->findBySourceAndExternalId($sourceKey, $candidate->externalId);
+        $import   = $this->importRepository->findBySourceAndExternalId($sourceKey, $candidate->externalId) ?? $this->findAdopted($sourceKey, $candidate->externalId);
         $event    = null;
 
         if (null !== $import) {
@@ -275,6 +287,11 @@ class EventImporter
                 $report->add(ImportReport::ACTION_REJECTED, $sourceKey, $candidate->externalId, $title, null, 'The event was deleted in the admin and is not imported again.');
 
                 return;
+            }
+
+            if (!$dryRun && $import->getExternalId() !== $candidate->externalId) {
+                $report->addWarning($sourceKey, $candidate->externalId, \sprintf('The source delivers this event under a new id (before: %s), the entry follows it.', $import->getExternalId()));
+                $import->setExternalId($candidate->externalId);
             }
 
             $event = $import->getEvent();
@@ -331,6 +348,93 @@ class EventImporter
         return array_values(array_filter($imports, static fn (EventImport $import): bool => $import->getSource() !== $sourceKey));
     }
 
+    /**
+     * The same event twice in one delivery (confs.tech lists a conference under every topic it belongs to) is one
+     * candidate: the first one stays, categories and tags of the others are added.
+     *
+     * @param list<EventCandidate> $candidates
+     *
+     * @return list<EventCandidate>
+     */
+    private function mergeDuplicates(array $candidates): array
+    {
+        $byId = [];
+        foreach ($candidates as $candidate) {
+            if (!isset($byId[$candidate->externalId])) {
+                $byId[$candidate->externalId] = $candidate;
+
+                continue;
+            }
+
+            $first      = $byId[$candidate->externalId];
+            $categories = array_values(array_unique(array_merge($first->categoryKeys, $candidate->categoryKeys)));
+            $tags       = array_values(array_unique(array_merge($first->tags, $candidate->tags)));
+            if ($categories !== $first->categoryKeys || $tags !== $first->tags) {
+                $first                        = clone $first;
+                $first->categoryKeys          = $categories;
+                $first->tags                  = $tags;
+                $byId[$candidate->externalId] = $first;
+            }
+        }
+
+        return array_values($byId);
+    }
+
+    /**
+     * A source that changes the id of an event (a page that gave none and now does, a new url) would get a second event
+     * and lose the first one ("vanished"). If a source delivers exactly one candidate for a match key, has exactly one
+     * active entry with that key and the id of that entry is not delivered, it is the same event under a new id.
+     *
+     * @param list<EventCandidate> $candidates
+     *
+     * @return string[] the old ids that are taken over
+     */
+    private function findRenamed(string $sourceKey, array $candidates): array
+    {
+        $this->adopted = array_filter($this->adopted, static fn (string $key): bool => !str_starts_with($key, $sourceKey . "\0"), \ARRAY_FILTER_USE_KEY);
+
+        $delivered = [];
+        $byKey     = [];
+        foreach ($candidates as $candidate) {
+            $delivered[$candidate->externalId] = true;
+            $matchKey                          = $candidate->resolveMatchKey();
+            if (null !== $matchKey) {
+                $byKey[$matchKey][] = $candidate;
+            }
+        }
+
+        $known   = [];
+        $missing = [];
+        foreach ($this->importRepository->findBySource($sourceKey) as $import) {
+            $known[$import->getExternalId()] = true;
+            $matchKey                        = $import->getMatchKey();
+            if (null !== $matchKey && EventImport::STATE_ACTIVE === $import->getState() && null !== $import->getEvent() && !isset($delivered[$import->getExternalId()])) {
+                $missing[$matchKey][] = $import;
+            }
+        }
+
+        $taken = [];
+        foreach ($missing as $matchKey => $imports) {
+            $new = $byKey[$matchKey] ?? [];
+            if (1 !== \count($imports) || 1 !== \count($new) || isset($known[$new[0]->externalId]) || null === $imports[0]->getId()) {
+                continue;
+            }
+
+            $this->adopted[$sourceKey . "\0" . $new[0]->externalId] = $imports[0]->getId();
+            $taken[]                                                = $imports[0]->getExternalId();
+        }
+
+        return $taken;
+    }
+
+    private function findAdopted(string $sourceKey, string $externalId): ?EventImport
+    {
+        $id = $this->adopted[$sourceKey . "\0" . $externalId] ?? null;
+
+        return null !== $id ? $this->importRepository->find($id) : null;
+    }
+
+
     private function create(EventImport $import, EventCandidate $candidate, ?string $matchKey, int $priority, ?string $title, ImportReport $report, bool $dryRun, \DateTimeImmutable $now): void
     {
         $location               = $this->resolveLocation($candidate, $dryRun, $report, $import->getSource());
@@ -373,7 +477,7 @@ class EventImporter
             $import->setState(EventImport::STATE_ACTIVE);
         }
 
-        $isNewLink = null === $import->getId() && null === $import->getEvent();
+        $isNewLink = null === $import->getEvent();
         if ($isNewLink && !$dryRun) {
             $import->setEvent($event);
         }

@@ -701,6 +701,70 @@ class EventImporterTest extends AbstractEventDatabaseTestCase
         $this->assertSame(3, $this->import([$source])->getCounts()['vanished']);
     }
 
+    public function testTheSameEventTwiceInOneDeliveryIsOneCandidate(): void
+    {
+        $source = new ArraySource('ical.a', 50, [
+            $this->candidate('dup', series: null, categoryKeys: ['web']),
+            $this->candidate('dup', series: null, categoryKeys: ['ai']),
+            $this->candidate('dup', series: null, categoryKeys: ['web', 'games']),
+        ]);
+
+        $report = $this->import([$source]);
+
+        $this->assertSame(1, $report->getCounts()['created']);
+        $this->assertSame(0, $report->getCounts()['unchanged']);
+        $this->assertCount(1, $report->getEntries());
+        $this->assertSame(1, $this->rowCount(Event::class));
+
+        // in a dry run, too: it does not say "new" twice
+        $dry = $this->import([new ArraySource('ical.b', 50, [$this->candidate('dup', title: 'Other 2027', series: null), $this->candidate('dup', title: 'Other 2027', series: null)])], dryRun: true);
+        $this->assertSame(1, $dry->getCounts()['created']);
+    }
+
+    public function testASourceThatChangesTheIdOfAnEventKeepsTheEvent(): void
+    {
+        $source = new ArraySource('jsonld.conf', 100, [$this->candidate('hash-of-title', series: 'goto-cph')]);
+        $this->import([$source]);
+        $uuid = $this->importRepository->findBySourceAndExternalId('jsonld.conf', 'hash-of-title')->getEvent()->getUuid();
+
+        // the page has an address for the event now: a new id for the same event of the same year
+        $source->candidates = [$this->candidate('https://conf.example.com/2027', series: 'goto-cph', registrationUrl: 'https://conf.example.com/2027/tickets')];
+
+        $dry = $this->import([$source], dryRun: true);
+        $this->assertSame(['created' => 0, 'updated' => 1, 'unchanged' => 0, 'locked' => 0, 'vanished' => 0, 'rejected' => 0, 'errors' => 0, 'newLocations' => 0], $dry->getCounts());
+        $this->assertSame('hash-of-title', $this->importRepository->findBySourceAndExternalId('jsonld.conf', 'hash-of-title')?->getExternalId(), 'a dry run changes nothing');
+
+        $report = $this->import([$source]);
+
+        $this->assertSame(0, $report->getCounts()['created']);
+        $this->assertSame(0, $report->getCounts()['vanished']);
+        $this->assertSame(1, $report->getCounts()['updated']);
+        $this->assertStringContainsString('hash-of-title', $report->getWarnings()[0]['message']);
+        $this->assertSame(1, $this->rowCount(Event::class));
+        $this->assertSame(1, $this->rowCount(EventImport::class));
+        $this->assertNull($this->importRepository->findBySourceAndExternalId('jsonld.conf', 'hash-of-title'));
+        $import = $this->importRepository->findBySourceAndExternalId('jsonld.conf', 'https://conf.example.com/2027');
+        $this->assertSame($uuid, $import->getEvent()->getUuid());
+        $this->assertSame('https://conf.example.com/2027/tickets', $this->draft($uuid, 'en')->getRegistrationUrl());
+
+        // and the next run knows nothing special
+        $this->assertSame(1, $this->import([$source])->getCounts()['unchanged']);
+    }
+
+    public function testAnIdIsOnlyTakenOverWhenItIsUnambiguous(): void
+    {
+        $source = new ArraySource('jsonld.conf', 100, [$this->candidate('old', series: 'conf')]);
+        $this->import([$source]);
+
+        // two new candidates for the same match key: nobody knows which one is the old event
+        $source->candidates = [$this->candidate('new-1', series: 'conf'), $this->candidate('new-2', series: 'conf', title: 'Example Conf 2027 Part 2')];
+        $report             = $this->import([$source]);
+
+        $this->assertSame(2, $report->getCounts()['created']);
+        $this->assertSame(1, $report->getCounts()['vanished']);
+        $this->assertSame(3, $this->rowCount(EventImport::class));
+    }
+
     public function testOnlyTheNamedSourceIsRun(): void
     {
         $a = new ArraySource('ical.a', 50, [$this->candidate('a-1')]);
