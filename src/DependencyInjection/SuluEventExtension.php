@@ -57,6 +57,11 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
             $loader->load('services-automation.yaml');
         }
 
+        // tiles for the dashboard, only if manuxi/sulu-dashboard-bundle is installed (suggested, not required)
+        if (ContainerBuilder::willBeAvailable('manuxi/sulu-dashboard-bundle', 'Manuxi\SuluDashboardBundle\Widget\DashboardWidgetInterface', ['manuxi/sulu-event-bundle'])) {
+            $loader->load('services-dashboard.yaml');
+        }
+
         $this->configurePersistence($config['objects'], $container);
 
         // PersistenceExtensionTrait::configurePersistence() unconditionally generates

@@ -128,6 +128,7 @@ Detailed documentation in the [docs/](docs/) directory.
 - [Settings](docs/settings.en.md) - Settings
 - [Maintenance](docs/maintenance.en.md) - Clean up stored image data
 - [Fixtures](docs/fixtures.en.md) - Sample Events
+- [Dashboard tiles](docs/dashboard.en.md) - Upcoming events and locations to check on the Sulu dashboard
 
 ## 👩‍🍳 Contributing
 
