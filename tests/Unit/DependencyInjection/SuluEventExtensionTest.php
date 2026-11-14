@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluEventBundle\Tests\Unit\DependencyInjection;
 
+use Manuxi\SuluEventBundle\Controller\Website\FeedController;
 use Manuxi\SuluEventBundle\DependencyInjection\SuluEventExtension;
 use Manuxi\SuluEventBundle\Repository\EventDimensionContentRepository;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
@@ -38,6 +39,17 @@ class SuluEventExtensionTest extends TestCase
         $alias = $container->getAlias($serviceId);
         self::assertSame($repositoryClass, (string) $alias);
         self::assertTrue($alias->isPublic());
+    }
+
+    public function testFeedControllerReceivesTheContainerSoAbstractControllerHelpersWork(): void
+    {
+        $container = new ContainerBuilder();
+
+        (new SuluEventExtension())->load([], $container);
+
+        $setters = array_column($container->getDefinition(FeedController::class)->getMethodCalls(), 0);
+
+        self::assertContains('setContainer', $setters, 'A second definition without setContainer breaks the RSS/Atom feed ("has no container set").');
     }
 
     public function testTimezoneDefaultsToNullSoThePhpDefaultApplies(): void

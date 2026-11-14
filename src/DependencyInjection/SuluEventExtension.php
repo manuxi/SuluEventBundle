@@ -55,7 +55,6 @@ class SuluEventExtension extends Extension implements PrependExtensionInterface
         $loader->load('controller.yaml');
         $loader->load('services-calendar.yaml');
         $loader->load('services-ical.yaml');
-        $loader->load('services-feed.yaml');
         $loader->load('services-import.yaml');
         $this->configureImport($config, $container);
 
