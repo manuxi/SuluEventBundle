@@ -151,15 +151,32 @@ class ImageFillerTest extends AbstractEventDatabaseTestCase
         $this->assertSame(['The image "event-topic-gone.jpg" does not exist.'], $result['warnings']);
     }
 
+    public function testGeneratedCardIsNotReplacedByThePlaceholderOfATopic(): void
+    {
+        // the image 777 lies in a placeholder folder (a generated card): better than the image of the topic, so it stays
+        $this->createEvent('a', 'de', '2027-06-01 10:00:00', stage: DimensionContentInterface::STAGE_DRAFT, categories: ['ai']);
+        $row = $this->draftOf('a');
+        $row->setExcerptData(['image' => ['id' => 777]]);
+        $row->setTemplateData(['image' => ['id' => 777]]);
+        $this->entityManager->flush();
+
+        $result = $this->filler(cards: ['events.cards'])->fill();
+
+        $this->assertSame([], $result['events']);
+        $this->assertSame([], $this->contentManager->calls);
+    }
+
     /**
      * @param array<string, string>|null $images
+     * @param string[]                   $cards  placeholder_collections (the media 777 lies in "events.cards")
      */
-    private function filler(?array $images = null): ImageFiller
+    private function filler(?array $images = null, array $cards = []): ImageFiller
     {
         $images ??= ['web-php' => 'event-topic-web-php.jpg', 'ai' => 'event-topic-ai.jpg'];
-        $settings = new ImportSettings(true, 'import', false, '/events', null, 'default', 'event', $images);
+        $settings = new ImportSettings(true, 'import', false, '/events', null, 'default', 'event', $images, [], null, [], [], $cards);
 
         $media = $this->createStub(MediaResolver::class);
+        $media->method('isInSystemCollections')->willReturnCallback(static fn (int $id, array $keys): bool => 777 === $id && \in_array('events.cards', $keys, true));
         $media->method('resolve')->willReturnCallback(static fn (int|string $reference): ?int => match ($reference) {
             'event-topic-web-php.jpg' => 423,
             'event-topic-ai.jpg'      => 412,

@@ -25,6 +25,15 @@ class ImportConfigurationTest extends TestCase
         $this->load(['import' => ['location_image' => ' ']]);
     }
 
+    public function testPlaceholderCollectionsAreSystemCollectionKeys(): void
+    {
+        $this->assertSame([], $this->load([])->getParameter('sulu_event.import.placeholder_collections'));
+        $this->assertSame(['events.cards'], $this->load(['import' => ['placeholder_collections' => ['events.cards']]])->getParameter('sulu_event.import.placeholder_collections'));
+
+        $this->expectException(InvalidConfigurationException::class);
+        $this->load(['import' => ['placeholder_collections' => [' ']]]);
+    }
+
     public function testCategoryKeysWithADashStayAsTheyAre(): void
     {
         $container = $this->load(['import' => ['category_images' => ['web-php' => 'event-topic-web-php.jpg', 'open-source' => 7]]]);

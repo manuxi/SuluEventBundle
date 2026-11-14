@@ -57,6 +57,7 @@ sulu_event:
 | `category_images` | Images of your own: category key => file name or id of a media, see "Images" | – |
 | `location_image` | Image (id or file name) for places the import creates: no source knows a photo of the place. Places without an image get it with `sulu:event:fill-images`; the editors replace it with a real photo | – |
 | `series_images` | A photo of a series: series key (`series` of a source) => id or file name. The events of the series take it when they have nothing better | – |
+| `placeholder_collections` | Keys of system collections (folders of the media library) whose images are placeholders, for example `events.cards` for generated cards. An event with such an image gets a photo of its series or place as soon as there is one, and is not changed to the topic image; see "Images" | – |
 | `location_aliases` | Other spellings of a place or a city and the one that leads, for example `Brüssel: Brussels`, `Köln: Cologne`. The import finds and creates the place under the leading name, so a source that writes the city in German does not make a second place (a city with a state or country, "San Francisco CA", is the same city anyway) | – |
 | `filters` | The sieve: which candidates become events at all, see "The sieve" | no rules |
 | `source_filters` | Rules of single sources by source key (also for sources of your project) | – |
@@ -113,6 +114,8 @@ Use **file names** rather than ids where you can: the ids of the media differ be
 **Places** have no photo from a source. With `location_image` (file name or id) every place the import creates gets an image; the editors replace it with a real photo. **Afterwards** `php bin/adminconsole sulu:event:fill-images` (with `--dry-run` to look) fills all events and places without an image: an event takes the image of its first topic from `category_images`, a place the one of `location_image`. An image that exists is never replaced; a published event becomes a draft and is live with the image once it is published again.
 
 **Which image an event gets**, from the best to the worst: (1) a photo of the series (`series_images`), (2) the photo of the place, if the place has a real photo (the image of all places, `location_image`, is only a placeholder), (3) the placeholder of its first topic (`category_images`). Images of the sources are never copied, an image chosen by the editors is never replaced; only a placeholder gives way to a better image (for example a photo of the place that comes later) - `sulu:event:fill-images` does that for existing events.
+
+**Generated cards:** a project can make a graphic for events without a photo (title, date, city) and keep it in its own folder. List the key of that system collection in `placeholder_collections` (`events.cards`, if the folder is `events` > `cards` in `sulu_media.system_collections`): the card counts as a placeholder, so a photo of the series or the place replaces it later, and `sulu:event:fill-images` does not change it back to the image of the topic. Images in a folder below it count as well; a key that does not exist is ignored.
 
 ## In the admin
 

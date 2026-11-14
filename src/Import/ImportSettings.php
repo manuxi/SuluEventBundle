@@ -20,6 +20,7 @@ final class ImportSettings
      * @param int|string|null           $locationImage            id or file name of the image a place gets that the import creates (and that has none)
      * @param array<string, int|string> $seriesImages             series key => id or file name of a photo of that series, for its events (better than the placeholder of the topic)
      * @param string[]                  $featuredSources          keys of sources whose events get the tag of the highlights (sulu_event.featured_tag)
+     * @param string[]                  $placeholderCollections  keys of system collections whose images are placeholders (generated cards): a real photo replaces them
      */
     public function __construct(
         public readonly bool $enabled = false,
@@ -34,6 +35,7 @@ final class ImportSettings
         public readonly int|string|null $locationImage = null,
         public readonly array $seriesImages = [],
         public readonly array $featuredSources = [],
+        public readonly array $placeholderCollections = [],
     ) {
     }
 }

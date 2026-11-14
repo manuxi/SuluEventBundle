@@ -14,6 +14,9 @@ use Manuxi\SuluEventBundle\Import\Resolver\MediaResolver;
  *  2. a photo of the place (the image of the location, if it is a real photo and not the placeholder),
  *  3. the placeholder of its first topic (sulu_event.import.category_images).
  *
+ * A generated card (an image in a folder of sulu_event.import.placeholder_collections) is a placeholder, too: it gives way to
+ * a photo of the series or the place and is not replaced by the placeholder of a topic (isCard).
+ *
  * The images of a source are never copied (they belong to the source), and an image an editor chose is never replaced; only
  * a placeholder gives way to something better. The placeholders are the images of category_images and location_image.
  */
@@ -21,6 +24,9 @@ class EventImageChooser
 {
     /** @var list<int>|null */
     private ?array $placeholders = null;
+
+    /** @var array<int, bool> */
+    private array $cards = [];
 
     public function __construct(
         private readonly ImportSettings $settings,
@@ -59,6 +65,10 @@ class EventImageChooser
      */
     public function isPlaceholder(int $mediaId): bool
     {
+        if ($this->isCard($mediaId)) {
+            return true;
+        }
+
         if (null === $this->placeholders) {
             $references = array_values($this->settings->categoryImages);
             if (null !== $this->settings->locationImage) {
@@ -75,6 +85,19 @@ class EventImageChooser
         }
 
         return \in_array($mediaId, $this->placeholders, true);
+    }
+
+    /**
+     * A generated card: an image in one of the folders of sulu_event.import.placeholder_collections. Better than the image of
+     * a topic, worse than any photo.
+     */
+    public function isCard(int $mediaId): bool
+    {
+        if ([] === $this->settings->placeholderCollections) {
+            return false;
+        }
+
+        return $this->cards[$mediaId] ??= $this->mediaResolver->isInSystemCollections($mediaId, $this->settings->placeholderCollections);
     }
 
     /**

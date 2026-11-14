@@ -57,6 +57,7 @@ sulu_event:
 | `category_images` | Eigene Bilder: Kategorie-Schlüssel => Dateiname oder ID eines Mediums, siehe „Bilder“ | – |
 | `location_image` | Bild (Id oder Dateiname) für Orte, die der Import neu anlegt: keine Quelle kennt ein Foto vom Ort. Orte ohne Bild bekommen es mit `sulu:event:fill-images`; die Redaktion ersetzt es durch ein echtes Foto | – |
 | `series_images` | Foto einer Reihe: Schlüssel der Reihe (`series` der Quelle) => Id oder Dateiname. Die Events der Reihe nehmen es, wenn sie nichts Besseres haben | – |
+| `placeholder_collections` | Schlüssel von System-Ordnern der Medienbibliothek, deren Bilder Platzhalter sind, z. B. `events.cards` für erzeugte Karten. Ein Event mit so einem Bild bekommt ein Foto der Reihe oder des Ortes, sobald es eines gibt, und wird nicht auf das Themenbild umgestellt; siehe „Bilder“ | – |
 | `location_aliases` | Andere Schreibweisen eines Ortes oder einer Stadt und die, die führt, zum Beispiel `Brüssel: Brussels`, `Köln: Cologne`. Der Import findet und legt den Ort unter dem führenden Namen an, eine deutsche Schreibweise der Quelle macht keinen zweiten Ort (Stadt mit Bundesstaat oder Land, „San Francisco CA“, ist ohnehin dieselbe Stadt) | – |
 | `filters` | Das Sieb: welche Kandidaten überhaupt zu Events werden, siehe „Das Sieb“ | keine Regeln |
 | `source_filters` | Regeln einzelner Quellen nach Quellschlüssel (auch für Quellen Ihres Projekts) | – |
@@ -113,6 +114,8 @@ sulu_event:
 **Orte** haben kein Foto aus einer Quelle. Mit `location_image` (Dateiname oder ID) bekommt jeder Ort, den der Import neu anlegt, ein Bild; die Redaktion ersetzt es durch ein echtes Foto. **Nachträglich** füllt `php bin/adminconsole sulu:event:fill-images` (mit `--dry-run` zum Ansehen) alle Events und Orte ohne Bild: ein Event nimmt das Bild seines ersten Themas aus `category_images`, ein Ort das aus `location_image`. Ein vorhandenes Bild wird nie ersetzt; ein veröffentlichtes Event wird dabei zum Entwurf und ist mit dem Bild live, sobald es erneut veröffentlicht wird.
 
 **Welches Bild ein Event bekommt**, vom besten zum schlechtesten: (1) ein Foto der Reihe (`series_images`), (2) das Foto des Ortes, wenn der Ort ein echtes Foto hat (das Bild aller Orte, `location_image`, ist nur ein Platzhalter), (3) das Platzhalterbild seines ersten Themas (`category_images`). Bilder der Quellen werden nie übernommen, ein von Redakteuren gewähltes Bild nie ersetzt; nur ein Platzhalter weicht einem besseren Bild (zum Beispiel einem Ortsfoto, das später kommt) – `sulu:event:fill-images` erledigt das für vorhandene Events.
+
+**Erzeugte Karten:** Ein Projekt kann für Events ohne Foto eine Grafik erzeugen (Titel, Datum, Stadt) und in einem eigenen Ordner ablegen. Tragen Sie den Schlüssel dieses System-Ordners in `placeholder_collections` ein (`events.cards`, wenn der Ordner in `sulu_media.system_collections` unter `events` > `cards` liegt): Die Karte gilt als Platzhalter, ein Foto der Reihe oder des Ortes ersetzt sie später, und `sulu:event:fill-images` stellt sie nicht auf das Themenbild zurück. Bilder in einem Unterordner zählen mit; ein Schlüssel, den es nicht gibt, wird ignoriert.
 
 ## Im Admin
 

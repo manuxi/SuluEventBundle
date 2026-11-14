@@ -65,6 +65,7 @@ services:
         class: Manuxi\SuluEventBundle\Import\Resolver\MediaResolver
         arguments:
             - '@doctrine.orm.entity_manager'
+            - '@sulu_media.system_collections.manager'
 
     Manuxi\SuluEventBundle\Import\Http\ImportHttpClient:
         alias: sulu_event.import.http_client
@@ -98,6 +99,7 @@ services:
             - '%sulu_event.import.location_image%'
             - '%sulu_event.import.series_images%'
             - '%sulu_event.import.featured_sources%'
+            - '%sulu_event.import.placeholder_collections%'
 
     sulu_event.import.image_chooser:
         class: Manuxi\SuluEventBundle\Import\EventImageChooser

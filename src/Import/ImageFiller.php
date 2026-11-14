@@ -93,6 +93,10 @@ class ImageFiller
                 $imageId = (int) $current;
             } else {
                 $imageId = $this->imageFor($event, $row, $media, $result);
+                // a card is better than the image of a topic: only a photo of the series or the place replaces it
+                if (null !== $current && null !== $imageId && $this->chooser->isCard((int) $current) && $this->chooser->isPlaceholder($imageId)) {
+                    continue;
+                }
                 if (null === $imageId || (null !== $current && $this->chooser->isPlaceholder($imageId) && (int) $current === (int) $inTemplate)) {
                     continue;
                 }

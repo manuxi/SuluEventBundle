@@ -47,6 +47,17 @@ class EventImageChooserTest extends TestCase
         $this->assertFalse($chooser->isPlaceholder(555));
     }
 
+    public function testGeneratedCardsAreAPlaceholderBelowEveryPhoto(): void
+    {
+        $chooser = $this->chooser(['events.cards']);
+
+        $this->assertTrue($chooser->isCard(777));
+        $this->assertTrue($chooser->isPlaceholder(777), 'a photo replaces the card');
+        $this->assertFalse($chooser->isCard(901), 'the image of a topic is a placeholder, but no card');
+        $this->assertFalse($chooser->isCard(555));
+        $this->assertFalse($this->chooser()->isPlaceholder(777), 'without placeholder_collections a card is an image like any other');
+    }
+
     public function testSeriesOfTheMatchKey(): void
     {
         $this->assertSame('ifa', EventImageChooser::seriesOfMatchKey('ifa-2027'));
@@ -55,11 +66,15 @@ class EventImageChooserTest extends TestCase
         $this->assertNull(EventImageChooser::seriesOfMatchKey(null));
     }
 
-    private function chooser(): EventImageChooser
+    /**
+     * @param string[] $cards placeholder_collections (the media 777 lies in "events.cards")
+     */
+    private function chooser(array $cards = []): EventImageChooser
     {
-        $settings = new ImportSettings(true, 'import', false, '/events', null, 'default', 'event', ['ai' => 'topic-ai.jpg'], [], 'place.jpg', ['ifa' => 'ifa.jpg']);
+        $settings = new ImportSettings(true, 'import', false, '/events', null, 'default', 'event', ['ai' => 'topic-ai.jpg'], [], 'place.jpg', ['ifa' => 'ifa.jpg'], [], $cards);
 
         $media = $this->createStub(MediaResolver::class);
+        $media->method('isInSystemCollections')->willReturnCallback(static fn (int $id, array $keys): bool => 777 === $id && \in_array('events.cards', $keys, true));
         $media->method('resolve')->willReturnCallback(static fn (int|string $reference): ?int => match ($reference) {
             'topic-ai.jpg' => 901,
             'place.jpg'    => 900,
