@@ -28,7 +28,7 @@ Dieses Bundle wurde im Laufe der Zeit mit immer mehr Funktionen ausgestattet: Er
 - **Autoren-Verwaltung** - Kontakte können als Event-Autoren zugewiesen werden
 - **Einstellungen** - Umfangreiche Einstellungsmöglichkeiten
 - **Weiteres** - Papierkorb, Referenzen, Sitemaps, Teaser, usw.
-- 
+
 ### 🔄 Erweiterte Features
 - **Wiederkehrende Events** - Tägliche, wöchentliche, monatliche, jährliche Muster mit Ausnahmen
 - **Social-Media-Integration** - Pro-Event-Sharing-Konfiguration (Facebook, Twitter, LinkedIn, Instagram, WhatsApp)
@@ -38,6 +38,9 @@ Dieses Bundle wurde im Laufe der Zeit mit immer mehr Funktionen ausgestattet: Er
 - **RSS/Atom-Feeds** - Abonnenten über neue Events auf dem Laufenden halten
 - **Smart Content** - Als Content-Block in jeder Sulu-Seite verwendbar, filterbar nach Thema, Tag, Typ, Teilnahme, Land, kostenlos und Highlights (mit Filter-Optionen für eine Filterleiste)
 - **Strukturierte Daten** - schema.org-Event als Array für den eigenen JSON-LD-Graphen
+- **Event-Typen und Highlights** - 16 Event-Typen mit Farben (u. a. Messe, Keynote, Hackathon und Launch); Events mit einem konfigurierbaren Tag sind Highlights in Kalender-API, iCal-Feed und Smart Content
+- **Event-Import (optional)** - Entwürfe aus iCal-Feeds und Seiten mit schema.org-Daten: höflicher HTTP-Client (robots.txt, Cache, Rate-Limit), Regel-Sieb (Länder, Themen, online, Titel ...), Dublettenerkennung, Ablehnen, Bilder, optional automatische Freigabe vollständiger Events, MCP-Werkzeuge für die Redaktion, Admin-Reiter „Quelle“ und Knopf „Jetzt importieren“
+- **Rate-Limit der Kalender-API** - 100 Anfragen pro Minute und IP-Adresse (`429` mit `Retry-After`)
 
 ## 📋 Voraussetzungen
 

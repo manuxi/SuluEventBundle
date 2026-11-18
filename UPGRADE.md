@@ -1,8 +1,29 @@
 # Upgrade
 
-## 3.6.0 (planned)
+## 3.6.0
 
-The final version number is decided at release time. This section describes the iCal and calendar fixes and the new event fields (participation, time zone, status, tickets).
+Minor release, backwards compatible: existing events and templates keep working. It brings the iCal and calendar fixes, new event fields (participation, time zone, status, tickets), filters, schema.org output, the optional event import with sieve and automatic publishing, the event type `launch`, highlights and a calendar API rate limit that works.
+
+### Upgrade steps
+
+1. `composer update manuxi/sulu-event-bundle` (new requirements: `sabre/vobject`, `manuxi/sulu-block-validation-bundle`, `symfony/http-client`, `symfony/string`).
+2. Register `Manuxi\SuluBlockValidationBundle\SuluBlockValidationBundle` in `config/bundles.php` (see below).
+3. Run the SQL of [Database](#database), and the SQL of [Event import](#event-import) only if you use the import. Without the import tables admin and website keep working, the tab "Source" is missing then.
+4. Optional: set `all_day` for events that were all-day before (see [Database](#database)).
+5. Check overrides of the templates in `config/templates/events/` and links to `sulu_event.ical_single` (see below).
+6. Clear the caches of admin and website (`bin/adminconsole cache:clear`, `bin/websiteconsole cache:clear`) and rebuild the admin if you use the "Import now" button.
+7. Optional: `sulu_event.timezone`, `category_root`, `featured_tag`, `sitemap`, `import`.
+
+### New commands
+
+All new commands belong to the import and do nothing until you use them:
+
+| Command | Purpose |
+| --- | --- |
+| `sulu:event:import` | creates and updates event drafts from the configured sources (`--dry-run`, `--explain`, `--source=`, `--limit=`) |
+| `sulu:event:import:publish-ready` | publishes complete imported events by your rules (`--dry-run`, `--limit=`) |
+| `sulu:event:import:prune` | moves never published imported events that the sieve or a rejection left out to the Sulu trash; published ones are only listed (`--dry-run`, `--state=`, `--force`) |
+| `sulu:event:fill-images` | gives events and places without an image the best image that is known |
 
 ### Database
 
@@ -49,7 +70,7 @@ Manuxi\SuluBlockValidationBundle\SuluBlockValidationBundle::class => ['all' => t
 
 `event`, `event_basic` and `event_detailed` have new fields (all day, participation, the section "Participation & tickets" with status, time zone, languages, tickets, online link, price, organizer) and the location is no longer mandatory for online events. If your project **copies or overrides** these templates (`config/templates/events/`), take the new properties over from the bundle's templates. See [Participation, time zone and tickets](docs/online-events.en.md).
 
-### Filters, filter options, structured data (B2b)
+### Filters, filter options, structured data
 
 - **Calendar API and iCal feed** accept `types[]`, `attendanceMode[]`, `country[]` and `free=1` as well; lists may be arrays or comma separated (`categories=12,15` works now, a scalar `categories=12` no longer answers 400).
 - **Smart content** filters by event type, way to take part, country and free of charge: from the query string (`?type=conference,meetup&attendanceMode=online,mixed&country=DE&free=1`, names changeable with `type_parameter`, `attendance_mode_parameter`, `country_parameter`, `free_parameter`) and as fixed filters in the "types" list of the field in the admin. The constructor of `EventSmartContentProvider` takes the `RequestStack` as sixth argument.
@@ -59,7 +80,7 @@ Manuxi\SuluBlockValidationBundle\SuluBlockValidationBundle::class => ['all' => t
 - **Sitemap**: new option `sulu_event.sitemap.hide_past_after_days` (default `null`: nothing changes) leaves out events that ended more than that many days ago.
 - New services: `sulu_event.url_resolver` (`EventUrlResolver`, used by iCal, calendar API and schema.org), `sulu_event.filter_options`, `sulu_event.schema_builder`. `EventTypeSelect::getTypeName()` takes an optional locale.
 
-### Event import (B3)
+### Event import
 
 New and optional: the command `sulu:event:import` creates event drafts from iCal feeds and pages with schema.org data, see [docs/import.en.md](docs/import.en.md). It is **off** until `sulu_event.import.enabled` is set; you only need the steps below if you use it.
 
@@ -75,6 +96,7 @@ CREATE TABLE app_event_import (
     imported_values JSON NOT NULL,
     locked_fields JSON NOT NULL,
     state VARCHAR(16) NOT NULL,
+    state_reason VARCHAR(255) DEFAULT NULL,
     source_url VARCHAR(2048) DEFAULT NULL,
     priority INT NOT NULL,
     last_seen_at DATETIME DEFAULT NULL,
@@ -102,6 +124,7 @@ CREATE TABLE app_event_import_run (
     locked INT NOT NULL,
     vanished INT NOT NULL,
     rejected INT NOT NULL,
+    filtered INT DEFAULT 0 NOT NULL,
     errors INT NOT NULL,
     new_locations INT NOT NULL,
     report JSON NOT NULL,
@@ -116,22 +139,17 @@ The class `Event` has a new read only collection `imports` (the inverse side of 
 
 New requirements, installed by Composer with the bundle: `symfony/http-client` and `symfony/string` (`composer update manuxi/sulu-event-bundle`). New services are `sulu_event.import.*` and the command `sulu:event:import`; sources that you tag with `sulu_event.import_source` are picked up. No existing behaviour changes.
 
-### Sieve, rejecting and cleaning up in the import (F1)
+### Sieve, rejecting and cleaning up in the import
 
-New and optional (only for projects that use the import): `sulu_event.import.filters`, `sulu_event.import.source_filters` and `filters` per source leave candidates out by rules of the project (countries, online, types, topics, title, host, months ahead; `tags_allowed` limits the tags), see [docs/import.en.md](docs/import.en.md) ("The sieve"). Without rules nothing changes. New: the state `filtered` and the column `state_reason` of an import entry, the counter `filtered` of a run, the option `--explain` of `sulu:event:import`, the command `sulu:event:import:prune` and the MCP tool `sulu_event_import_reject`. The importer also treats the same event twice in one delivery as one candidate and follows a source that changes the id of an event (no second event, no "vanished" for the old one).
-
-```sql
-ALTER TABLE app_event_import ADD state_reason VARCHAR(255) DEFAULT NULL;
-ALTER TABLE app_event_import_run ADD filtered INT DEFAULT 0 NOT NULL;
-```
+New and optional (only for projects that use the import): `sulu_event.import.filters`, `sulu_event.import.source_filters` and `filters` per source leave candidates out by rules of the project (countries, online, types, topics, title, host, months ahead; `tags_allowed` limits the tags), see [docs/import.en.md](docs/import.en.md) ("The sieve"). Without rules nothing changes. New: the state `filtered` and the column `state_reason` of an import entry, the counter `filtered` of a run (both columns are part of the `CREATE TABLE` statements above), the option `--explain` of `sulu:event:import`, the command `sulu:event:import:prune` and the MCP tool `sulu_event_import_reject`. The importer also treats the same event twice in one delivery as one candidate and follows a source that changes the id of an event (no second event, no "vanished" for the old one).
 
 The constructor of `EventImporter` takes the sieve (`CandidateFilter`, optional) as 16th argument, `EventUpdateTool` as 8th (optional). The state of an entry deleted in the admin now also carries a reason. If your project overrides `Resources/config/lists/events.xml` or `forms/event_import_source.xml`, take over the new filter options and the field `importStateReason`.
 
-### Automatic publishing of complete events (F2)
+### Automatic publishing of complete events
 
 New and optional (only for projects that use the import): `sulu_event.import.auto_publish` (`enabled`, `when`, `require`, `republish_changes`) and the command `sulu:event:import:publish-ready`, see [docs/import.en.md](docs/import.en.md) ("Publish automatically"). Off by default; without it nothing changes. **No database change:** the result of a run is stored as a row of `app_event_import_run` with the source `auto-publish`; `EventImportRunRepository::findLast()` leaves these rows out, `findLastAutoPublish()` returns them. The constructor of `PendingEventFinder` takes the publisher (`AutoPublisher`, optional) as 4th argument; `sulu_event_import_pending` then adds `autoPublish` to each event. If your project overrides `forms/events_settings_import.xml`, take over the section `import-auto-publish`.
 
-### Highlights (F4)
+### Highlights
 
 No database change. New option `sulu_event.featured_tag` (name of a tag, default `null` = off): an event that carries this tag is a **highlight**. With it:
 
@@ -192,6 +210,7 @@ Without the option nothing changes for installations whose PHP default timezone 
 - **Feed and calendar filters work.** `/events/calendar.{locale}.ics` and `/api/events/calendar/{locale}` evaluate `categories[]` (ids), `tags[]` (names) and, for the calendar, `location` (id or exact name). Before, they were ignored and every event was returned. A filter without any usable value returns no events. Only events published in the locale are returned.
 - **Calendar range.** `/api/events/calendar/{locale}` returns every event that *overlaps* the requested range (was: events that start inside it), so multi-day events that began earlier are shown.
 - **Calendar API works again.** `/api/events/calendar/{locale}` answered 500 ("has no container set"): `services-calendar.yaml` redefined the controller without the container and overrode the complete definition in `controller.yaml`. The duplicate is removed. If you overrode the service `Manuxi\SuluEventBundle\Controller\Website\CalendarApiController` yourself, it needs the container (`calls: setContainer`) and the constructor arguments listed under "For developers".
+- **RSS and Atom feeds work again.** `/events/feed.{locale}.rss` and `.atom` answered 500 ("has no container set"): `services-feed.yaml` redefined the `FeedController` without the container. The duplicate is removed (the file is gone). If you overrode the service `Manuxi\SuluEventBundle\Controller\Website\FeedController` yourself, it needs `calls: setContainer`.
 - **Calendar API rate limit works.** The limit of 100 requests per minute and IP address never took effect (the controller looked up a limiter service that does not exist and swallowed every error). It does now: the 101st request within a minute gets `429` with `Retry-After`. Needs `symfony/rate-limiter` (already required); scripts or proxies that fetch the API more often must be spread out or the limiter `framework.rate_limiter.sulu_event_calendar_api` raised. If you built the controller service yourself, pass `@?limiter.sulu_event_calendar_api` as sixth argument.
 - **Calendar API `url`** is an absolute URL (was: the path). `tags[]` takes names; numeric-only values were required before, which dropped every name.
 

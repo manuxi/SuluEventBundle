@@ -38,6 +38,9 @@ This bundle has been equipped with more and more features over time: advanced fe
 - **RSS/Atom Feeds** - Keep subscribers updated on new events
 - **Smart Content** - Usable as a content block in any Sulu page, filterable by topic, tag, type, participation, country, free of charge and highlights (with filter options for a filter bar)
 - **Structured data** - schema.org Event as an array for your own JSON-LD graph
+- **Event types and highlights** - 16 event types with colours (including trade fair, keynote, hackathon and launch); events with a configurable tag are highlights in the calendar API, the iCal feed and smart content
+- **Event import (optional)** - Drafts from iCal feeds and pages with schema.org data: polite HTTP client (robots.txt, cache, rate limit), rule sieve (countries, topics, online, title ...), duplicate detection, rejecting, images, optional automatic publishing of complete events, MCP tools for editorial work, admin tab "Source" and an "Import now" button
+- **Calendar API rate limit** - 100 requests per minute and IP address (`429` with `Retry-After`)
 
 ## 📋 Prerequisites
 
