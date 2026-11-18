@@ -80,29 +80,20 @@ class ImageFiller
             if (!$row instanceof EventDimensionContent || DimensionContentInterface::STAGE_DRAFT !== $row->getStage() || null === $row->getLocale() || DimensionContentInterface::CURRENT_VERSION !== $row->getVersion()) {
                 continue;
             }
-            $current  = $row->getImage()?->getId() ?? ($row->getExcerptData()['image']['id'] ?? null);
-            // the image the website reads is the one in the template data ({id}); an event whose image was written as a bare id
-            // (older runs) has the image in the database but none on the cards
-            $inTemplate = $row->getTemplateData()['image']['id'] ?? null;
+            $current = $row->getImage()?->getId() ?? ($row->getExcerptData()['image']['id'] ?? null);
 
+            // An image an editor (or an earlier run) chose stays, and nothing is written for it. The image is a column of the
+            // row, not a value of the template data: saving removes it from there, and the merger gives the content its
+            // image when it is read (EventUnlocalizedFieldsMerger), so the template data says nothing about it.
             if (null !== $current && !$this->chooser->isPlaceholder((int) $current)) {
-                // a real image stays; it is only written to the template data if it is not there
-                if ((int) $current === (int) $inTemplate) {
-                    continue;
-                }
-                $imageId = (int) $current;
-            } else {
-                $imageId = $this->imageFor($event, $row, $media, $result);
-                // a card is better than the image of a topic: only a photo of the series or the place replaces it
-                if (null !== $current && null !== $imageId && $this->chooser->isCard((int) $current) && $this->chooser->isPlaceholder($imageId)) {
-                    continue;
-                }
-                if (null === $imageId || (null !== $current && $this->chooser->isPlaceholder($imageId) && (int) $current === (int) $inTemplate)) {
-                    continue;
-                }
-                if (null !== $current && (int) $current === $imageId && (int) $current === (int) $inTemplate) {
-                    continue;
-                }
+                continue;
+            }
+
+            // a placeholder (the image of a topic, a generated card) only gives way to a better image: a photo of the series
+            // or the place. Another placeholder is not better, neither is the image the event has already.
+            $imageId = $this->imageFor($event, $row, $media, $result);
+            if (null === $imageId || (null !== $current && ((int) $current === $imageId || $this->chooser->isPlaceholder($imageId)))) {
+                continue;
             }
 
             $filled = true;

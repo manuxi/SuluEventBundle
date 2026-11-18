@@ -6,10 +6,12 @@ namespace Manuxi\SuluEventBundle\Tests\Integration\Import;
 
 use Manuxi\SuluEventBundle\Entity\Event;
 use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
+use Manuxi\SuluEventBundle\Entity\EventImport;
 use Manuxi\SuluEventBundle\Import\ImageFiller;
 use Manuxi\SuluEventBundle\Import\ImportSettings;
 use Manuxi\SuluEventBundle\Import\ImportUserSwitcher;
 use Manuxi\SuluEventBundle\Import\Resolver\MediaResolver;
+use Manuxi\SuluEventBundle\Repository\EventImportRepository;
 use Manuxi\SuluEventBundle\Tests\Integration\AbstractEventDatabaseTestCase;
 use Manuxi\SuluEventBundle\Tests\Integration\Stub\StubCategory;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -74,17 +76,48 @@ class ImageFillerTest extends AbstractEventDatabaseTestCase
         $this->assertSame([], $this->contentManager->calls);
     }
 
-    public function testRealImageThatIsNotInTheTemplateDataIsWrittenThereButNotChanged(): void
+    public function testRealImageWithoutTemplateDataImageIsLeftAlone(): void
     {
-        // older runs wrote the image as a bare id: it is in the database, the website resolves nothing (no image on the cards)
+        // saving removes the image from the template data (it is a column, the merger puts it back when the content is read),
+        // so an event with its image has none there: it must not count as filled and must not be written again, every run
         $this->createEvent('a', 'de', '2027-06-01 10:00:00', stage: DimensionContentInterface::STAGE_DRAFT, categories: ['ai']);
         $row = $this->draftOf('a');
         $row->setExcerptData(['image' => ['id' => 5]]);
+        $row->setTemplateData([]);
+        $this->entityManager->flush();
+        $this->workflow->expects($this->never())->method('apply');
+
+        $result = $this->filler()->fill();
+
+        $this->assertSame([], $result['events']);
+        $this->assertSame([], $this->contentManager->calls);
+    }
+
+    public function testPlaceholderOfATopicIsNotReplacedByAnotherPlaceholder(): void
+    {
+        // image 412 is the placeholder of the topic "ai"; the event now has the one of "web-php" (423): both placeholders, nothing better
+        $this->createEvent('a', 'de', '2027-06-01 10:00:00', stage: DimensionContentInterface::STAGE_DRAFT, categories: ['ai']);
+        $row = $this->draftOf('a');
+        $row->setExcerptData(['image' => ['id' => 423]]);
         $this->entityManager->flush();
 
-        $this->filler()->fill();
+        $result = $this->filler()->fill();
 
-        $this->assertSame(['id' => 5], $this->contentManager->calls[0]['data']['image'], 'the image of the editors stays, in the form of the website');
+        $this->assertSame([], $result['events']);
+        $this->assertSame([], $this->contentManager->calls);
+    }
+
+    public function testPlaceholderGivesWayToAPhotoOfTheSeries(): void
+    {
+        $this->createEvent('a', 'de', '2027-06-01 10:00:00', stage: DimensionContentInterface::STAGE_DRAFT, categories: ['ai']);
+        $row = $this->draftOf('a');
+        $row->setExcerptData(['image' => ['id' => 412]]);
+        $this->entityManager->flush();
+
+        $result = $this->filler(series: ['fair' => 'event-photo.jpg'], matchKey: 'fair-2027')->fill();
+
+        $this->assertSame(['Event a'], $result['events']);
+        $this->assertSame(['id' => 990], $this->contentManager->calls[0]['data']['image']);
     }
 
     public function testEventWithoutAMappedTopicStaysAsItIs(): void
@@ -169,23 +202,33 @@ class ImageFillerTest extends AbstractEventDatabaseTestCase
     /**
      * @param array<string, string>|null $images
      * @param string[]                   $cards  placeholder_collections (the media 777 lies in "events.cards")
+     * @param array<string, string>      $series series_images; with $matchKey every event belongs to that series
      */
-    private function filler(?array $images = null, array $cards = []): ImageFiller
+    private function filler(?array $images = null, array $cards = [], array $series = [], ?string $matchKey = null): ImageFiller
     {
         $images ??= ['web-php' => 'event-topic-web-php.jpg', 'ai' => 'event-topic-ai.jpg'];
-        $settings = new ImportSettings(true, 'import', false, '/events', null, 'default', 'event', $images, [], null, [], [], $cards);
+        $settings = new ImportSettings(true, 'import', false, '/events', null, 'default', 'event', $images, [], null, $series, [], $cards);
 
         $media = $this->createStub(MediaResolver::class);
         $media->method('isInSystemCollections')->willReturnCallback(static fn (int $id, array $keys): bool => 777 === $id && \in_array('events.cards', $keys, true));
         $media->method('resolve')->willReturnCallback(static fn (int|string $reference): ?int => match ($reference) {
             'event-topic-web-php.jpg' => 423,
             'event-topic-ai.jpg'      => 412,
+            'event-photo.jpg'         => 990,
             default                   => null,
         });
 
         $user           = $this->createStub(UserInterface::class);
         $userRepository = $this->createStub(UserRepositoryInterface::class);
         $userRepository->method('findUserByIdentifier')->willReturn($user);
+
+        $imports = null;
+        if (null !== $matchKey) {
+            $import = $this->createStub(EventImport::class);
+            $import->method('getMatchKey')->willReturn($matchKey);
+            $imports = $this->createStub(EventImportRepository::class);
+            $imports->method('findByEventUuid')->willReturn([$import]);
+        }
 
         $this->entityManager->clear();
 
@@ -197,6 +240,7 @@ class ImageFillerTest extends AbstractEventDatabaseTestCase
             $media,
             $settings,
             new ImportUserSwitcher(new TokenStorage(), $userRepository, $settings),
+            $imports,
         );
     }
 
