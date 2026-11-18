@@ -100,7 +100,7 @@ class ImportRunner
      */
     public function run(): ?EventImportRun
     {
-        \ignore_user_abort(true);
+        ignore_user_abort(true);
         if (\function_exists('set_time_limit')) {
             @set_time_limit(0);
         }
@@ -108,10 +108,10 @@ class ImportRunner
         $startedAt = new \DateTimeImmutable();
         $run       = new EventImportRun($startedAt, null, false);
 
-        $done = 0;
+        $done  = 0;
         $known = 0;
-        $last = 0;
-        $tick = function (string $source, int $index, int $count, int $processed, int $total) use (&$done, &$known, &$last): void {
+        $last  = 0;
+        $tick  = function (string $source, int $index, int $count, int $processed, int $total) use (&$done, &$known, &$last): void {
             $done  = $processed;
             $known = $total;
             // the cache is written every few candidates, not every one

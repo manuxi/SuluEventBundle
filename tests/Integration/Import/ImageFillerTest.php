@@ -220,7 +220,7 @@ class ImageFillerTest extends AbstractEventDatabaseTestCase
         $row   = new EventDimensionContent($event);
         $row->setStage(DimensionContentInterface::STAGE_DRAFT);
         $row->setLocale($locale);
-        $row->setTitle('Event '.$uuid);
+        $row->setTitle('Event ' . $uuid);
         $row->setStartDate(new \DateTimeImmutable('2027-06-01 10:00:00'));
         $row->setExcerptCategories([$this->entityManager->find(StubCategory::class, $this->categories[$category]->getId())]);
         $event->addDimensionContent($row);

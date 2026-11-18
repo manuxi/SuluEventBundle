@@ -16,7 +16,7 @@ class FeaturedTag
     public function __construct(?string $name = null)
     {
         $name       = null === $name ? '' : trim($name);
-        $this->name = '' === $name ? null : $name;
+        $this->name = ''   === $name ? null : $name;
     }
 
     public function getName(): ?string

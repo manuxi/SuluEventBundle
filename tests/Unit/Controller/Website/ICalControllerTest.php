@@ -98,7 +98,7 @@ class ICalControllerTest extends TestCase
     public function testTheFeedPassesTheFeaturedFilterWithTheNameOfTheTag(): void
     {
         $captured = [];
-        $this->generator->method('generate')->willReturnCallback(function (array $filters) use (&$captured): string {
+        $this->generator->method('generate')->willReturnCallback(static function (array $filters) use (&$captured): string {
             $captured[] = $filters;
 
             return 'BEGIN:VCALENDAR';

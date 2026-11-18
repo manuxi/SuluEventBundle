@@ -95,15 +95,15 @@ class CalendarApiControllerTest extends TestCase
             ->willReturn([]);
 
         $request = Request::create('/api/events/calendar/de', 'GET', [
-            'categories' => ['12', 'abc', '15'],
-            'tags'       => ['Symfony', '', ' Unreal Engine '],
-            'location'   => 'Messe & Halle',
-            'types'      => 'conference,meetup',
+            'categories'     => ['12', 'abc', '15'],
+            'tags'           => ['Symfony', '', ' Unreal Engine '],
+            'location'       => 'Messe & Halle',
+            'types'          => 'conference,meetup',
             'attendanceMode' => ['online', 'mixed'],
-            'country'    => 'DE, US',
-            'free'       => '1',
-            'start'      => '2027-03-01',
-            'end'        => '2027-04-01',
+            'country'        => 'DE, US',
+            'free'           => '1',
+            'start'          => '2027-03-01',
+            'end'            => '2027-04-01',
         ]);
 
         $response = $this->controller->calendarAction($request, 'de');

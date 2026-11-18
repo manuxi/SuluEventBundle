@@ -69,7 +69,7 @@ class ImageFiller
     }
 
     /**
-     * @param array<string, int|null>                                                          $media
+     * @param array<string, int|null>                                                      $media
      * @param array{events: list<string>, locations: list<string>, warnings: list<string>} $result
      */
     private function fillEvent(Event $event, bool $dryRun, array &$media, array &$result): void
@@ -131,7 +131,7 @@ class ImageFiller
     }
 
     /**
-     * @param array<string, int|null>                                                          $media
+     * @param array<string, int|null>                                                      $media
      * @param array{events: list<string>, locations: list<string>, warnings: list<string>} $result
      */
     private function imageFor(Event $event, EventDimensionContent $row, array &$media, array &$result): ?int
@@ -152,7 +152,7 @@ class ImageFiller
     }
 
     /**
-     * @param array<string, int|null>                                                          $media
+     * @param array<string, int|null>                                                      $media
      * @param array{events: list<string>, locations: list<string>, warnings: list<string>} $result
      */
     private function fillLocations(bool $dryRun, array &$media, array &$result): void
@@ -180,7 +180,7 @@ class ImageFiller
     }
 
     /**
-     * @param array<string, int|null>                                                          $media
+     * @param array<string, int|null>                                                      $media
      * @param array{events: list<string>, locations: list<string>, warnings: list<string>} $result
      */
     private function resolve(int|string $reference, array &$media, array &$result): ?int

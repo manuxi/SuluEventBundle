@@ -72,7 +72,7 @@ class EventImportRun
 
     /**
      * @param array{created: int, updated: int, unchanged: int, locked: int, vanished: int, rejected: int, filtered?: int, errors: int, newLocations: int} $counts
-     * @param array<string, mixed>                                                                                                         $report
+     * @param array<string, mixed>                                                                                                                         $report
      */
     public function finish(\DateTimeImmutable $finishedAt, array $counts, array $report): self
     {

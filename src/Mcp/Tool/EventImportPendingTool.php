@@ -39,8 +39,7 @@ class EventImportPendingTool
         ?array $locales = null,
         int $page = 1,
         int $limit = 20,
-    ): array
-    {
+    ): array {
         try {
             $page  = max(1, $page);
             $limit = min(100, max(1, $limit));

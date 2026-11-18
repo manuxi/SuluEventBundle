@@ -17,8 +17,8 @@ use Manuxi\SuluEventBundle\Entity\Location;
 use Manuxi\SuluEventBundle\Import\CandidateLocation;
 use Manuxi\SuluEventBundle\Import\EventCandidate;
 use Manuxi\SuluEventBundle\Import\EventImporter;
-use Manuxi\SuluEventBundle\Import\Filter\CandidateFilter;
 use Manuxi\SuluEventBundle\Import\EventImportStateListener;
+use Manuxi\SuluEventBundle\Import\Filter\CandidateFilter;
 use Manuxi\SuluEventBundle\Import\ImportReport;
 use Manuxi\SuluEventBundle\Import\ImportSettings;
 use Manuxi\SuluEventBundle\Import\ImportUrlGenerator;
@@ -512,7 +512,7 @@ class EventImporterTest extends AbstractEventDatabaseTestCase
 
     public function testProgressIsReportedAfterEveryCandidateWithTheTotalSoFar(): void
     {
-        $steps = [];
+        $steps    = [];
         $importer = $this->createImporter([
             new ArraySource('ical.a', 50, [$this->candidate('a-1'), $this->candidate('a-2')]),
             new ArraySource('ical.b', 50, [$this->candidate('b-1', series: 'other')]),

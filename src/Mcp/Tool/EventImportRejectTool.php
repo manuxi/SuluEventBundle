@@ -47,7 +47,7 @@ class EventImportRejectTool
                 return ['error' => 'A reason is required (a short, factual text, for example "outside the target region").'];
             }
 
-            $hasUuid   = null !== $uuid && '' !== trim($uuid);
+            $hasUuid   = null !== $uuid   && '' !== trim($uuid);
             $hasSource = null !== $source && '' !== trim($source) && null !== $externalId && '' !== trim($externalId);
             if ($hasUuid === $hasSource) {
                 return ['error' => 'Give either "uuid" or both "source" and "externalId".'];

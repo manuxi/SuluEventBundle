@@ -18,9 +18,9 @@ use Manuxi\SuluEventBundle\Import\Resolver\CategoryResolver;
 use Manuxi\SuluEventBundle\Import\Resolver\LocationResolver;
 use Manuxi\SuluEventBundle\Import\Resolver\MediaResolver;
 use Manuxi\SuluEventBundle\Import\Resolver\TagResolver;
-use Manuxi\SuluEventBundle\Service\FeaturedTag;
 use Manuxi\SuluEventBundle\Repository\EventImportRepository;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
+use Manuxi\SuluEventBundle\Service\FeaturedTag;
 use Sulu\Bundle\ActivityBundle\Application\Collector\DomainEventCollectorInterface;
 use Sulu\Bundle\MediaBundle\Entity\Media;
 use Sulu\Content\Application\ContentManager\ContentManagerInterface;
@@ -76,8 +76,8 @@ class EventImporter
     private array $adopted = [];
 
     /**
-     * @param (\Closure(): \DateTimeImmutable)|null $now    replaceable for tests
-     * @param CandidateFilter|null                  $filter the sieve; without it everything passes
+     * @param (\Closure(): \DateTimeImmutable)|null $now         replaceable for tests
+     * @param CandidateFilter|null                  $filter      the sieve; without it everything passes
      * @param FeaturedTag|null                      $featuredTag the tag of the highlights; without it nothing is marked
      */
     public function __construct(
@@ -100,17 +100,17 @@ class EventImporter
         ?FeaturedTag $featuredTag = null,
     ) {
         $this->featuredTag  = $featuredTag ?? new FeaturedTag();
-        $this->now          = $now    ?? static fn (): \DateTimeImmutable => new \DateTimeImmutable();
-        $this->filter       = $filter ?? new CandidateFilter();
+        $this->now          = $now         ?? static fn (): \DateTimeImmutable => new \DateTimeImmutable();
+        $this->filter       = $filter      ?? new CandidateFilter();
         $this->imageChooser = new EventImageChooser($settings, $mediaResolver);
     }
 
     /**
-     * @param string|null $sourceKey only this source
-     * @param bool        $dryRun    compute and report everything, write nothing
-     * @param int|null    $limit     at most this many candidates per source (the check for vanished events is skipped then)
-     * @param (\Closure(string, int, int, int, int): void)|null $progress called after every candidate with the key of the source, its
-     *                                 position and the number of sources, the candidates done and the candidates known so far
+     * @param string|null                                       $sourceKey only this source
+     * @param bool                                              $dryRun    compute and report everything, write nothing
+     * @param int|null                                          $limit     at most this many candidates per source (the check for vanished events is skipped then)
+     * @param (\Closure(string, int, int, int, int): void)|null $progress  called after every candidate with the key of the source, its
+     *                                                                     position and the number of sources, the candidates done and the candidates known so far
      *
      * @throws \InvalidArgumentException for an unknown source key
      */
@@ -144,8 +144,8 @@ class EventImporter
     }
 
     /**
-     * @param (\Closure(string, int, int, int, int): void)|null $progress
-     * @param array{done: int, known: int, index: int, count: int}  $state
+     * @param (\Closure(string, int, int, int, int): void)|null    $progress
+     * @param array{done: int, known: int, index: int, count: int} $state
      */
     private function importSource(string $key, EventSourceInterface $source, ImportReport $report, bool $dryRun, ?int $limit, \DateTimeImmutable $runStart, ?\Closure $progress = null, array &$state = ['done' => 0, 'known' => 0, 'index' => 1, 'count' => 1]): void
     {

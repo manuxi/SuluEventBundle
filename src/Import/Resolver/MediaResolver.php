@@ -74,7 +74,7 @@ class MediaResolver
             return false;
         }
 
-        $media = $this->entityManager->find(Media::class, $mediaId);
+        $media  = $this->entityManager->find(Media::class, $mediaId);
         $folder = $media?->getCollection();
         for ($depth = 0; null !== $folder && $depth < 20; ++$depth) {
             if (\in_array((int) $folder->getId(), $ids, true)) {

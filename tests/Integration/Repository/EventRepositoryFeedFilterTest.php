@@ -206,11 +206,11 @@ class EventRepositoryFeedFilterTest extends AbstractEventDatabaseTestCase
         $this->createEvent('c', 'de', '2027-03-03 10:00:00', categories: ['games'], type: 'conference', attendanceMode: 'online', isFree: true);
 
         $events = $this->repository->findForIcal([
-            'locale' => 'de',
-            'categories' => [$this->categories['ai']->getId()],
-            'types' => ['conference'],
+            'locale'          => 'de',
+            'categories'      => [$this->categories['ai']->getId()],
+            'types'           => ['conference'],
             'attendanceModes' => ['online'],
-            'free' => true,
+            'free'            => true,
         ]);
 
         $this->assertSame(['a'], $this->uuids($events));
@@ -240,5 +240,4 @@ class EventRepositoryFeedFilterTest extends AbstractEventDatabaseTestCase
             $this->entityManager->clear();
         }
     }
-
 }

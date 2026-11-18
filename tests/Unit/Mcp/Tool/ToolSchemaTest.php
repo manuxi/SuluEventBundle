@@ -21,8 +21,8 @@ class ToolSchemaTest extends TestCase
      */
     public static function arrayParameters(): iterable
     {
-        foreach (glob(__DIR__.'/../../../../src/Mcp/Tool/*Tool.php') ?: [] as $file) {
-            $class = 'Manuxi\\SuluEventBundle\\Mcp\\Tool\\'.basename($file, '.php');
+        foreach (glob(__DIR__ . '/../../../../src/Mcp/Tool/*Tool.php') ?: [] as $file) {
+            $class = 'Manuxi\\SuluEventBundle\\Mcp\\Tool\\' . basename($file, '.php');
             foreach ((new \ReflectionClass($class))->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
                 if ([] === $method->getAttributes(self::MCP_TOOL)) {
                     continue;
@@ -30,7 +30,7 @@ class ToolSchemaTest extends TestCase
                 foreach ($method->getParameters() as $parameter) {
                     $type = $parameter->getType();
                     if ($type instanceof \ReflectionNamedType && 'array' === $type->getName()) {
-                        yield $class.'::'.$method->getName().'($'.$parameter->getName().')' => [$class, $method->getName(), $parameter->getName()];
+                        yield $class . '::' . $method->getName() . '($' . $parameter->getName() . ')' => [$class, $method->getName(), $parameter->getName()];
                     }
                 }
             }

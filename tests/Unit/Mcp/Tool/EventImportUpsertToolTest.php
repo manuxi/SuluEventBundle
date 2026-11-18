@@ -76,7 +76,7 @@ class EventImportUpsertToolTest extends TestCase
     public function testFeaturedMarksTheCandidateAsAHighlight(): void
     {
         $captured = [];
-        $this->importer->method('importCandidate')->willReturnCallback(function (string $source, int $priority, EventCandidate $candidate) use (&$captured): ImportReport {
+        $this->importer->method('importCandidate')->willReturnCallback(static function (string $source, int $priority, EventCandidate $candidate) use (&$captured): ImportReport {
             $captured[] = $candidate;
 
             return new ImportReport();

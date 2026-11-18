@@ -257,9 +257,6 @@ class ImportConfigurationTest extends TestCase
         yield 'unknown type' => [['filters' => ['types' => ['party']]], '"party" is not an event type'];
     }
 
-    /**
-     * @param array<string, mixed> $config
-     */
     public function testAutoPublishIsOffByDefaultWithSafeRequirements(): void
     {
         $rules = AutoPublishRules::fromArray($this->load([])->getParameter('sulu_event.import.auto_publish'));
