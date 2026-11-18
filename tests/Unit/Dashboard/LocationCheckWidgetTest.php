@@ -7,8 +7,9 @@ namespace Manuxi\SuluEventBundle\Tests\Unit\Dashboard;
 use Manuxi\SuluEventBundle\Dashboard\EventDashboardReader;
 use Manuxi\SuluEventBundle\Dashboard\LocationCheckWidget;
 use Manuxi\SuluEventBundle\Entity\Location;
+use PHPUnit\Framework\TestCase;
 
-class LocationCheckWidgetTest extends DashboardTestCase
+class LocationCheckWidgetTest extends TestCase
 {
     /**
      * @param list<Location> $locations

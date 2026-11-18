@@ -6,8 +6,9 @@ namespace Manuxi\SuluEventBundle\Tests\Unit\Dashboard;
 
 use Manuxi\SuluEventBundle\Dashboard\EventDashboardReader;
 use Manuxi\SuluEventBundle\Dashboard\UpcomingEventsWidget;
+use PHPUnit\Framework\TestCase;
 
-class UpcomingEventsWidgetTest extends DashboardTestCase
+class UpcomingEventsWidgetTest extends TestCase
 {
     /**
      * @param list<array<string, mixed>> $upcoming

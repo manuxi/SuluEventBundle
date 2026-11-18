@@ -11,6 +11,7 @@ use Manuxi\SuluEventBundle\Dashboard\EventDashboardReader;
 use Manuxi\SuluEventBundle\Entity\Location;
 use Manuxi\SuluEventBundle\Repository\EventRepository;
 use Manuxi\SuluEventBundle\Repository\LocationRepository;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -20,6 +21,7 @@ use PHPUnit\Framework\TestCase;
 class EventDashboardReaderTest extends TestCase
 {
     private ?string $dql = null;
+    /** @var Query&MockObject */
     private Query $query;
 
     private function reader(?LocationRepository $locations = null): EventDashboardReader
