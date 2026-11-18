@@ -1248,8 +1248,9 @@ class EventImporter
     {
         foreach ($event->getDimensionContents() as $dimensionContent) {
             if ($dimensionContent instanceof EventDimensionContent
-                && DimensionContentInterface::STAGE_DRAFT === $dimensionContent->getStage()
-                && $locale                                === $dimensionContent->getLocale()
+                && DimensionContentInterface::STAGE_DRAFT     === $dimensionContent->getStage()
+                && $locale                                    === $dimensionContent->getLocale()
+                && DimensionContentInterface::CURRENT_VERSION === $dimensionContent->getVersion()
             ) {
                 return $dimensionContent;
             }
@@ -1264,6 +1265,7 @@ class EventImporter
             if ($dimensionContent instanceof EventDimensionContent
                 && DimensionContentInterface::STAGE_DRAFT === $dimensionContent->getStage()
                 && null !== $dimensionContent->getLocale()
+                && DimensionContentInterface::CURRENT_VERSION === $dimensionContent->getVersion()
             ) {
                 return $dimensionContent;
             }

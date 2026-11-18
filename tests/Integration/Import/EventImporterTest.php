@@ -170,6 +170,28 @@ class EventImporterTest extends AbstractEventDatabaseTestCase
         $this->assertSame('Our own title', $this->draft($import->getEvent()->getUuid(), 'en')->getTitle());
     }
 
+    public function testTheImporterComparesWithTheCurrentDraftNotWithASavedVersion(): void
+    {
+        // the order of the rows of an event is not defined: a saved version (version 1) may come before the current draft
+        $event = new Event();
+        foreach ([['Title of an old version', 1], ['Current title', DimensionContentInterface::CURRENT_VERSION]] as [$title, $version]) {
+            $row = new EventDimensionContent($event);
+            $row->setStage(DimensionContentInterface::STAGE_DRAFT);
+            $row->setLocale('en');
+            $row->setVersion($version);
+            $row->setTitle($title);
+            $event->addDimensionContent($row);
+        }
+        $importer = $this->createImporter([]);
+
+        $find = new \ReflectionMethod($importer, 'findDraft');
+        $any  = new \ReflectionMethod($importer, 'findAnyDraft');
+
+        $this->assertSame('Current title', $find->invoke($importer, $event, 'en')->getTitle());
+        $this->assertSame('Current title', $any->invoke($importer, $event)->getTitle());
+        $this->assertNull($find->invoke($importer, $event, 'de'));
+    }
+
     public function testTextsCategoriesAndTagsAreOnlyFilledIn(): void
     {
         $source = new ArraySource('ical.a', 50, [$this->candidate(categoryKeys: [], tags: [])]);
@@ -1211,7 +1233,7 @@ class EventImporterTest extends AbstractEventDatabaseTestCase
     {
         $this->entityManager->clear();
         foreach ($this->repository->findByUuid($uuid)->getDimensionContents() as $row) {
-            if (DimensionContentInterface::STAGE_DRAFT === $row->getStage() && $locale === $row->getLocale()) {
+            if (DimensionContentInterface::STAGE_DRAFT === $row->getStage() && $locale === $row->getLocale() && DimensionContentInterface::CURRENT_VERSION === $row->getVersion()) {
                 return $row;
             }
         }
@@ -1224,7 +1246,7 @@ class EventImporterTest extends AbstractEventDatabaseTestCase
         $this->entityManager->clear();
         $event = $this->repository->findByUuid($uuid);
         foreach ($event->getDimensionContents() as $row) {
-            if (DimensionContentInterface::STAGE_DRAFT === $row->getStage() && $locale === $row->getLocale()) {
+            if (DimensionContentInterface::STAGE_DRAFT === $row->getStage() && $locale === $row->getLocale() && DimensionContentInterface::CURRENT_VERSION === $row->getVersion()) {
                 return $row;
             }
         }

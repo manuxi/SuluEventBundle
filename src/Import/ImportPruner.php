@@ -127,7 +127,7 @@ class ImportPruner
     private function titleOf(Event $event): string
     {
         foreach ($event->getDimensionContents() as $row) {
-            if ($row instanceof EventDimensionContent && DimensionContentInterface::STAGE_DRAFT === $row->getStage() && null !== $row->getLocale() && '' !== trim((string) $row->getTitle())) {
+            if ($row instanceof EventDimensionContent && DimensionContentInterface::STAGE_DRAFT === $row->getStage() && null !== $row->getLocale() && DimensionContentInterface::CURRENT_VERSION === $row->getVersion() && '' !== trim((string) $row->getTitle())) {
                 return (string) $row->getTitle();
             }
         }

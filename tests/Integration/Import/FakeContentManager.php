@@ -41,7 +41,7 @@ class FakeContentManager implements ContentManagerInterface
 
         $row = null;
         foreach ($contentRichEntity->getDimensionContents() as $existing) {
-            if (DimensionContentInterface::STAGE_DRAFT === $existing->getStage() && $locale === $existing->getLocale()) {
+            if (DimensionContentInterface::STAGE_DRAFT === $existing->getStage() && $locale === $existing->getLocale() && DimensionContentInterface::CURRENT_VERSION === $existing->getVersion()) {
                 $row = $existing;
             }
         }

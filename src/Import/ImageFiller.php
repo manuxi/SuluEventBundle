@@ -199,7 +199,7 @@ class ImageFiller
     private function titleOf(Event $event): string
     {
         foreach ($event->getDimensionContents() as $row) {
-            if ($row instanceof EventDimensionContent && null !== $row->getTitle() && '' !== $row->getTitle()) {
+            if ($row instanceof EventDimensionContent && DimensionContentInterface::CURRENT_VERSION === $row->getVersion() && null !== $row->getTitle() && '' !== $row->getTitle()) {
                 return $row->getTitle();
             }
         }
