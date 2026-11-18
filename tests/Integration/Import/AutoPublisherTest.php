@@ -7,6 +7,7 @@ namespace Manuxi\SuluEventBundle\Tests\Integration\Import;
 use Doctrine\Persistence\ManagerRegistry;
 use Manuxi\SuluEventBundle\Command\PublishReadyCommand;
 use Manuxi\SuluEventBundle\Entity\Event;
+use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
 use Manuxi\SuluEventBundle\Entity\EventImport;
 use Manuxi\SuluEventBundle\Entity\EventImportRun;
 use Manuxi\SuluEventBundle\Import\AutoPublish\AutoPublisher;
@@ -70,6 +71,19 @@ class AutoPublisherTest extends AbstractEventDatabaseTestCase
         );
         $this->assertCount(2, $this->collected, 'a domain event for each language');
         $this->assertSame($uuid, $this->collected[0]->getEvent()->getUuid());
+    }
+
+    public function testASavedVersionDoesNotHideTheCurrentDraft(): void
+    {
+        // the current draft is complete; an older saved version of the language (no texts) is stored after it
+        $uuid = $this->importedEvent('a', 'Complete', ['en' => $this->complete()]);
+        $this->addSavedVersion($uuid, 'en');
+
+        $result = $this->publisher(['sources' => ['ical.a'], 'locales' => ['en']])->publishReady();
+
+        $this->assertSame(1, $result['published']);
+        $this->assertSame(0, $result['waiting']);
+        $this->assertSame([['locale' => 'en', 'transition' => 'publish']], $this->workflow->transitions);
     }
 
     public function testNothingWithoutEnabledOrConditions(): void
@@ -401,6 +415,25 @@ class AutoPublisherTest extends AbstractEventDatabaseTestCase
     private function settings(): ImportSettings
     {
         return new ImportSettings(true, 'import', false, '/events', null, 'default', 'event', [], []);
+    }
+
+    /**
+     * Adds a saved version (version 1) of the draft of a language: stored after the current draft, none of its texts.
+     */
+    private function addSavedVersion(string $uuid, string $locale): void
+    {
+        $this->entityManager->clear();
+        $event = $this->entityManager->find(Event::class, $uuid);
+        $old   = new EventDimensionContent($event);
+        $old->setStage(DimensionContentInterface::STAGE_DRAFT);
+        $old->setLocale($locale);
+        $old->setVersion(1);
+        $old->setTitle('Old title');
+        $old->setWorkflowPlace(WorkflowInterface::WORKFLOW_PLACE_UNPUBLISHED);
+        $event->addDimensionContent($old);
+        $this->entityManager->persist($old);
+        $this->entityManager->flush();
+        $this->entityManager->clear();
     }
 
     /**

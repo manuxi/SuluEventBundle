@@ -6,6 +6,7 @@ namespace Manuxi\SuluEventBundle\Tests\Integration\Import;
 
 use Doctrine\Persistence\ManagerRegistry;
 use Manuxi\SuluEventBundle\Entity\Event;
+use Manuxi\SuluEventBundle\Entity\EventDimensionContent;
 use Manuxi\SuluEventBundle\Entity\EventImport;
 use Manuxi\SuluEventBundle\Import\ImportSettings;
 use Manuxi\SuluEventBundle\Import\PendingEventFinder;
@@ -105,6 +106,18 @@ class PendingEventFinderTest extends AbstractEventDatabaseTestCase
         $this->assertTrue($found['items'][0]['published']);
     }
 
+    public function testASavedVersionDoesNotHideTheCurrentDraft(): void
+    {
+        // the current draft is complete, an older saved version of it is not (no text): only the current one counts
+        $this->importedEvent('a', 'Current', '2027-06-01 10:00:00', ['en' => ['text' => '<p>Text</p>', 'summary' => 'Short', 'excerptCategories' => [$this->categories['web']->getId()]]]);
+        $this->addSavedVersion('Current', 'en', 'Old title');
+
+        $item = $this->finder(['en'])->find()['items'][0];
+
+        $this->assertSame('Current', $item['title']);
+        $this->assertSame(['image'], $item['missing']);
+    }
+
     public function testToolReturnsPagesAndClampsTheLimit(): void
     {
         $this->importedEvent('a', 'A', '2027-06-01 10:00:00', ['en' => []]);
@@ -116,6 +129,33 @@ class PendingEventFinderTest extends AbstractEventDatabaseTestCase
         $this->assertSame(100, $result['limit']);
         $this->assertSame(1, $result['total']);
         $this->assertSame('A', $result['events'][0]['title']);
+    }
+
+    /**
+     * Adds a saved version (version 1) of the draft of a language, as it exists after "restore" or a version save:
+     * it is stored after the current draft and has none of its texts.
+     */
+    private function addSavedVersion(string $title, string $locale, string $oldTitle): void
+    {
+        $this->entityManager->clear();
+        foreach ($this->repository->findAll() as $event) {
+            foreach ($event->getDimensionContents() as $row) {
+                if ($title === $row->getTitle() && $locale === $row->getLocale()) {
+                    $old = new EventDimensionContent($event);
+                    $old->setStage(DimensionContentInterface::STAGE_DRAFT);
+                    $old->setLocale($locale);
+                    $old->setVersion(1);
+                    $old->setTitle($oldTitle);
+                    $old->setWorkflowPlace(WorkflowInterface::WORKFLOW_PLACE_UNPUBLISHED);
+                    $event->addDimensionContent($old);
+                    $this->entityManager->persist($old);
+                    $this->entityManager->flush();
+
+                    return;
+                }
+            }
+        }
+        $this->fail('event not found');
     }
 
     /**
