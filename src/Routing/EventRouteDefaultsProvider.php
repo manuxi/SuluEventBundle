@@ -109,15 +109,9 @@ class EventRouteDefaultsProvider implements RouteDefaultsProviderInterface
                 ['locale' => $locale, 'stage' => DimensionContentInterface::STAGE_LIVE, 'version' => 0]
             );
         } catch (ContentNotFoundException) {
-            // If no live content exists, try to load draft content
-            try {
-                return $this->contentAggregator->aggregate(
-                    $entity,
-                    ['locale' => $locale, 'stage' => DimensionContentInterface::STAGE_DRAFT, 'version' => 0]
-                );
-            } catch (ContentNotFoundException) {
-                return null;
-            }
+            // Only published content is shown on the website: an event that was never published (or that was
+            // unpublished) answers 404. The preview of the admin does not come through here (EventObjectProvider).
+            return null;
         }
     }
 

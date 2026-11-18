@@ -87,15 +87,6 @@ class EventController
             }
         }
 
-        // Try draft stage if live not found
-        if ($stage === DimensionContentInterface::STAGE_LIVE) {
-            foreach ($event->getDimensionContents() as $dimensionContent) {
-                if ($dimensionContent->getLocale() === $locale && $dimensionContent->getStage() === DimensionContentInterface::STAGE_DRAFT) {
-                    return $dimensionContent;
-                }
-            }
-        }
-
         return null;
     }
 
