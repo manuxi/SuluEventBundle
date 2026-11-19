@@ -1,0 +1,16 @@
+# Tiles for manuxi/sulu-dashboard-bundle. Only loaded when that bundle is installed (see SuluEventExtension).
+services:
+    Manuxi\SuluEventBundle\Dashboard\EventDashboardReader:
+        arguments:
+            - '@Manuxi\SuluEventBundle\Repository\EventRepository'
+            - '@Manuxi\SuluEventBundle\Repository\LocationRepository'
+
+    Manuxi\SuluEventBundle\Dashboard\UpcomingEventsWidget:
+        autoconfigure: true
+        arguments:
+            - '@Manuxi\SuluEventBundle\Dashboard\EventDashboardReader'
+
+    Manuxi\SuluEventBundle\Dashboard\LocationCheckWidget:
+        autoconfigure: true
+        arguments:
+            - '@Manuxi\SuluEventBundle\Dashboard\EventDashboardReader'

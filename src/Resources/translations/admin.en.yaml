@@ -424,3 +424,17 @@ sulu_activity:
 
 sulu_admin:
     version: "Version"
+
+# Tiles for manuxi/sulu-dashboard-bundle
+sulu_event_dashboard:
+    upcoming_title: "Upcoming events"
+    upcoming_empty: "No upcoming events."
+    unpublished: "{count} not published"
+    show_unpublished: "Show events"
+    missing_several: "{count} items missing"
+    locations_title: "Check locations"
+    locations_ok: "All locations are complete."
+    missing_coordinates: "Coordinates"
+    missing_street: "Street"
+    missing_postal_code: "Postcode"
+    missing_city: "City"
