@@ -12,11 +12,25 @@
         </join>
     </joins>
 
-    <joins name="ghostDimensionContent">
+    <joins name="unlocalizedDimensionContent" ref="dimensionContent">
+        <join>
+            <entity-name>unlocalizedDimensionContent</entity-name>
+            <field-name>%sulu.model.event.class%.dimensionContents</field-name>
+            <method>LEFT</method>
+            <condition>
+                unlocalizedDimensionContent.locale IS NULL AND unlocalizedDimensionContent.stage = 'draft' AND unlocalizedDimensionContent.version = 0
+            </condition>
+        </join>
+    </joins>
+
+    <joins name="ghostDimensionContent" ref="unlocalizedDimensionContent">
         <join>
             <entity-name>ghostDimensionContent</entity-name>
             <field-name>%sulu.model.event.class%.dimensionContents</field-name>
-            <condition>ghostDimensionContent.stage = 'draft' AND ghostDimensionContent.version = 0</condition>
+            <method>LEFT</method>
+            <condition>
+                ghostDimensionContent.locale = unlocalizedDimensionContent.ghostLocale AND ghostDimensionContent.stage = 'draft' AND ghostDimensionContent.version = 0 AND dimensionContent IS NULL
+            </condition>
         </join>
     </joins>
 
@@ -243,18 +257,11 @@
             </field>
         </case-property>
 
-        <case-property name="ghostLocale" visibility="never">
-            <field>
-                <field-name>ghostLocale</field-name>
-                <entity-name>dimensionContent</entity-name>
-                <joins ref="dimensionContent"/>
-            </field>
-            <field>
-                <field-name>ghostLocale</field-name>
-                <entity-name>ghostDimensionContent</entity-name>
-                <joins ref="ghostDimensionContent"/>
-            </field>
-        </case-property>
+        <property name="ghostLocale" visibility="never">
+            <field-name>locale</field-name>
+            <entity-name>ghostDimensionContent</entity-name>
+            <joins ref="ghostDimensionContent"/>
+        </property>
 
         <case-property name="availableLocales" visibility="never">
             <field>
