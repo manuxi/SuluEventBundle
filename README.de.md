@@ -136,6 +136,7 @@ Detaillierte Dokumentation im [docs/](docs/) Verzeichnis.
 - [Settings](docs/settings.de.md) - Einstellungen
 - [Wartung](docs/maintenance.de.md) - Gespeicherte Bilddaten bereinigen
 - [Fixtures](docs/fixtures.de.md) - Beispiel-Veranstaltungen
+- [Dashboard-Kacheln](docs/dashboard.de.md) - Nächste Veranstaltungen und zu prüfende Orte auf dem Sulu-Dashboard
 
 ## 👩‍🍳 Mitwirken
 

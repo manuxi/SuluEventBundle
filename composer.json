@@ -44,10 +44,13 @@
         "symfony/phpunit-bridge": "^6.2 | ^7.0",
         "symfony/console": "^6.2 | ^7.0",
         "phpspec/prophecy": "^1.17",
-        "phpspec/prophecy-phpunit": "^2.4"
+        "phpspec/prophecy-phpunit": "^2.4",
+        "manuxi/sulu-dashboard-bundle": "^1.1",
+        "phpstan/phpstan": "^2.1"
     },
     "suggest": {
-        "sulu/automation-bundle": "Allows scheduling automated publish/unpublish tasks for events."
+        "sulu/automation-bundle": "Allows scheduling automated publish/unpublish tasks for events.",
+        "manuxi/sulu-dashboard-bundle": "Shows tiles with the next events and locations to check on the Sulu dashboard."
     },
     "autoload": {
         "psr-4": {
@@ -72,6 +75,3 @@
         }
     }
 }
-
-
-

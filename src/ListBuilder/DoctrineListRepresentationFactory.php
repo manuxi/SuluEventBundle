@@ -10,7 +10,10 @@ use Manuxi\SuluEventBundle\Repository\EventDimensionContentRepository;
 use Manuxi\SuluEventBundle\Service\EventTypeSelect;
 use Sulu\Bundle\MediaBundle\Media\Manager\MediaManagerInterface;
 use Sulu\Component\Rest\ListBuilder\Doctrine\DoctrineListBuilderFactory;
+use Sulu\Component\Rest\ListBuilder\Doctrine\FieldDescriptor\DoctrineCaseFieldDescriptor;
+use Sulu\Component\Rest\ListBuilder\Doctrine\FieldDescriptor\DoctrineDescriptor;
 use Sulu\Component\Rest\ListBuilder\Doctrine\FieldDescriptor\DoctrineFieldDescriptor;
+use Sulu\Component\Rest\ListBuilder\Doctrine\FieldDescriptor\DoctrineJoinDescriptor;
 use Sulu\Component\Rest\ListBuilder\ListRestHelperInterface;
 use Sulu\Component\Rest\ListBuilder\Metadata\FieldDescriptorFactoryInterface;
 use Sulu\Component\Rest\ListBuilder\PaginatedRepresentation;
@@ -20,6 +23,11 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class DoctrineListRepresentationFactory
 {
+    /**
+     * List fields a ghost row does not take from the content of its ghost locale.
+     */
+    private const GHOST_IGNORED_FIELDS = ['id', 'version', 'locale', 'ghostLocale', 'availableLocales', 'stage'];
+
     public function __construct(
         private RestHelperInterface $restHelper,
         private ListRestHelperInterface $listRestHelper,
@@ -78,10 +86,8 @@ class DoctrineListRepresentationFactory
             $listBuilder->where($fieldDescriptors[$key], $value);
         }
 
-
-        if (isset($fieldDescriptors['version'])) {
-            $listBuilder->where($fieldDescriptors['version'], 0);
-        }
+        // No where on the version: the joins of the dimension contents already select version 0, and a where
+        // on it would drop every event without content in the requested locale instead of listing it as ghost.
 
         $listBuilder->addGroupBy($fieldDescriptors['id']);
         $list = $listBuilder->execute();
@@ -98,7 +104,7 @@ class DoctrineListRepresentationFactory
 
         $locale = $parameters['locale'] ?? null;
 
-        $list = $this->addGhostLocaleToListElements($list, $locale);
+        $list = $this->addGhostLocaleToListElements($list, $locale, $fieldDescriptors);
         $list = $this->addImagesToListElements($list, $locale);
         $list = $this->addColorsToListElements($list);
         $list = $this->translateStatusColumns($list, $locale);
@@ -385,34 +391,151 @@ class DoctrineListRepresentationFactory
         return $listeElements;
     }
 
-    private function addGhostLocaleToListElements(array $listeElements, ?string $currentLocale)
+    /**
+     * Events without content in the requested locale are listed as ghosts: they get the locale they exist in
+     * as ghostLocale and show that locale's title, dates, type, location and image instead of empty cells.
+     * Events with content in the requested locale never get a ghostLocale.
+     *
+     * The ghost locale is the one stored on the unlocalized dimension (like Sulu's own lists), or, where it is
+     * missing as for events migrated from Sulu 2, the first locale of the webspaces the event has content in.
+     *
+     * @param array<string, mixed> $fieldDescriptors
+     */
+    private function addGhostLocaleToListElements(array $listElements, ?string $currentLocale, array $fieldDescriptors): array
     {
-        $availableLocales = $locales = $this->webspaceManager->getAllLocales();
-        $localesCount = count($availableLocales);
-        if (($key = array_search($currentLocale, $locales)) !== false) {
-            unset($locales[$key]);
+        $ids = array_values(array_unique(array_filter(array_column($listElements, 'id'))));
+        if (null === $currentLocale || [] === $ids) {
+            return $listElements;
         }
 
-        $ids = array_filter(array_column($listeElements, 'id'));
+        $ghostFields = $this->getGhostFields($fieldDescriptors);
 
-        foreach ($locales as $locale) {
-            $missingLocales = $this->eventDimensionContentRepository->findMissingLocaleByIds($ids, $locale, $localesCount);
-            foreach ($missingLocales as $missingLocale) {
-                foreach ($listeElements as $key => $element) {
-                    if ($element['id'] === $missingLocale['event'] && !array_key_exists('ghostLocale', $element)) {
-                        $listeElements[$key]['ghostLocale'] = $locale;
-                        /*
-                        $listeElements[$key]['localizationState'] = [
-                            'state' => 'ghost',
-                            'locale' => $locale
-                        ];
-                        */
+        $storedGhostLocales = [];
+        $contentsByEvent = [];
+        $contents = $this->eventDimensionContentRepository->findDraftContentsByIds($ids, array_values($ghostFields));
+        foreach ($contents as $content) {
+            $event = (string) $content['event'];
+            if (null === $content['locale']) {
+                $storedGhostLocales[$event] = $content['ghostLocale'];
+            } else {
+                $contentsByEvent[$event][$content['locale']] = $content;
+            }
+        }
+
+        $localeOrder = $this->webspaceManager->getAllLocales();
+
+        foreach ($listElements as $key => $element) {
+            $event = (string) ($element['id'] ?? '');
+            $eventContents = $contentsByEvent[$event] ?? [];
+
+            if (\array_key_exists($currentLocale, $eventContents)) {
+                if (!empty($element['ghostLocale'])) {
+                    $listElements[$key]['ghostLocale'] = null;
+                }
+                continue;
+            }
+
+            if ([] === $eventContents) {
+                continue;
+            }
+
+            $ghostLocale = $storedGhostLocales[$event] ?? null;
+            if (null === $ghostLocale || !\array_key_exists($ghostLocale, $eventContents)) {
+                $ghostLocale = null;
+                foreach ($localeOrder as $locale) {
+                    if (\array_key_exists($locale, $eventContents)) {
+                        $ghostLocale = $locale;
+                        break;
                     }
+                }
+                $ghostLocale ??= (string) array_key_first($eventContents);
+            }
+
+            $ghostContent = $eventContents[$ghostLocale];
+            $listElements[$key]['ghostLocale'] = $ghostLocale;
+
+            foreach ($ghostFields as $listField => $contentField) {
+                if (
+                    \array_key_exists($listField, $element)
+                    && (null === $element[$listField] || '' === $element[$listField])
+                    && \array_key_exists($contentField, $ghostContent)
+                ) {
+                    $listElements[$key][$listField] = $ghostContent[$contentField];
                 }
             }
         }
 
-        return $listeElements;
+        return $listElements;
+    }
+
+    /**
+     * Maps the list fields that show a value of the dimension content to the path of that value: a field of
+     * the dimension content ("title") or of an entity joined from it ("location.name", "image.id"). Project
+     * lists that add columns on dimensionContent.<field> are covered as well.
+     *
+     * @param array<string, mixed> $fieldDescriptors
+     *
+     * @return array<string, string>
+     */
+    private function getGhostFields(array $fieldDescriptors): array
+    {
+        $ghostFields = [];
+        foreach ($fieldDescriptors as $name => $fieldDescriptor) {
+            if (\in_array($name, self::GHOST_IGNORED_FIELDS, true)) {
+                continue;
+            }
+
+            if ($fieldDescriptor instanceof DoctrineCaseFieldDescriptor) {
+                $fieldDescriptor = $this->getFirstCaseFieldDescriptor($fieldDescriptor);
+            }
+
+            if (!$fieldDescriptor instanceof DoctrineFieldDescriptor) {
+                continue;
+            }
+
+            $path = $this->getDimensionContentPath($fieldDescriptor);
+            if (null !== $path) {
+                $ghostFields[(string) $name] = $path;
+            }
+        }
+
+        return $ghostFields;
+    }
+
+    /**
+     * The first case of a case property is the field of the requested locale (the second one the ghost).
+     */
+    private function getFirstCaseFieldDescriptor(DoctrineCaseFieldDescriptor $fieldDescriptor): DoctrineFieldDescriptor
+    {
+        if (method_exists($fieldDescriptor, 'getCase1FieldDescriptor')) {
+            return $fieldDescriptor->getCase1FieldDescriptor();
+        }
+
+        // early Sulu 3.0 releases have no getter for the cases
+        /** @var DoctrineDescriptor $case */
+        $case = (new \ReflectionProperty(DoctrineCaseFieldDescriptor::class, 'case1'))->getValue($fieldDescriptor);
+
+        return new DoctrineFieldDescriptor($case->fieldName, $fieldDescriptor->getName(), $case->entityName, null, $case->joins);
+    }
+
+    private function getDimensionContentPath(DoctrineFieldDescriptor $fieldDescriptor): ?string
+    {
+        $entityName = $fieldDescriptor->getEntityName();
+        if ('dimensionContent' === $entityName) {
+            return $fieldDescriptor->getFieldName();
+        }
+
+        foreach ($fieldDescriptor->getJoins() as $join) {
+            if (
+                $join instanceof DoctrineJoinDescriptor
+                && $join->getEntityName() === $entityName
+                && 1 === preg_match('/^dimensionContent\.(\w+)$/', (string) $join->getJoin(), $matches)
+            ) {
+                return $matches[1] . '.' . $fieldDescriptor->getFieldName();
+            }
+        }
+
+        return null;
     }
 
     /**

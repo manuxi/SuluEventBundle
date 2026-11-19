@@ -548,3 +548,17 @@ sulu_activity:
 
 sulu_admin:
     version: "Version"
+
+# Kacheln fuer manuxi/sulu-dashboard-bundle
+sulu_event_dashboard:
+    upcoming_title: "Nächste Veranstaltungen"
+    upcoming_empty: "Keine bevorstehenden Veranstaltungen."
+    unpublished: "{count} nicht veröffentlicht"
+    show_unpublished: "Veranstaltungen anzeigen"
+    missing_several: "{count} Angaben fehlen"
+    locations_title: "Orte prüfen"
+    locations_ok: "Alle Orte sind vollständig."
+    missing_coordinates: "Koordinaten"
+    missing_street: "Straße"
+    missing_postal_code: "PLZ"
+    missing_city: "Ort"
