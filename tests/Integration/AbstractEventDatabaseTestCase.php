@@ -140,6 +140,10 @@ abstract class AbstractEventDatabaseTestCase extends TestCase
 
         $config = ORMSetup::createConfiguration(true);
         $config->setMetadataDriverImpl($driverChain);
+        // symfony/var-exporter 8 has no lazy ghosts any more: on PHP 8.4 and later the proxies are native lazy objects
+        if (\PHP_VERSION_ID >= 80400 && method_exists($config, 'enableNativeLazyObjects')) {
+            $config->enableNativeLazyObjects(true);
+        }
 
         $resolver = new ResolveTargetEntityListener();
         foreach ([
