@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased (3.6.0)
+## 3.6.0 (2026-11-20)
 
 Minor release. It needs SQL for new columns and tables, and `SuluBlockValidationBundle` registered in `config/bundles.php`: follow the steps in [UPGRADE.md](UPGRADE.md) (section 3.6.0) before you clear the caches.
 
@@ -25,7 +25,7 @@ Minor release. It needs SQL for new columns and tables, and `SuluBlockValidation
 - The single event download (`sulu_event.ical_single`) takes the UUID of the event (it never worked).
 - The import reads the current draft, not a saved version; `fill-images` leaves events alone that already have their image.
 
-## 3.5.4
+## 3.5.4 (2026-11-20)
 
 ### Fixed
 
