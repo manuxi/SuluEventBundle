@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.6.1 (2026-11-20)
+
+### Fixed
+
+- The association between an event and its import entries is mapped on both sides (`EventImport#event` has `inversedBy="imports"`), so `doctrine:schema:validate` reports the mapping as correct. No database change.
+
 ## 3.6.0 (2026-11-20)
 
 Minor release. It needs SQL for new columns and tables, and `SuluBlockValidationBundle` registered in `config/bundles.php`: follow the steps in [UPGRADE.md](UPGRADE.md) (section 3.6.0) before you clear the caches.
